@@ -75,6 +75,9 @@
   <ItemGroup>
     <Content Include="Global.asax" />
     <Content Include="Index.html" />
+    <None Include="Intellisense\jquery-2.1.0-vsdoc.js" />
+    <None Include="Intellisense\knockout-3.1.0.debug.js" />
+    <Content Include="Scripts\app.js" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>

@@ -4,6 +4,24 @@
     <title>How long to beat Steam</title>
 </head>
 <body>
-    
+    <a href="https://www.google.com/search?q=steamid64" target="_blank">SteamId64</a>
+    <input type="text" data-bind="value: steamId">
+    <button data-bind="click: howlongClicked">Tell me how long</button>
+    <br/>
+    <table>
+        <thead>
+            <tr><th>AppId</th><th>Name</th><th>Playtime (minutes)</th></tr>
+        </thead>
+        <tbody data-bind="foreach: games">
+            <tr>
+                <td data-bind="text: SteamAppId"></td>
+                <td data-bind="text: SteamName"></td>
+                <td data-bind="text: Playtime"></td>
+            </tr>
+        </tbody>
+    </table>
+    <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/knockout/knockout-3.1.0.js"></script>
+    <script type="text/javascript" src="Scripts/app.js"></script>
 </body>
 </html>
