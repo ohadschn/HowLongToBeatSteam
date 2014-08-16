@@ -11,11 +11,14 @@ namespace HowLongToBeatSteam.Models
         public string SteamName { get; private set; }
         [DataMember]
         public int Playtime { get; private set; }
+        [DataMember]
+        public int HltbId { get; private set; }
 
-        public Game(int steamAppId, string steamName, int playtime)
+        public Game(int steamAppId, string steamName, int playtime, int hltbId)
         {
             SteamAppId = steamAppId;
             Playtime = playtime;
+            HltbId = hltbId;
             SteamName = steamName;
         }
     }

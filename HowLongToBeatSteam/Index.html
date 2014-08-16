@@ -8,15 +8,29 @@
     <input type="text" data-bind="value: steamId">
     <button data-bind="click: howlongClicked">Tell me how long</button>
     <br/>
+    <div id="howLongToBeatResult"></div>
     <table>
         <thead>
-            <tr><th>AppId</th><th>Name</th><th>Playtime (minutes)</th></tr>
+            <tr>
+                <th>AppId</th>
+                <th>Name</th>
+                <th>Playtime</th>
+                <th>TTB Main</th>
+                <th>TTB Main + Extras</th>
+                <th>TTB Completionist</th>
+                <th>TTB Combined</th>
+            </tr>
         </thead>
         <tbody data-bind="foreach: games">
             <tr>
-                <td data-bind="text: SteamAppId"></td>
-                <td data-bind="text: SteamName"></td>
-                <td data-bind="text: Playtime"></td>
+                <td data-bind="text: steamId"></td>
+                <td data-bind="text: steamName"></td>
+                <td data-bind="text: steamPlaytime"></td>
+                <td data-bind="text: $data.timeToBeat.main"></td>
+                <td data-bind="text: $data.timeToBeat.extras"></td>
+                <td data-bind="text: $data.timeToBeat.completionist"></td>
+                <td data-bind="text: $data.timeToBeat.combined"></td>
+                <td><a data-bind="visible: visible, attr: {href: hltbUrl}" target="_blank">Find on HLTB</a></td>
             </tr>
         </tbody>
     </table>
