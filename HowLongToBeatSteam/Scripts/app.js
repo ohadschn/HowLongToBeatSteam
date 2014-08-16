@@ -1,45 +1,57 @@
-﻿function Game(steamId, steamName, steamPlaytime, hltbId) {
+﻿/*global ko*/
+
+function Game(steamId, steamName, steamPlaytime, hltbId) {
     var self = this;
 
-    self.steamId = steamId;
+    self.known = function() {
+        return self.hltbId() !== -1;
+    };
+
+    self.steamAppId = steamId;
     self.steamName = steamName;
     self.steamPlaytime = steamPlaytime;
-    self.hltbId = hltbId;
+    self.hltbId = ko.observable(hltbId);
+    var pending = "Pending...";
+    var unknown = "Unknown";
     self.timeToBeat = {
-        main: ko.observable(0),
-        extras: ko.observable(0),
-        completionist: ko.observable(0),
-        combined: ko.observable(0),
+        main: ko.observable(self.known() ? pending : unknown),
+        extras: ko.observable(self.known() ? pending : unknown),
+        completionist: ko.observable(self.known() ? pending : unknown),
+        combined: ko.observable(self.known() ? pending : unknown),
     };
     self.hltbUrl = "http://www.howlongtobeat.com/search.php?t=games&s=" + steamName;
     self.visible = ko.computed(function () {
-        return self.hltbId === -1;
+        return !self.known();
     });
 }
 
 function AppViewModel() {
     var self = this;
 
-    self.steamId = ko.observable("76561198079151088"); //TODO remove ID
+    self.steamId64 = ko.observable("76561198079151088"); //TODO remove ID
     self.games = ko.observableArray();
+    self.processing = ko.observable(false);
 
-    this.howlongClicked = function() {
-
-        $.get("api/games/library/" + self.steamId())
+    self.howlongClicked = function() {
+        self.processing(true);
+        self.games([]);
+        $.get("api/games/library/" + self.steamId64())
             .done(function(data) {
-                self.games(ko.utils.arrayMap(data, function (steamGame) {
+                self.games(ko.utils.arrayMap(data, function(steamGame) {
                     return new Game(steamGame.SteamAppId, steamGame.SteamName, steamGame.Playtime, steamGame.HltbId);
                 }));
-                self.getHowLongToBeat(0); //TODO remove
             })
             .fail(function(error) {
                 console.error(error);
                 var msg = "Error - verify your Steam64Id and try again";
                 self.games({ SteamAppId: msg, SteamName: msg, Playtime: msg });
+            })
+            .always(function() {
+                self.processing(false);
             });
     };
 
-    this.getHowLongToBeat = function (index) {
+    self.getHowLongToBeat = function (index) {
         var currentGame = self.games()[index];
 
         $.get("api/games/howlong/" + currentGame.hltbId)

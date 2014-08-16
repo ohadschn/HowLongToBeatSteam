@@ -5,37 +5,44 @@
 </head>
 <body>
     <a href="https://www.google.com/search?q=steamid64" target="_blank">SteamId64</a>
-    <input type="text" data-bind="value: steamId">
-    <button data-bind="click: howlongClicked">Tell me how long</button>
+    <input type="text" data-bind="value: steamId64">
+    <button data-bind="click: howlongClicked, enable: !processing()">Tell me how long</button>
+    <img src="http://cdnjs.cloudflare.com/ajax/libs/file-uploader/3.7.0/loading.gif" alt="loading..." data-bind="visible: processing" />
     <br/>
     <div id="howLongToBeatResult"></div>
     <table>
         <thead>
-            <tr>
+            <tr data-bind="visible: games().length>0">
                 <th>AppId</th>
                 <th>Name</th>
                 <th>Playtime</th>
-                <th>TTB Main</th>
-                <th>TTB Main + Extras</th>
-                <th>TTB Completionist</th>
-                <th>TTB Combined</th>
+                <th>Main</th>
+                <th>Main + Extras</th>
+                <th>Completionist</th>
+                <th>Combined</th>
             </tr>
         </thead>
         <tbody data-bind="foreach: games">
             <tr>
-                <td data-bind="text: steamId"></td>
+                <td data-bind="text: steamAppId"></td>
                 <td data-bind="text: steamName"></td>
                 <td data-bind="text: steamPlaytime"></td>
                 <td data-bind="text: $data.timeToBeat.main"></td>
                 <td data-bind="text: $data.timeToBeat.extras"></td>
                 <td data-bind="text: $data.timeToBeat.completionist"></td>
                 <td data-bind="text: $data.timeToBeat.combined"></td>
-                <td><a data-bind="visible: visible, attr: {href: hltbUrl}" target="_blank">Find on HLTB</a></td>
+                <td>
+                    <input type="text" data-bind="value: hltbId() === -1 ? 'Please update HLTB ID' : hltbId()"/>
+                    <button>Update</button>
+                    <a data-bind="attr: {href: hltbUrl}" target="_blank">Find on HLTB</a>
+                </td>
+                <td></td>
             </tr>
         </tbody>
     </table>
     <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.1.min.js"></script>
     <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/knockout/knockout-3.1.0.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/spin.js/2.0.1/spin.js"></script>
     <script type="text/javascript" src="Scripts/app.js"></script>
 </body>
 </html>
