@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HowLongToBeatSteam", "HowLongToBeatSteam\HowLongToBeatSteam.csproj", "{0C26636E-5D3B-4EE2-8CE1-0E0DA0901059}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SteamHltbScraper", "SteamHltbScraper\SteamHltbScraper.csproj", "{B6C78316-2C1D-4459-AAAA-84B6F430D88D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{0C26636E-5D3B-4EE2-8CE1-0E0DA0901059}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C26636E-5D3B-4EE2-8CE1-0E0DA0901059}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C26636E-5D3B-4EE2-8CE1-0E0DA0901059}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6C78316-2C1D-4459-AAAA-84B6F430D88D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6C78316-2C1D-4459-AAAA-84B6F430D88D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6C78316-2C1D-4459-AAAA-84B6F430D88D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6C78316-2C1D-4459-AAAA-84B6F430D88D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
