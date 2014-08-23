@@ -49,5 +49,12 @@ namespace Common
         public GameEntity()
         {
         }
+
+        public override string ToString()
+        {
+            return string.Format(
+                "SteamAppId: {0}, SteamName: {1}, HltbId: {2}, HltbName: {3}, MainTtb: {4}, ExtrasTtb: {5}, CompletionistTtb: {6}, CombinedTtb: {7}",
+                SteamAppId, SteamName, HltbId, HltbName, MainTtb, ExtrasTtb, CompletionistTtb, CombinedTtb);
+        }
     }
 }

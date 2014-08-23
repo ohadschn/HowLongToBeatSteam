@@ -64,6 +64,7 @@ namespace SteamHltbScraper
                     continue;
                 }
 
+                //TODO batch operations
                 Trace.TraceInformation("Adding app Id {0}...", app.appid);
                 try
                 {
