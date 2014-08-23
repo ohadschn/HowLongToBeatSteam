@@ -20,6 +20,8 @@
                 <th>Main + Extras</th>
                 <th>Completionist</th>
                 <th>Combined</th>
+                <th>HLTB Name</th>
+                <th>HLTB ID</th>
             </tr>
         </thead>
         <tbody data-bind="foreach: games">
@@ -27,14 +29,17 @@
                 <td data-bind="text: steamAppId"></td>
                 <td data-bind="text: steamName"></td>
                 <td data-bind="text: steamPlaytime"></td>
-                <td data-bind="text: $data.timeToBeat.main"></td>
-                <td data-bind="text: $data.timeToBeat.extras"></td>
-                <td data-bind="text: $data.timeToBeat.completionist"></td>
-                <td data-bind="text: $data.timeToBeat.combined"></td>
+                <td data-bind="text: $data.hltbInfo.mainTtb"></td>
+                <td data-bind="text: $data.hltbInfo.extrasTtb"></td>
+                <td data-bind="text: $data.hltbInfo.completionistTtb"></td>
+                <td data-bind="text: $data.hltbInfo.combinedTtb"></td>
+                <td data-bind="text: $data.hltbInfo.name"></td>
                 <td>
-                    <input type="text" data-bind="value: hltbId() === -1 ? 'Please update HLTB ID' : hltbId()"/>
+                    <input type="text" data-bind="value: known ? $data.hltbInfo.id : 'Please update HLTB ID'" />
+                </td>
+                <td>
                     <button>Update</button>
-                    <a data-bind="attr: {href: hltbUrl}" target="_blank">Find on HLTB</a>
+                    <a data-bind="text: $data.hltbInfo.linkText, attr: {href: $data.hltbInfo.url}" target="_blank"></a>
                 </td>
                 <td></td>
             </tr>

@@ -6,13 +6,14 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Common;
 using HtmlAgilityPack;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace SteamHltbScraper
 {
-    internal class Program
+    internal class Scraper
     {
         private const string GetSteamAppListUrl = "http://api.steampowered.com/ISteamApps/GetAppList/v0001/";
 
@@ -21,6 +22,7 @@ namespace SteamHltbScraper
 
         private const string SearchHltbPostDataFormat = @"queryString={0}";
 
+        //TODO move to configuration
         private const string TableStorageConnectionString =
             @"DefaultEndpointsProtocol=https;AccountName=hltbs;AccountKey=XhDjB312agakHZdi2+xFCe5Dd3j2KAcl+yTtAiCyinCIOYuAKphKjaP0psCm83t/+iLKdMii/uxmUhMetZ7Hiw==";
 
@@ -35,12 +37,11 @@ namespace SteamHltbScraper
 
         private static async Task ScrapeCorrelation()
         {
-            var table = CloudStorageAccount.Parse(TableStorageConnectionString).CreateCloudTableClient().GetTableReference(SteamToHltbTableName);
-
             Trace.TraceInformation("Connecting to table {0}...", SteamToHltbTableName);
+            var table = CloudStorageAccount.Parse(TableStorageConnectionString).CreateCloudTableClient().GetTableReference(SteamToHltbTableName);
             await table.CreateIfNotExistsAsync();
 
-            foreach (var app in (await GetAllSteamApps()).applist.apps.app.Take(4)) //TODO PLINQ
+            foreach (var app in (await GetAllSteamApps()).Take(4)) //TODO Remove Take(4) + PLINQ
             {
                 Trace.TraceInformation("Querying for app ID {0}...", app.appid);
                 var query = new TableQuery<GameEntity>()
@@ -78,7 +79,7 @@ namespace SteamHltbScraper
             }
         }
 
-        private static async Task<AllGamesRoot> GetAllSteamApps()
+        private static async Task<IList<App>> GetAllSteamApps()
         {
             Trace.TraceInformation("Getting list of all Steam apps from {0}...", GetSteamAppListUrl);
             using (var client = new HttpClient())
@@ -86,7 +87,7 @@ namespace SteamHltbScraper
                 var response = await client.GetAsync(GetSteamAppListUrl);
                 response.EnsureSuccessStatusCode();
 
-                return await response.Content.ReadAsAsync<AllGamesRoot>();
+                return (await response.Content.ReadAsAsync<AllGamesRoot>()).applist.apps.app;
             }
         }
 

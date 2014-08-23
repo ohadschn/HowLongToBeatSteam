@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HowLongToBeatSteam", "HowLo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SteamHltbScraper", "SteamHltbScraper\SteamHltbScraper.csproj", "{B6C78316-2C1D-4459-AAAA-84B6F430D88D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{046818B8-EF77-4AF3-9EF6-3B4CC98715B2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{B6C78316-2C1D-4459-AAAA-84B6F430D88D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B6C78316-2C1D-4459-AAAA-84B6F430D88D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B6C78316-2C1D-4459-AAAA-84B6F430D88D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{046818B8-EF77-4AF3-9EF6-3B4CC98715B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{046818B8-EF77-4AF3-9EF6-3B4CC98715B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{046818B8-EF77-4AF3-9EF6-3B4CC98715B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{046818B8-EF77-4AF3-9EF6-3B4CC98715B2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace SteamHltbScraper
+namespace Common
 {
     public class GameEntity : TableEntity
     {

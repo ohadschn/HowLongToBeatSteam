@@ -1,28 +1,27 @@
 ﻿/*global ko*/
 
-function Game(steamId, steamName, steamPlaytime, hltbId) {
+function Game(steamGame) {
     var self = this;
 
-    self.known = function() {
-        return self.hltbId() !== -1;
-    };
+    self.known = steamGame.HltbInfo.Id !== -1;
 
-    self.steamAppId = steamId;
-    self.steamName = steamName;
-    self.steamPlaytime = steamPlaytime;
-    self.hltbId = ko.observable(hltbId);
-    var pending = "Pending...";
+    self.steamAppId = steamGame.SteamAppId;
+    self.steamName = steamGame.SteamName;
+    self.steamPlaytime = steamGame.Playtime;
+
     var unknown = "Unknown";
-    self.timeToBeat = {
-        main: ko.observable(self.known() ? pending : unknown),
-        extras: ko.observable(self.known() ? pending : unknown),
-        completionist: ko.observable(self.known() ? pending : unknown),
-        combined: ko.observable(self.known() ? pending : unknown),
+    self.hltbInfo = {
+        id: steamGame.HltbInfo.Id,
+        name: steamGame.HltbInfo.Name,
+        mainTtb: self.known ? steamGame.HltbInfo.MainTtb : unknown,
+        extrasTtb: self.known ? steamGame.HltbInfo.ExtrasTtb : unknown,
+        completionistTtb: self.known ? steamGame.HltbInfo.CompletionistTtb : unknown,
+        combinedTtb: self.known ? steamGame.HltbInfo.CombinedTtb : unknown,
+        url: self.known
+        ? "http://www.howlongtobeat.com/game.php?id=" + steamGame.HltbInfo.Id
+        : "http://www.howlongtobeat.com/search.php?t=games&s=" + self.steamName,
+        linkText: self.known ? "Browse on HLTB" : "Find on HLTB",
     };
-    self.hltbUrl = "http://www.howlongtobeat.com/search.php?t=games&s=" + steamName;
-    self.visible = ko.computed(function () {
-        return !self.known();
-    });
 }
 
 function AppViewModel() {
@@ -38,7 +37,7 @@ function AppViewModel() {
         $.get("api/games/library/" + self.steamId64())
             .done(function(data) {
                 self.games(ko.utils.arrayMap(data, function(steamGame) {
-                    return new Game(steamGame.SteamAppId, steamGame.SteamName, steamGame.Playtime, steamGame.HltbId);
+                    return new Game(steamGame);
                 }));
             })
             .fail(function(error) {
@@ -48,24 +47,6 @@ function AppViewModel() {
             })
             .always(function() {
                 self.processing(false);
-            });
-    };
-
-    self.getHowLongToBeat = function (index) {
-        var currentGame = self.games()[index];
-
-        $.get("api/games/howlong/" + currentGame.hltbId)
-            .done(function (data) {
-                currentGame.timeToBeat.main(data.Main);
-                currentGame.timeToBeat.extras(data.Extras);
-                currentGame.timeToBeat.completionist(data.Completionist);
-                currentGame.timeToBeat.combined(data.Combined);
-            })
-            .fail(function() {
-                currentGame.timeToBeat.main("Error - verify HLTB ID and retry");
-                currentGame.timeToBeat.extras("Error - verify HLTB ID and retry");
-                currentGame.timeToBeat.completionist("Error - verify HLTB ID and retry");
-                currentGame.timeToBeat.combined("Error - verify HLTB ID and retry");
             });
     };
 }
