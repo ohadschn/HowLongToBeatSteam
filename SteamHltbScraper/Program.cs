@@ -1,42 +1,92 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Table;
 
 namespace SteamHltbScraper
 {
-    class Program
+    internal class Program
     {
-        private const string GetHowLongUri = @"http://www.howlongtobeat.com/search_main.php?t=games&page=1&sorthead=&sortd=Normal&plat=&detail=0";
-        private const string GetHowLongPostDataFormat = @"queryString={0}";
+        private const string GetSteamAppListUrl = "http://api.steampowered.com/ISteamApps/GetAppList/v0001/";
 
-        static void Main()
+        private const string SearchHltbUrl =
+            @"http://www.howlongtobeat.com/search_main.php?t=games&page=1&sorthead=&sortd=Normal&plat=&detail=0";
+
+        private const string SearchHltbPostDataFormat = @"queryString={0}";
+
+        private const string TableStorageConnectionString =
+            @"DefaultEndpointsProtocol=https;AccountName=hltbs;AccountKey=XhDjB312agakHZdi2+xFCe5Dd3j2KAcl+yTtAiCyinCIOYuAKphKjaP0psCm83t/+iLKdMii/uxmUhMetZ7Hiw==";
+
+        private const string SteamToHltbTableName = "steamToHltb";
+
+        private static void Main()
         {
-            Scrape().Wait();
+            Trace.TraceInformation("Scraping Steam->HLTB correlation...");
+            ScrapeCorrelation().Wait();
+            Trace.TraceInformation("Scraping Steam->HLTB correlation done.");
         }
 
-        private static async Task Scrape()
+        private static async Task ScrapeCorrelation()
         {
-            using (var client = new HttpClient())
+            var table = CloudStorageAccount.Parse(TableStorageConnectionString).CreateCloudTableClient().GetTableReference(SteamToHltbTableName);
+
+            Trace.TraceInformation("Connecting to table {0}...", SteamToHltbTableName);
+            await table.CreateIfNotExistsAsync();
+
+            foreach (var app in (await GetAllSteamApps()).applist.apps.app.Take(4)) //TODO PLINQ
             {
-                var response = await client.GetAsync("http://api.steampowered.com/ISteamApps/GetAppList/v0001/");
-                response.EnsureSuccessStatusCode();
+                Trace.TraceInformation("Querying for app ID {0}...", app.appid);
+                var query = new TableQuery<GameEntity>()
+                    .Where(TableQuery.GenerateFilterCondition("PartitionKey",QueryComparisons.Equal, app.appid.ToString(CultureInfo.InvariantCulture)));
 
-                var allGamesRoot = await response.Content.ReadAsAsync<AllGamesRoot>();
-                var correlatedIds = allGamesRoot.applist.apps.app
-                        .Select(a => new {Name = a.name, SteamId = a.appid, HltbId = ScrapeHltbId(a.name).Result});
-
-                var sb = new StringBuilder();
-                foreach (var correlatedId in correlatedIds)
+                IEnumerable<GameEntity> queryResults;
+                try
                 {
-                    sb.AppendFormat("{0},{1},{2}{3}", correlatedId.Name, correlatedId.SteamId, correlatedId.HltbId, Environment.NewLine);
+                    queryResults = table.ExecuteQuery(query); //TODO ExecuteQueryAsync when available
+                }
+                catch (Exception e)
+                {
+                    Trace.TraceError("Error querying for app ID {0}: {1}", app.appid, e);
+                    continue;
                 }
 
-                File.WriteAllText(@"F:\Downloads\steamHltb.csv", sb.ToString());
+                if (queryResults.Any()) 
+                {
+                    Trace.TraceInformation("App ID {0} already exists in DB - skipping...", app.appid);
+                    continue;
+                }
+
+                Trace.TraceInformation("Adding app Id {0}...", app.appid);
+                try
+                {
+                    await table.ExecuteAsync(TableOperation.Insert(new GameEntity(app.appid, app.name, await ScrapeHltbId(app.name))));
+                }
+                catch (Exception e)
+                {
+                    Trace.TraceError("Error adding app ID {0}: {1}", app.appid, e);
+                    continue;
+                }
+
+                Trace.TraceInformation("Finished processing app ID {0}", app.appid);
+            }
+        }
+
+        private static async Task<AllGamesRoot> GetAllSteamApps()
+        {
+            Trace.TraceInformation("Getting list of all Steam apps from {0}...", GetSteamAppListUrl);
+            using (var client = new HttpClient())
+            {
+                var response = await client.GetAsync(GetSteamAppListUrl);
+                response.EnsureSuccessStatusCode();
+
+                return await response.Content.ReadAsAsync<AllGamesRoot>();
             }
         }
 
@@ -44,9 +94,11 @@ namespace SteamHltbScraper
         {
             using (var client = new HttpClient())
             {
-                var req = new HttpRequestMessage(HttpMethod.Post, GetHowLongUri)
+                var req = new HttpRequestMessage(HttpMethod.Post, SearchHltbUrl)
                 {
-                    Content = new StringContent(string.Format(GetHowLongPostDataFormat, appName), Encoding.UTF8, "application/x-www-form-urlencoded")
+                    Content =
+                        new StringContent(string.Format(SearchHltbPostDataFormat, appName), Encoding.UTF8,
+                            "application/x-www-form-urlencoded")
                 };
                 var response = await client.SendAsync(req);
 
@@ -61,7 +113,7 @@ namespace SteamHltbScraper
                 {
                     return -1;
                 }
-                
+
                 var anchor = first.Descendants("a").FirstOrDefault();
                 if (anchor == null)
                 {
@@ -84,27 +136,4 @@ namespace SteamHltbScraper
             }
         }
     }
-
-// ReSharper disable InconsistentNaming
-    public class App
-    {
-        public int appid { get; set; }
-        public string name { get; set; }
-    }
-
-    public class Apps
-    {
-        public List<App> app { get; set; }
-    }
-
-    public class Applist
-    {
-        public Apps apps { get; set; }
-    }
-
-    public class AllGamesRoot
-    {
-        public Applist applist { get; set; }
-    }
 }
-// ReSharper restore InconsistentNaming

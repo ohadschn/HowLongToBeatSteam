@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using HowLongToBeatSteam.Controllers.Responses;
 using HowLongToBeatSteam.Models;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Table;
 
 namespace HowLongToBeatSteam.Controllers
 
@@ -17,7 +15,6 @@ namespace HowLongToBeatSteam.Controllers
     {
         private const string SteamApiKey = "5EAD28314E0420C154D739F37F110007";
         private const string GetOwnedGamesFormat = @"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={0}&steamid={1}&format=json&include_appinfo=1";
-        const string TableStorageConnectionString = @"DefaultEndpointsProtocol=https;AccountName=hltbs;AccountKey=XhDjB312agakHZdi2+xFCe5Dd3j2KAcl+yTtAiCyinCIOYuAKphKjaP0psCm83t/+iLKdMii/uxmUhMetZ7Hiw==";
 
         [Route("library/{steamId:long}")]
         public async Task<IEnumerable<Game>> GetGames(long steamId)
@@ -40,11 +37,11 @@ namespace HowLongToBeatSteam.Controllers
         [Route("howlong/{hltbId:int}")]
         public async Task<TimeToBeat> GetHowLong(int hltbId)
         {
-            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(TableStorageConnectionString);
-            CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
-            CloudTable table = tableClient.GetTableReference("steamToHltb");
+            //CloudStorageAccount storageAccount = CloudStorageAccount.Parse(TableStorageConnectionString);
+            //CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
+            //CloudTable table = tableClient.GetTableReference("steamToHltb");
             
-            await table.CreateIfNotExistsAsync();
+            //await table.CreateIfNotExistsAsync();
 
             return new TimeToBeat(1, 2, 3, 4);
         }
