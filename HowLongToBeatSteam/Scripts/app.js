@@ -49,6 +49,11 @@ function AppViewModel() {
                 self.processing(false);
             });
     };
+
+    self.updateHltb = function (game) {
+        $.get("api/games/update/" + game.steamAppId + "?hltb=" + game.hltbInfo.id);
+        alert(game.steamAppId + "-" + game.hltbInfo.id);
+    }
 }
 
 $(document).ready(function () {

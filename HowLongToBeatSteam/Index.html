@@ -38,7 +38,7 @@
                     <input type="text" data-bind="value: known ? $data.hltbInfo.id : 'Please update HLTB ID'" />
                 </td>
                 <td>
-                    <button>Update</button>
+                    <button data-bind="click: $parent.updateHltb">Update</button>
                     <a data-bind="text: $data.hltbInfo.linkText, attr: {href: $data.hltbInfo.url}" target="_blank"></a>
                 </td>
                 <td></td>

@@ -30,13 +30,22 @@ namespace SteamHltbScraper
 
         private static void Main()
         {
-            Trace.TraceInformation("Scraping Steam->HLTB correlation...");
             ScrapeCorrelation().Wait();
-            Trace.TraceInformation("Scraping Steam->HLTB correlation done.");
+            ScrapeTtb().Wait();
+        }
+
+        private static async Task ScrapeTtb()
+        {
+            Trace.TraceInformation("Scraping TTB...");
+
+
+
+            Trace.TraceInformation("Done Scraping TTB");
         }
 
         private static async Task ScrapeCorrelation()
         {
+            Trace.TraceInformation("Scraping Steam->HLTB correlation...");
             Trace.TraceInformation("Connecting to table {0}...", SteamToHltbTableName);
             var table = CloudStorageAccount.Parse(TableStorageConnectionString).CreateCloudTableClient().GetTableReference(SteamToHltbTableName);
             await table.CreateIfNotExistsAsync();
@@ -78,6 +87,7 @@ namespace SteamHltbScraper
 
                 Trace.TraceInformation("Finished processing app ID {0}", app.appid);
             }
+            Trace.TraceInformation("Scraping Steam->HLTB correlation done.");
         }
 
         private static async Task<IList<App>> GetAllSteamApps()
