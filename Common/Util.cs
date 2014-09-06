@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using JetBrains.Annotations;
 
 namespace Common
 {
@@ -14,6 +17,12 @@ namespace Common
                 dictionary[key] = ret;
             }
             return ret;
+        }
+
+        [StringFormatMethod("format")]
+        public static void TraceInformation(string format, params object[] args)
+        {
+            Trace.TraceInformation(String.Format("{0} {1}", DateTime.Now, format), args);
         }
     }
 }

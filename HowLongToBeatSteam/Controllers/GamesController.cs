@@ -1,10 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Common;
@@ -33,61 +32,56 @@ namespace HowLongToBeatSteam.Controllers
         {
             using (var httpClient = new HttpClient())
             {
-                Trace.TraceInformation("Retrieving all owned games for user ID {0}...", steamId);
+                Util.TraceInformation("Retrieving all owned games for user ID {0}...", steamId);
                 var response = await httpClient.GetAsync(string.Format(GetOwnedGamesFormat, SteamApiKey, steamId));
                 response.EnsureSuccessStatusCode();
+                var ownedGamesResponse = await response.Content.ReadAsAsync<OwnedGamesResponse>();
 
-                var ownedGamesResponse = (await response.Content.ReadAsAsync<OwnedGamesResponse>());
                 if (ownedGamesResponse == null || ownedGamesResponse.response == null || ownedGamesResponse.response.games == null)
                 {
                     Trace.TraceError("Error retrieving owned games for user ID {0}", steamId);
                     throw new HttpResponseException(HttpStatusCode.BadRequest);
                 }
 
+                Util.TraceInformation("Retrieving Steam->HLTB mappings");
                 var hltbInfoDict = await GetHltbInfo(ownedGamesResponse.response.games);
 
-                return ownedGamesResponse.response.games
+                Util.TraceInformation("Preparing response...");
+                var ret = ownedGamesResponse.response.games
                     .Select(game => new Game(game.appid, game.name, game.playtime_forever, hltbInfoDict.GetOrCreate(game.appid)));
+
+                Util.TraceInformation("Sending response...");
+                return ret;
             }
         }
 
-        private static async Task<IDictionary<int, HltbInfo>> GetHltbInfo(OwnedGame[] ownedGames)
+        private static async Task<IDictionary<int, HltbInfo>> GetHltbInfo(IEnumerable<OwnedGame> ownedGames)
         {
+            Util.TraceInformation("Generating owned games hash...");
             var ret = new Dictionary<int, HltbInfo>();
-            if (ownedGames.Length == 0)
-            {
-                return ret;
-            }
+            var ownedGamesHash = new HashSet<int>(ownedGames.Select(og => og.appid));
 
-            //TODO determine / test limits of filter size
-            var filter = new StringBuilder("(" + GenerateSteamAppIdFilter(ownedGames[0].appid) + ")");
-            foreach (var appid in ownedGames.Skip(1))
-            {
-                filter.AppendFormat(" {0} ({1})", TableOperators.Or, GenerateSteamAppIdFilter(appid.appid));
-            }
-
-            Trace.TraceInformation("Connecting to table {0}...", SteamToHltbTableName);
+            Util.TraceInformation("Preparing table query...");
             var table = CloudStorageAccount.Parse(TableStorageConnectionString).CreateCloudTableClient().GetTableReference(SteamToHltbTableName);
+            var query = new TableQuery<GameEntity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, String.Empty));
 
-            var query = new TableQuery<GameEntity>().Where(filter.ToString());
-
-            Trace.TraceInformation("Executing query with filter {0}...", query.FilterString);
             TableQuerySegment<GameEntity> currentSegment = null;
+            int batch = 1;
             while (currentSegment == null || currentSegment.ContinuationToken != null)
             {
+                Util.TraceInformation("Retrieving mappings - batch {0}...", batch);
                 currentSegment = await table.ExecuteQuerySegmentedAsync(query, currentSegment != null ? currentSegment.ContinuationToken : null);
-                foreach (var gameEntity in currentSegment)
+                
+                Util.TraceInformation("Processing batch {0}...", batch);
+                foreach (var gameEntity in currentSegment.Where(ge => ownedGamesHash.Contains(ge.SteamAppId)))
                 {
                     ret.Add(gameEntity.SteamAppId, new HltbInfo(gameEntity));
                 }
+
+                batch++;
             }
 
             return ret;
-        }
-
-        private static string GenerateSteamAppIdFilter(int appId)
-        {
-            return TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, appId.ToString(CultureInfo.InvariantCulture));
         }
     }
 }

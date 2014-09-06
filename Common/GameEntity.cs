@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Common
@@ -42,11 +43,11 @@ namespace Common
             SteamName = steamName;
             HltbId = hltbId;
 
-            PartitionKey = steamAppId.ToString(CultureInfo.InvariantCulture);
-            RowKey = HltbId.ToString(CultureInfo.InvariantCulture);
+            PartitionKey = String.Empty;
+            RowKey = steamAppId.ToString(CultureInfo.InvariantCulture);
         }
 
-        public GameEntity()
+        public GameEntity() //needed by Azure client library
         {
         }
 
