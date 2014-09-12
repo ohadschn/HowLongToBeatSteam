@@ -1,6 +1,7 @@
-﻿using System;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -58,30 +59,53 @@ namespace HowLongToBeatSteam.Controllers
         private static async Task<IDictionary<int, HltbInfo>> GetHltbInfo(IEnumerable<OwnedGame> ownedGames)
         {
             Util.TraceInformation("Generating owned games hash...");
-            var ret = new Dictionary<int, HltbInfo>();
             var ownedGamesHash = new HashSet<int>(ownedGames.Select(og => og.appid));
 
-            Util.TraceInformation("Preparing table query...");
-            var table = CloudStorageAccount.Parse(TableStorageConnectionString).CreateCloudTableClient().GetTableReference(SteamToHltbTableName);
-            var query = new TableQuery<GameEntity>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, String.Empty));
+            var steamHltbMap = new ConcurrentDictionary<int, HltbInfo>();
 
+            Util.TraceInformation("Querying table concurrently...");
+            var table = CloudStorageAccount.Parse(TableStorageConnectionString).CreateCloudTableClient().GetTableReference(SteamToHltbTableName);
+
+            var tasks = new Task[GameEntity.Buckets];
+            for (int i = 0; i < GameEntity.Buckets; i++)
+            {
+               var query = new TableQuery<GameEntity>()
+                   .Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, i.ToString(CultureInfo.InvariantCulture)));
+
+               tasks[i] = QueryWithAllSegmentsAsync(table, query, new HashSet<int>(ownedGamesHash), steamHltbMap, i);
+            }
+
+            await Task.WhenAll(tasks);
+
+            return steamHltbMap;
+        }
+
+        private static async Task QueryWithAllSegmentsAsync(
+            CloudTable table, 
+            TableQuery<GameEntity> query, 
+            HashSet<int> ownedGamesHash, 
+            ConcurrentDictionary<int, HltbInfo> steamHltbMap, 
+            int bucket)
+        {
             TableQuerySegment<GameEntity> currentSegment = null;
             int batch = 1;
             while (currentSegment == null || currentSegment.ContinuationToken != null)
             {
-                Util.TraceInformation("Retrieving mappings - batch {0}...", batch);
+                Util.TraceInformation("Retrieving mappings for bucket {0} / batch {1}...", bucket, batch);
                 currentSegment = await table.ExecuteQuerySegmentedAsync(query, currentSegment != null ? currentSegment.ContinuationToken : null);
-                
-                Util.TraceInformation("Processing batch {0}...", batch);
+
+                Util.TraceInformation("Processing bucket {0} / batch {1}...", bucket, batch);
                 foreach (var gameEntity in currentSegment.Where(ge => ownedGamesHash.Contains(ge.SteamAppId)))
                 {
-                    ret.Add(gameEntity.SteamAppId, new HltbInfo(gameEntity));
+                    bool added = steamHltbMap.TryAdd(gameEntity.SteamAppId, new HltbInfo(gameEntity));
+                    Trace.Assert(
+                        added,
+                        string.Format("identical steam ID {0} in different partitions or in the same partition ({1})", gameEntity.SteamAppId, bucket));
                 }
 
+                Util.TraceInformation("Finished processing bucket {0} / batch {1}", bucket, batch);
                 batch++;
             }
-
-            return ret;
         }
     }
 }

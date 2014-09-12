@@ -22,7 +22,7 @@ namespace Common
         [StringFormatMethod("format")]
         public static void TraceInformation(string format, params object[] args)
         {
-            Trace.TraceInformation(String.Format("{0} {1}", DateTime.Now, format), args);
+            Trace.TraceInformation(String.Format("{0:O} {1}", DateTime.Now, format), args);
         }
     }
 }

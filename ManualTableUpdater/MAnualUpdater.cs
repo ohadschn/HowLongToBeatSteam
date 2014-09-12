@@ -8,7 +8,7 @@ using Microsoft.WindowsAzure.Storage.Table;
 
 namespace ManualTableUpdater
 {
-    class Program
+    class ManualUpdater
     {
         //TODO move to configuration
         private const string TableStorageConnectionString =
@@ -19,11 +19,19 @@ namespace ManualTableUpdater
         static void Main()
         {
             var table = CloudStorageAccount.Parse(TableStorageConnectionString).CreateCloudTableClient().GetTableReference(SteamToHltbTableName);
+            //table.DeleteIfExists(); return;
             table.CreateIfNotExists();
 
             var tasks = new List<Task>();
-            int batchCount = 0;
-            var batchOperation = new TableBatchOperation();
+
+            var batchOperations = new TableBatchOperation[GameEntity.Buckets];
+            for (int i = 0; i < batchOperations.Length; i++)
+            {
+                batchOperations[i] = new TableBatchOperation();
+            }
+
+            var bucketCount = new int[GameEntity.Buckets];
+
             foreach (var line in File.ReadLines(@"F:\Downloads\steamHltb.csv"))
             {
                 var parts = line.Split(',');
@@ -37,26 +45,32 @@ namespace ManualTableUpdater
                 int hltbId = int.Parse(parts[2]);
 
                 var gameEntity = new GameEntity(appId, name, hltbId);
+                var batchOperation = batchOperations[gameEntity.PartitionKeyInt];
+                
                 batchOperation.Add(TableOperation.InsertOrReplace(gameEntity));
-                if (++batchCount % 100 != 0)
+                if (batchOperation.Count%100 != 0)
                 {
                     continue;
                 }
 
-                Console.WriteLine("Updating batch {0}...", batchCount / 100);
+                Console.WriteLine("Updating bucket {0} / batch {1}...", gameEntity.PartitionKeyInt, ++bucketCount[gameEntity.PartitionKeyInt]);
                 tasks.Add(table.ExecuteBatchAsync(batchOperation));
-                batchOperation = new TableBatchOperation();
+                batchOperations[gameEntity.PartitionKeyInt] = new TableBatchOperation();
             }
 
-            if (batchCount%100 != 0)
+            for (int i = 0; i < batchOperations.Length; i++)
             {
-                Console.WriteLine("Updating final batch...");
-                tasks.Add(table.ExecuteBatchAsync(batchOperation));
+                if (batchOperations[i].Count % 100 != 0)
+                {
+                    Console.WriteLine("Updating final batch ({0}) for bucket {1}...", bucketCount[i], i);
+                   tasks.Add(table.ExecuteBatchAsync(batchOperations[i]));
+                }
             }
 
             Console.WriteLine("Waiting for updates to finish...");
             Task.WaitAll(tasks.ToArray());
             Console.WriteLine("All done!");
+            Console.ReadLine();
         }
     }
 }

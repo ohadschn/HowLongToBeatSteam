@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Common
 {
     public class GameEntity : TableEntity
     {
+        public const int Buckets = 20;
+
         public int SteamAppId { get; set; }
         public string SteamName { get; set; }
         public int HltbId { get; set; }
@@ -13,8 +17,18 @@ namespace Common
         public int MainTtb { get; set; }
         public int ExtrasTtb { get; set; }
         public int CompletionistTtb { get; set; }
-        public int CombinedTtb { get; set; }  
-        
+        public int CombinedTtb { get; set; }
+
+        [IgnoreProperty]
+        public int PartitionKeyInt { get; private set; }
+
+        public GameEntity(int steamAppId, string steamName, int hltbId) : this(steamAppId, steamName, hltbId, null, -1, -1, -1, -1)
+        {
+            SteamAppId = steamAppId;
+            SteamName = steamName;
+            HltbId = hltbId;
+        }
+
         public GameEntity(
             int steamAppId, 
             string steamName, 
@@ -34,17 +48,19 @@ namespace Common
             CompletionistTtb = completionistTtb;
             CombinedTtb = combinedTtb;
 
-            PartitionKey = steamAppId.ToString(CultureInfo.InvariantCulture);
-            RowKey = HltbId.ToString(CultureInfo.InvariantCulture);
-        }
-        public GameEntity(int steamAppId, string steamName, int hltbId)
-        {
-            SteamAppId = steamAppId;
-            SteamName = steamName;
-            HltbId = hltbId;
-
-            PartitionKey = String.Empty;
+            PartitionKeyInt = CalculateBucket(steamAppId);
+            PartitionKey = PartitionKeyInt.ToString(CultureInfo.InvariantCulture);
             RowKey = steamAppId.ToString(CultureInfo.InvariantCulture);
+        }
+
+        public static int CalculateBucket(int steamAppId)
+        {
+            byte[] hash;
+            using (var md5 = MD5.Create())
+            {
+                hash = md5.ComputeHash(Encoding.UTF8.GetBytes(steamAppId.ToString(CultureInfo.InvariantCulture)));
+            }
+            return Math.Abs(BitConverter.ToInt32(hash, 0) % Buckets);
         }
 
         public GameEntity() //needed by Azure client library
