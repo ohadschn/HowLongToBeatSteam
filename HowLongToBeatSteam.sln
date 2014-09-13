@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManualTableUpdater", "ManualTableUpdater\ManualTableUpdater.csproj", "{49F19908-84DD-465C-98C0-4ED042EB4B70}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MissingGamesUpdater", "MissingGamesUpdater\MissingGamesUpdater.csproj", "{C331A27B-C092-4C52-9F30-86368849D5BB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -33,6 +35,9 @@ Global
 		{49F19908-84DD-465C-98C0-4ED042EB4B70}.Debug|x86.Build.0 = Debug|x86
 		{49F19908-84DD-465C-98C0-4ED042EB4B70}.Release|x86.ActiveCfg = Release|x86
 		{49F19908-84DD-465C-98C0-4ED042EB4B70}.Release|x86.Build.0 = Release|x86
+		{C331A27B-C092-4C52-9F30-86368849D5BB}.Debug|x86.ActiveCfg = Debug|x86
+		{C331A27B-C092-4C52-9F30-86368849D5BB}.Debug|x86.Build.0 = Debug|x86
+		{C331A27B-C092-4C52-9F30-86368849D5BB}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

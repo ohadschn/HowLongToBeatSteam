@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SteamHltbScraper
+namespace MissingGamesUpdater
 {
 // ReSharper disable InconsistentNaming
     public class App

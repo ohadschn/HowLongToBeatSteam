@@ -22,11 +22,12 @@ namespace Common
         [IgnoreProperty]
         public int PartitionKeyInt { get; private set; }
 
+        public GameEntity(int steamAppId, string steamName) : this(steamAppId, steamName, -1)
+        {
+        }
+
         public GameEntity(int steamAppId, string steamName, int hltbId) : this(steamAppId, steamName, hltbId, null, -1, -1, -1, -1)
         {
-            SteamAppId = steamAppId;
-            SteamName = steamName;
-            HltbId = hltbId;
         }
 
         public GameEntity(
