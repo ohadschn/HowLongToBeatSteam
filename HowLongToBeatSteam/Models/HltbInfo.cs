@@ -24,14 +24,14 @@ namespace HowLongToBeatSteam.Models
             Id = -1;
         }
 
-        public HltbInfo(GameEntity gameEntity)
+        public HltbInfo(AppEntity appEntity)
         {
-            Id = gameEntity.HltbId;
-            Name = gameEntity.HltbName;
-            MainTtb = gameEntity.MainTtb;
-            ExtrasTtb = gameEntity.ExtrasTtb;
-            CompletionistTtb = gameEntity.CompletionistTtb;
-            CombinedTtb = gameEntity.CombinedTtb;
+            Id = appEntity.HltbId;
+            Name = appEntity.HltbName;
+            MainTtb = appEntity.MainTtb;
+            ExtrasTtb = appEntity.ExtrasTtb;
+            CompletionistTtb = appEntity.CompletionistTtb;
+            CombinedTtb = appEntity.CombinedTtb;
         }
     }
 }

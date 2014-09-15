@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Globalization;
@@ -14,16 +15,29 @@ namespace Common
         private static readonly string TableStorageConnectionString = ConfigurationManager.ConnectionStrings["Hltbs"].ConnectionString;
         private static readonly string SteamToHltbTableName = ConfigurationManager.AppSettings["SteamToHltbTableName"];
 
+        public static async Task<IEnumerable<T>> GetAllApps<T>(Func<AppEntity, T> selector)
+        {
+            var knownSteamIds = new ConcurrentBag<T>();
+            await QueryAllApps((segment, bucket) =>
+            {
+                foreach (var game in segment)
+                {
+                    knownSteamIds.Add(selector(game));
+                }
+            });
+            return knownSteamIds;
+        }
+
         //segmentHandler will be called synchronously for each bucket but parallel across buckets
-        public static async Task QueryAllGames(Action<TableQuerySegment<GameEntity>, int> segmentHandler) //int = bucket
+        public static async Task QueryAllApps(Action<TableQuerySegment<AppEntity>, int> segmentHandler) //int = bucket
         {
             Util.TraceInformation("Querying table concurrently...");
             var table = CloudStorageAccount.Parse(TableStorageConnectionString).CreateCloudTableClient().GetTableReference(SteamToHltbTableName);
 
-            var tasks = new Task[GameEntity.Buckets];
-            for (int bucket = 0; bucket < GameEntity.Buckets; bucket++)
+            var tasks = new Task[AppEntity.Buckets];
+            for (int bucket = 0; bucket < AppEntity.Buckets; bucket++)
             {
-                var query = new TableQuery<GameEntity>()
+                var query = new TableQuery<AppEntity>()
                     .Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, bucket.ToString(CultureInfo.InvariantCulture)));
 
                 tasks[bucket] = QueryWithAllSegmentsAsync(table, query, segmentHandler, bucket);
@@ -34,11 +48,11 @@ namespace Common
 
         private static async Task QueryWithAllSegmentsAsync(
             CloudTable table, 
-            TableQuery<GameEntity> query,
-            Action<TableQuerySegment<GameEntity>, int> segmentHandler, //int = bucket
+            TableQuery<AppEntity> query,
+            Action<TableQuerySegment<AppEntity>, int> segmentHandler, //int = bucket
             int bucket)
         {
-            TableQuerySegment<GameEntity> currentSegment = null;
+            TableQuerySegment<AppEntity> currentSegment = null;
             int batch = 1;
             while (currentSegment == null || currentSegment.ContinuationToken != null)
             {
@@ -53,15 +67,15 @@ namespace Common
             }
         }
 
-        public static Task InsertOrReplace(IEnumerable<GameEntity> games)
+        public static Task InsertOrReplace(IEnumerable<AppEntity> games)
         {
             var tasks = new List<Task>();
-            var batchOperations = new TableBatchOperation[GameEntity.Buckets];
+            var batchOperations = new TableBatchOperation[AppEntity.Buckets];
             for (int i = 0; i < batchOperations.Length; i++)
             {
                 batchOperations[i] = new TableBatchOperation();
             }
-            var bucketCount = new int[GameEntity.Buckets];
+            var bucketCount = new int[AppEntity.Buckets];
 
             var table = CloudStorageAccount.Parse(TableStorageConnectionString).CreateCloudTableClient().GetTableReference(SteamToHltbTableName);
             foreach (var gameEntity in games)
@@ -81,7 +95,7 @@ namespace Common
                 batchOperations[bucket] = new TableBatchOperation();
             }
 
-            for (int bucket = 0; bucket < GameEntity.Buckets; bucket++)
+            for (int bucket = 0; bucket < AppEntity.Buckets; bucket++)
             {
                 var batchOperation = batchOperations[bucket];
                 if (batchOperation.Count % MaxBatchOperations != 0)

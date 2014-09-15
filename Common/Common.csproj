@@ -63,7 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Annotations.cs" />
-    <Compile Include="GameEntity.cs" />
+    <Compile Include="AppEntity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TableHelper.cs" />
     <Compile Include="Util.cs" />

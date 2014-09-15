@@ -51,7 +51,7 @@ namespace HowLongToBeatSteam.Controllers
         private static async Task<IDictionary<int, HltbInfo>> GetHltbInfo(IEnumerable<OwnedGame> ownedGames)
         {
             Util.TraceInformation("Generating owned games hash...");
-            var ownedGamesHashes = new HashSet<int>[GameEntity.Buckets];
+            var ownedGamesHashes = new HashSet<int>[AppEntity.Buckets];
             ownedGamesHashes[0] = new HashSet<int>(ownedGames.Select(og => og.appid));
             for (int i = 1; i < ownedGamesHashes.Length; i++)
             {
@@ -60,7 +60,7 @@ namespace HowLongToBeatSteam.Controllers
 
             Util.TraceInformation("Preparing mapping...");
             var steamHltbMap = new ConcurrentDictionary<int, HltbInfo>();
-            await TableHelper.QueryAllGames((segment, bucket) =>
+            await TableHelper.QueryAllApps((segment, bucket) =>
             {
                 foreach (var gameEntity in segment.Where(ge => ownedGamesHashes[bucket].Contains(ge.SteamAppId)))
                 {

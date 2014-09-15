@@ -6,7 +6,7 @@ using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Common
 {
-    public class GameEntity : TableEntity
+    public class AppEntity : TableEntity
     {
         public const int Buckets = 20;
 
@@ -22,15 +22,15 @@ namespace Common
         [IgnoreProperty]
         public int PartitionKeyInt { get; private set; }
 
-        public GameEntity(int steamAppId, string steamName) : this(steamAppId, steamName, -1)
+        public AppEntity(int steamAppId, string steamName) : this(steamAppId, steamName, -1)
         {
         }
 
-        public GameEntity(int steamAppId, string steamName, int hltbId) : this(steamAppId, steamName, hltbId, null, -1, -1, -1, -1)
+        public AppEntity(int steamAppId, string steamName, int hltbId) : this(steamAppId, steamName, hltbId, null, -1, -1, -1, -1)
         {
         }
 
-        public GameEntity(
+        public AppEntity(
             int steamAppId, 
             string steamName, 
             int hltbId, 
@@ -64,7 +64,7 @@ namespace Common
             return Math.Abs(BitConverter.ToInt32(hash, 0) % Buckets);
         }
 
-        public GameEntity() //needed by Azure client library
+        public AppEntity() //needed by Azure client library
         {
         }
 

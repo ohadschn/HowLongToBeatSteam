@@ -9,7 +9,7 @@ namespace ManualTableUpdater
     {
         static void Main()
         {
-            var games = new List<GameEntity>();
+            var games = new List<AppEntity>();
             foreach (var line in File.ReadLines(@"steamHltb.csv"))
             {
                 var parts = line.Split(',');
@@ -22,7 +22,7 @@ namespace ManualTableUpdater
                 int appId = int.Parse(parts[1]);
                 int hltbId = int.Parse(parts[2]);
 
-                games.Add(new GameEntity(appId, name, hltbId));
+                games.Add(new AppEntity(appId, name, hltbId));
             }
             
             Util.TraceInformation("Initiating update operations...");
