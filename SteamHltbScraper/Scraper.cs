@@ -32,6 +32,7 @@ namespace SteamHltbScraper
             var updates = new ConcurrentBag<AppEntity>();
             var apps = await TableHelper.GetAllApps(e => e);
 
+            Util.TraceInformation("Scraping with a maximum degree of concurrency {0}", MaxDegreeOfConcurrency);
             Util.RunWithMaxDegreeOfConcurrency(MaxDegreeOfConcurrency, apps , async app => 
             {
                 bool added = false;

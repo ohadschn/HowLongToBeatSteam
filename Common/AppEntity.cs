@@ -49,7 +49,7 @@ namespace Common
             CompletionistTtb = completionistTtb;
             CombinedTtb = combinedTtb;
 
-            PartitionKey = PartitionKeyInt.ToString(CultureInfo.InvariantCulture);
+            PartitionKey = CalculateBucket(steamAppId).ToString(CultureInfo.InvariantCulture);
             RowKey = steamAppId.ToString(CultureInfo.InvariantCulture);
         }
 
