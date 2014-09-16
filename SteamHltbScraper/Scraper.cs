@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Configuration;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -18,6 +19,8 @@ namespace SteamHltbScraper
         private const string HltbGamePageFormat = @"http://www.howlongtobeat.com/game.php?id={0}";
         private const string HltbGameOverviewPageFormat = @"http://www.howlongtobeat.com/game_overview.php?id={0}";
 
+        private static readonly int MaxDegreeOfConcurrency = Int32.Parse(ConfigurationManager.AppSettings["MaxDegreeOfConcurrency"]);
+
         private static void Main()
         {
             ScrapeHltb().Wait();
@@ -29,7 +32,7 @@ namespace SteamHltbScraper
             var updates = new ConcurrentBag<AppEntity>();
             var apps = await TableHelper.GetAllApps(e => e);
 
-            foreach (var app in apps.Skip(12).Take(10)) //TODO Remove Take(4) + PLINQ
+            Util.RunWithMaxDegreeOfConcurrency(MaxDegreeOfConcurrency, apps , async app => 
             {
                 bool added = false;
                 if (app.HltbId == -1)
@@ -41,7 +44,7 @@ namespace SteamHltbScraper
                     catch (Exception e)
                     {
                         Util.TraceError("Error scraping HLTB ID for app {0} / {1}: {2}", app.SteamAppId, app.SteamName, e);
-                        continue;
+                        return;
                     }
 
                     updates.Add(app);
@@ -56,7 +59,7 @@ namespace SteamHltbScraper
                 catch (Exception e)
                 {
                     Util.TraceError("Error scraping HLTB info for app {0} / {1}: {2}", app.SteamAppId, app.SteamName, e);
-                    continue;
+                    return;
                 }
 
                 PopulateAppEntity(app, hltbInfo);
@@ -64,7 +67,7 @@ namespace SteamHltbScraper
                 {
                     updates.Add(app);
                 }
-            }
+            });
 
             await TableHelper.InsertOrReplace(updates);
             Util.TraceInformation("Done Scraping HLTB");
@@ -91,13 +94,13 @@ namespace SteamHltbScraper
                 var list = doc.DocumentNode.Descendants("div").FirstOrDefault(n => n.GetAttributeValue("class", null) == "gprofile_times");
                 if (list == null)
                 {
-                    throw new InvalidOperationException("Can't find list element" + hltbId);
+                    throw new InvalidOperationException("Can't find list element - HLTB ID " + hltbId);
                 }
 
                 var listItems = list.Descendants("li").Take(4).ToArray();
                 if (listItems.Length != 4)
                 {
-                    throw new InvalidOperationException("List element does not contain 4 entries" + hltbId);
+                    throw new InvalidOperationException("List element does not contain 4 entries - HLTB ID " + hltbId);
                 }
 
                 if (listItems.Any(hn => hn.InnerText == null) 
@@ -106,7 +109,7 @@ namespace SteamHltbScraper
                     || !listItems[2].InnerText.Contains("Completionist") 
                     || !listItems[3].InnerText.Contains("Combined"))
                 {
-                    throw new InvalidOperationException("List element does not contain expected TTB text (Main, Extras, Completionist, Combined)" + hltbId);                    
+                    throw new InvalidOperationException("List element does not contain expected TTB text (Main, Extras, Completionist, Combined)- HLTB ID " + hltbId);                    
                 }
 
                 var mainTtb = GetMinutes(listItems[0]);
@@ -164,7 +167,7 @@ namespace SteamHltbScraper
             }
 
             int minutes = 0;
-            var match = Regex.Match(hoursStr, @"\s*(.+) Hours");
+            var match = Regex.Match(hoursStr, @"\s*(.+) Hour");
             if (match.Success && match.Groups.Count == 2)
             {
                 double hours;
@@ -173,7 +176,7 @@ namespace SteamHltbScraper
             }
             else
             {
-                match = Regex.Match(hoursStr, @"\s*(.+) Mins");
+                match = Regex.Match(hoursStr, @"\s*(.+) Min");
                 if (match.Success && match.Groups.Count == 2)
                 {
                     Int32.TryParse(match.Groups[1].Value, out minutes);

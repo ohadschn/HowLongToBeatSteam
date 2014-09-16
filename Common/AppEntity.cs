@@ -20,7 +20,7 @@ namespace Common
         public int CombinedTtb { get; set; }
 
         [IgnoreProperty]
-        public int PartitionKeyInt { get; private set; }
+        public int PartitionKeyInt { get { return int.Parse(PartitionKey); } }
 
         public AppEntity(int steamAppId, string steamName) : this(steamAppId, steamName, -1)
         {
@@ -49,7 +49,6 @@ namespace Common
             CompletionistTtb = completionistTtb;
             CombinedTtb = combinedTtb;
 
-            PartitionKeyInt = CalculateBucket(steamAppId);
             PartitionKey = PartitionKeyInt.ToString(CultureInfo.InvariantCulture);
             RowKey = steamAppId.ToString(CultureInfo.InvariantCulture);
         }
