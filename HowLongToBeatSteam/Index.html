@@ -24,15 +24,16 @@
                 <th>HLTB ID</th>
             </tr>
         </thead>
-        <tbody data-bind="foreach: games">
+        <tbody>
+            <!-- ko foreach: games -->
             <tr>
                 <td data-bind="text: steamAppId"></td>
                 <td data-bind="text: steamName"></td>
-                <td data-bind="text: steamPlaytime"></td>
-                <td data-bind="text: $data.hltbInfo.mainTtb"></td>
-                <td data-bind="text: $data.hltbInfo.extrasTtb"></td>
-                <td data-bind="text: $data.hltbInfo.completionistTtb"></td>
-                <td data-bind="text: $data.hltbInfo.combinedTtb"></td>
+                <td data-bind="text: $parent.formatDuration(steamPlaytime)"></td>
+                <td data-bind="text: $parent.formatDuration($data.hltbInfo.mainTtb)"></td>
+                <td data-bind="text: $parent.formatDuration($data.hltbInfo.extrasTtb)"></td>
+                <td data-bind="text: $parent.formatDuration($data.hltbInfo.completionistTtb)"></td>
+                <td data-bind="text: $parent.formatDuration($data.hltbInfo.combinedTtb)"></td>
                 <td data-bind="text: $data.hltbInfo.name"></td>
                 <td>
                     <input type="text" data-bind="value: known ? $data.hltbInfo.id : 'Please update HLTB ID'" />
@@ -42,6 +43,16 @@
                     <a data-bind="text: $data.hltbInfo.linkText, attr: {href: $data.hltbInfo.url}" target="_blank"></a>
                 </td>
                 <td></td>
+            </tr>
+            <!-- /ko -->
+            <tr>
+                <td>Total</td>
+                <td></td>
+                <td data-bind="text: formatDuration(total().totalPlaytime)"></td>
+                <td data-bind="text: formatDuration(total().totalMain)"></td>
+                <td data-bind="text: formatDuration(total().totalExtras)"></td>
+                <td data-bind="text: formatDuration(total().totalCompletionist)"></td>
+                <td data-bind="text: formatDuration(total().totalCombined)"></td>
             </tr>
         </tbody>
     </table>

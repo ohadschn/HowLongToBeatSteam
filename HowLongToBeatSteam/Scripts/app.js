@@ -9,14 +9,13 @@ function Game(steamGame) {
     self.steamName = steamGame.SteamName;
     self.steamPlaytime = steamGame.Playtime;
 
-    var unknown = "Unknown";
     self.hltbInfo = {
         id: steamGame.HltbInfo.Id,
         name: steamGame.HltbInfo.Name,
-        mainTtb: self.known ? steamGame.HltbInfo.MainTtb : unknown,
-        extrasTtb: self.known ? steamGame.HltbInfo.ExtrasTtb : unknown,
-        completionistTtb: self.known ? steamGame.HltbInfo.CompletionistTtb : unknown,
-        combinedTtb: self.known ? steamGame.HltbInfo.CombinedTtb : unknown,
+        mainTtb: self.known ? steamGame.HltbInfo.MainTtb : 0,
+        extrasTtb: self.known ? steamGame.HltbInfo.ExtrasTtb : 0,
+        completionistTtb: self.known ? steamGame.HltbInfo.CompletionistTtb : 0,
+        combinedTtb: self.known ? steamGame.HltbInfo.CombinedTtb : 0,
         url: self.known
         ? "http://www.howlongtobeat.com/game.php?id=" + steamGame.HltbInfo.Id
         : "http://www.howlongtobeat.com/search.php?t=games&s=" + self.steamName,
@@ -54,6 +53,42 @@ function AppViewModel() {
         $.get("api/games/update/" + game.steamAppId + "?hltb=" + game.hltbInfo.id);
         alert(game.steamAppId + "-" + game.hltbInfo.id);
     };
+
+    self.total = ko.computed(function () {
+
+        var totalPlaytime = 0;
+        var totalMain = 0;
+        var totalExtras = 0;
+        var totalCompletionist = 0;
+        var totalCombined = 0;
+
+        var length = self.games().length;
+        var arr = self.games();
+
+        for (var i = 0; i < length; ++i) {
+            var game = arr[i];
+            totalPlaytime += game.steamPlaytime;
+            totalMain += game.hltbInfo.mainTtb;
+            totalExtras += game.hltbInfo.extrasTtb;
+            totalCompletionist += game.hltbInfo.completionistTtb;
+            totalCombined += game.hltbInfo.combinedTtb;
+        }
+
+        return {
+            totalPlaytime: totalPlaytime,
+            totalMain: totalMain,
+            totalExtras: totalExtras,
+            totalCompletionist: totalCompletionist,
+            totalCombined: totalCombined
+        };
+    });
+
+    self.formatDuration = function (minutes) {
+        minutes = Math.max(minutes, 0);
+        var hours = Math.floor(minutes / 60);
+        var mins = minutes % 60;
+        return hours + "h " + mins + "m";
+    }
 }
 
 $(document).ready(function () {
