@@ -1,15 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace Common
 {
     public static class Util
     {
+        private static readonly bool TracingDisabled;
+        private static readonly bool OnCloud;
+
+        static Util()
+        {
+            Boolean.TryParse(ConfigurationManager.AppSettings["DisableTracing"], out TracingDisabled);
+            Boolean.TryParse(ConfigurationManager.AppSettings["OnCloud"], out OnCloud);
+        }
+
         public static TValue GetOrCreate<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
             where TValue : new()
         {
@@ -41,24 +50,28 @@ namespace Common
         [StringFormatMethod("format")]
         public static void TraceInformation(string format, params object[] args)
         {
-            Trace.TraceInformation(OnCloud ? GetTraceFormat(format) : format, args);
+            if (!TracingDisabled)
+            {
+                Trace.TraceInformation(OnCloud ? format : GetTraceFormat(format), args);
+            }
         }
 
         [StringFormatMethod("format")]
         public static void TraceWarning(string format, params object[] args)
         {
-            Trace.TraceWarning(OnCloud ? GetTraceFormat(format) : format, args);
+            if (!TracingDisabled)
+            {
+                Trace.TraceWarning(OnCloud ? format : GetTraceFormat(format), args);
+            }
         }
 
         [StringFormatMethod("format")]
         public static void TraceError(string format, params object[] args)
         {
-            Trace.TraceError(OnCloud ? GetTraceFormat(format) : format, args);
-        }
-
-        private static bool OnCloud
-        {
-            get { return RoleEnvironment.IsAvailable && RoleEnvironment.IsEmulated; }
+            if (!TracingDisabled)
+            {
+                Trace.TraceError(OnCloud ? format : GetTraceFormat(format), args);
+            }
         }
 
         private static string GetTraceFormat(string format)

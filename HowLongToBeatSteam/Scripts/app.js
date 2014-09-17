@@ -41,7 +41,7 @@ function AppViewModel() {
                 }));
                 self.error(null);
             })
-            .fail(function(error) {
+            .fail(function (error) {
                 console.error(error);
                 self.error("Error - verify your Steam64Id and try again");
             })
@@ -84,15 +84,21 @@ function AppViewModel() {
         };
     });
 
-    self.formatDuration = function (minutes) {
+    self.formatDuration = function(minutes) {
         minutes = Math.max(minutes, 0);
         var hours = Math.floor(minutes / 60);
         var mins = minutes % 60;
         return hours + "h " + mins + "m";
-    }
+    };
 }
 
 $(document).ready(function () {
+    
+    if (!window.console) { //fix console for old browsers
+        var noOp = function () { };
+        window.console = { log: noOp, warn: noOp, error: noOp };
+    }
+
     ko.applyBindings(new AppViewModel());
     $('#steamIdText').focus();
 });

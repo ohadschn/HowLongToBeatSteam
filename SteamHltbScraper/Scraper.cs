@@ -20,12 +20,14 @@ namespace SteamHltbScraper
         private const string HltbGamePageFormat = @"http://www.howlongtobeat.com/game.php?id={0}";
         private const string HltbGameOverviewPageFormat = @"http://www.howlongtobeat.com/game_overview.php?id={0}";
 
-        private static readonly int MaxDegreeOfConcurrency = Int32.Parse(ConfigurationManager.AppSettings["MaxDegreeOfConcurrency"]);
+        private static readonly int MaxDegreeOfConcurrency = Environment.ProcessorCount * Int32.Parse(ConfigurationManager.AppSettings["MaxDegreeOfConcurrencyFactor"]);
+        private static readonly int ScrapingLimit = Int32.Parse(ConfigurationManager.AppSettings["ScrapingLimit"]);
 
         private static HttpClient s_client;
 
         private static void Main()
         {
+            System.Net.ServicePointManager.DefaultConnectionLimit = MaxDegreeOfConcurrency;
             using (s_client = new HttpClient())
             {
                 ScrapeHltb().Wait();
@@ -40,7 +42,7 @@ namespace SteamHltbScraper
             int count = 0;
 
             Util.TraceInformation("Scraping with a maximum degree of concurrency {0}", MaxDegreeOfConcurrency);
-            Util.RunWithMaxDegreeOfConcurrency(MaxDegreeOfConcurrency, apps , async app => 
+            Util.RunWithMaxDegreeOfConcurrency(MaxDegreeOfConcurrency, apps.Take(ScrapingLimit) , async app => 
             {
                 var current = Interlocked.Increment(ref count);
                 Util.TraceInformation("Beginning scraping #{0}...", current);
