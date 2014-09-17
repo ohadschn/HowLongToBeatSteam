@@ -25,7 +25,7 @@ namespace HowLongToBeatSteam.Controllers
         private static readonly HttpClient Client = new HttpClient();
 
         [UsedImplicitly] 
-        private static readonly Timer CacheTimer = new Timer(o => UpdateCache(), null, TimeSpan.Zero, TimeSpan.FromDays(1));
+        private static readonly Timer CacheTimer = new Timer(o => UpdateCache(), null, TimeSpan.Zero, TimeSpan.FromHours(1));
 
         internal static void Touch() { } //called externally to start caching as soon as site is up
 

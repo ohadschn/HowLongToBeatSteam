@@ -10,6 +10,8 @@
         <li>Make sure you Steam profile is <a href="https://www.google.com/search?q=steam%20public%20profile" target="_blank">public</a></li>
         <li>Locate your <a href="https://www.google.com/search?q=steamid64" target="_blank">SteamId64</a></li>
         <li>Fill it out in the text box below and hit <kbd>Enter</kbd></li>
+        <li>Rejoice at the amount of fun hours you can have</li>
+        <li>Update any mismatched or missing HLTB IDs (can be found in the game's URL: http://www.howlongtobeat.com/game.php?id=<mark>XXXX</mark>)</li>
     </ol>
     <form data-bind="submit: howlongClicked" class="form-inline">
         <div data-bind="css: (badSteamId64() ? 'has-error ' : '') + 'has-feedback form-group'">
@@ -49,11 +51,11 @@
                 <td data-bind="text: $parent.formatDuration($data.hltbInfo.combinedTtb)"></td>
                 <td data-bind="text: $data.hltbInfo.name"></td>
                 <td>
-                    <input type="text" data-bind="value: known ? $data.hltbInfo.id : (inCache ? 'Please update!' : '')" />
+                    <input type="text" data-bind="visible: inCache, value: known ? $data.hltbInfo.id : ''" placeholder="Update HLTB ID" />
                 </td>
                 <td>
-                    <button data-bind="click: $parent.updateHltb">Update</button>
-                    <a data-bind="text: $data.hltbInfo.linkText, attr: {href: $data.hltbInfo.url}" target="_blank"></a>
+                    <button data-bind="click: $parent.updateHltb, visible: inCache">Update</button>
+                    <a data-bind="visible: inCache, text: $data.hltbInfo.linkText, attr: {href: $data.hltbInfo.url}" target="_blank"></a>
                 </td>
                 <td></td>
             </tr>
@@ -66,6 +68,15 @@
                 <th data-bind="text: formatDuration(total().totalExtras)"></th>
                 <th data-bind="text: formatDuration(total().totalCompletionist)"></th>
                 <th data-bind="text: formatDuration(total().totalCombined)"></th>
+            </tr>
+            <tr class="info">
+                <th>Remaining</th>
+                <th></th>
+                <th></th>
+                <th data-bind="text: formatDuration(total().mainRemaining)"></th>
+                <th data-bind="text: formatDuration(total().extrasRemaining)"></th>
+                <th data-bind="text: formatDuration(total().completionistRemaining)"></th>
+                <th data-bind="text: formatDuration(total().combinedRemaining)"></th>
             </tr>
         </tbody>
     </table>

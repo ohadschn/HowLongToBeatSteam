@@ -4,7 +4,7 @@ function Game(steamGame) {
     var self = this;
 
     self.known = steamGame.HltbInfo.Id !== -1;
-    self.inCache = steamGame.HltbInfo.Name != "Not in cache, try again later";
+    self.inCache = steamGame.HltbInfo.Name !== "Not in cache, try again later";
 
     self.steamAppId = steamGame.SteamAppId;
     self.steamName = steamGame.SteamName;
@@ -75,6 +75,10 @@ function AppViewModel() {
         var totalExtras = 0;
         var totalCompletionist = 0;
         var totalCombined = 0;
+        var mainRemaining = 0;
+        var extrasRemaining = 0;
+        var completionistRemaining = 0;
+        var combinedRemaining = 0;
 
         var length = self.games().length;
         var arr = self.games();
@@ -86,6 +90,10 @@ function AppViewModel() {
             totalExtras += game.hltbInfo.extrasTtb;
             totalCompletionist += game.hltbInfo.completionistTtb;
             totalCombined += game.hltbInfo.combinedTtb;
+            mainRemaining += Math.max(0, game.hltbInfo.mainTtb - game.steamPlaytime);
+            extrasRemaining += Math.max(0, game.hltbInfo.extrasTtb - game.steamPlaytime);
+            completionistRemaining += Math.max(0, game.hltbInfo.completionistTtb - game.steamPlaytime);
+            combinedRemaining += Math.max(0, game.hltbInfo.combinedTtb - game.steamPlaytime);
         }
 
         return {
@@ -93,7 +101,11 @@ function AppViewModel() {
             totalMain: totalMain,
             totalExtras: totalExtras,
             totalCompletionist: totalCompletionist,
-            totalCombined: totalCombined
+            totalCombined: totalCombined,
+            mainRemaining: mainRemaining,
+            extrasRemaining: extrasRemaining,
+            completionistRemaining: completionistRemaining,
+            combinedRemaining: combinedRemaining
         };
     });
 
