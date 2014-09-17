@@ -26,7 +26,7 @@ function Game(steamGame) {
 function AppViewModel() {
     var self = this;
 
-    self.steamId64 = ko.observable("76561198079151088"); //TODO remove ID
+    self.steamId64 = ko.observable("");
     self.games = ko.observableArray();
     self.processing = ko.observable(false);
     self.error = ko.observable(null);
