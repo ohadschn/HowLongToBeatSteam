@@ -4,6 +4,7 @@ function Game(steamGame) {
     var self = this;
 
     self.known = steamGame.HltbInfo.Id !== -1;
+    self.inCache = steamGame.HltbInfo.Name != "Not in cache, try again later";
 
     self.steamAppId = steamGame.SteamAppId;
     self.steamName = steamGame.SteamName;
@@ -27,11 +28,24 @@ function AppViewModel() {
     var self = this;
 
     self.steamId64 = ko.observable("");
+    self.badSteamId64 = ko.observable(false);
+
+    $("#steamIdText").keydown(function () {
+        self.badSteamId64(false);
+    });
+
     self.games = ko.observableArray();
     self.processing = ko.observable(false);
     self.error = ko.observable(null);
 
-    self.howlongClicked = function() {
+    self.howlongClicked = function () {
+        if (self.steamId64().length === 0 || /\D/.test(self.steamId64())) {
+            self.badSteamId64(true);
+            self.error("Your Steam64ID must be a 64-bit integer");
+            return;
+        } else {
+            self.error(null);
+        }
         self.processing(true);
         self.games([]);
         $.get("api/games/library/" + self.steamId64())
@@ -39,7 +53,6 @@ function AppViewModel() {
                 self.games(ko.utils.arrayMap(data, function(steamGame) {
                     return new Game(steamGame);
                 }));
-                self.error(null);
             })
             .fail(function (error) {
                 console.error(error);

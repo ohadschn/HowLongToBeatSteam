@@ -2,25 +2,28 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>How long to beat Steam</title>
-    <link rel="stylesheet" href="http://ajax.aspnetcdn.com/ajax/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
 </head>
 <body>
     <h1>How long to beat Steam</h1>
-    <h2>Instructions</h2>
     <ol>
         <li>Make sure you Steam profile is <a href="https://www.google.com/search?q=steam%20public%20profile" target="_blank">public</a></li>
         <li>Locate your <a href="https://www.google.com/search?q=steamid64" target="_blank">SteamId64</a></li>
-        <li>Fill it out in the text box below and hit [enter]</li>
+        <li>Fill it out in the text box below and hit <kbd>Enter</kbd></li>
     </ol>
-    <form data-bind="submit: howlongClicked">
-        <input type="text" data-bind="value: steamId64" placeholder="SteamId64" id="steamIdText">
-        <input type="submit" value="Tell me how long" data-bind="enable: !processing()">
+    <form data-bind="submit: howlongClicked" class="form-inline">
+        <div data-bind="css: (badSteamId64() ? 'has-error ' : '') + 'has-feedback form-group'">
+            <label class="control-label sr-only" for="steamIdText">Input with success</label>
+            <input type="text" data-bind="value: steamId64" placeholder="SteamId64" id="steamIdText" class="form-control">
+            <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: badSteamId64"></span>
+        </div>
+        <button type="submit" data-bind="enable: !processing()" class="btn btn-primary">Tell me how long</button>
+        <strong data-bind="visible: error, text: error"></strong>
         <img src="http://cdnjs.cloudflare.com/ajax/libs/file-uploader/3.7.0/loading.gif" alt="loading..." data-bind="visible: processing" />
     </form>
-    <h3 data-bind="visible: error, text: error"></h3>
     <br />
     <div id="howLongToBeatResult"></div>
-    <table class="table table-striped table-hover table-condensed" data-bind="visible: games().length>0">
+    <table class="table table-striped table-hover table-condensed table-responsive" data-bind="visible: games().length>0">
         <thead>
             <tr>
                 <th>AppId</th>
@@ -36,7 +39,7 @@
         </thead>
         <tbody>
             <!-- ko foreach: games -->
-            <tr data-bind="css: known ? '' : 'warning'">
+            <tr data-bind="css: known ? '' : (inCache ? 'warning' : 'danger')">
                 <td data-bind="text: steamAppId"></td>
                 <td data-bind="text: steamName"></td>
                 <td data-bind="text: $parent.formatDuration(steamPlaytime)"></td>
@@ -46,7 +49,7 @@
                 <td data-bind="text: $parent.formatDuration($data.hltbInfo.combinedTtb)"></td>
                 <td data-bind="text: $data.hltbInfo.name"></td>
                 <td>
-                    <input type="text" data-bind="value: known ? $data.hltbInfo.id : 'Please update!'" />
+                    <input type="text" data-bind="value: known ? $data.hltbInfo.id : (inCache ? 'Please update!' : '')" />
                 </td>
                 <td>
                     <button data-bind="click: $parent.updateHltb">Update</button>
