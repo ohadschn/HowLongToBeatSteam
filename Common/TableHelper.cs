@@ -17,6 +17,7 @@ namespace Common
 
         public static async Task<IEnumerable<T>> GetAllApps<T>(Func<AppEntity, T> selector)
         {
+            Util.TraceInformation("Getting all known apps...");
             var knownSteamIds = new ConcurrentBag<T>();
             await QueryAllApps((segment, bucket) =>
             {
@@ -25,6 +26,7 @@ namespace Common
                     knownSteamIds.Add(selector(game));
                 }
             });
+            Util.TraceInformation("Finished getting all apps. Count: {0}", knownSteamIds.Count);
             return knownSteamIds;
         }
 
@@ -44,6 +46,7 @@ namespace Common
             }
 
             await Task.WhenAll(tasks);
+            Util.TraceInformation("Finished querying table");
         }
 
         private static async Task QueryWithAllSegmentsAsync(

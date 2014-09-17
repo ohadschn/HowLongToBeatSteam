@@ -29,6 +29,7 @@ function AppViewModel() {
     self.steamId64 = ko.observable("76561198079151088"); //TODO remove ID
     self.games = ko.observableArray();
     self.processing = ko.observable(false);
+    self.error = ko.observable();
 
     self.howlongClicked = function() {
         self.processing(true);
@@ -41,8 +42,7 @@ function AppViewModel() {
             })
             .fail(function(error) {
                 console.error(error);
-                var msg = "Error - verify your Steam64Id and try again";
-                self.games({ SteamAppId: msg, SteamName: msg, Playtime: msg });
+                self.error("Error - verify your Steam64Id and try again");
             })
             .always(function() {
                 self.processing(false);
@@ -93,4 +93,5 @@ function AppViewModel() {
 
 $(document).ready(function () {
     ko.applyBindings(new AppViewModel());
+    $('#steamIdText').focus();
 });

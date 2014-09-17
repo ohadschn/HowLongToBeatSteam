@@ -3,62 +3,72 @@
 <head>
     <title>How long to beat Steam</title>
 </head>
-<body>
-    <a href="https://www.google.com/search?q=steamid64" target="_blank">SteamId64</a>
-    <input type="text" data-bind="value: steamId64">
-    <button data-bind="click: howlongClicked, enable: !processing()">Tell me how long</button>
-    <img src="http://cdnjs.cloudflare.com/ajax/libs/file-uploader/3.7.0/loading.gif" alt="loading..." data-bind="visible: processing" />
-    <br/>
-    <div id="howLongToBeatResult"></div>
-    <table>
-        <thead>
-            <tr data-bind="visible: games().length>0">
-                <th>AppId</th>
-                <th>Name</th>
-                <th>Playtime</th>
-                <th>Main</th>
-                <th>Main + Extras</th>
-                <th>Completionist</th>
-                <th>Combined</th>
-                <th>HLTB Name</th>
-                <th>HLTB ID</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- ko foreach: games -->
-            <tr>
-                <td data-bind="text: steamAppId"></td>
-                <td data-bind="text: steamName"></td>
-                <td data-bind="text: $parent.formatDuration(steamPlaytime)"></td>
-                <td data-bind="text: $parent.formatDuration($data.hltbInfo.mainTtb)"></td>
-                <td data-bind="text: $parent.formatDuration($data.hltbInfo.extrasTtb)"></td>
-                <td data-bind="text: $parent.formatDuration($data.hltbInfo.completionistTtb)"></td>
-                <td data-bind="text: $parent.formatDuration($data.hltbInfo.combinedTtb)"></td>
-                <td data-bind="text: $data.hltbInfo.name"></td>
-                <td>
-                    <input type="text" data-bind="value: known ? $data.hltbInfo.id : 'Please update HLTB ID'" />
-                </td>
-                <td>
-                    <button data-bind="click: $parent.updateHltb">Update</button>
-                    <a data-bind="text: $data.hltbInfo.linkText, attr: {href: $data.hltbInfo.url}" target="_blank"></a>
-                </td>
-                <td></td>
-            </tr>
-            <!-- /ko -->
-            <tr>
-                <td>Total</td>
-                <td></td>
-                <td data-bind="text: formatDuration(total().totalPlaytime)"></td>
-                <td data-bind="text: formatDuration(total().totalMain)"></td>
-                <td data-bind="text: formatDuration(total().totalExtras)"></td>
-                <td data-bind="text: formatDuration(total().totalCompletionist)"></td>
-                <td data-bind="text: formatDuration(total().totalCombined)"></td>
-            </tr>
-        </tbody>
-    </table>
-    <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.1.min.js"></script>
-    <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/knockout/knockout-3.1.0.js"></script>
-    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/spin.js/2.0.1/spin.js"></script>
-    <script type="text/javascript" src="Scripts/app.js"></script>
-</body>
+    <body>
+        <h1>How long to beat Steam</h1>
+        <h2>Instructions</h2>
+        <ol>
+            <li>Make sure you Steam profile is public</li>
+            <li>Locate your <a href="https://www.google.com/search?q=steamid64" target="_blank">SteamId64</a></li>
+            <li>Fill it out in the text box below and press [enter]</li>
+        </ol>
+        <form data-bind="submit: howlongClicked">
+            SteamId64
+            <input type="text" data-bind="value: steamId64" id="steamIdText">
+            <input type="submit" value="Tell me how long" data-bind="enable: !processing()">
+            <img src="http://cdnjs.cloudflare.com/ajax/libs/file-uploader/3.7.0/loading.gif" alt="loading..." data-bind="visible: processing" />
+        </form>
+        <h3 data-bind="visible: error, text: error"></h3>
+        <br/>
+        <div id="howLongToBeatResult"></div>
+        <table data-bind="visible: games().length>0">
+            <thead>
+                <tr>
+                    <th>AppId</th>
+                    <th>Name</th>
+                    <th>Playtime</th>
+                    <th>Main</th>
+                    <th>Main + Extras</th>
+                    <th>Completionist</th>
+                    <th>Combined</th>
+                    <th>HLTB Name</th>
+                    <th>HLTB ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- ko foreach: games -->
+                <tr>
+                    <td data-bind="text: steamAppId"></td>
+                    <td data-bind="text: steamName"></td>
+                    <td data-bind="text: $parent.formatDuration(steamPlaytime)"></td>
+                    <td data-bind="text: $parent.formatDuration($data.hltbInfo.mainTtb)"></td>
+                    <td data-bind="text: $parent.formatDuration($data.hltbInfo.extrasTtb)"></td>
+                    <td data-bind="text: $parent.formatDuration($data.hltbInfo.completionistTtb)"></td>
+                    <td data-bind="text: $parent.formatDuration($data.hltbInfo.combinedTtb)"></td>
+                    <td data-bind="text: $data.hltbInfo.name"></td>
+                    <td>
+                        <input type="text" data-bind="value: known ? $data.hltbInfo.id : 'Please update HLTB ID'" />
+                    </td>
+                    <td>
+                        <button data-bind="click: $parent.updateHltb">Update</button>
+                        <a data-bind="text: $data.hltbInfo.linkText, attr: {href: $data.hltbInfo.url}" target="_blank"></a>
+                    </td>
+                    <td></td>
+                </tr>
+                <!-- /ko -->
+                <tr>
+                    <td>Total</td>
+                    <td></td>
+                    <td data-bind="text: formatDuration(total().totalPlaytime)"></td>
+                    <td data-bind="text: formatDuration(total().totalMain)"></td>
+                    <td data-bind="text: formatDuration(total().totalExtras)"></td>
+                    <td data-bind="text: formatDuration(total().totalCompletionist)"></td>
+                    <td data-bind="text: formatDuration(total().totalCombined)"></td>
+                </tr>
+            </tbody>
+        </table>
+        <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.1.min.js"></script>
+        <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/knockout/knockout-3.1.0.js"></script>
+        <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/spin.js/2.0.1/spin.js"></script>
+        <script type="text/javascript" src="Scripts/app.js"></script>
+    </body>
 </html>

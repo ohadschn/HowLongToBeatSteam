@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Common;
 using HtmlAgilityPack;
@@ -36,10 +37,13 @@ namespace SteamHltbScraper
             Util.TraceInformation("Scraping HLTB...");
             var updates = new ConcurrentBag<AppEntity>();
             var apps = await TableHelper.GetAllApps(e => e);
+            int count = 0;
 
             Util.TraceInformation("Scraping with a maximum degree of concurrency {0}", MaxDegreeOfConcurrency);
             Util.RunWithMaxDegreeOfConcurrency(MaxDegreeOfConcurrency, apps , async app => 
             {
+                var current = Interlocked.Increment(ref count);
+                Util.TraceInformation("Beginning scraping #{0}...", current);
                 bool added = false;
                 if (app.HltbId == -1)
                 {
@@ -49,7 +53,7 @@ namespace SteamHltbScraper
                     }
                     catch (Exception e)
                     {
-                        Util.TraceError("Error scraping HLTB ID for app {0} / {1}: {2}", app.SteamAppId, app.SteamName, e);
+                        Util.TraceError("Scraping #{0} - Error getting HLTB ID for app {1} / {2}: {3}", current, app.SteamAppId, app.SteamName, e);
                         return;
                     }
 
@@ -64,7 +68,8 @@ namespace SteamHltbScraper
                 }
                 catch (Exception e)
                 {
-                    Util.TraceError("Error scraping HLTB name for app {0} / {1} / HLTB {2}: {3}", app.SteamAppId, app.SteamName, app.HltbId, e);
+                    Util.TraceError("Scraping #{0} - Error getting HLTB name for app {1} / {2} / HLTB {3}: {4}",
+                        current, app.SteamAppId, app.SteamName, app.HltbId, e);
                     return;
                 }
 
@@ -85,7 +90,7 @@ namespace SteamHltbScraper
                 }
                 catch (Exception e)
                 {
-                    Util.TraceError("Error scraping HLTB info for app {0} / {1}: {2}", app.SteamAppId, app.SteamName, e);
+                    Util.TraceError("Scraping #{0} - Error getting HLTB info for app {1} / {2}: {3}", current, app.SteamAppId, app.SteamName, e);
                     return;
                 }
 
@@ -94,6 +99,7 @@ namespace SteamHltbScraper
                 {
                     updates.Add(app);
                 }
+                Util.TraceInformation("Scraping #{0} completed successfully", current);
             });
 
             await TableHelper.InsertOrReplace(updates);
