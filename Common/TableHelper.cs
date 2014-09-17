@@ -74,9 +74,9 @@ namespace Common
         {
             var tasks = new List<Task>();
             var batchOperations = new TableBatchOperation[AppEntity.Buckets];
-            for (int i = 0; i < batchOperations.Length; i++)
+            for (int bucket = 0; bucket < batchOperations.Length; bucket++)
             {
-                batchOperations[i] = new TableBatchOperation();
+                batchOperations[bucket] = new TableBatchOperation();
             }
             var bucketCount = new int[AppEntity.Buckets];
 

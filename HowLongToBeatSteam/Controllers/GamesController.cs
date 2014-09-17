@@ -1,19 +1,21 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.Caching;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Common;
 using HowLongToBeatSteam.Controllers.Responses;
 using HowLongToBeatSteam.Models;
+using JetBrains.Annotations;
 
 namespace HowLongToBeatSteam.Controllers
-
 {
     [RoutePrefix("api/games")]
     public class GamesController : ApiController
@@ -21,6 +23,24 @@ namespace HowLongToBeatSteam.Controllers
         private static readonly string SteamApiKey = ConfigurationManager.AppSettings["SteamApiKey"];
         private const string GetOwnedSteamGamesFormat = @"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={0}&steamid={1}&format=json&include_appinfo=1";
         private static readonly HttpClient Client = new HttpClient();
+
+        [UsedImplicitly] 
+        private static readonly Timer CacheTimer = new Timer(o => UpdateCache(), null, TimeSpan.Zero, TimeSpan.FromDays(1));
+
+        internal static void Touch() { } //called externally to start caching as soon as site is up
+
+        private static async void UpdateCache() 
+        {
+            Util.TraceInformation("Updating cache...");
+            await TableHelper.QueryAllApps((segment, bucket) =>
+            {
+                foreach (var appEntity in segment)
+                {
+                    MemoryCache.Default[appEntity.SteamAppId.ToString(CultureInfo.InvariantCulture)] = new HltbInfo(appEntity);
+                }
+            });
+            Util.TraceInformation("Finished updating cache");
+        }
 
         [Route("library/{steamId:long}")]
         public async Task<IEnumerable<Game>> GetGames(long steamId)
@@ -36,41 +56,13 @@ namespace HowLongToBeatSteam.Controllers
                 throw new HttpResponseException(HttpStatusCode.BadRequest);
             }
 
-            Util.TraceInformation("Retrieving Steam->HLTB mappings");
-            var hltbInfoDict = await GetHltbInfo(ownedGamesResponse.response.games);
-
             Util.TraceInformation("Preparing response...");
             var ret = ownedGamesResponse.response.games.Select(
-                game => new Game(game.appid, game.name, game.playtime_forever, hltbInfoDict.GetOrCreate(game.appid)));
+                game => new Game(game.appid, game.name, game.playtime_forever, 
+                    (HltbInfo) MemoryCache.Default[game.appid.ToString(CultureInfo.InvariantCulture)] ?? new HltbInfo("Not in cache, try again later")));
 
             Util.TraceInformation("Sending response...");
             return ret;
-        }
-
-        private static async Task<IDictionary<int, HltbInfo>> GetHltbInfo(IEnumerable<OwnedGame> ownedGames)
-        {
-            Util.TraceInformation("Generating owned games hash...");
-            var ownedGamesHashes = new HashSet<int>[AppEntity.Buckets];
-            ownedGamesHashes[0] = new HashSet<int>(ownedGames.Select(og => og.appid));
-            for (int i = 1; i < ownedGamesHashes.Length; i++)
-            {
-                ownedGamesHashes[i] = new HashSet<int>(ownedGamesHashes[0]); //HashSet<T> is not thread safe so we'll use copies        
-            }
-
-            Util.TraceInformation("Preparing mapping...");
-            var steamHltbMap = new ConcurrentDictionary<int, HltbInfo>();
-            await TableHelper.QueryAllApps((segment, bucket) =>
-            {
-                foreach (var gameEntity in segment.Where(ge => ownedGamesHashes[bucket].Contains(ge.SteamAppId)))
-                {
-                    bool added = steamHltbMap.TryAdd(gameEntity.SteamAppId, new HltbInfo(gameEntity));
-                    Trace.Assert(
-                        added,
-                        string.Format("identical steam ID {0} in different partitions or in the same partition ({1})", gameEntity.SteamAppId, bucket));
-                }
-            });
-
-            return steamHltbMap;
         }
     }
 }

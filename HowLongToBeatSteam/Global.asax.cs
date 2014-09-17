@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Http;
-using System.Web.Routing;
+﻿using System.Web.Http;
+using HowLongToBeatSteam.Controllers;
 
 namespace HowLongToBeatSteam
 {
@@ -12,6 +8,7 @@ namespace HowLongToBeatSteam
         protected void Application_Start()
         {
             GlobalConfiguration.Configure(WebApiConfig.Register);
+            GamesController.Touch(); //make sure caching starts as soon as site is up
         }
     }
 }
