@@ -29,7 +29,7 @@ function AppViewModel() {
     self.steamId64 = ko.observable("76561198079151088"); //TODO remove ID
     self.games = ko.observableArray();
     self.processing = ko.observable(false);
-    self.error = ko.observable();
+    self.error = ko.observable(null);
 
     self.howlongClicked = function() {
         self.processing(true);
@@ -39,6 +39,7 @@ function AppViewModel() {
                 self.games(ko.utils.arrayMap(data, function(steamGame) {
                     return new Game(steamGame);
                 }));
+                self.error(null);
             })
             .fail(function(error) {
                 console.error(error);

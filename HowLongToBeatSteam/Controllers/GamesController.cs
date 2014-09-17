@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
@@ -19,33 +20,31 @@ namespace HowLongToBeatSteam.Controllers
     {
         private static readonly string SteamApiKey = ConfigurationManager.AppSettings["SteamApiKey"];
         private const string GetOwnedSteamGamesFormat = @"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={0}&steamid={1}&format=json&include_appinfo=1";
+        private static readonly HttpClient Client = new HttpClient();
 
         [Route("library/{steamId:long}")]
         public async Task<IEnumerable<Game>> GetGames(long steamId)
         {
-            using (var httpClient = new HttpClient())
+            Util.TraceInformation("Retrieving all owned games for user ID {0}...", steamId);
+            var response = await Client.GetAsync(string.Format(GetOwnedSteamGamesFormat, SteamApiKey, steamId));
+            response.EnsureSuccessStatusCode();
+
+            var ownedGamesResponse = await response.Content.ReadAsAsync<OwnedGamesResponse>();
+            if (ownedGamesResponse == null || ownedGamesResponse.response == null || ownedGamesResponse.response.games == null)
             {
-                Util.TraceInformation("Retrieving all owned games for user ID {0}...", steamId);
-                var response = await httpClient.GetAsync(string.Format(GetOwnedSteamGamesFormat, SteamApiKey, steamId));
-                response.EnsureSuccessStatusCode();
-
-                var ownedGamesResponse = await response.Content.ReadAsAsync<OwnedGamesResponse>();
-                if (ownedGamesResponse == null || ownedGamesResponse.response == null || ownedGamesResponse.response.games == null)
-                {
-                    Trace.TraceError("Error retrieving owned games for user ID {0}", steamId);
-                    throw new HttpResponseException(HttpStatusCode.BadRequest);
-                }
-
-                Util.TraceInformation("Retrieving Steam->HLTB mappings");
-                var hltbInfoDict = await GetHltbInfo(ownedGamesResponse.response.games);
-
-                Util.TraceInformation("Preparing response...");
-                var ret = ownedGamesResponse.response.games
-                    .Select(game => new Game(game.appid, game.name, game.playtime_forever, hltbInfoDict.GetOrCreate(game.appid)));
-
-                Util.TraceInformation("Sending response...");
-                return ret;
+                Trace.TraceError("Error retrieving owned games for user ID {0}", steamId);
+                throw new HttpResponseException(HttpStatusCode.BadRequest);
             }
+
+            Util.TraceInformation("Retrieving Steam->HLTB mappings");
+            var hltbInfoDict = await GetHltbInfo(ownedGamesResponse.response.games);
+
+            Util.TraceInformation("Preparing response...");
+            var ret = ownedGamesResponse.response.games.Select(
+                game => new Game(game.appid, game.name, game.playtime_forever, hltbInfoDict.GetOrCreate(game.appid)));
+
+            Util.TraceInformation("Sending response...");
+            return ret;
         }
 
         private static async Task<IDictionary<int, HltbInfo>> GetHltbInfo(IEnumerable<OwnedGame> ownedGames)

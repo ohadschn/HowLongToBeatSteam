@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace Common
 {
@@ -40,19 +41,24 @@ namespace Common
         [StringFormatMethod("format")]
         public static void TraceInformation(string format, params object[] args)
         {
-            Trace.TraceInformation(GetTraceFormat(format), args);
+            Trace.TraceInformation(OnCloud ? GetTraceFormat(format) : format, args);
         }
 
         [StringFormatMethod("format")]
         public static void TraceWarning(string format, params object[] args)
         {
-            Trace.TraceWarning(GetTraceFormat(format), args);
+            Trace.TraceWarning(OnCloud ? GetTraceFormat(format) : format, args);
         }
 
         [StringFormatMethod("format")]
         public static void TraceError(string format, params object[] args)
         {
-            Trace.TraceError(GetTraceFormat(format), args);
+            Trace.TraceError(OnCloud ? GetTraceFormat(format) : format, args);
+        }
+
+        private static bool OnCloud
+        {
+            get { return RoleEnvironment.IsAvailable && RoleEnvironment.IsEmulated; }
         }
 
         private static string GetTraceFormat(string format)
