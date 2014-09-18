@@ -31,6 +31,13 @@ namespace Common
             return ret;
         }
 
+        public static TValue GetOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
+        {
+            TValue ret;
+            dictionary.TryGetValue(key, out ret);
+            return ret; 
+        }
+
         public static void RunWithMaxDegreeOfConcurrency<T>(int maxDegreeOfConcurrency, IEnumerable<T> collection, Func<T, Task> taskFactory)
         {
             var activeTasks = new List<Task>(maxDegreeOfConcurrency);

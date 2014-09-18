@@ -2,24 +2,29 @@
 
 function Game(steamGame) {
     var self = this;
-
-    self.known = steamGame.HltbInfo.Id !== -1;
-    self.inCache = steamGame.HltbInfo.Name !== "Not in cache, try again later";
+    
+    if (steamGame.HltbInfo === null) {
+        self.inCache = false;
+        self.known = false;
+    } else {
+        self.inCache = true;
+        self.known = steamGame.HltbInfo.Id !== -1;
+    }
 
     self.steamAppId = steamGame.SteamAppId;
     self.steamName = steamGame.SteamName;
     self.steamPlaytime = steamGame.Playtime;
 
     self.hltbInfo = {
-        id: steamGame.HltbInfo.Id,
-        name: steamGame.HltbInfo.Name,
+        id: self.inCache ? steamGame.HltbInfo.Id : -1,
+        name: self.inCache ? steamGame.HltbInfo.Name : "Not in cache, please try again later",
         mainTtb: self.known ? steamGame.HltbInfo.MainTtb : 0,
         extrasTtb: self.known ? steamGame.HltbInfo.ExtrasTtb : 0,
         completionistTtb: self.known ? steamGame.HltbInfo.CompletionistTtb : 0,
         combinedTtb: self.known ? steamGame.HltbInfo.CombinedTtb : 0,
-        url: self.known
-        ? "http://www.howlongtobeat.com/game.php?id=" + steamGame.HltbInfo.Id
-        : "http://www.howlongtobeat.com/search.php?t=games&s=" + self.steamName,
+        url: self.known 
+            ? "http://www.howlongtobeat.com/game.php?id=" + steamGame.HltbInfo.Id
+            : "http://www.howlongtobeat.com/search.php?t=games&s=" + self.steamName,
         linkText: self.known ? "Browse on HLTB" : "Find on HLTB",
     };
 }

@@ -19,16 +19,6 @@ namespace HowLongToBeatSteam.Models
         [DataMember]
         public int CombinedTtb { get; private set; }
 
-        public HltbInfo() : this((string) null)
-        {
-        }
-
-        public HltbInfo(string name)
-        {
-            Id = -1;
-            Name = name;
-        }
-
         public HltbInfo(AppEntity appEntity)
         {
             Id = appEntity.HltbId;

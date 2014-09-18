@@ -10,8 +10,6 @@
         <li>Make sure you Steam profile is <a href="https://www.google.com/search?q=steam%20public%20profile" target="_blank">public</a></li>
         <li>Locate your <a href="https://www.google.com/search?q=steamid64" target="_blank">SteamId64</a></li>
         <li>Fill it out in the text box below and hit <kbd>Enter</kbd></li>
-        <li>Rejoice at the amount of fun hours you can have</li>
-        <li>Update any mismatched or missing HLTB IDs (can be found in the game's URL: http://www.howlongtobeat.com/game.php?id=<mark>XXXX</mark>)</li>
     </ol>
     <form data-bind="submit: howlongClicked" class="form-inline">
         <div data-bind="css: (badSteamId64() ? 'has-error ' : '') + 'has-feedback form-group'">
@@ -49,9 +47,9 @@
                 <td data-bind="text: $parent.formatDuration($data.hltbInfo.extrasTtb)"></td>
                 <td data-bind="text: $parent.formatDuration($data.hltbInfo.completionistTtb)"></td>
                 <td data-bind="text: $parent.formatDuration($data.hltbInfo.combinedTtb)"></td>
-                <td data-bind="text: $data.hltbInfo.name"></td>
+                <td data-bind="text: inCache ? $data.hltbInfo.name : 'Not in cache, try again later'"></td>
                 <td>
-                    <input type="text" data-bind="visible: inCache, value: known ? $data.hltbInfo.id : ''" placeholder="Update HLTB ID" />
+                    <input type="text" data-bind="visible: inCache, value: known ? $data.hltbInfo.id : ''" placeholder="Please update!" />
                 </td>
                 <td>
                     <button data-bind="click: $parent.updateHltb, visible: inCache">Update</button>
@@ -83,6 +81,8 @@
     <footer>
         <a href="https://azure.microsoft.com/" target="_blank">Powered by Azure.</a>
         <a href="http://steampowered.com" target="_blank">Powered by Steam.</a>
+        <br/>
+        Copyright Ohad Schneider (c) 2014
     </footer>
     <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.1.min.js"></script>
     <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/knockout/knockout-3.1.0.js"></script>

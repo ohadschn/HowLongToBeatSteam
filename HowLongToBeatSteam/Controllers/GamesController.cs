@@ -1,12 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -23,11 +22,12 @@ namespace HowLongToBeatSteam.Controllers
         private static readonly string SteamApiKey = ConfigurationManager.AppSettings["SteamApiKey"];
         private const string GetOwnedSteamGamesFormat = @"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={0}&steamid={1}&format=json&include_appinfo=1";
         private static readonly HttpClient Client = new HttpClient();
-
+        
         [UsedImplicitly] 
         private static readonly Timer CacheTimer = new Timer(o => UpdateCache(), null, TimeSpan.Zero, TimeSpan.FromHours(1));
+        private static readonly ConcurrentDictionary<int, HltbInfo> Cache = new ConcurrentDictionary<int, HltbInfo>();
 
-        internal static void Touch() { } //called externally to start caching as soon as site is up
+        internal static void Touch() { } //called externally to start caching as soon as site is up (by instantiating CacheTimer)
 
         private static async void UpdateCache() 
         {
@@ -36,7 +36,7 @@ namespace HowLongToBeatSteam.Controllers
             {
                 foreach (var appEntity in segment)
                 {
-                    MemoryCache.Default[appEntity.SteamAppId.ToString(CultureInfo.InvariantCulture)] = new HltbInfo(appEntity);
+                    Cache[appEntity.SteamAppId] = new HltbInfo(appEntity);
                 }
             });
             Util.TraceInformation("Finished updating cache");
@@ -55,11 +55,10 @@ namespace HowLongToBeatSteam.Controllers
                 Trace.TraceError("Error retrieving owned games for user ID {0}", steamId);
                 throw new HttpResponseException(HttpStatusCode.BadRequest);
             }
-
+            
             Util.TraceInformation("Preparing response...");
             var ret = ownedGamesResponse.response.games.Select(
-                game => new Game(game.appid, game.name, game.playtime_forever, 
-                    (HltbInfo) MemoryCache.Default[game.appid.ToString(CultureInfo.InvariantCulture)] ?? new HltbInfo("Not in cache, try again later")));
+                game => new Game(game.appid, game.name, game.playtime_forever, Cache.GetOrDefault(game.appid)));
 
             Util.TraceInformation("Sending response...");
             return ret;
