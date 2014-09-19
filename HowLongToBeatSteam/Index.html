@@ -7,106 +7,111 @@
     <link rel="shortcut icon" href="Resources/Clock.ico">
 </head>
     <body>
-        <div class="page-header">
-            <h1>How Long To Beat Steam</h1>
-        </div>
-        <ol>
-            <li>Make sure you Steam profile is <a href="https://www.google.com/search?q=steam%20public%20profile" target="_blank">public</a></li>
-            <li>Determine your <a href="https://www.google.com/search?q=steamid64" target="_blank">SteamId64</a></li>
-            <li>Fill it out in the text box below and hit  <kbd>Enter</kbd></li>
-        </ol>
-        <br/>
-        <form data-bind="submit: howlongClicked" role="form" class="form-inline">
-            <div data-bind="css: (badSteamId64() ? 'has-error ' : '') + 'has-feedback form-group'">
-                <label class="control-label sr-only" for="steamIdText">Input with success</label>
-                <input type="text" data-bind="value: steamId64" placeholder="SteamId64" id="steamIdText" class="form-control">
-                <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: badSteamId64"></span>
+        <div class="content">
+            <div class="page-header">
+                <h1>How Long To Beat Steam</h1>
             </div>
-            <button type="submit" data-bind="enable: !processing()" class="btn btn-primary">Tell me how long</button>
-            <img src="http://cdnjs.cloudflare.com/ajax/libs/file-uploader/3.7.0/loading.gif" alt="loading..." data-bind="visible: processing" />
-        </form>
-        <br/>
-        <div class="alert alert-danger alert-dismissible" role="alert" id="notInCachesAlert" data-bind="visible: error() && !errorAlertHidden()">
-            <button type="button" class="close" data-bind="click: hideErrorAlert">
-                <span aria-hidden="true">&times;</span>
-                <span class="sr-only">Close</span>
-            </button>
-            <strong>Error</strong> <span data-bind="text: error"></span>
+            <ol>
+                <li>Make sure you Steam profile is <a href="https://www.google.com/search?q=steam%20public%20profile" target="_blank">public</a></li>
+                <li>Determine your <a href="https://www.google.com/search?q=steamid64" target="_blank">SteamId64</a></li>
+                <li>Fill it out in the text box below and hit  <kbd>Enter</kbd></li>
+            </ol>
+            <br />
+            <form data-bind="submit: howlongClicked" role="form" class="form-inline">
+                <div data-bind="css: (badSteamId64() ? 'has-error ' : '') + 'has-feedback form-group'">
+                    <label class="control-label sr-only" for="steamIdText">Input with success</label>
+                    <input type="text" data-bind="value: steamId64" placeholder="SteamId64" id="steamIdText" class="form-control">
+                    <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: badSteamId64"></span>
+                </div>
+                <button type="submit" data-bind="enable: !processing()" class="btn btn-primary">Tell me how long</button>
+                <img src="http://cdnjs.cloudflare.com/ajax/libs/file-uploader/3.7.0/loading.gif" alt="loading..." data-bind="visible: processing" />
+            </form>
+            <br />
+            <div class="alert alert-danger alert-dismissible" role="alert" id="notInCachesAlert" data-bind="visible: error() && !errorAlertHidden()">
+                <button type="button" class="close" data-bind="click: hideErrorAlert">
+                    <span aria-hidden="true">&times;</span>
+                    <span class="sr-only">Close</span>
+                </button>
+                <strong>Error</strong> <span data-bind="text: error"></span>
+            </div>
+            <div class="alert alert-warning alert-dismissible" role="alert" id="notInCachesAlert" data-bind="visible: notInCache() && !notInCacheAlertHidden()">
+                <button type="button" class="close" data-bind="click: hideNotInCacheAlert">
+                    <span aria-hidden="true">&times;</span>
+                    <span class="sr-only">Close</span>
+                </button>
+                <strong>Warning</strong> Some games haven't been cached by the site's engine yet - please check back later
+            </div>
+            <div class="alert alert-info alert-dismissible" role="alert" data-bind="visible: missingIds() && !missingIdsAlertHidden()">
+                <button type="button" class="close" data-bind="click: hideMissingIdsAlert">
+                    <span aria-hidden="true">&times;</span>
+                    <span class="sr-only">Close</span>
+                </button>
+                <strong>Note</strong> Some games are missing their <abbr title="HowLongToBeat">HLTB</abbr> IDs - please locate them on HLTB and update their IDs (embedded in the URL: http://www.howlongtobeat.com/game.php?id=<mark>XXXX</mark>)
+            </div>
+            <table class="table table-striped table-hover table-condensed table-responsive" data-bind="visible: games().length>0">
+                <thead>
+                    <tr>
+                        <th>AppId</th>
+                        <th>Name</th>
+                        <th>Playtime</th>
+                        <th>Main</th>
+                        <th>Main + Extras</th>
+                        <th>Completionist</th>
+                        <th>Combined</th>
+                        <th>HLTB Name</th>
+                        <th>HLTB ID</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- ko foreach: games -->
+                    <tr data-bind="css: known ? '' : (inCache ? 'info' : 'warning')">
+                        <td class="vcenter" data-bind="text: steamAppId"></td>
+                        <td class="vcenter" data-bind="text: steamName"></td>
+                        <td class="vcenter" data-bind="text: $parent.formatDuration(steamPlaytime)"></td>
+                        <td class="vcenter" data-bind="text: $parent.formatDuration($data.hltbInfo.mainTtb)"></td>
+                        <td class="vcenter" data-bind="text: $parent.formatDuration($data.hltbInfo.extrasTtb)"></td>
+                        <td class="vcenter" data-bind="text: $parent.formatDuration($data.hltbInfo.completionistTtb)"></td>
+                        <td class="vcenter" data-bind="text: $parent.formatDuration($data.hltbInfo.combinedTtb)"></td>
+                        <td class="vcenter" data-bind="text: inCache ? $data.hltbInfo.name : 'Not in cache, try again later'"></td>
+                        <td class="vcenter">
+                            <input type="text" class="input-short" data-bind="enable: inCache, value: known ? $data.hltbInfo.id : ''" placeholder="Please update!" />
+                        </td>
+                        <td class="vcenter">
+                            <button class="btn btn-info btn-sm" data-bind="click: $parent.updateHltb, enable: inCache">Update</button>
+                            <a data-bind="enable: inCache, text: $data.hltbInfo.linkText, attr: {href: $data.hltbInfo.url}" target="_blank"></a>
+                        </td>
+                    </tr>
+                    <!-- /ko -->
+                    <tr class="success">
+                        <th>Total</th>
+                        <th data-bind="text: gameCount() + ' games'"></th>
+                        <th data-bind="text: formatDuration(total().totalPlaytime)"></th>
+                        <th data-bind="text: formatDuration(total().totalMain)"></th>
+                        <th data-bind="text: formatDuration(total().totalExtras)"></th>
+                        <th data-bind="text: formatDuration(total().totalCompletionist)"></th>
+                        <th data-bind="text: formatDuration(total().totalCombined)"></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                    <tr class="success">
+                        <th>
+                            Remaining <span class="glyphicon glyphicon-info-sign" id="remainingTableHeaderInfoSpan" data-placement="right" data-toggle="tooltip" data-container="body" title="For each game, the expected time to beat is subtracted from the time played (to a minimum of zero)"></span>
+                        </th>
+                        <th></th>
+                        <th></th>
+                        <th data-bind="text: formatDuration(total().mainRemaining)"></th>
+                        <th data-bind="text: formatDuration(total().extrasRemaining)"></th>
+                        <th data-bind="text: formatDuration(total().completionistRemaining)"></th>
+                        <th data-bind="text: formatDuration(total().combinedRemaining)"></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-        <div class="alert alert-warning alert-dismissible" role="alert" id="notInCachesAlert" data-bind="visible: notInCache() && !notInCacheAlertHidden()">
-            <button type="button" class="close" data-bind="click: hideNotInCacheAlert">
-                <span aria-hidden="true">&times;</span>
-                <span class="sr-only">Close</span>
-            </button>
-            <strong>Warning</strong> Some games haven't been cached by the site's engine yet - please check back later
-        </div>
-        <div class="alert alert-info alert-dismissible" role="alert" data-bind="visible: missingIds() && !missingIdsAlertHidden()">
-            <button type="button" class="close" data-bind="click: hideMissingIdsAlert">
-                <span aria-hidden="true">&times;</span>
-                <span class="sr-only">Close</span>
-            </button>
-            <strong>Note</strong> Some games are missing their <abbr title="HowLongToBeat">HLTB</abbr> IDs - please locate them on HLTB and update their IDs (embedded in the URL: http://www.howlongtobeat.com/game.php?id=<mark>XXXX</mark>)
-        </div>
-        <table class="table table-striped table-hover table-condensed table-responsive" data-bind="visible: games().length>0">
-            <thead>
-                <tr>
-                    <th>AppId</th>
-                    <th>Name</th>
-                    <th>Playtime</th>
-                    <th>Main</th>
-                    <th>Main + Extras</th>
-                    <th>Completionist</th>
-                    <th>Combined</th>
-                    <th>HLTB Name</th>
-                    <th>HLTB ID</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- ko foreach: games -->
-                <tr data-bind="css: known ? '' : (inCache ? 'info' : 'warning')">
-                    <td class="vcenter" data-bind="text: steamAppId"></td>
-                    <td class="vcenter" data-bind="text: steamName"></td>
-                    <td class="vcenter" data-bind="text: $parent.formatDuration(steamPlaytime)"></td>
-                    <td class="vcenter" data-bind="text: $parent.formatDuration($data.hltbInfo.mainTtb)"></td>
-                    <td class="vcenter" data-bind="text: $parent.formatDuration($data.hltbInfo.extrasTtb)"></td>
-                    <td class="vcenter" data-bind="text: $parent.formatDuration($data.hltbInfo.completionistTtb)"></td>
-                    <td class="vcenter" data-bind="text: $parent.formatDuration($data.hltbInfo.combinedTtb)"></td>
-                    <td class="vcenter" data-bind="text: inCache ? $data.hltbInfo.name : 'Not in cache, try again later'"></td>
-                    <td class="vcenter">
-                        <input type="text" data-bind="enable: inCache, value: known ? $data.hltbInfo.id : ''" placeholder="Please update!" />
-                    </td>
-                    <td class="vcenter">
-                        <button class="btn btn-info btn-sm" data-bind="click: $parent.updateHltb, enable: inCache">Update</button>
-                        <a data-bind="enable: inCache, text: $data.hltbInfo.linkText, attr: {href: $data.hltbInfo.url}" target="_blank"></a>
-                    </td>
-                </tr>
-                <!-- /ko -->
-                <tr class="success">
-                    <th colspan="2">Total</th>
-                    <th></th>
-                    <th data-bind="text: formatDuration(total().totalPlaytime)"></th>
-                    <th data-bind="text: formatDuration(total().totalMain)"></th>
-                    <th data-bind="text: formatDuration(total().totalExtras)"></th>
-                    <th data-bind="text: formatDuration(total().totalCompletionist)"></th>
-                    <th data-bind="text: formatDuration(total().totalCombined)"></th>
-                    <th></th>
-                    <th></th>
-                </tr>
-                <tr class="success">
-                    <th colspan="2">
-                        Remaining <span class="glyphicon glyphicon-info-sign" id="remainingTableHeaderInfoSpan" data-placement="right" data-toggle="tooltip" data-container="body" title="For each game, the expected time to beat is subtracted from the time played (to a minimum of zero)"></span>
-                    </th>
-                    <th></th>
-                    <th></th>
-                    <th data-bind="text: formatDuration(total().mainRemaining)"></th>
-                    <th data-bind="text: formatDuration(total().extrasRemaining)"></th>
-                    <th data-bind="text: formatDuration(total().completionistRemaining)"></th>
-                    <th data-bind="text: formatDuration(total().combinedRemaining)"></th>
-                    <th></th>
-                    <th></th>
-                </tr>
-            </tbody>
-        </table>
         <div class="footer">
             <a href="https://azure.microsoft.com/" target="_blank">Powered by Azure.</a>
             <a href="http://steampowered.com" target="_blank">Powered by Steam.</a>

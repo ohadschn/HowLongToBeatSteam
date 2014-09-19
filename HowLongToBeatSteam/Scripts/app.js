@@ -55,6 +55,10 @@ function AppViewModel() {
         }) !== null;
     });
 
+    self.gameCount = ko.computed(function() {
+        return self.games().length;
+    });
+
     self.missingIdsAlertHidden = ko.observable(false);
     self.hideMissingIdsAlert = function() { self.missingIdsAlertHidden(true); };
 
