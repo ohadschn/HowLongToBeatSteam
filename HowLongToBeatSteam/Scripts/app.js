@@ -158,4 +158,5 @@ $(document).ready(function () {
 
     ko.applyBindings(new AppViewModel());
     $('#steamIdText').focus();
+    $('#remainingTableHeaderInfoSpan').tooltip();
 });

@@ -101,11 +101,13 @@
     <None Include="Intellisense\jquery-2.1.0-vsdoc.js" />
     <None Include="Intellisense\knockout-3.1.0.debug.js" />
     <None Include="Intellisense\bootstrap.css" />
+    <None Include="Intellisense\tooltip.js" />
     <Content Include="Resources\Clock.ico" />
     <Content Include="Scripts\app.js" />
     <Content Include="Scripts\app.min.js">
       <DependentUpon>app.js</DependentUpon>
     </Content>
+    <Content Include="Styles\hltbs.css" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>

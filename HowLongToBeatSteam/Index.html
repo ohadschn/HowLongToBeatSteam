@@ -3,6 +3,7 @@
 <head>
     <title>How long to beat Steam</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="Styles/hltbs.css">
     <link rel="shortcut icon" href="Resources/Clock.ico">
 </head>
     <body>
@@ -12,9 +13,10 @@
         <ol>
             <li>Make sure you Steam profile is <a href="https://www.google.com/search?q=steam%20public%20profile" target="_blank">public</a></li>
             <li>Determine your <a href="https://www.google.com/search?q=steamid64" target="_blank">SteamId64</a></li>
-            <li>Fill it out in the text box below and hit <kbd>Enter</kbd></li>
+            <li>Fill it out in the text box below and hit  <kbd>Enter</kbd></li>
         </ol>
-        <form data-bind="submit: howlongClicked" class="form-inline">
+        <br/>
+        <form data-bind="submit: howlongClicked" role="form" class="form-inline">
             <div data-bind="css: (badSteamId64() ? 'has-error ' : '') + 'has-feedback form-group'">
                 <label class="control-label sr-only" for="steamIdText">Input with success</label>
                 <input type="text" data-bind="value: steamId64" placeholder="SteamId64" id="steamIdText" class="form-control">
@@ -43,7 +45,7 @@
                 <span aria-hidden="true">&times;</span>
                 <span class="sr-only">Close</span>
             </button>
-            <strong>Note</strong> Some games are missing their HowLongToBeat (HLTB) IDs - please locate them on HLTB and update their IDs (embedded in the URL: http://www.howlongtobeat.com/game.php?id=<mark>XXXX</mark>)
+            <strong>Note</strong> Some games are missing their <abbr title="HowLongToBeat">HLTB</abbr> IDs - please locate them on HLTB and update their IDs (embedded in the URL: http://www.howlongtobeat.com/game.php?id=<mark>XXXX</mark>)
         </div>
         <table class="table table-striped table-hover table-condensed table-responsive" data-bind="visible: games().length>0">
             <thead>
@@ -62,52 +64,58 @@
             <tbody>
                 <!-- ko foreach: games -->
                 <tr data-bind="css: known ? '' : (inCache ? 'info' : 'warning')">
-                    <td data-bind="text: steamAppId"></td>
-                    <td data-bind="text: steamName"></td>
-                    <td data-bind="text: $parent.formatDuration(steamPlaytime)"></td>
-                    <td data-bind="text: $parent.formatDuration($data.hltbInfo.mainTtb)"></td>
-                    <td data-bind="text: $parent.formatDuration($data.hltbInfo.extrasTtb)"></td>
-                    <td data-bind="text: $parent.formatDuration($data.hltbInfo.completionistTtb)"></td>
-                    <td data-bind="text: $parent.formatDuration($data.hltbInfo.combinedTtb)"></td>
-                    <td data-bind="text: inCache ? $data.hltbInfo.name : 'Not in cache, try again later'"></td>
-                    <td>
-                        <input type="text" data-bind="visible: inCache, value: known ? $data.hltbInfo.id : ''" placeholder="Please update!" />
+                    <td class="vcenter" data-bind="text: steamAppId"></td>
+                    <td class="vcenter" data-bind="text: steamName"></td>
+                    <td class="vcenter" data-bind="text: $parent.formatDuration(steamPlaytime)"></td>
+                    <td class="vcenter" data-bind="text: $parent.formatDuration($data.hltbInfo.mainTtb)"></td>
+                    <td class="vcenter" data-bind="text: $parent.formatDuration($data.hltbInfo.extrasTtb)"></td>
+                    <td class="vcenter" data-bind="text: $parent.formatDuration($data.hltbInfo.completionistTtb)"></td>
+                    <td class="vcenter" data-bind="text: $parent.formatDuration($data.hltbInfo.combinedTtb)"></td>
+                    <td class="vcenter" data-bind="text: inCache ? $data.hltbInfo.name : 'Not in cache, try again later'"></td>
+                    <td class="vcenter">
+                        <input type="text" data-bind="enable: inCache, value: known ? $data.hltbInfo.id : ''" placeholder="Please update!" />
                     </td>
-                    <td>
-                        <button data-bind="click: $parent.updateHltb, visible: inCache">Update</button>
-                        <a data-bind="visible: inCache, text: $data.hltbInfo.linkText, attr: {href: $data.hltbInfo.url}" target="_blank"></a>
+                    <td class="vcenter">
+                        <button class="btn btn-info btn-sm" data-bind="click: $parent.updateHltb, enable: inCache">Update</button>
+                        <a data-bind="enable: inCache, text: $data.hltbInfo.linkText, attr: {href: $data.hltbInfo.url}" target="_blank"></a>
                     </td>
-                    <td></td>
                 </tr>
                 <!-- /ko -->
                 <tr class="success">
-                    <th>Total</th>
+                    <th colspan="2">Total</th>
                     <th></th>
                     <th data-bind="text: formatDuration(total().totalPlaytime)"></th>
                     <th data-bind="text: formatDuration(total().totalMain)"></th>
                     <th data-bind="text: formatDuration(total().totalExtras)"></th>
                     <th data-bind="text: formatDuration(total().totalCompletionist)"></th>
                     <th data-bind="text: formatDuration(total().totalCombined)"></th>
+                    <th></th>
+                    <th></th>
                 </tr>
                 <tr class="success">
-                    <th>Remaining</th>
+                    <th colspan="2">
+                        Remaining <span class="glyphicon glyphicon-info-sign" id="remainingTableHeaderInfoSpan" data-placement="right" data-toggle="tooltip" data-container="body" title="For each game, the expected time to beat is subtracted from the time played (to a minimum of zero)"></span>
+                    </th>
                     <th></th>
                     <th></th>
                     <th data-bind="text: formatDuration(total().mainRemaining)"></th>
                     <th data-bind="text: formatDuration(total().extrasRemaining)"></th>
                     <th data-bind="text: formatDuration(total().completionistRemaining)"></th>
                     <th data-bind="text: formatDuration(total().combinedRemaining)"></th>
+                    <th></th>
+                    <th></th>
                 </tr>
             </tbody>
         </table>
-        <footer>
+        <div class="footer">
             <a href="https://azure.microsoft.com/" target="_blank">Powered by Azure.</a>
             <a href="http://steampowered.com" target="_blank">Powered by Steam.</a>
             <br/>
-            Copyright Ohad Schneider (c) 2014
-        </footer>
+            Copyright Ohad Schneider &copy; 2014
+        </div>
         <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.1.min.js"></script>
-        <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/knockout/knockout-3.1.0.js"></script>
+        <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/knockout/knockout-3.1.0.js"></script> <!--(minified)-->
+        <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/tooltip.min.js"></script>
         <script type="text/javascript" src="Scripts/app.min.js"></script>
     </body>
 </html>
