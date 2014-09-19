@@ -17,7 +17,7 @@ function Game(steamGame) {
 
     self.hltbInfo = {
         id: self.inCache ? steamGame.HltbInfo.Id : -1,
-        name: self.inCache ? steamGame.HltbInfo.Name : "Not in cache, please try again later",
+        name: self.inCache ? steamGame.HltbInfo.Name : "Not in cache, try again later",
         mainTtb: self.known ? steamGame.HltbInfo.MainTtb : 0,
         extrasTtb: self.known ? steamGame.HltbInfo.ExtrasTtb : 0,
         completionistTtb: self.known ? steamGame.HltbInfo.CompletionistTtb : 0,
@@ -35,7 +35,7 @@ function AppViewModel() {
     self.steamId64 = ko.observable("");
     self.badSteamId64 = ko.observable(false);
 
-    $("#steamIdText").keydown(function () {
+    $("#steamIdText").keydown(function() {
         self.badSteamId64(false);
     });
 
@@ -43,37 +43,25 @@ function AppViewModel() {
     self.processing = ko.observable(false);
     self.error = ko.observable(null);
 
-    self.howlongClicked = function () {
-        if (self.steamId64().length === 0 || /\D/.test(self.steamId64())) {
-            self.badSteamId64(true);
-            self.error("Your Steam64ID must be a 64-bit integer");
-            return;
-        } else {
-            self.error(null);
-        }
-        self.processing(true);
-        self.games([]);
-        $.get("api/games/library/" + self.steamId64())
-            .done(function(data) {
-                self.games(ko.utils.arrayMap(data, function(steamGame) {
-                    return new Game(steamGame);
-                }));
-            })
-            .fail(function (error) {
-                console.error(error);
-                self.error("Error - verify your Steam64Id and try again");
-            })
-            .always(function() {
-                self.processing(false);
-            });
-    };
+    self.missingIds = ko.computed(function() {
+        return ko.utils.arrayFirst(self.games(), function(game) {
+            return !game.known;
+        }) != null;
+    });
 
-    self.updateHltb = function(game) {
-        $.get("api/games/update/" + game.steamAppId + "?hltb=" + game.hltbInfo.id);
-        alert(game.steamAppId + "-" + game.hltbInfo.id);
-    };
+    self.notInCache = ko.computed(function() {
+        return ko.utils.arrayFirst(self.games(), function(game) {
+            return !game.inCache;
+        }) != null;
+    });
 
-    self.total = ko.computed(function () {
+    self.missingIdsAlertHidden = ko.observable(false);
+    self.hideMissingIdsAlert = function () { self.missingIdsAlertHidden(true); }
+
+    self.notInCacheAlertHidden = ko.observable(false);
+    self.hideNotInCacheAlert = function () { self.notInCacheAlertHidden(true); }
+
+self.total = ko.computed(function () {
 
         var totalPlaytime = 0;
         var totalMain = 0;
@@ -114,6 +102,40 @@ function AppViewModel() {
         };
     });
 
+    self.howlongClicked = function () {
+        if (self.steamId64().length === 0 || /\D/.test(self.steamId64())) {
+            self.badSteamId64(true);
+            self.error("Your Steam64ID must be a 64-bit integer");
+            return;
+        } else {
+            self.error(null);
+        }
+
+        self.processing(true);
+        self.missingIdsAlertHidden(false);
+        self.notInCacheAlertHidden(false);
+        self.games([]);
+
+        $.get("api/games/library/" + self.steamId64())
+            .done(function(data) {
+                self.games(ko.utils.arrayMap(data, function(steamGame) {
+                    return new Game(steamGame);
+                }));
+            })
+            .fail(function (error) {
+                console.error(error);
+                self.error("Error - verify your Steam64Id and try again");
+            })
+            .always(function() {
+                self.processing(false);
+            });
+    };
+
+    self.updateHltb = function(game) {
+        $.get("api/games/update/" + game.steamAppId + "?hltb=" + game.hltbInfo.id);
+        alert(game.steamAppId + "-" + game.hltbInfo.id);
+    };
+
     self.formatDuration = function(minutes) {
         minutes = Math.max(minutes, 0);
         var hours = Math.floor(minutes / 60);
@@ -123,8 +145,9 @@ function AppViewModel() {
 }
 
 $(document).ready(function () {
-    
-    if (!window.console) { //fix console for old browsers
+
+    //fix console for old browsers
+    if (!window.console) { 
         var noOp = function () { };
         window.console = { log: noOp, warn: noOp, error: noOp };
     }
