@@ -46,22 +46,25 @@ function AppViewModel() {
     self.missingIds = ko.computed(function() {
         return ko.utils.arrayFirst(self.games(), function(game) {
             return !game.known;
-        }) != null;
+        }) !== null;
     });
 
     self.notInCache = ko.computed(function() {
         return ko.utils.arrayFirst(self.games(), function(game) {
             return !game.inCache;
-        }) != null;
+        }) !== null;
     });
 
     self.missingIdsAlertHidden = ko.observable(false);
-    self.hideMissingIdsAlert = function () { self.missingIdsAlertHidden(true); }
+    self.hideMissingIdsAlert = function() { self.missingIdsAlertHidden(true); };
 
     self.notInCacheAlertHidden = ko.observable(false);
-    self.hideNotInCacheAlert = function () { self.notInCacheAlertHidden(true); }
+    self.hideNotInCacheAlert = function() { self.notInCacheAlertHidden(true); };
 
-self.total = ko.computed(function () {
+    self.errorAlertHidden = ko.observable(false);
+    self.hideErrorAlert = function() { self.errorAlertHidden(true); };
+
+    self.total = ko.computed(function () {
 
         var totalPlaytime = 0;
         var totalMain = 0;
@@ -112,9 +115,10 @@ self.total = ko.computed(function () {
         }
 
         self.processing(true);
+        self.games([]);
         self.missingIdsAlertHidden(false);
         self.notInCacheAlertHidden(false);
-        self.games([]);
+        self.errorAlertHidden(false);
 
         $.get("api/games/library/" + self.steamId64())
             .done(function(data) {
@@ -124,7 +128,7 @@ self.total = ko.computed(function () {
             })
             .fail(function (error) {
                 console.error(error);
-                self.error("Error - verify your Steam64Id and try again");
+                self.error("Verify your Steam64Id and try again");
             })
             .always(function() {
                 self.processing(false);

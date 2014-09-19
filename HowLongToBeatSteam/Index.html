@@ -3,6 +3,7 @@
 <head>
     <title>How long to beat Steam</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="shortcut icon" href="Resources/Clock.ico">
 </head>
     <body>
         <div class="page-header">
@@ -20,18 +21,24 @@
                 <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: badSteamId64"></span>
             </div>
             <button type="submit" data-bind="enable: !processing()" class="btn btn-primary">Tell me how long</button>
-            <strong data-bind="visible: error, text: error"></strong>
             <img src="http://cdnjs.cloudflare.com/ajax/libs/file-uploader/3.7.0/loading.gif" alt="loading..." data-bind="visible: processing" />
         </form>
-        <br />
-        <div class="alert alert-danger alert-dismissible" role="alert" id="notInCachesAlert" data-bind="visible: notInCache() && !notInCacheAlertHidden()">
+        <br/>
+        <div class="alert alert-danger alert-dismissible" role="alert" id="notInCachesAlert" data-bind="visible: error() && !errorAlertHidden()">
+            <button type="button" class="close" data-bind="click: hideErrorAlert">
+                <span aria-hidden="true">&times;</span>
+                <span class="sr-only">Close</span>
+            </button>
+            <strong>Error</strong> <span data-bind="text: error"></span>
+        </div>
+        <div class="alert alert-warning alert-dismissible" role="alert" id="notInCachesAlert" data-bind="visible: notInCache() && !notInCacheAlertHidden()">
             <button type="button" class="close" data-bind="click: hideNotInCacheAlert">
                 <span aria-hidden="true">&times;</span>
                 <span class="sr-only">Close</span>
             </button>
             <strong>Warning</strong> Some games haven't been cached by the site's engine yet - please check back later
         </div>
-        <div class="alert alert-warning alert-dismissible" role="alert" data-bind="visible: missingIds() && !missingIdsAlertHidden()">
+        <div class="alert alert-info alert-dismissible" role="alert" data-bind="visible: missingIds() && !missingIdsAlertHidden()">
             <button type="button" class="close" data-bind="click: hideMissingIdsAlert">
                 <span aria-hidden="true">&times;</span>
                 <span class="sr-only">Close</span>
@@ -54,7 +61,7 @@
             </thead>
             <tbody>
                 <!-- ko foreach: games -->
-                <tr data-bind="css: known ? '' : (inCache ? 'warning' : 'danger')">
+                <tr data-bind="css: known ? '' : (inCache ? 'info' : 'warning')">
                     <td data-bind="text: steamAppId"></td>
                     <td data-bind="text: steamName"></td>
                     <td data-bind="text: $parent.formatDuration(steamPlaytime)"></td>
@@ -73,7 +80,7 @@
                     <td></td>
                 </tr>
                 <!-- /ko -->
-                <tr class="info">
+                <tr class="success">
                     <th>Total</th>
                     <th></th>
                     <th data-bind="text: formatDuration(total().totalPlaytime)"></th>
@@ -82,7 +89,7 @@
                     <th data-bind="text: formatDuration(total().totalCompletionist)"></th>
                     <th data-bind="text: formatDuration(total().totalCombined)"></th>
                 </tr>
-                <tr class="info">
+                <tr class="success">
                     <th>Remaining</th>
                     <th></th>
                     <th></th>
