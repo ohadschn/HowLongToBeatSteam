@@ -85,24 +85,24 @@ function AppViewModel() {
     self.errorAlertHidden = ko.observable(false);
 
     self.toggleAllChecked = ko.observable(true);
-    self.toggleAllCore = function() {
+    self.toggleAllCore = function(include) {
         ko.utils.arrayForEach(self.games(), function(game) {
             if (game.inCache) {
-                game.included(self.toggleAllChecked());
+                game.included(include);
             }
         });
     };
     self.toggleAll = function () {
+        var include = !self.toggleAllChecked(); //binding is one way (workaround KO issue) so toggleAllChecked still has its old value
         if (self.games().length < 100) {
-            self.toggleAllCore();
+            self.toggleAllCore(include);
             return true;
         };
 
         $('#togglingModal').modal();
-        setTimeout(function() {
-            self.toggleAllCore();
+        setTimeout(function () {
+            self.toggleAllCore(include);
             $('#togglingModal').modal("hide");
-            $('#toggleAll').prop('checked', self.toggleAllChecked()); //for some reason knockout doesn't bring it back in sync
         }, 0);
         return false;
     };
@@ -219,6 +219,7 @@ $(document).ready(function () {
     }
 
     ko.applyBindings(new AppViewModel());
-    $('#steamIdText').focus();
+
     $('#remainingTableHeaderInfoSpan').tooltip();
+    $('#steamIdText').focus();
 });
