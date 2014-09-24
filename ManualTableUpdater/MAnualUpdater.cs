@@ -25,11 +25,8 @@ namespace ManualTableUpdater
                 games.Add(new AppEntity(appId, name, hltbId));
             }
             
-            Util.TraceInformation("Initiating update operations...");
-            var task = TableHelper.InsertOrReplace(games);
-
-            Util.TraceInformation("Waiting for updates to finish...");
-            task.Wait();
+            Util.TraceInformation("Updating...");
+            TableHelper.InsertOrReplace(games);
 
             Util.TraceInformation("All done!");
             Console.ReadLine();

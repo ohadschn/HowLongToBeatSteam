@@ -104,7 +104,7 @@ namespace SteamHltbScraper
                 Util.TraceInformation("Scraping #{0} completed successfully", current);
             });
 
-            await TableHelper.InsertOrReplace(updates);
+            TableHelper.InsertOrReplace(updates);
             Util.TraceInformation("Done Scraping HLTB");
         }
 

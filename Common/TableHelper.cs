@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
@@ -70,45 +71,35 @@ namespace Common
             }
         }
 
-        public static Task InsertOrReplace(IEnumerable<AppEntity> games)
+        public static void InsertOrReplace(IEnumerable<AppEntity> games)
         {
-            var tasks = new List<Task>();
-            var batchOperations = new TableBatchOperation[AppEntity.Buckets];
-            for (int bucket = 0; bucket < batchOperations.Length; bucket++)
-            {
-                batchOperations[bucket] = new TableBatchOperation();
-            }
-            var bucketCount = new int[AppEntity.Buckets];
-
             var table = CloudStorageAccount.Parse(TableStorageConnectionString).CreateCloudTableClient().GetTableReference(SteamToHltbTableName);
-            foreach (var gameEntity in games)
+
+            Util.RunWithMaxDegreeOfConcurrency(AppEntity.Buckets, games.GroupBy(ae => ae.PartitionKeyInt), async ag =>
             {
-                var bucket = gameEntity.PartitionKeyInt;
-                var batchOperation = batchOperations[bucket];
-
-                batchOperation.Add(TableOperation.InsertOrReplace(gameEntity));
-                if (batchOperation.Count % MaxBatchOperations != 0)
+                int bucket = ag.Key;
+                int batch = 1;
+                var batchOperation = new TableBatchOperation();
+                foreach (var gameEntity in ag)
                 {
-                    continue;
+                    batchOperation.Add(TableOperation.InsertOrReplace(gameEntity));
+                    if (batchOperation.Count < MaxBatchOperations)
+                    {
+                        continue;
+                    }
+
+                    Util.TraceInformation("Updating bucket {0} / batch {1}...", bucket, batch++);
+                    await table.ExecuteBatchAsync(batchOperation);
+
+                    batchOperation = new TableBatchOperation();
                 }
-
-                Util.TraceInformation("Updating bucket {0} / batch {1}...", bucket, ++bucketCount[bucket]);
-                tasks.Add(table.ExecuteBatchAsync(batchOperation));
-
-                batchOperations[bucket] = new TableBatchOperation();
-            }
-
-            for (int bucket = 0; bucket < AppEntity.Buckets; bucket++)
-            {
-                var batchOperation = batchOperations[bucket];
-                if (batchOperation.Count % MaxBatchOperations != 0)
+                
+                if (batchOperation.Count != 0)
                 {
-                    Util.TraceInformation("Updating bucket {0} / batch {1} (final)...", bucket, ++bucketCount[bucket]);
-                    tasks.Add(table.ExecuteBatchAsync(batchOperation));
+                    Util.TraceInformation("Updating bucket {0} / batch {1} (final)...", bucket, batch);
+                    await table.ExecuteBatchAsync(batchOperation);
                 }
-            }
-
-            return Task.WhenAll(tasks);
+            });
         }
 
         public static async Task ResetTable()
