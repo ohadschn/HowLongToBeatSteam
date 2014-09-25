@@ -23,5 +23,17 @@ namespace MissingGamesUpdater
     {
         public Applist applist { get; set; }
     }
+
+    public class StoreAppData
+    {
+        public string type { get; set; }
+        //other fields omitted
+    }
+
+    public class StoreAppInfo
+    {
+        public bool success { get; set; }
+        public StoreAppData data { get; set; }
+    }
 }
 // ReSharper restore InconsistentNaming
