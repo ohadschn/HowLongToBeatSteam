@@ -32,7 +32,7 @@ namespace MissingGamesUpdater
             var knownSteamIdsHash = new HashSet<int>(knownSteamIds);
 
             Util.TraceInformation("Identifying missing apps...");
-            var missingApps = apps.Where(a => !knownSteamIdsHash.Contains(a.appid)).Select(a => new AppEntity(a.appid, a.name)).ToArray();
+            var missingApps = apps.Where(a => !knownSteamIdsHash.Contains(a.appid)).Select(a => new AppEntity(a.appid, a.name, "Unknown")).ToArray();
 
             Util.TraceInformation("Updating missing apps: {0}",
                 String.Join(",", missingApps.Select(a => String.Format("{0} / {1}", a.SteamAppId, a.SteamName))));

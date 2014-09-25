@@ -73,6 +73,16 @@ namespace Common
 
         public static void InsertOrReplace(IEnumerable<AppEntity> games)
         {
+            ExecuteOperations(games, TableOperation.InsertOrReplace);
+        }
+
+        public static void Delete(IEnumerable<AppEntity> games)
+        {
+            ExecuteOperations(games, TableOperation.Delete);
+        }
+
+        public static void ExecuteOperations(IEnumerable<AppEntity> games, Func<AppEntity, TableOperation> operation)
+        {
             var table = CloudStorageAccount.Parse(TableStorageConnectionString).CreateCloudTableClient().GetTableReference(SteamToHltbTableName);
 
             Util.RunWithMaxDegreeOfConcurrency(AppEntity.Buckets, games.GroupBy(ae => ae.PartitionKeyInt), async ag =>
@@ -82,7 +92,7 @@ namespace Common
                 var batchOperation = new TableBatchOperation();
                 foreach (var gameEntity in ag)
                 {
-                    batchOperation.Add(TableOperation.InsertOrReplace(gameEntity));
+                    batchOperation.Add(operation(gameEntity));
                     if (batchOperation.Count < MaxBatchOperations)
                     {
                         continue;

@@ -9,6 +9,8 @@ namespace Common
     public class AppEntity : TableEntity
     {
         public const int Buckets = 20;
+        public const string MeasuredKey = "Measured";
+        public const string UnmeasuredKey = "Unmeasured";
 
         public int SteamAppId { get; set; }
         public string SteamName { get; set; }
@@ -18,21 +20,19 @@ namespace Common
         public int ExtrasTtb { get; set; }
         public int CompletionistTtb { get; set; }
         public int CombinedTtb { get; set; }
+        public string Type { get; set; }
 
         [IgnoreProperty]
         public int PartitionKeyInt { get { return int.Parse(PartitionKey); } }
 
-        public AppEntity(int steamAppId, string steamName) : this(steamAppId, steamName, -1)
-        {
-        }
-
-        public AppEntity(int steamAppId, string steamName, int hltbId) : this(steamAppId, steamName, hltbId, null, -1, -1, -1, -1)
+        public AppEntity(int steamAppId, string steamName, string type) : this(steamAppId, steamName, type, -1, null, -1, -1, -1, -1)
         {
         }
 
         public AppEntity(
             int steamAppId, 
             string steamName, 
+            string type,
             int hltbId, 
             string hltbName, 
             int mainTtb, 
@@ -42,6 +42,7 @@ namespace Common
         {
             SteamAppId = steamAppId;
             SteamName = steamName;
+            Type = type;
             HltbId = hltbId;
             HltbName = hltbName;
             MainTtb = mainTtb;
@@ -50,7 +51,16 @@ namespace Common
             CombinedTtb = combinedTtb;
 
             PartitionKey = CalculateBucket(steamAppId).ToString(CultureInfo.InvariantCulture);
-            RowKey = steamAppId.ToString(CultureInfo.InvariantCulture);
+            RowKey = String.Format("{0}_{1}", Classify(Type), SteamAppId);
+        }
+
+        private static string Classify(string type)
+        {
+            return String.Equals(type, "game", StringComparison.OrdinalIgnoreCase) ||
+                   String.Equals(type, "dlc", StringComparison.OrdinalIgnoreCase)  ||
+                   String.Equals(type, "mod", StringComparison.OrdinalIgnoreCase)
+                ? MeasuredKey
+                : UnmeasuredKey;
         }
 
         public static int CalculateBucket(int steamAppId)

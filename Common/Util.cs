@@ -85,5 +85,24 @@ namespace Common
         {
             return String.Format("{0:O} {1}", DateTime.Now, format);
         }
+
+        public static IEnumerable<IList<T>> Partition<T>(this IEnumerable<T> enumerable, int groupSize)
+        {
+            var list = new List<T>(groupSize);
+            foreach (T item in enumerable)
+            {
+                list.Add(item);
+                if (list.Count == groupSize)
+                {
+                    yield return list;
+                    list = new List<T>(groupSize);
+                }
+            }
+
+            if (list.Count != 0)
+            {
+                yield return list;
+            }
+        }
     }
 }
