@@ -37,7 +37,7 @@ namespace MissingGamesUpdater
             Util.TraceInformation("Updating missing apps: {0}",
                 String.Join(",", missingApps.Select(a => String.Format("{0} / {1}", a.SteamAppId, a.SteamName))));
 
-            TableHelper.InsertOrReplace(missingApps);
+            await TableHelper.InsertOrReplace(missingApps);
             Util.TraceInformation("Finished updating missing apps");
         }
 

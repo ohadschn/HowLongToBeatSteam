@@ -42,7 +42,7 @@ namespace SteamHltbScraper
             int count = 0;
 
             Util.TraceInformation("Scraping with a maximum degree of concurrency {0}", MaxDegreeOfConcurrency);
-            Util.RunWithMaxDegreeOfConcurrency(MaxDegreeOfConcurrency, apps.Take(ScrapingLimit) , async app => 
+            await apps.Take(ScrapingLimit).ForEachAsync(MaxDegreeOfConcurrency, async app => 
             {
                 var current = Interlocked.Increment(ref count);
                 Util.TraceInformation("Beginning scraping #{0}...", current);
@@ -104,7 +104,7 @@ namespace SteamHltbScraper
                 Util.TraceInformation("Scraping #{0} completed successfully", current);
             });
 
-            TableHelper.InsertOrReplace(updates);
+            await TableHelper.InsertOrReplace(updates);
             Util.TraceInformation("Done Scraping HLTB");
         }
 

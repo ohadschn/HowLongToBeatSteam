@@ -32,7 +32,7 @@ namespace ManualTableUpdater
             var updates = new List<AppEntity>();
             int counter = 0;
 
-            Util.RunWithMaxDegreeOfConcurrency(20, allArray.Partition(MaxSteamStoreIdsPerRequest), async partition =>
+            await allArray.Partition(MaxSteamStoreIdsPerRequest).ForEachAsync(20, async partition =>
             {
                 Interlocked.Add(ref counter, MaxSteamStoreIdsPerRequest);
                 Util.TraceInformation("Getting store info for apps {0}-{1}", counter - MaxSteamStoreIdsPerRequest + 1, counter);
@@ -40,10 +40,10 @@ namespace ManualTableUpdater
             });
 
             Util.TraceInformation("Deleting old entries...");
-            TableHelper.Delete(allArray);
+            await TableHelper.Delete(allArray);
 
             Util.TraceInformation("Inserting new entries...");
-            TableHelper.InsertOrReplace(updates);
+            await TableHelper.InsertOrReplace(updates);
         }
 
         private static async Task GetStoreInfo(IList<AppEntity> apps, ICollection<AppEntity> updates)

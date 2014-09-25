@@ -71,21 +71,21 @@ namespace Common
             }
         }
 
-        public static void InsertOrReplace(IEnumerable<AppEntity> games)
+        public static Task InsertOrReplace(IEnumerable<AppEntity> games)
         {
-            ExecuteOperations(games, TableOperation.InsertOrReplace);
+            return ExecuteOperations(games, TableOperation.InsertOrReplace);
         }
 
-        public static void Delete(IEnumerable<AppEntity> games)
+        public static Task Delete(IEnumerable<AppEntity> games)
         {
-            ExecuteOperations(games, TableOperation.Delete);
+            return ExecuteOperations(games, TableOperation.Delete);
         }
 
-        public static void ExecuteOperations(IEnumerable<AppEntity> games, Func<AppEntity, TableOperation> operation)
+        public static async Task ExecuteOperations(IEnumerable<AppEntity> games, Func<AppEntity, TableOperation> operation)
         {
             var table = CloudStorageAccount.Parse(TableStorageConnectionString).CreateCloudTableClient().GetTableReference(SteamToHltbTableName);
 
-            Util.RunWithMaxDegreeOfConcurrency(AppEntity.Buckets, games.GroupBy(ae => ae.PartitionKeyInt), async ag =>
+            await games.GroupBy(ae => ae.PartitionKeyInt).ForEachAsync(AppEntity.Buckets, async ag =>
             {
                 int bucket = ag.Key;
                 int batch = 1;
