@@ -3,16 +3,15 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Common;
 using HowLongToBeatSteam.Controllers.Responses;
 using HowLongToBeatSteam.Models;
 using JetBrains.Annotations;
+using Microsoft.WindowsAzure.Storage.RetryPolicies;
 
 namespace HowLongToBeatSteam.Controllers
 {
@@ -24,26 +23,30 @@ namespace HowLongToBeatSteam.Controllers
         private static readonly HttpClient Client = new HttpClient();
         
         [UsedImplicitly] 
-        private static readonly Timer CacheTimer = new Timer(o => UpdateCache(), null, TimeSpan.Zero, TimeSpan.FromHours(1));
         private static readonly ConcurrentDictionary<int, HltbInfo> Cache = new ConcurrentDictionary<int, HltbInfo>();
 
-        internal static void Touch() { } //called externally to start caching as soon as site is up (by instantiating CacheTimer)
-
-        private static async void UpdateCache() 
+        public static async void StartUpdatingCache() 
         {
-            Util.TraceInformation("Updating cache...");
-            await TableHelper.QueryAllApps((segment, bucket) =>
+            while (true)
             {
-                foreach (var appEntity in segment)
+                Util.TraceInformation("Updating cache...");
+                await TableHelper.QueryAllApps((segment, bucket) =>
                 {
-                    Cache[appEntity.SteamAppId] = new HltbInfo(appEntity);
-                }
-            });
-            Util.TraceInformation("Finished updating cache");
+                    foreach (var appEntity in segment)
+                    {
+                        Cache[appEntity.SteamAppId] = appEntity.Measured ? new HltbInfo(appEntity) : null;
+                    }
+                }, null, new ExponentialRetry(TimeSpan.FromSeconds(4), int.MaxValue));
+
+                Util.TraceInformation("Finished updating cache: {0} items", Cache.Count);
+                await Task.Delay(TimeSpan.FromHours(1));
+            }
+// ReSharper disable FunctionNeverReturns
         }
+// ReSharper restore FunctionNeverReturns
 
         [Route("library/{steamId:long}")]
-        public async Task<IEnumerable<Game>> GetGames(long steamId)
+        public async Task<OwnedGamesInfo> GetGames(long steamId)
         {
             Util.TraceInformation("Retrieving all owned games for user ID {0}...", steamId);
             var response = await Client.GetAsync(string.Format(GetOwnedSteamGamesFormat, SteamApiKey, steamId));
@@ -57,11 +60,31 @@ namespace HowLongToBeatSteam.Controllers
             }
             
             Util.TraceInformation("Preparing response...");
-            var ret = ownedGamesResponse.response.games.Select(
-                game => new Game(game.appid, game.name, game.playtime_forever, Cache.GetOrDefault(game.appid)));
+
+            var games = new List<SteamApp>();
+            bool partialCache = false; 
+            foreach (var game in ownedGamesResponse.response.games)
+            {
+                HltbInfo hltbInfo;
+                var inCache = Cache.TryGetValue(game.appid, out hltbInfo);
+                if (!inCache)
+                {
+                    Util.TraceWarning("Skipping non-cached app: {0} / {1}", game.appid, game.name);
+                    partialCache = true;
+                    continue;
+                }
+                
+                if (hltbInfo == null) //non-game
+                {
+                    Util.TraceInformation("Skipping non-game: {0} / {1}", game.appid, game.name);
+                    continue;
+                }
+
+                games.Add(new SteamApp(game.appid, game.name, game.playtime_forever, hltbInfo.Resolved ? hltbInfo : null));
+            }
 
             Util.TraceInformation("Sending response...");
-            return ret;
+            return new OwnedGamesInfo(partialCache, games);
         }
     }
 }

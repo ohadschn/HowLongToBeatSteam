@@ -32,13 +32,6 @@ namespace Common
             return ret;
         }
 
-        public static TValue GetOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
-        {
-            TValue ret;
-            dictionary.TryGetValue(key, out ret);
-            return ret; 
-        }
-
         public static Task ForEachAsync<T>(this IEnumerable<T> collection, int maxDegreeOfConcurrency, Func<T, Task> taskFactory)
         {
             return Task.WhenAll(Partitioner.Create(collection).GetPartitions(maxDegreeOfConcurrency).Select(partition => Task.Run(async delegate
@@ -102,6 +95,11 @@ namespace Common
             {
                 yield return list;
             }
+        }
+
+        public static bool Contains(this string source, string toCheck, StringComparison comp)
+        {
+            return source.IndexOf(toCheck, comp) >= 0;
         }
     }
 }

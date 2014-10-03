@@ -36,15 +36,15 @@
                 <img src="http://cdnjs.cloudflare.com/ajax/libs/file-uploader/3.7.0/loading.gif" alt="loading..." data-bind="visible: processing" />
             </form>
             <br />
-            <div class="alert alert-danger alert-dismissible" role="alert" id="notInCachesAlert" data-bind="visible: error() && !errorAlertHidden()">
+            <div class="alert alert-danger alert-dismissible" role="alert" data-bind="visible: error() && !errorAlertHidden()">
                 <button type="button" class="close" data-bind="click: function () { errorAlertHidden(true); }">
                     <span aria-hidden="true">&times;</span>
                     <span class="sr-only">Close</span>
                 </button>
                 <strong>Error</strong> <span data-bind="text: error"></span>
             </div>
-            <div class="alert alert-warning alert-dismissible" role="alert" id="notInCachesAlert" data-bind="visible: total().notInCache && !notInCacheAlertHidden()">
-                <button type="button" class="close" data-bind="click: function() { notInCacheAlertHidden(true); }">
+            <div class="alert alert-warning alert-dismissible" role="alert" data-bind="visible: partialCache() && !partialCacheAlertHidden()">
+                <button type="button" class="close" data-bind="click: function() { partialCacheAlertHidden(true); }">
                     <span aria-hidden="true">&times;</span>
                     <span class="sr-only">Close</span>
                 </button>
@@ -77,8 +77,8 @@
                 </thead>
                 <tbody>
                     <!-- ko foreach: games -->
-                    <tr data-bind="css: inCache ? (known ? '' : 'info') : 'warning'">
-                        <td class="vcenter"><input type="checkbox" data-bind="checked: included, enable: inCache" /></td>
+                    <tr data-bind="css: known ? '' : 'info'">
+                        <td class="vcenter"><input type="checkbox" data-bind="checked: included" /></td>
                         <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: steamAppId"></td>
                         <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: steamName"></td>
                         <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: $parent.formatDuration(steamPlaytime)"></td>
@@ -86,13 +86,13 @@
                         <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: $parent.formatDuration($data.hltbInfo.extrasTtb)"></td>
                         <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: $parent.formatDuration($data.hltbInfo.completionistTtb)"></td>
                         <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: $parent.formatDuration($data.hltbInfo.combinedTtb)"></td>
-                        <td data-bind="css: 'vcenter' + (known ? '' : ' emphasized'), text: inCache ? (known ? $data.hltbInfo.name : 'Unknown, please update') : 'Not in cache, try again later'"></td>
+                        <td data-bind="css: 'vcenter' + (known ? '' : ' emphasized'), text: $data.hltbInfo.name"></td>
                         <td class="vcenter">
-                            <input type="text" class="input-short" data-bind="enable: inCache, value: known ? $data.hltbInfo.id : ''"/>
+                            <input type="text" class="input-short" data-bind="value:$data.hltbInfo.id" placeholder="?"/>
                         </td>
                         <td class="vcenter">
-                            <button class="btn btn-info btn-sm" data-bind="click: $parent.updateHltb, enable: inCache">Update</button>
-                            <a data-bind="enable: inCache, text: $data.hltbInfo.linkText, attr: {href: $data.hltbInfo.url}" target="_blank"></a>
+                            <button class="btn btn-info btn-sm" data-bind="click: $parent.updateHltb">Update</button>
+                            <a data-bind="text: $data.hltbInfo.linkText, attr: {href: $data.hltbInfo.url}" target="_blank"></a>
                         </td>
                     </tr>
                     <!-- /ko -->

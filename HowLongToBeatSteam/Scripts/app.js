@@ -1,25 +1,19 @@
 ﻿/*global ko*/
 
 function Game(steamGame) {
-    var self = this;
-    
-    if (steamGame.HltbInfo === null) {
-        self.inCache = false;
-        self.known = false;
-    } else {
-        self.inCache = true;
-        self.known = steamGame.HltbInfo.Id !== -1;
-    }
 
-    self.included = ko.observable(self.inCache);
+    var self = this;
+
+    self.known = steamGame.HltbInfo !== null;
+    self.included = ko.observable(true);
 
     self.steamAppId = steamGame.SteamAppId;
     self.steamName = steamGame.SteamName;
     self.steamPlaytime = steamGame.Playtime;
 
     self.hltbInfo = {
-        id: self.inCache ? steamGame.HltbInfo.Id : -1,
-        name: self.inCache ? steamGame.HltbInfo.Name : "Not in cache, try again later",
+        id: self.known ? steamGame.HltbInfo.Id : "",
+        name: self.known ? steamGame.HltbInfo.Name : "Unknown, please update",
         mainTtb: self.known ? steamGame.HltbInfo.MainTtb : 0,
         extrasTtb: self.known ? steamGame.HltbInfo.ExtrasTtb : 0,
         completionistTtb: self.known ? steamGame.HltbInfo.CompletionistTtb : 0,
@@ -59,29 +53,16 @@ function AppViewModel() {
         "SteamAppId": 228200,
         "SteamName": "Company of Heroes (New Steam Version)",
         "Playtime": 64,
-        "HltbInfo": {
-            "Id": -1,
-            "Name": null,
-            "MainTtb": -1,
-            "ExtrasTtb": -1,
-            "CompletionistTtb": -1,
-            "CombinedTtb": -1
-        }
-    }),
-    new Game({
-        "SteamAppId": 6200,
-        "SteamName": "Ghost Master",
-        "Playtime": 0,
-        "HltbInfo": null,
-        }
-    )]);
+        "HltbInfo": null
+    })]);
 
+    self.partialCache = ko.observable(false);
     self.processing = ko.observable(false);
     self.toggling = ko.observable("");
     self.error = ko.observable(null);
 
     self.missingIdsAlertHidden = ko.observable(false);
-    self.notInCacheAlertHidden = ko.observable(false);
+    self.partialCacheAlertHidden = ko.observable(false);
     self.errorAlertHidden = ko.observable(false);
 
     self.toggleAllChecked = ko.observable(true);
@@ -97,7 +78,7 @@ function AppViewModel() {
         if (self.games().length < 100) {
             self.toggleAllCore(include);
             return true;
-        };
+        }
 
         $('#togglingModal').modal();
         setTimeout(function () {
@@ -111,7 +92,6 @@ function AppViewModel() {
 
         var count = 0;
         var missingIdsCount = 0;
-        var notInCacheCount = 0;
         var totalPlaytime = 0;
         var totalMain = 0;
         var totalExtras = 0;
@@ -127,7 +107,6 @@ function AppViewModel() {
         for (var i = 0; i < length; ++i) {
             var game = arr[i];
             missingIdsCount += !game.known;
-            notInCacheCount += !game.inCache;
 
             if (!game.included()) {
                 continue;
@@ -145,7 +124,7 @@ function AppViewModel() {
             combinedRemaining += Math.max(0, game.hltbInfo.combinedTtb - game.steamPlaytime);
         }
 
-        if (count === length - notInCacheCount) {
+        if (count === length) {
             self.toggleAllChecked(true);
         } else if (count === 0) {
             self.toggleAllChecked(false);
@@ -154,7 +133,6 @@ function AppViewModel() {
         return {
             count: count,
             missingIds: missingIdsCount > 0,
-            notInCache: notInCacheCount > 0,
             totalPlaytime: totalPlaytime,
             totalMain: totalMain,
             totalExtras: totalExtras,
@@ -178,13 +156,20 @@ function AppViewModel() {
 
         self.processing(true);
         self.games([]);
+        self.partialCache(false);
         self.missingIdsAlertHidden(false);
-        self.notInCacheAlertHidden(false);
+        self.partialCacheAlertHidden(false);
         self.errorAlertHidden(false);
 
         $.get("api/games/library/" + self.steamId64())
-            .done(function(data) {
-                self.games(ko.utils.arrayMap(data, function(steamGame) {
+            .done(function (data) {
+                self.partialCache(data.PartialCache);
+                data.Games.sort(function (a, b) {
+                    var aName = a.SteamName.toLowerCase();
+                    var bName = b.SteamName.toLowerCase();
+                    return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0));
+                });
+                self.games(ko.utils.arrayMap(data.Games, function (steamGame) {
                     return new Game(steamGame);
                 }));
             })

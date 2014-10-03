@@ -18,9 +18,14 @@ namespace MissingGamesUpdater
         private const int MaxSteamStoreIdsPerRequest = 50;
         private const int MaxConcurrentRequests = 20;
 
+        private static readonly HttpClient Client = new HttpClient();
+
         static void Main()
         {
-            UpdateMissingGames().Wait();
+            using (Client)
+            {
+                UpdateMissingGames().Wait();                
+            }
         }
 
         private static async Task UpdateMissingGames()
@@ -41,12 +46,13 @@ namespace MissingGamesUpdater
             Util.TraceInformation("Identifying missing apps...");
             var missingApps = apps.Where(a => !knownSteamIdsHash.Contains(a.appid));
 
+            Util.TraceInformation("Retrieving store information for missing apps...");
             int counter = 0;
             var updates = new ConcurrentBag<AppEntity>();
             await missingApps.Partition(MaxSteamStoreIdsPerRequest).ForEachAsync(MaxConcurrentRequests, async partition =>
             {
                 Interlocked.Add(ref counter, MaxSteamStoreIdsPerRequest);
-                Util.TraceInformation("Getting store info for apps {0}-{1}", counter - MaxSteamStoreIdsPerRequest + 1, counter);
+                Util.TraceInformation("Retrieving store info for apps {0}-{1}", counter - MaxSteamStoreIdsPerRequest + 1, counter);
                 await GetStoreInfo(partition, updates);
             });
 
@@ -60,45 +66,40 @@ namespace MissingGamesUpdater
         private static async Task<IList<App>> GetAllSteamApps()
         {
             Util.TraceInformation("Getting list of all Steam apps from {0}...", GetSteamAppListUrl);
-            using (var client = new HttpClient())
-            {
-                var response = await client.GetAsync(GetSteamAppListUrl);
-                response.EnsureSuccessStatusCode();
+            var response = await Client.GetAsync(GetSteamAppListUrl);
+            response.EnsureSuccessStatusCode();
 
-                var allGamesRoot = await response.Content.ReadAsAsync<AllGamesRoot>();
-                return allGamesRoot.applist.apps.app;
-            }
+            var allGamesRoot = await response.Content.ReadAsAsync<AllGamesRoot>();
+
+            Util.TraceInformation("Finished getting all steam apps");
+            return allGamesRoot.applist.apps.app;
         }
 
         private static async Task GetStoreInfo(IList<App> apps, ConcurrentBag<AppEntity> updates)
         {
-            using (var client = new HttpClient())
+            var requestUri = String.Format(SteamStoreApiUrlTemplate, string.Join(",", apps.Select(ae => ae.appid)));
+
+            Util.TraceInformation("Getting app store information from: {0}", requestUri);
+            var response = await Client.GetAsync(requestUri);
+            response.EnsureSuccessStatusCode();
+
+            var jObject = await response.Content.ReadAsAsync<JObject>();
+            foreach (var app in apps)
             {
-                var requestUri = String.Format(SteamStoreApiUrlTemplate, string.Join(",", apps.Select(ae => ae.appid)));
+                var appInfo = jObject[app.appid.ToString(CultureInfo.InvariantCulture)].ToObject<StoreAppInfo>();
 
-                Util.TraceInformation("Getting app store information from: {0}", requestUri);
-                var response = await client.GetAsync(requestUri);
-                response.EnsureSuccessStatusCode();
-
-                var jObject = await response.Content.ReadAsAsync<JObject>();
-                foreach (var app in apps)
+                string type;
+                if (!appInfo.success || appInfo.data == null)
                 {
-                    var appInfo = jObject[app.appid.ToString(CultureInfo.InvariantCulture)].ToObject<StoreAppInfo>();
-
-                    string type;
-                    if (!appInfo.success || appInfo.data == null)
-                    {
-                        Util.TraceWarning("Could not retrieve store information for {0} / {1}", app.appid, app.name);
-                        type = "Unknown";
-                    }
-                    else
-                    {
-                        type = appInfo.data.type;
-                    }
-
-                    Util.TraceInformation("Categorizing {0} / {1} as {2}", app.appid, app.name, type);
-                    updates.Add(new AppEntity(app.appid, app.name, type));
+                    type = "Unknown";
                 }
+                else
+                {
+                    type = appInfo.data.type;
+                }
+
+                Util.TraceInformation("Categorizing {0} / {1} as {2}", app.appid, app.name, type);
+                updates.Add(new AppEntity(app.appid, app.name, type));
             }
         }
     }

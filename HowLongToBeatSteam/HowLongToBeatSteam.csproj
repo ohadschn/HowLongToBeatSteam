@@ -112,7 +112,9 @@
     <Content Include="Styles\hltbs.min.css">
       <DependentUpon>hltbs.css</DependentUpon>
     </Content>
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
@@ -121,7 +123,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\Game.cs" />
+    <Compile Include="Models\OwnedGamesInfo.cs" />
     <Compile Include="Models\HltbInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

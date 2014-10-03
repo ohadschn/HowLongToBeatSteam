@@ -8,7 +8,7 @@ namespace HowLongToBeatSteam
         protected void Application_Start()
         {
             GlobalConfiguration.Configure(WebApiConfig.Register);
-            GamesController.Touch(); //make sure caching starts as soon as site is up
+            GamesController.StartUpdatingCache(); //make sure caching starts as soon as site is up
         }
     }
 }

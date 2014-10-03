@@ -11,6 +11,7 @@ namespace Common
         public const int Buckets = 20;
         public const string MeasuredKey = "Measured";
         public const string UnmeasuredKey = "Unmeasured";
+        public const string UnknownType = "Unknown";
 
         public int SteamAppId { get; set; }
         public string SteamName { get; set; }
@@ -20,12 +21,17 @@ namespace Common
         public int ExtrasTtb { get; set; }
         public int CompletionistTtb { get; set; }
         public int CombinedTtb { get; set; }
+        public int SoloTtb { get; set; }
+        public int CoOpTtb { get; set; }
+        public int VsTtb { get; set; }
         public string Type { get; set; }
 
         [IgnoreProperty]
         public int PartitionKeyInt { get { return int.Parse(PartitionKey); } }
+        [IgnoreProperty]
+        public bool Measured { get { return RowKey.StartsWith(MeasuredKey); } }
 
-        public AppEntity(int steamAppId, string steamName, string type) : this(steamAppId, steamName, type, -1, null, -1, -1, -1, -1)
+        public AppEntity(int steamAppId, string steamName, string type) : this(steamAppId, steamName, type, -1, null, 0, 0, 0, 0, 0, 0, 0)
         {
         }
 
@@ -38,7 +44,10 @@ namespace Common
             int mainTtb, 
             int extrasTtb, 
             int completionistTtb, 
-            int combinedTtb)
+            int combinedTtb,
+            int soloTtb,
+            int coOpTtb,
+            int vsTtb)
         {
             SteamAppId = steamAppId;
             SteamName = steamName;
@@ -49,9 +58,12 @@ namespace Common
             ExtrasTtb = extrasTtb;
             CompletionistTtb = completionistTtb;
             CombinedTtb = combinedTtb;
+            SoloTtb = soloTtb;
+            CoOpTtb = coOpTtb;
+            VsTtb = vsTtb;
 
             PartitionKey = CalculateBucket(steamAppId).ToString(CultureInfo.InvariantCulture);
-            RowKey = String.Format("{0}_{1}", Classify(Type), SteamAppId);
+            RowKey = String.Format("{0}_{1}_{2}", Classify(Type), Type, SteamAppId);
         }
 
         private static string Classify(string type)

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -23,12 +25,12 @@ namespace SteamHltbScraper
         private static readonly int MaxDegreeOfConcurrency = Environment.ProcessorCount * Int32.Parse(ConfigurationManager.AppSettings["MaxDegreeOfConcurrencyFactor"]);
         private static readonly int ScrapingLimit = Int32.Parse(ConfigurationManager.AppSettings["ScrapingLimit"]);
 
-        private static HttpClient s_client;
+        private static readonly HttpClient Client = new HttpClient();
 
         private static void Main()
         {
             System.Net.ServicePointManager.DefaultConnectionLimit = MaxDegreeOfConcurrency;
-            using (s_client = new HttpClient())
+            using (Client)
             {
                 ScrapeHltb().Wait();
             }
@@ -38,7 +40,8 @@ namespace SteamHltbScraper
         {
             Util.TraceInformation("Scraping HLTB...");
             var updates = new ConcurrentBag<AppEntity>();
-            var apps = await TableHelper.GetAllApps(e => e);
+
+            var apps = await TableHelper.GetAllApps(e => e, TableHelper.StartsWithFilter(TableHelper.RowKey, AppEntity.MeasuredKey));
             int count = 0;
 
             Util.TraceInformation("Scraping with a maximum degree of concurrency {0}", MaxDegreeOfConcurrency);
@@ -57,6 +60,11 @@ namespace SteamHltbScraper
                     {
                         Util.TraceError("Scraping #{0} - Error getting HLTB ID for app {1} / {2}: {3}", current, app.SteamAppId, app.SteamName, e);
                         return;
+                    }
+
+                    if (app.HltbId == -1)
+                    {
+                        return; //app not found in search
                     }
 
                     updates.Add(app);
@@ -114,7 +122,7 @@ namespace SteamHltbScraper
             var gameOverviewUrl = String.Format(HltbGameOverviewPageFormat, hltbId);
             Util.TraceInformation("Retrieving game overview URL from {0}...", gameOverviewUrl);
 
-            var response = await s_client.GetAsync(gameOverviewUrl);
+            var response = await Client.GetAsync(gameOverviewUrl);
             response.EnsureSuccessStatusCode();
             var responseStream = await response.Content.ReadAsStreamAsync();
 
@@ -125,35 +133,30 @@ namespace SteamHltbScraper
             var list = doc.DocumentNode.Descendants("div").FirstOrDefault(n => n.GetAttributeValue("class", null) == "gprofile_times");
             if (list == null)
             {
-                throw new InvalidOperationException("Can't find list element - HLTB ID " + hltbId);
+                throw new FormatException("Can't find list element - HLTB ID " + hltbId);
             }
 
             var listItems = list.Descendants("li").Take(4).ToArray();
-            if (listItems.Length != 4)
-            {
-                throw new InvalidOperationException("List element does not contain 4 entries - HLTB ID " + hltbId);
-            }
+            
+            int mainTtb, extrasTtb, completionistTtb, combinedTtb, solo, coOp, vs;
+            bool gotMain = TryGetMinutes(listItems, "main", out mainTtb);
+            bool gotExtras = TryGetMinutes(listItems, "extras", out extrasTtb);
+            bool gotCompletionist = TryGetMinutes(listItems, "completionist", out completionistTtb);
+            bool gotCombined = TryGetMinutes(listItems, "combined", out combinedTtb);
+            bool gotSolo = TryGetMinutes(listItems, "solo", out solo);
+            bool gotCoOp = TryGetMinutes(listItems, "co-op", out coOp);
+            bool gotVs = TryGetMinutes(listItems, "vs", out vs);
 
-            if (listItems.Any(hn => hn.InnerText == null)
-                || !listItems[0].InnerText.Contains("Main")
-                || !listItems[1].InnerText.Contains("Extras")
-                || !listItems[2].InnerText.Contains("Completionist")
-                || !listItems[3].InnerText.Contains("Combined"))
+            if (!gotMain && !gotExtras && !gotCompletionist && !gotCombined && !gotSolo && !gotCoOp && !gotVs)
             {
-                throw new InvalidOperationException(
-                    "List element does not contain expected TTB text (Main, Extras, Completionist, Combined)- HLTB ID " + hltbId);
+                throw new FormatException("Could not find any TTB list item for HLTB ID " + hltbId);
             }
-
-            var mainTtb = GetMinutes(listItems[0]);
-            var extrasTtb = GetMinutes(listItems[1]);
-            var completionistTtb = GetMinutes(listItems[2]);
-            var combinedTtb = GetMinutes(listItems[3]);
 
             Util.TraceInformation(
-                "Finished scraping HLTB info for hltb {0}: Main {1} Extras {2} Completionist {3} Combined {4}",
-                hltbId, mainTtb, extrasTtb, completionistTtb, combinedTtb);
+                "Finished scraping HLTB info for hltb {0}: Main {1} Extras {2} Completionist {3} Combined {4} Solo {5} Co-Op {6} Vs. {7}",
+                hltbId, mainTtb, extrasTtb, completionistTtb, combinedTtb, solo, coOp, vs);
 
-            return new HltbInfo(mainTtb, extrasTtb, completionistTtb, combinedTtb);
+            return new HltbInfo(mainTtb, extrasTtb, completionistTtb, combinedTtb, solo, coOp, vs);
         }
 
         private static async Task<string> ScrapeHltbName(int hltbId)
@@ -162,7 +165,7 @@ namespace SteamHltbScraper
             var gamePageUrl = String.Format(HltbGamePageFormat, hltbId);
             Util.TraceInformation("Retrieving HLTB game page from {0}...", gamePageUrl);
 
-            var response = await s_client.GetAsync(gamePageUrl);
+            var response = await Client.GetAsync(gamePageUrl);
             response.EnsureSuccessStatusCode();
             var responseStream = await response.Content.ReadAsStreamAsync();
 
@@ -173,7 +176,7 @@ namespace SteamHltbScraper
             var headerDiv = doc.DocumentNode.Descendants().FirstOrDefault(n => n.GetAttributeValue("class", null) == "gprofile_header");
             if (headerDiv == null)
             {
-                throw new InvalidOperationException("Can't parse name for HLTB ID " + hltbId);
+                throw new FormatException("Can't parse name for HLTB ID " + hltbId);
             }
 
             var hltbName = headerDiv.InnerText.Trim();
@@ -181,54 +184,69 @@ namespace SteamHltbScraper
             return hltbName;
         }
 
-        private static int GetMinutes(HtmlNode listItem)
+        private static bool TryGetMinutes(IEnumerable<HtmlNode> listItems, string type, out int minutes)
         {
+            var listItem = listItems.FirstOrDefault(hn => hn.InnerText != null && hn.InnerText.Contains(type, StringComparison.OrdinalIgnoreCase));
+            if (listItem == null)
+            {
+                minutes = 0;
+                return false;
+            }
+
             var hoursDiv = listItem.Descendants("div").FirstOrDefault();
             if (hoursDiv == null)
             {
-                throw new InvalidOperationException("TTB div not found inside list item");
+                throw new FormatException("TTB div not found inside list item");
             }
 
             var hoursStr = hoursDiv.InnerText;
             if (hoursStr == null)
             {
-                return 0;
+                throw new FormatException("Hours div inner text is null");
             }
 
-            int minutes = 0;
             var match = Regex.Match(hoursStr, @"\s*(.+) Hour");
             if (match.Success && match.Groups.Count == 2)
             {
                 double hours;
-                Double.TryParse(match.Groups[1].Value.Replace("&#189;", ".5"), out hours);
+                if (!Double.TryParse(match.Groups[1].Value.Replace("&#189;", ".5"), out hours))
+                {
+                    throw new FormatException("Cannot parse duration from list item with text " + listItem.InnerText);                                        
+                }
                 minutes = (int) TimeSpan.FromHours(hours).TotalMinutes;
+                return true;
             }
-            else
+            
+            match = Regex.Match(hoursStr, @"\s*(.+) Min");
+            if (match.Success && match.Groups.Count == 2)
             {
-                match = Regex.Match(hoursStr, @"\s*(.+) Min");
-                if (match.Success && match.Groups.Count == 2)
+                if (!Int32.TryParse(match.Groups[1].Value, out minutes))
                 {
-                    Int32.TryParse(match.Groups[1].Value, out minutes);
+                    throw new FormatException("Cannot parse duration from list item with text " + listItem.InnerText);                                        
                 }
-                else
-                {
-                    Util.TraceWarning("Cannot parse duration from list item with text {0}", listItem.InnerText);                    
-                }
+                return true;
+            }
+            
+            if (hoursStr.Contains("N/A", StringComparison.OrdinalIgnoreCase))
+            {
+                minutes = 0;
+                return true;
             }
 
-            return minutes;
+            throw new FormatException("Cannot parse duration from list item with text " + listItem.InnerText);                    
         }
 
         private static async Task<int> ScrapeHltbId(string appName)
         {
             Util.TraceInformation("Scraping HLTB ID for {0}...", appName);
+            var content = String.Format(SearchHltbPostDataFormat, appName);
             var req = new HttpRequestMessage(HttpMethod.Post, SearchHltbUrl)
             {
-                Content = new StringContent(String.Format(SearchHltbPostDataFormat, appName), Encoding.UTF8,"application/x-www-form-urlencoded")
+                Content = new StringContent(content, Encoding.UTF8,"application/x-www-form-urlencoded")
             };
-            Util.TraceInformation("Sending search query: {0}", req);
 
-            var response = await s_client.SendAsync(req);
+            Util.TraceInformation("Posting search query to {0} (content: {1})...", SearchHltbUrl, content);
+            var response = await Client.SendAsync(req);
             response.EnsureSuccessStatusCode();
             var responseStream = await response.Content.ReadAsStreamAsync();
 
@@ -239,26 +257,27 @@ namespace SteamHltbScraper
             var first = doc.DocumentNode.Descendants("li").FirstOrDefault();
             if (first == null)
             {
-                throw new InvalidOperationException("App not found in search");
+                Trace.TraceWarning("App not found in search");
+                return -1;
             }
 
             var anchor = first.Descendants("a").FirstOrDefault();
             if (anchor == null)
             {
-                throw new InvalidOperationException("App anchor not found");
+                throw new FormatException("App anchor not found");
             }
 
             var link = anchor.GetAttributeValue("href", null);
             if (link == null)
             {
-                throw new InvalidOperationException("App anchor does not include href attribute");
+                throw new FormatException("App anchor does not include href attribute");
             }
 
             var idStr = link.Substring(12);
             int hltbId;
             if (!int.TryParse(idStr, out hltbId))
             {
-                throw new InvalidOperationException("App link does not contain HLTB integer ID in expected location (expecting char12..end): " + idStr);
+                throw new FormatException("App link does not contain HLTB integer ID in expected location (expecting char12..end): " + idStr);
             }
 
             Util.TraceInformation("Scraped HLTB ID for {0} : {1}", appName, hltbId);
@@ -271,6 +290,9 @@ namespace SteamHltbScraper
             app.ExtrasTtb = hltbInfo.ExtrasTtb;
             app.CompletionistTtb = hltbInfo.CompletionistTtb;
             app.CombinedTtb = hltbInfo.CombinedTtb;
+            app.SoloTtb = hltbInfo.Solo;
+            app.CoOpTtb = hltbInfo.CoOp;
+            app.VsTtb = hltbInfo.Vs;
         }
     }
 }

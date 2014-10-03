@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Runtime.Serialization;
 using Common;
 
 namespace HowLongToBeatSteam.Models
@@ -18,12 +19,13 @@ namespace HowLongToBeatSteam.Models
         public int CompletionistTtb { get; private set; }
         [DataMember]
         public int CombinedTtb { get; private set; }
+        public bool Resolved { get { return Id != -1; } }
 
         public HltbInfo(AppEntity appEntity)
         {
             Id = appEntity.HltbId;
             Name = appEntity.HltbName;
-            MainTtb = appEntity.MainTtb;
+            MainTtb = Math.Max(appEntity.MainTtb, appEntity.SoloTtb);
             ExtrasTtb = appEntity.ExtrasTtb;
             CompletionistTtb = appEntity.CompletionistTtb;
             CombinedTtb = appEntity.CombinedTtb;

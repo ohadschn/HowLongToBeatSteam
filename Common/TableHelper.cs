@@ -6,17 +6,21 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Common
 {
     public static class TableHelper
     {
+        public const string PartitionKey = "PartitionKey";
+        public const string RowKey = "RowKey";
+
         private const int MaxBatchOperations = 100;
         private static readonly string TableStorageConnectionString = ConfigurationManager.ConnectionStrings["Hltbs"].ConnectionString;
         private static readonly string SteamToHltbTableName = ConfigurationManager.AppSettings["SteamToHltbTableName"];
 
-        public static async Task<IEnumerable<T>> GetAllApps<T>(Func<AppEntity, T> selector)
+        public static async Task<IEnumerable<T>> GetAllApps<T>(Func<AppEntity, T> selector, string rowFilter = null, IRetryPolicy retryPolicy = null)
         {
             Util.TraceInformation("Getting all known apps...");
             var knownSteamIds = new ConcurrentBag<T>();
@@ -26,21 +30,32 @@ namespace Common
                 {
                     knownSteamIds.Add(selector(game));
                 }
-            });
+            }, rowFilter, retryPolicy);
             Util.TraceInformation("Finished getting all apps. Count: {0}", knownSteamIds.Count);
             return knownSteamIds;
         }
 
         //segmentHandler will be called synchronously for each bucket but parallel across buckets
-        public static async Task QueryAllApps(Action<TableQuerySegment<AppEntity>, int> segmentHandler) //int = bucket
+        public static async Task QueryAllApps(Action<TableQuerySegment<AppEntity>, int> segmentHandler, string rowFilter = null, IRetryPolicy retryPolicy = null) //int = bucket
         {
             Util.TraceInformation("Querying table concurrently...");
-            var table = CloudStorageAccount.Parse(TableStorageConnectionString).CreateCloudTableClient().GetTableReference(SteamToHltbTableName);
+            var cloudTableClient = CloudStorageAccount.Parse(TableStorageConnectionString).CreateCloudTableClient();
+            if (retryPolicy != null)
+            {
+                cloudTableClient.DefaultRequestOptions.RetryPolicy = retryPolicy;
+            }
+            var table = cloudTableClient.GetTableReference(SteamToHltbTableName);
 
             await Enumerable.Range(0, AppEntity.Buckets).ForEachAsync(AppEntity.Buckets, async bucket =>
             {
-                var query = new TableQuery<AppEntity>()
-                    .Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, bucket.ToString(CultureInfo.InvariantCulture)));
+                var partitionFilter = 
+                    TableQuery.GenerateFilterCondition(PartitionKey, QueryComparisons.Equal, bucket.ToString(CultureInfo.InvariantCulture));
+
+                var filter = String.IsNullOrWhiteSpace(rowFilter)
+                    ? partitionFilter
+                    : TableQuery.CombineFilters(partitionFilter, TableOperators.And, rowFilter);
+
+                var query = new TableQuery<AppEntity>().Where(filter);
 
                 TableQuerySegment<AppEntity> currentSegment = null;
                 int batch = 1;
@@ -107,6 +122,26 @@ namespace Common
             await table.DeleteIfExistsAsync();
             await Task.Delay(TimeSpan.FromMinutes(1));
             await table.CreateIfNotExistsAsync();
+        }
+
+        public static string StartsWithFilter(string propertyName, string value)
+        {
+            return TableQuery.CombineFilters(
+                TableQuery.GenerateFilterCondition(propertyName, QueryComparisons.GreaterThanOrEqual, value),
+                TableOperators.And,
+                TableQuery.GenerateFilterCondition(propertyName, QueryComparisons.LessThan, IncrementLastChar(value)));
+        }
+
+        private static string IncrementLastChar(string str)
+        {
+            char last = str[str.Length-1];
+
+            if (last == Char.MaxValue)
+            {
+                return str + (char)0;
+            }
+            
+            return str.Remove(str.Length - 1, 1) + (char)(last + 1);
         }
     }
 }
