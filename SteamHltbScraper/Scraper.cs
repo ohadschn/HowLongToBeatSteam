@@ -41,7 +41,7 @@ namespace SteamHltbScraper
             Util.TraceInformation("Scraping HLTB...");
             var updates = new ConcurrentBag<AppEntity>();
 
-            var apps = await TableHelper.GetAllApps(e => e, TableHelper.StartsWithFilter(TableHelper.RowKey, AppEntity.MeasuredKey));
+            var apps = await TableHelper.GetAllApps(e => e, TableHelper.StartsWithFilter(TableHelper.RowKey, AppEntity.MeasuredKey), 20);
             int count = 0;
 
             Util.TraceInformation("Scraping with a maximum degree of concurrency {0}", MaxDegreeOfConcurrency);
@@ -112,7 +112,7 @@ namespace SteamHltbScraper
                 Util.TraceInformation("Scraping #{0} completed successfully", current);
             });
 
-            await TableHelper.InsertOrReplace(updates);
+            await TableHelper.Insert(updates, 20); //The only other update to an existing game-typed entity would have to be manual which should take precedence
             Util.TraceInformation("Done Scraping HLTB");
         }
 

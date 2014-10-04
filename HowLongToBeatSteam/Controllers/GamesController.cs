@@ -11,7 +11,6 @@ using Common;
 using HowLongToBeatSteam.Controllers.Responses;
 using HowLongToBeatSteam.Models;
 using JetBrains.Annotations;
-using Microsoft.WindowsAzure.Storage.RetryPolicies;
 
 namespace HowLongToBeatSteam.Controllers
 {
@@ -36,7 +35,7 @@ namespace HowLongToBeatSteam.Controllers
                     {
                         Cache[appEntity.SteamAppId] = appEntity.Measured ? new HltbInfo(appEntity) : null;
                     }
-                }, null, new ExponentialRetry(TimeSpan.FromSeconds(4), int.MaxValue));
+                }, null, 100); //we'll let the site crash and get recycled after 100 attempts - something would have to be very wrong!
 
                 Util.TraceInformation("Finished updating cache: {0} items", Cache.Count);
                 await Task.Delay(TimeSpan.FromHours(1));

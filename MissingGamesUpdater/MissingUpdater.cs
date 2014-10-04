@@ -59,7 +59,7 @@ namespace MissingGamesUpdater
             Util.TraceInformation("Updating missing apps: {0}", 
                 String.Join(",", updates.Select(a => String.Format("{0} / {1} ({2})", a.SteamAppId, a.SteamName, a.Type))));
 
-            await TableHelper.InsertOrReplace(updates);
+            await TableHelper.Insert(updates, 5); //we're inserting new entries, no fear of collisions (even it two jobs overlap the next one will fix it)
             Util.TraceInformation("Finished updating missing apps");
         }
 
@@ -91,7 +91,7 @@ namespace MissingGamesUpdater
                 string type;
                 if (!appInfo.success || appInfo.data == null)
                 {
-                    type = "Unknown";
+                    type = AppEntity.UnknownType;
                 }
                 else
                 {

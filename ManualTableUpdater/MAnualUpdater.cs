@@ -34,7 +34,7 @@ namespace ManualTableUpdater
         //    }
 
         //    Util.TraceInformation("Updating...");
-        //    TableHelper.InsertOrReplace(games);
+        //    TableHelper.Insert(games);
         //}
     }
 }

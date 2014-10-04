@@ -19,8 +19,10 @@ namespace Common
         private const int MaxBatchOperations = 100;
         private static readonly string TableStorageConnectionString = ConfigurationManager.ConnectionStrings["Hltbs"].ConnectionString;
         private static readonly string SteamToHltbTableName = ConfigurationManager.AppSettings["SteamToHltbTableName"];
+        
+        private static readonly TimeSpan DefaultDeltaBackoff = TimeSpan.FromSeconds(4);
 
-        public static async Task<IEnumerable<T>> GetAllApps<T>(Func<AppEntity, T> selector, string rowFilter = null, IRetryPolicy retryPolicy = null)
+        public static async Task<IEnumerable<T>> GetAllApps<T>(Func<AppEntity, T> selector, string rowFilter = null, int retries = -1)
         {
             Util.TraceInformation("Getting all known apps...");
             var knownSteamIds = new ConcurrentBag<T>();
@@ -30,21 +32,16 @@ namespace Common
                 {
                     knownSteamIds.Add(selector(game));
                 }
-            }, rowFilter, retryPolicy);
+            }, rowFilter, retries);
             Util.TraceInformation("Finished getting all apps. Count: {0}", knownSteamIds.Count);
             return knownSteamIds;
         }
 
-        //segmentHandler will be called synchronously for each bucket but parallel across buckets
-        public static async Task QueryAllApps(Action<TableQuerySegment<AppEntity>, int> segmentHandler, string rowFilter = null, IRetryPolicy retryPolicy = null) //int = bucket
+        //segmentHandler(segment, bucket) will be called synchronously for each bucket but parallel across buckets
+        public static async Task QueryAllApps(Action<TableQuerySegment<AppEntity>, int> segmentHandler, string rowFilter = null, int retries = -1)
         {
             Util.TraceInformation("Querying table concurrently...");
-            var cloudTableClient = CloudStorageAccount.Parse(TableStorageConnectionString).CreateCloudTableClient();
-            if (retryPolicy != null)
-            {
-                cloudTableClient.DefaultRequestOptions.RetryPolicy = retryPolicy;
-            }
-            var table = cloudTableClient.GetTableReference(SteamToHltbTableName);
+            var table = GetCloudTableClient(retries).GetTableReference(SteamToHltbTableName);
 
             await Enumerable.Range(0, AppEntity.Buckets).ForEachAsync(AppEntity.Buckets, async bucket =>
             {
@@ -75,19 +72,14 @@ namespace Common
             Util.TraceInformation("Finished querying table");
         }
 
-        public static Task InsertOrReplace(IEnumerable<AppEntity> games)
+        public static Task Insert(IEnumerable<AppEntity> games, int retries = -1)
         {
-            return ExecuteOperations(games, TableOperation.InsertOrReplace);
+            return ExecuteOperations(games, TableOperation.Insert, retries);
         }
 
-        public static Task Delete(IEnumerable<AppEntity> games)
+        private static async Task ExecuteOperations(IEnumerable<AppEntity> games, Func<AppEntity, TableOperation> operation, int retries = -1)
         {
-            return ExecuteOperations(games, TableOperation.Delete);
-        }
-
-        public static async Task ExecuteOperations(IEnumerable<AppEntity> games, Func<AppEntity, TableOperation> operation)
-        {
-            var table = CloudStorageAccount.Parse(TableStorageConnectionString).CreateCloudTableClient().GetTableReference(SteamToHltbTableName);
+            var table = GetCloudTableClient(retries).GetTableReference(SteamToHltbTableName);
 
             await games.GroupBy(ae => ae.PartitionKeyInt).ForEachAsync(AppEntity.Buckets, async ag =>
             {
@@ -116,14 +108,6 @@ namespace Common
             });
         }
 
-        public static async Task ResetTable()
-        {
-            var table = CloudStorageAccount.Parse(TableStorageConnectionString).CreateCloudTableClient().GetTableReference(SteamToHltbTableName);
-            await table.DeleteIfExistsAsync();
-            await Task.Delay(TimeSpan.FromMinutes(1));
-            await table.CreateIfNotExistsAsync();
-        }
-
         public static string StartsWithFilter(string propertyName, string value)
         {
             return TableQuery.CombineFilters(
@@ -132,16 +116,22 @@ namespace Common
                 TableQuery.GenerateFilterCondition(propertyName, QueryComparisons.LessThan, IncrementLastChar(value)));
         }
 
+        private static CloudTableClient GetCloudTableClient(int retries)
+        {
+            var cloudTableClient = CloudStorageAccount.Parse(TableStorageConnectionString).CreateCloudTableClient();
+            if (retries >= 0)
+            {
+                cloudTableClient.DefaultRequestOptions.RetryPolicy = new ExponentialRetry(DefaultDeltaBackoff, retries);
+            }
+            return cloudTableClient;
+        }
+
         private static string IncrementLastChar(string str)
         {
-            char last = str[str.Length-1];
-
-            if (last == Char.MaxValue)
-            {
-                return str + (char)0;
-            }
-            
-            return str.Remove(str.Length - 1, 1) + (char)(last + 1);
+            char lastChar = str[str.Length-1];
+            return lastChar == Char.MaxValue
+                ? str + (char) 0
+                : str.Remove(str.Length - 1, 1) + (char) (lastChar + 1);
         }
     }
 }
