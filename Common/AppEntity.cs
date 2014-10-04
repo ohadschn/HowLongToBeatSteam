@@ -27,15 +27,15 @@ namespace Common
         public string Type { get; set; }
 
         [IgnoreProperty]
-        public int PartitionKeyInt { get { return int.Parse(PartitionKey); } }
+        public int PartitionKeyInt { get { return int.Parse(PartitionKey, CultureInfo.InvariantCulture); } }
         [IgnoreProperty]
-        public bool Measured { get { return RowKey.StartsWith(MeasuredKey); } }
+        public bool Measured { get { return RowKey.StartsWith(MeasuredKey, StringComparison.Ordinal); } }
 
         public AppEntity(int steamAppId, string steamName, string type) : this(steamAppId, steamName, type, -1, null, 0, 0, 0, 0, 0, 0, 0)
         {
         }
 
-        public AppEntity(
+        private AppEntity(
             int steamAppId, 
             string steamName, 
             string type,
@@ -63,7 +63,7 @@ namespace Common
             VsTtb = vsTtb;
 
             PartitionKey = CalculateBucket(steamAppId).ToString(CultureInfo.InvariantCulture);
-            RowKey = String.Format("{0}_{1}_{2}", Classify(Type), Type, SteamAppId);
+            RowKey = String.Format(CultureInfo.InvariantCulture, "{0}_{1}_{2}", Classify(Type), Type, SteamAppId);
         }
 
         private static string Classify(string type)
@@ -91,7 +91,7 @@ namespace Common
 
         public override string ToString()
         {
-            return string.Format(
+            return string.Format(CultureInfo.InvariantCulture, 
                 "SteamAppId: {0}, SteamName: {1}, HltbId: {2}, HltbName: {3}, MainTtb: {4}, ExtrasTtb: {5}, CompletionistTtb: {6}, CombinedTtb: {7}",
                 SteamAppId, SteamName, HltbId, HltbName, MainTtb, ExtrasTtb, CompletionistTtb, CombinedTtb);
         }

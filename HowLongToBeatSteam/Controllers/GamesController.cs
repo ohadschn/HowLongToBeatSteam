@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -19,7 +18,7 @@ namespace HowLongToBeatSteam.Controllers
     {
         private static readonly string SteamApiKey = ConfigurationManager.AppSettings["SteamApiKey"];
         private const string GetOwnedSteamGamesFormat = @"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={0}&steamid={1}&format=json&include_appinfo=1";
-        private static readonly HttpClient Client = new HttpClient();
+        private static readonly HttpRetryClient Client = new HttpRetryClient(3);
         
         [UsedImplicitly] 
         private static readonly ConcurrentDictionary<int, HltbInfo> Cache = new ConcurrentDictionary<int, HltbInfo>();
@@ -35,10 +34,10 @@ namespace HowLongToBeatSteam.Controllers
                     {
                         Cache[appEntity.SteamAppId] = appEntity.Measured ? new HltbInfo(appEntity) : null;
                     }
-                }, null, 100); //we'll let the site crash and get recycled after 100 attempts - something would have to be very wrong!
+                }, null, 100).ConfigureAwait(false); //we'll let the site crash and get recycled after 100 attempts - something would have to be very wrong!
 
                 Util.TraceInformation("Finished updating cache: {0} items", Cache.Count);
-                await Task.Delay(TimeSpan.FromHours(1));
+                await Task.Delay(TimeSpan.FromHours(1)).ConfigureAwait(false);
             }
 // ReSharper disable FunctionNeverReturns
         }
@@ -48,13 +47,16 @@ namespace HowLongToBeatSteam.Controllers
         public async Task<OwnedGamesInfo> GetGames(long steamId)
         {
             Util.TraceInformation("Retrieving all owned games for user ID {0}...", steamId);
-            var response = await Client.GetAsync(string.Format(GetOwnedSteamGamesFormat, SteamApiKey, steamId));
-            response.EnsureSuccessStatusCode();
+            
+            OwnedGamesResponse ownedGamesResponse;
+            using (var response = await Client.GetAsync(string.Format(GetOwnedSteamGamesFormat, SteamApiKey, steamId)).ConfigureAwait(true))
+            {
+                ownedGamesResponse = await response.Content.ReadAsAsync<OwnedGamesResponse>().ConfigureAwait(true);
+            }
 
-            var ownedGamesResponse = await response.Content.ReadAsAsync<OwnedGamesResponse>();
             if (ownedGamesResponse == null || ownedGamesResponse.response == null || ownedGamesResponse.response.games == null)
             {
-                Trace.TraceError("Error retrieving owned games for user ID {0}", steamId);
+                Util.TraceError("Error retrieving owned games for user ID {0}", steamId);
                 throw new HttpResponseException(HttpStatusCode.BadRequest);
             }
             
@@ -73,7 +75,7 @@ namespace HowLongToBeatSteam.Controllers
                     continue;
                 }
                 
-                if (hltbInfo == null) //non-game
+                if (hltbInfo == null)
                 {
                     Util.TraceInformation("Skipping non-game: {0} / {1}", game.appid, game.name);
                     continue;

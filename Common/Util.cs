@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -23,6 +24,8 @@ namespace Common
         public static TValue GetOrCreate<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
             where TValue : new()
         {
+            Trace.Assert(dictionary != null);
+
             TValue ret;
             if (!dictionary.TryGetValue(key, out ret))
             {
@@ -40,7 +43,7 @@ namespace Common
                         {
                             while (partition.MoveNext())
                             {
-                                await taskFactory(partition.Current);
+                                await taskFactory(partition.Current).ConfigureAwait(false);
                             }
                         }
                     })));
@@ -75,7 +78,7 @@ namespace Common
 
         private static string GetTraceFormat(string format)
         {
-            return String.Format("{0:O} {1}", DateTime.Now, format);
+            return String.Format(CultureInfo.InvariantCulture, "{0:O} {1}", DateTime.Now, format);
         }
 
         public static IEnumerable<IList<T>> Partition<T>(this IEnumerable<T> enumerable, int groupSize)
@@ -99,7 +102,23 @@ namespace Common
 
         public static bool Contains(this string source, string toCheck, StringComparison comp)
         {
+            Trace.Assert(source != null);
+
             return source.IndexOf(toCheck, comp) >= 0;
+        }
+
+        public static void SetDefaultConnectionLimit()
+        {
+            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
+        }
+
+        private static readonly Lazy<int> s_maxConcurrentHttpRequests = new Lazy<int>(() =>
+            Environment.ProcessorCount*
+            Int32.Parse(ConfigurationManager.AppSettings["MaxDegreeOfConcurrencyFactor"], CultureInfo.InvariantCulture));
+
+        public static int MaxConcurrentHttpRequests
+        {
+            get { return s_maxConcurrentHttpRequests.Value; }
         }
     }
 }

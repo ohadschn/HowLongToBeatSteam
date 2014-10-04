@@ -284,7 +284,9 @@ namespace JetBrains.Annotations
             TargetFlags = targetFlags;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Flags")]
         public ImplicitUseKindFlags UseKindFlags { get; private set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Flags")]
         public ImplicitUseTargetFlags TargetFlags { get; private set; }
     }
 
@@ -312,13 +314,13 @@ namespace JetBrains.Annotations
             TargetFlags = targetFlags;
         }
 
-        [UsedImplicitly]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Flags"), UsedImplicitly]
         public ImplicitUseKindFlags UseKindFlags { get; private set; }
-        [UsedImplicitly]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Flags"), UsedImplicitly]
         public ImplicitUseTargetFlags TargetFlags { get; private set; }
     }
 
-    [Flags]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Flags"), Flags]
     public enum ImplicitUseKindFlags
     {
         Default = Access | Assign | InstantiatedWithFixedConstructorSignature,
@@ -340,7 +342,7 @@ namespace JetBrains.Annotations
     /// when marked with <see cref="MeansImplicitUseAttribute"/>
     /// or <see cref="UsedImplicitlyAttribute"/>
     /// </summary>
-    [Flags]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Flags"), Flags]
     public enum ImplicitUseTargetFlags
     {
         Default = Itself,

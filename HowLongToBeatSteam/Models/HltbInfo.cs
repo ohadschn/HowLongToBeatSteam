@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.Serialization;
 using Common;
 
@@ -23,6 +24,8 @@ namespace HowLongToBeatSteam.Models
 
         public HltbInfo(AppEntity appEntity)
         {
+            Trace.Assert(appEntity != null);
+
             Id = appEntity.HltbId;
             Name = appEntity.HltbName;
             MainTtb = Math.Max(appEntity.MainTtb, appEntity.SoloTtb);

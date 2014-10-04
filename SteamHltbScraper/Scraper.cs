@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -22,14 +22,13 @@ namespace SteamHltbScraper
         private const string HltbGamePageFormat = @"http://www.howlongtobeat.com/game.php?id={0}";
         private const string HltbGameOverviewPageFormat = @"http://www.howlongtobeat.com/game_overview.php?id={0}";
 
-        private static readonly int MaxDegreeOfConcurrency = Environment.ProcessorCount * Int32.Parse(ConfigurationManager.AppSettings["MaxDegreeOfConcurrencyFactor"]);
-        private static readonly int ScrapingLimit = Int32.Parse(ConfigurationManager.AppSettings["ScrapingLimit"]);
+        private static readonly int ScrapingLimit = Int32.Parse(ConfigurationManager.AppSettings["ScrapingLimit"], CultureInfo.InvariantCulture);
 
-        private static readonly HttpClient Client = new HttpClient();
+        private static readonly HttpRetryClient Client = new HttpRetryClient(4);
 
         private static void Main()
         {
-            System.Net.ServicePointManager.DefaultConnectionLimit = MaxDegreeOfConcurrency;
+            Util.SetDefaultConnectionLimit();
             using (Client)
             {
                 ScrapeHltb().Wait();
@@ -38,14 +37,12 @@ namespace SteamHltbScraper
 
         private static async Task ScrapeHltb()
         {
-            Util.TraceInformation("Scraping HLTB...");
             var updates = new ConcurrentBag<AppEntity>();
-
-            var apps = await TableHelper.GetAllApps(e => e, TableHelper.StartsWithFilter(TableHelper.RowKey, AppEntity.MeasuredKey), 20);
+            var apps = await TableHelper.GetAllApps(e => e, TableHelper.StartsWithFilter(TableHelper.RowKey, AppEntity.MeasuredKey), 20).ConfigureAwait(false);
             int count = 0;
 
-            Util.TraceInformation("Scraping with a maximum degree of concurrency {0}", MaxDegreeOfConcurrency);
-            await apps.Take(ScrapingLimit).ForEachAsync(MaxDegreeOfConcurrency, async app => 
+            Util.TraceInformation("Scraping HLTB...");
+            await apps.Take(ScrapingLimit).ForEachAsync(Util.MaxConcurrentHttpRequests, async app => 
             {
                 var current = Interlocked.Increment(ref count);
                 Util.TraceInformation("Beginning scraping #{0}...", current);
@@ -54,7 +51,7 @@ namespace SteamHltbScraper
                 {
                     try
                     {
-                        app.HltbId = await ScrapeHltbId(app.SteamName);
+                        app.HltbId = await ScrapeHltbId(app.SteamName).ConfigureAwait(false);
                     }
                     catch (Exception e)
                     {
@@ -74,7 +71,7 @@ namespace SteamHltbScraper
                 string hltbName;
                 try
                 {
-                    hltbName = await ScrapeHltbName(app.HltbId);
+                    hltbName = await ScrapeHltbName(app.HltbId).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
@@ -96,7 +93,7 @@ namespace SteamHltbScraper
                 HltbInfo hltbInfo;
                 try
                 {
-                    hltbInfo = await ScrapeHltbInfo(app.HltbId);
+                    hltbInfo = await ScrapeHltbInfo(app.HltbId).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
@@ -110,9 +107,9 @@ namespace SteamHltbScraper
                     updates.Add(app);
                 }
                 Util.TraceInformation("Scraping #{0} completed successfully", current);
-            });
+            }).ConfigureAwait(false);
 
-            await TableHelper.Insert(updates, 20); //The only other update to an existing game-typed entity would have to be manual which should take precedence
+            await TableHelper.Replace(updates, 20).ConfigureAwait(false); //The only other update to an existing game-typed entity would have to be manual which should take precedence
             Util.TraceInformation("Done Scraping HLTB");
         }
 
@@ -120,15 +117,11 @@ namespace SteamHltbScraper
         {
             Util.TraceInformation("Scraping HLTB info for id {0}...", hltbId);
             var gameOverviewUrl = String.Format(HltbGameOverviewPageFormat, hltbId);
+            
             Util.TraceInformation("Retrieving game overview URL from {0}...", gameOverviewUrl);
-
-            var response = await Client.GetAsync(gameOverviewUrl);
-            response.EnsureSuccessStatusCode();
-            var responseStream = await response.Content.ReadAsStreamAsync();
+            var doc = await LoadDocument(() => Client.GetAsync(gameOverviewUrl)).ConfigureAwait(false);
 
             Util.TraceInformation("Scraping HLTB info for game {0} from HTML...", hltbId);
-            var doc = new HtmlDocument();
-            doc.Load(responseStream);
 
             var list = doc.DocumentNode.Descendants("div").FirstOrDefault(n => n.GetAttributeValue("class", null) == "gprofile_times");
             if (list == null)
@@ -163,15 +156,11 @@ namespace SteamHltbScraper
         {
             Util.TraceInformation("Scraping HLTB name for id {0}...", hltbId);
             var gamePageUrl = String.Format(HltbGamePageFormat, hltbId);
+            
             Util.TraceInformation("Retrieving HLTB game page from {0}...", gamePageUrl);
-
-            var response = await Client.GetAsync(gamePageUrl);
-            response.EnsureSuccessStatusCode();
-            var responseStream = await response.Content.ReadAsStreamAsync();
+            var doc = await LoadDocument(() => Client.GetAsync(gamePageUrl)).ConfigureAwait(false);
 
             Util.TraceInformation("Scraping name for HLTB game {0} from HTML...", hltbId);
-            var doc = new HtmlDocument();
-            doc.Load(responseStream);
 
             var headerDiv = doc.DocumentNode.Descendants().FirstOrDefault(n => n.GetAttributeValue("class", null) == "gprofile_header");
             if (headerDiv == null)
@@ -240,24 +229,20 @@ namespace SteamHltbScraper
         {
             Util.TraceInformation("Scraping HLTB ID for {0}...", appName);
             var content = String.Format(SearchHltbPostDataFormat, appName);
-            var req = new HttpRequestMessage(HttpMethod.Post, SearchHltbUrl)
+            Func<HttpRequestMessage> requestFactory = () => new HttpRequestMessage(HttpMethod.Post, SearchHltbUrl)
             {
                 Content = new StringContent(content, Encoding.UTF8,"application/x-www-form-urlencoded")
             };
 
             Util.TraceInformation("Posting search query to {0} (content: {1})...", SearchHltbUrl, content);
-            var response = await Client.SendAsync(req);
-            response.EnsureSuccessStatusCode();
-            var responseStream = await response.Content.ReadAsStreamAsync();
+            var doc = await LoadDocument(() => Client.SendAsync(requestFactory, SearchHltbUrl)).ConfigureAwait(false);
 
             Util.TraceInformation("Scraping HLTB ID for game {0} from HTML...", appName);
-            var doc = new HtmlDocument();
-            doc.Load(responseStream);
 
             var first = doc.DocumentNode.Descendants("li").FirstOrDefault();
             if (first == null)
             {
-                Trace.TraceWarning("App not found in search");
+                Util.TraceWarning("App not found in search");
                 return -1;
             }
 
@@ -282,6 +267,17 @@ namespace SteamHltbScraper
 
             Util.TraceInformation("Scraped HLTB ID for {0} : {1}", appName, hltbId);
             return hltbId;
+        }
+
+        private static async Task<HtmlDocument> LoadDocument(Func<Task<HttpResponseMessage>> httpRequester)
+        {
+            var doc = new HtmlDocument();
+            using (var response = await httpRequester().ConfigureAwait(false))
+            using (var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+            {
+                doc.Load(responseStream);
+            }
+            return doc;
         }
 
         private static void PopulateAppEntity(AppEntity app, HltbInfo hltbInfo)

@@ -24,7 +24,6 @@ namespace Common
 
         public static async Task<IEnumerable<T>> GetAllApps<T>(Func<AppEntity, T> selector, string rowFilter = null, int retries = -1)
         {
-            Util.TraceInformation("Getting all known apps...");
             var knownSteamIds = new ConcurrentBag<T>();
             await QueryAllApps((segment, bucket) =>
             {
@@ -32,17 +31,18 @@ namespace Common
                 {
                     knownSteamIds.Add(selector(game));
                 }
-            }, rowFilter, retries);
-            Util.TraceInformation("Finished getting all apps. Count: {0}", knownSteamIds.Count);
+            }, rowFilter, retries).ConfigureAwait(false);
+            Util.TraceInformation("Finished getting apps. Count: {0}", knownSteamIds.Count);
             return knownSteamIds;
         }
 
         //segmentHandler(segment, bucket) will be called synchronously for each bucket but parallel across buckets
         public static async Task QueryAllApps(Action<TableQuerySegment<AppEntity>, int> segmentHandler, string rowFilter = null, int retries = -1)
         {
-            Util.TraceInformation("Querying table concurrently...");
+            Util.TraceInformation("Getting all apps with filter: {0}", rowFilter ?? "(none)");
             var table = GetCloudTableClient(retries).GetTableReference(SteamToHltbTableName);
 
+            Util.TraceInformation("Querying table concurrently...");
             await Enumerable.Range(0, AppEntity.Buckets).ForEachAsync(AppEntity.Buckets, async bucket =>
             {
                 var partitionFilter = 
@@ -59,7 +59,7 @@ namespace Common
                 while (currentSegment == null || currentSegment.ContinuationToken != null)
                 {
                     Util.TraceInformation("Retrieving mappings for bucket {0} / batch {1}...", bucket, batch);
-                    currentSegment = await table.ExecuteQuerySegmentedAsync(query, currentSegment != null ? currentSegment.ContinuationToken : null);
+                    currentSegment = await table.ExecuteQuerySegmentedAsync(query, currentSegment != null ? currentSegment.ContinuationToken : null).ConfigureAwait(false);
 
                     Util.TraceInformation("Processing bucket {0} / batch {1}...", bucket, batch);
                     segmentHandler(currentSegment, bucket);
@@ -67,9 +67,14 @@ namespace Common
                     Util.TraceInformation("Finished processing bucket {0} / batch {1}", bucket, batch);
                     batch++;
                 }
-            });
+            }).ConfigureAwait(false);
 
             Util.TraceInformation("Finished querying table");
+        }
+
+        public static Task Replace(IEnumerable<AppEntity> games, int retries = -1)
+        {
+            return ExecuteOperations(games, TableOperation.Replace, retries);
         }
 
         public static Task Insert(IEnumerable<AppEntity> games, int retries = -1)
@@ -95,7 +100,7 @@ namespace Common
                     }
 
                     Util.TraceInformation("Updating bucket {0} / batch {1}...", bucket, batch++);
-                    await table.ExecuteBatchAsync(batchOperation);
+                    await table.ExecuteBatchAsync(batchOperation).ConfigureAwait(false);
 
                     batchOperation = new TableBatchOperation();
                 }
@@ -103,9 +108,9 @@ namespace Common
                 if (batchOperation.Count != 0)
                 {
                     Util.TraceInformation("Updating bucket {0} / batch {1} (final)...", bucket, batch);
-                    await table.ExecuteBatchAsync(batchOperation);
+                    await table.ExecuteBatchAsync(batchOperation).ConfigureAwait(false);
                 }
-            });
+            }).ConfigureAwait(false);
         }
 
         public static string StartsWithFilter(string propertyName, string value)
