@@ -1,0 +1,16 @@
+<Dictionary>
+      <Words>
+         <Recognized>
+            <Word>Hltb</Word>
+			<Word>Ttb</Word>
+			<Word>Backoff</Word>
+			<Word>Util</Word>
+			<Word>Api</Word>
+			<Word>Completionist</Word>
+			<Word>Co</Word>
+         </Recognized>
+		 <Compound>
+            <Term CompoundAlternate="CoOp">coop</Term>
+         </Compound>
+      </Words>
+</Dictionary>

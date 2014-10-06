@@ -5,7 +5,7 @@ using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 namespace Common
 {
-    public class HttpRetryClient : IDisposable
+    public sealed class HttpRetryClient : IDisposable
     {
         public static readonly TimeSpan DefaultClientBackoff = TimeSpan.FromSeconds(4.0);
         public static readonly TimeSpan MinBackoff = TimeSpan.FromSeconds(3.0);
@@ -37,7 +37,7 @@ namespace Common
             var retryPolicy = new RetryPolicy(CatchAllStrategy, new ExponentialBackoff(m_retries, MinBackoff, MaxBackoff, DefaultClientBackoff));
 
             retryPolicy.Retrying += (sender, args) =>
-                Util.TraceWarning(
+                SiteUtil.TraceWarning(
                     "Request to URI {0} failed due to: {1}. Retrying attempt #{2} will take place in {3}",
                     uri, args.LastException.Message, args.CurrentRetryCount, args.Delay);
 

@@ -27,7 +27,7 @@ namespace HowLongToBeatSteam.Controllers
         {
             while (true)
             {
-                Util.TraceInformation("Updating cache...");
+                SiteUtil.TraceInformation("Updating cache...");
                 await TableHelper.QueryAllApps((segment, bucket) =>
                 {
                     foreach (var appEntity in segment)
@@ -36,7 +36,7 @@ namespace HowLongToBeatSteam.Controllers
                     }
                 }, null, 100).ConfigureAwait(false); //we'll let the site crash and get recycled after 100 attempts - something would have to be very wrong!
 
-                Util.TraceInformation("Finished updating cache: {0} items", Cache.Count);
+                SiteUtil.TraceInformation("Finished updating cache: {0} items", Cache.Count);
                 await Task.Delay(TimeSpan.FromHours(1)).ConfigureAwait(false);
             }
 // ReSharper disable FunctionNeverReturns
@@ -46,7 +46,7 @@ namespace HowLongToBeatSteam.Controllers
         [Route("library/{steamId:long}")]
         public async Task<OwnedGamesInfo> GetGames(long steamId)
         {
-            Util.TraceInformation("Retrieving all owned games for user ID {0}...", steamId);
+            SiteUtil.TraceInformation("Retrieving all owned games for user ID {0}...", steamId);
             
             OwnedGamesResponse ownedGamesResponse;
             using (var response = await Client.GetAsync(string.Format(GetOwnedSteamGamesFormat, SteamApiKey, steamId)).ConfigureAwait(true))
@@ -56,11 +56,11 @@ namespace HowLongToBeatSteam.Controllers
 
             if (ownedGamesResponse == null || ownedGamesResponse.response == null || ownedGamesResponse.response.games == null)
             {
-                Util.TraceError("Error retrieving owned games for user ID {0}", steamId);
+                SiteUtil.TraceError("Error retrieving owned games for user ID {0}", steamId);
                 throw new HttpResponseException(HttpStatusCode.BadRequest);
             }
             
-            Util.TraceInformation("Preparing response...");
+            SiteUtil.TraceInformation("Preparing response...");
 
             var games = new List<SteamApp>();
             bool partialCache = false; 
@@ -70,21 +70,21 @@ namespace HowLongToBeatSteam.Controllers
                 var inCache = Cache.TryGetValue(game.appid, out hltbInfo);
                 if (!inCache)
                 {
-                    Util.TraceWarning("Skipping non-cached app: {0} / {1}", game.appid, game.name);
+                    SiteUtil.TraceWarning("Skipping non-cached app: {0} / {1}", game.appid, game.name);
                     partialCache = true;
                     continue;
                 }
                 
                 if (hltbInfo == null)
                 {
-                    Util.TraceInformation("Skipping non-game: {0} / {1}", game.appid, game.name);
+                    SiteUtil.TraceInformation("Skipping non-game: {0} / {1}", game.appid, game.name);
                     continue;
                 }
 
                 games.Add(new SteamApp(game.appid, game.name, game.playtime_forever, hltbInfo.Resolved ? hltbInfo : null));
             }
 
-            Util.TraceInformation("Sending response...");
+            SiteUtil.TraceInformation("Sending response...");
             return new OwnedGamesInfo(partialCache, games);
         }
     }

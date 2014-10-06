@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Runtime.Serialization;
 using Common;
 
@@ -24,7 +23,10 @@ namespace HowLongToBeatSteam.Models
 
         public HltbInfo(AppEntity appEntity)
         {
-            Trace.Assert(appEntity != null);
+            if (appEntity == null)
+            {
+                throw new ArgumentNullException("appEntity");
+            }
 
             Id = appEntity.HltbId;
             Name = appEntity.HltbName;

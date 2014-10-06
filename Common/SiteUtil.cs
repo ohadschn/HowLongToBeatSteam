@@ -10,21 +10,25 @@ using JetBrains.Annotations;
 
 namespace Common
 {
-    public static class Util
+    public static class SiteUtil
     {
-        private static readonly bool TracingDisabled;
-        private static readonly bool OnCloud;
+        private static readonly bool TracingDisabled = TryParseBool(ConfigurationManager.AppSettings["DisableTracing"]);
+        private static readonly bool OnCloud = TryParseBool(ConfigurationManager.AppSettings["OnCloud"]);
 
-        static Util()
+        private static bool TryParseBool(string value)
         {
-            Boolean.TryParse(ConfigurationManager.AppSettings["DisableTracing"], out TracingDisabled);
-            Boolean.TryParse(ConfigurationManager.AppSettings["OnCloud"], out OnCloud);
+            bool result;
+            Boolean.TryParse(value, out result);
+            return result;
         }
 
         public static TValue GetOrCreate<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
             where TValue : new()
         {
-            Trace.Assert(dictionary != null);
+            if (dictionary == null)
+            {
+                throw new ArgumentNullException("dictionary");
+            }
 
             TValue ret;
             if (!dictionary.TryGetValue(key, out ret))
@@ -102,7 +106,10 @@ namespace Common
 
         public static bool Contains(this string source, string toCheck, StringComparison comp)
         {
-            Trace.Assert(source != null);
+            if (source == null)
+            {
+                throw new ArgumentNullException("source");
+            }
 
             return source.IndexOf(toCheck, comp) >= 0;
         }

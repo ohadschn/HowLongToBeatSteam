@@ -21,7 +21,7 @@ namespace MissingGamesUpdater
 
         static void Main()
         {
-            Util.SetDefaultConnectionLimit();
+            SiteUtil.SetDefaultConnectionLimit();
             using (Client)
             {
                 UpdateMissingGames().Wait();                
@@ -30,7 +30,7 @@ namespace MissingGamesUpdater
 
         private static async Task UpdateMissingGames()
         {
-            Util.TraceInformation("Querying for all Steam apps and all stored apps...");
+            SiteUtil.TraceInformation("Querying for all Steam apps and all stored apps...");
 
             var steamTask = GetAllSteamApps();
             var tableTask = TableHelper.GetAllApps(ae => ae.SteamAppId);
@@ -40,32 +40,32 @@ namespace MissingGamesUpdater
             var apps = steamTask.Result;
             var knownSteamIds = tableTask.Result;
 
-            Util.TraceInformation("Preparing known IDs hash...");
+            SiteUtil.TraceInformation("Preparing known IDs hash...");
             var knownSteamIdsHash = new HashSet<int>(knownSteamIds);
 
-            Util.TraceInformation("Identifying missing apps...");
+            SiteUtil.TraceInformation("Identifying missing apps...");
             var missingApps = apps.Where(a => !knownSteamIdsHash.Contains(a.appid));
 
-            Util.TraceInformation("Retrieving store information for missing apps...");
+            SiteUtil.TraceInformation("Retrieving store information for missing apps...");
             int counter = 0;
             var updates = new ConcurrentBag<AppEntity>();
-            await missingApps.Partition(MaxSteamStoreIdsPerRequest).ForEachAsync(Util.MaxConcurrentHttpRequests, async partition =>
+            await missingApps.Partition(MaxSteamStoreIdsPerRequest).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, async partition =>
             {
                 Interlocked.Add(ref counter, MaxSteamStoreIdsPerRequest);
-                Util.TraceInformation("Retrieving store info for apps {0}-{1}", counter - MaxSteamStoreIdsPerRequest + 1, counter);
+                SiteUtil.TraceInformation("Retrieving store info for apps {0}-{1}", counter - MaxSteamStoreIdsPerRequest + 1, counter);
                 await GetStoreInfo(partition, updates).ConfigureAwait(false);
             }).ConfigureAwait(false);
 
-            Util.TraceInformation("Updating missing apps: {0}", 
-                String.Join(",", updates.Select(a => String.Format("{0} / {1} ({2})", a.SteamAppId, a.SteamName, a.Type))));
+            SiteUtil.TraceInformation("Updating missing apps: {0}", 
+                String.Join(",", updates.Select(a => String.Format("{0} / {1} ({2})", a.SteamAppId, a.SteamName, a.AppType))));
 
             await TableHelper.Insert(updates, 5).ConfigureAwait(false); //we're inserting new entries, no fear of collisions (even it two jobs overlap the next one will fix it)
-            Util.TraceInformation("Finished updating missing apps");
+            SiteUtil.TraceInformation("Finished updating missing apps");
         }
 
         private static async Task<IList<App>> GetAllSteamApps()
         {
-            Util.TraceInformation("Getting list of all Steam apps from {0}...", GetSteamAppListUrl);
+            SiteUtil.TraceInformation("Getting list of all Steam apps from {0}...", GetSteamAppListUrl);
             
             AllGamesRoot allGamesRoot;
             using (var response = await Client.GetAsync(GetSteamAppListUrl).ConfigureAwait(false))
@@ -73,14 +73,14 @@ namespace MissingGamesUpdater
                 allGamesRoot = await response.Content.ReadAsAsync<AllGamesRoot>().ConfigureAwait(false);
             }
 
-            Util.TraceInformation("Finished getting all steam apps");
+            SiteUtil.TraceInformation("Finished getting all steam apps");
             return allGamesRoot.applist.apps.app;
         }
 
         private static async Task GetStoreInfo(IList<App> apps, ConcurrentBag<AppEntity> updates)
         {
             var requestUrl = String.Format(SteamStoreApiUrlTemplate, string.Join(",", apps.Select(ae => ae.appid)));
-            Util.TraceInformation("Getting app store information from: {0}", requestUrl);
+            SiteUtil.TraceInformation("Getting app store information from: {0}", requestUrl);
             
             JObject jObject;
             using (var response = await Client.GetAsync(requestUrl).ConfigureAwait(false))
@@ -102,7 +102,7 @@ namespace MissingGamesUpdater
                     type = appInfo.data.type;
                 }
 
-                Util.TraceInformation("Categorizing {0} / {1} as {2}", app.appid, app.name, type);
+                SiteUtil.TraceInformation("Categorizing {0} / {1} as {2}", app.appid, app.name, type);
                 updates.Add(new AppEntity(app.appid, app.name, type));
             }
         }

@@ -11,7 +11,7 @@ namespace ManualTableUpdater
             //var games = GetAppsFromCsv();
             //GetAppsWithStoreData().Wait();
 
-            Util.TraceInformation("All done!");
+            SiteUtil.TraceInformation("All done!");
             Console.ReadLine();
         }
 
@@ -33,7 +33,7 @@ namespace ManualTableUpdater
         //        games.Add(new AppEntity(appId, name, hltbId));
         //    }
 
-        //    Util.TraceInformation("Updating...");
+        //    SiteUtil.TraceInformation("Updating...");
         //    TableHelper.Insert(games);
         //}
     }
