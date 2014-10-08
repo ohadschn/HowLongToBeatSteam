@@ -22,7 +22,7 @@ namespace Common
         
         private static readonly TimeSpan DefaultDeltaBackoff = TimeSpan.FromSeconds(4);
 
-        public static async Task<IEnumerable<T>> GetAllApps<T>(Func<AppEntity, T> selector, string rowFilter = null, int retries = -1)
+        public static async Task<ConcurrentBag<T>> GetAllApps<T>(Func<AppEntity, T> selector, string rowFilter = null, int retries = -1)
         {
             var knownSteamIds = new ConcurrentBag<T>();
             await QueryAllApps((segment, bucket) =>
@@ -74,37 +74,45 @@ namespace Common
 
         public static Task Replace(IEnumerable<AppEntity> games, int retries = -1)
         {
-            return ExecuteOperations(games, TableOperation.Replace, retries);
+            return ExecuteOperations(games, e => new [] {TableOperation.Replace(e)}, retries);
         }
 
         public static Task Insert(IEnumerable<AppEntity> games, int retries = -1)
         {
-            return ExecuteOperations(games, TableOperation.Insert, retries);
+            return ExecuteOperations(games, e => new [] {TableOperation.Insert(e)}, retries);
         }
 
-        private static async Task ExecuteOperations(IEnumerable<AppEntity> games, Func<AppEntity, TableOperation> operation, int retries = -1)
+        public static async Task ExecuteOperations(IEnumerable<AppEntity> apps, Func<AppEntity, TableOperation[]> operationGenerator, int retries = -1)
         {
             var table = GetCloudTableClient(retries).GetTableReference(SteamToHltbTableName);
 
-            await games.GroupBy(ae => ae.Bucket).ForEachAsync(AppEntity.Buckets, async ag =>
+            await apps.GroupBy(ae => ae.Bucket).ForEachAsync(AppEntity.Buckets, async appGroup =>
             {
-                int bucket = ag.Key;
+                int bucket = appGroup.Key;
                 int batch = 1;
                 var batchOperation = new TableBatchOperation();
-                foreach (var gameEntity in ag)
+                foreach (var appEntity in appGroup)
                 {
-                    batchOperation.Add(operation(gameEntity));
-                    if (batchOperation.Count < MaxBatchOperations)
+                    var operations = operationGenerator(appEntity);
+                    if (operations.Length > MaxBatchOperations)
                     {
-                        continue;
+                        throw new ArgumentOutOfRangeException("operationGenerator", 
+                            String.Format("The operationGenerator func must return at most {0} operations", MaxBatchOperations));
                     }
 
-                    SiteUtil.TraceInformation("Updating bucket {0} / batch {1}...", bucket, batch++);
-                    await table.ExecuteBatchAsync(batchOperation).ConfigureAwait(false);
-
-                    batchOperation = new TableBatchOperation();
+                    if (batchOperation.Count + operations.Length > MaxBatchOperations)
+                    {
+                        SiteUtil.TraceInformation("Updating bucket {0} / batch {1}...", bucket, batch++);
+                        await table.ExecuteBatchAsync(batchOperation).ConfigureAwait(false);
+                        batchOperation = new TableBatchOperation();
+                    }
+                    
+                    foreach (var operation in operations)
+                    {
+                        batchOperation.Add(operation);
+                    }
                 }
-                
+
                 if (batchOperation.Count != 0)
                 {
                     SiteUtil.TraceInformation("Updating bucket {0} / batch {1} (final)...", bucket, batch);

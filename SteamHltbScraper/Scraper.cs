@@ -14,7 +14,7 @@ using HtmlAgilityPack;
 
 namespace SteamHltbScraper
 {
-    internal class Scraper
+    public static class Scraper
     {
         private const string SearchHltbUrl = @"http://www.howlongtobeat.com/search_main.php?t=games&page=1&sorthead=&sortd=Normal&plat=&detail=0";
         private const string SearchHltbPostDataFormat = @"queryString={0}";
@@ -38,7 +38,7 @@ namespace SteamHltbScraper
         private static async Task ScrapeHltb()
         {
             var updates = new ConcurrentBag<AppEntity>();
-            var apps = await TableHelper.GetAllApps(e => e, TableHelper.StartsWithFilter(TableHelper.RowKey, AppEntity.MeasuredKey), 20).ConfigureAwait(false);
+            var apps = await TableHelper.GetAllApps(e => e, AppEntity.MeasuredFilter, 20).ConfigureAwait(false);
             int count = 0;
 
             SiteUtil.TraceInformation("Scraping HLTB...");

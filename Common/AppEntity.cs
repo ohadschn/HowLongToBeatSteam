@@ -9,9 +9,11 @@ namespace Common
     public class AppEntity : TableEntity
     {
         public const int Buckets = 20;
-        public const string MeasuredKey = "Measured";
-        public const string UnmeasuredKey = "Unmeasured";
+
         public const string UnknownType = "Unknown";
+
+        private const string MeasuredKey = "Measured";
+        private const string UnmeasuredKey = "Unmeasured";
 
         public int SteamAppId { get; set; }
         public string SteamName { get; set; }
@@ -30,6 +32,16 @@ namespace Common
         public int Bucket { get { return int.Parse(PartitionKey, CultureInfo.InvariantCulture); } }
         [IgnoreProperty]
         public bool Measured { get { return RowKey.StartsWith(MeasuredKey, StringComparison.Ordinal); } }
+
+        public static string MeasuredFilter
+        {
+            get { return TableHelper.StartsWithFilter(TableHelper.RowKey, MeasuredKey); }
+        }
+
+        public static string UnknownFilter
+        {
+            get { return TableHelper.StartsWithFilter(TableHelper.RowKey, String.Format(CultureInfo.InvariantCulture, "{0}_{1}", UnmeasuredKey, UnknownType)); }
+        }
 
         public AppEntity(int steamAppId, string steamName, string appType) : this(steamAppId, steamName, appType, -1, null, 0, 0, 0, 0, 0, 0, 0)
         {

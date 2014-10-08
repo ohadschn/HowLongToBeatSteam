@@ -1,21 +1,24 @@
-﻿namespace HowLongToBeatSteam.Controllers.Responses
+﻿using System.CodeDom.Compiler;
+
+namespace HowLongToBeatSteam.Controllers.Responses
 {
     // ReSharper disable InconsistentNaming
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses")]
-    internal class OwnedGamesResponse
+    [GeneratedCode("Valve API", "1")]
+    public class OwnedGamesResponse
     {
         public OwnedGames response;
     }
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses")]
-    internal class OwnedGames
+
+    [GeneratedCode("Valve API", "1")]
+    public class OwnedGames
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields")]
         public int game_count;
 
         public OwnedGame[] games;
     }
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses")]
-    internal class OwnedGame
+
+    [GeneratedCode("Valve API", "1")]
+    public class OwnedGame
     {
         public int appid;
         public string name;

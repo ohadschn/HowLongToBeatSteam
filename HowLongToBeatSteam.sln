@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManualTableUpdater", "Manua
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MissingGamesUpdater", "MissingGamesUpdater\MissingGamesUpdater.csproj", "{C331A27B-C092-4C52-9F30-86368849D5BB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnknownUpdater", "UnknownUpdater\UnknownUpdater.csproj", "{2B5C1778-81EF-41AD-8FA2-3B0FCFEFA039}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -39,6 +41,10 @@ Global
 		{C331A27B-C092-4C52-9F30-86368849D5BB}.Debug|x86.Build.0 = Debug|x86
 		{C331A27B-C092-4C52-9F30-86368849D5BB}.Release|x86.ActiveCfg = Release|x86
 		{C331A27B-C092-4C52-9F30-86368849D5BB}.Release|x86.Build.0 = Release|x86
+		{2B5C1778-81EF-41AD-8FA2-3B0FCFEFA039}.Debug|x86.ActiveCfg = Debug|x86
+		{2B5C1778-81EF-41AD-8FA2-3B0FCFEFA039}.Debug|x86.Build.0 = Debug|x86
+		{2B5C1778-81EF-41AD-8FA2-3B0FCFEFA039}.Release|x86.ActiveCfg = Release|x86
+		{2B5C1778-81EF-41AD-8FA2-3B0FCFEFA039}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

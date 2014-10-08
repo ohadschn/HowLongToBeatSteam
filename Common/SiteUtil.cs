@@ -5,6 +5,7 @@ using System.Configuration;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 
@@ -116,7 +117,7 @@ namespace Common
 
         public static void SetDefaultConnectionLimit()
         {
-            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
+            ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
         }
 
         private static readonly Lazy<int> s_maxConcurrentHttpRequests = new Lazy<int>(() =>
