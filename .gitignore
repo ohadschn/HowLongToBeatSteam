@@ -154,18 +154,5 @@ $RECYCLE.BIN/
 
 # Mac desktop service store files
 .DS_Store
-/packages/HtmlAgilityPack.1.4.6
-/packages/WindowsAzure.Storage.4.2.0
-/packages/System.Spatial.5.6.0
-/packages/Newtonsoft.Json.5.0.6/lib
-/packages/Newtonsoft.Json.4.5.11
-/packages/Microsoft.WindowsAzure.ConfigurationManager.1.8.0.0
-/packages/Microsoft.Data.Services.Client.5.6.0
-/packages/Microsoft.Data.OData.5.6.0
-/packages/Microsoft.Data.Edm.5.6.0
-/packages/Microsoft.AspNet.WebApi.Client.5.2.0
-/packages/Microsoft.AspNet.WebApi.Client.5.1.2/lib/portable-wp8+netcore45+net45
-/packages/Microsoft.Web.WebJobs.Publish.1.0.0
-/HowLongToBeatSteam/Scripts
-/packages/Newtonsoft.Json.6.0.5
-/packages/EnterpriseLibrary.TransientFaultHandling.6.0.1304.0
+/packages/*
+!/packages/repositories.config
