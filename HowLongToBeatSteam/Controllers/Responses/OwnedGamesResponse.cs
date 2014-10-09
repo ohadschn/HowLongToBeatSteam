@@ -13,7 +13,6 @@ namespace HowLongToBeatSteam.Controllers.Responses
     public class OwnedGames
     {
         public int game_count;
-
         public OwnedGame[] games;
     }
 

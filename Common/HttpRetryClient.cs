@@ -7,9 +7,9 @@ namespace Common
 {
     public sealed class HttpRetryClient : IDisposable
     {
-        public static readonly TimeSpan DefaultClientBackoff = TimeSpan.FromSeconds(4.0);
         public static readonly TimeSpan MinBackoff = TimeSpan.FromSeconds(3.0);
         public static readonly TimeSpan MaxBackoff = TimeSpan.FromSeconds(120.0);
+        public static readonly TimeSpan DefaultClientBackoff = TimeSpan.FromSeconds(4.0);
 
         private static readonly TransientErrorCatchAllStrategy CatchAllStrategy = new TransientErrorCatchAllStrategy();
 

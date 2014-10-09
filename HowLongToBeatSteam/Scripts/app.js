@@ -25,37 +25,17 @@ function Game(steamGame) {
     };
 }
 
-function AppViewModel() {
+function AppViewModel(id) {
     var self = this;
 
-    self.steamId64 = ko.observable("");
+    self.steamId64 = ko.observable(id);
     self.badSteamId64 = ko.observable(false);
 
     $("#steamIdText").keydown(function() {
         self.badSteamId64(false);
     });
 
-    self.games = ko.observableArray([
-    new Game({
-        "SteamAppId": 3830,
-        "SteamName": "Psychonauts",
-        "Playtime": 0,
-        "HltbInfo": {
-            "Id": 7372,
-            "Name": "Psychonauts",
-            "MainTtb": 750,
-            "ExtrasTtb": 960,
-            "CompletionistTtb": 1320,
-            "CombinedTtb": 930
-        }
-    }),
-    new Game({
-        "SteamAppId": 228200,
-        "SteamName": "Company of Heroes (New Steam Version)",
-        "Playtime": 64,
-        "HltbInfo": null
-    })]);
-
+    self.games = ko.observableArray();
     self.partialCache = ko.observable(false);
     self.processing = ko.observable(false);
     self.toggling = ko.observable("");
@@ -68,11 +48,18 @@ function AppViewModel() {
     self.toggleAllChecked = ko.observable(true);
     self.toggleAllCore = function(include) {
         ko.utils.arrayForEach(self.games(), function(game) {
-            if (game.inCache) {
-                game.included(include);
-            }
+            game.included(include);
         });
     };
+
+    var doModalWork = function( func ) {
+        $('#workingModal').modal();
+        setTimeout(function () {
+            func();
+            $('#workingModal').modal("hide");
+        }, 0);
+    }
+
     self.toggleAll = function () {
         var include = !self.toggleAllChecked(); //binding is one way (workaround KO issue) so toggleAllChecked still has its old value
         if (self.games().length < 100) {
@@ -80,11 +67,10 @@ function AppViewModel() {
             return true;
         }
 
-        $('#togglingModal').modal();
-        setTimeout(function () {
+        doModalWork(function() {
             self.toggleAllCore(include);
-            $('#togglingModal').modal("hide");
-        }, 0);
+        });
+
         return false;
     };
 
@@ -146,7 +132,7 @@ function AppViewModel() {
     });
 
     self.howlongClicked = function () {
-        if (self.steamId64().length === 0 || /\D/.test(self.steamId64())) {
+        if (self.steamId64().length === 0 || !(/^\s*-?\d+\s*$/.test(self.steamId64()))) {
             self.badSteamId64(true);
             self.error("Your Steam64ID must be a 64-bit integer");
             return;
@@ -155,7 +141,6 @@ function AppViewModel() {
         }
 
         self.processing(true);
-        self.games([]);
         self.partialCache(false);
         self.missingIdsAlertHidden(false);
         self.partialCacheAlertHidden(false);
@@ -164,14 +149,19 @@ function AppViewModel() {
         $.get("api/games/library/" + self.steamId64())
             .done(function (data) {
                 self.partialCache(data.PartialCache);
-                data.Games.sort(function (a, b) {
+                data.Games.sort(function(a, b) {
                     var aName = a.SteamName.toLowerCase();
                     var bName = b.SteamName.toLowerCase();
                     return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0));
                 });
-                self.games(ko.utils.arrayMap(data.Games, function (steamGame) {
-                    return new Game(steamGame);
-                }));
+                var games = ko.utils.arrayMap(data.Games, function (steamGame) { return new Game(steamGame); });
+                if (games.length < 100) {
+                    self.games(games);
+                } else {
+                    doModalWork(function() {
+                        self.games(games);
+                    });
+                }
             })
             .fail(function (error) {
                 console.error(error);
@@ -195,6 +185,13 @@ function AppViewModel() {
     };
 }
 
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
+    var results = regex.exec(location.search);
+    return results == null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
 $(document).ready(function () {
 
     //fix console for old browsers
@@ -203,8 +200,13 @@ $(document).ready(function () {
         window.console = { log: noOp, warn: noOp, error: noOp };
     }
 
-    ko.applyBindings(new AppViewModel());
-
     $('#remainingTableHeaderInfoSpan').tooltip();
     $('#steamIdText').focus();
+
+    var id = getParameterByName("id");
+    ko.applyBindings(new AppViewModel(id));
+
+    if (id != null) {
+        $('#submit').trigger('click');
+    }
 });

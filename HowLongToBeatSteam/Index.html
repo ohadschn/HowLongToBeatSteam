@@ -7,11 +7,11 @@
     <link rel="shortcut icon" href="Resources/Clock.ico">
 </head>
     <body>
-        <div class="modal" id="togglingModal" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="togglingLabel" data-backdrop="static">
+        <div class="modal" id="workingModal" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="workingLabel" data-backdrop="static">
             <div class="modal-dialog modal-sm">
                 <div class="modal-content">
                     <div class="modal-body">
-                        <span id="togglingLabel">Toggling...</span>
+                        <span id="workingLabel">Working...</span>
                     </div>
                 </div>
             </div>
@@ -24,6 +24,7 @@
                 <li>Make sure you Steam profile is <a href="https://www.google.com/search?q=steam%20public%20profile" target="_blank">public</a></li>
                 <li>Determine your <a href="https://www.google.com/search?q=steamid64" target="_blank">SteamId64</a></li>
                 <li>Fill it out in the text box below and hit   <kbd>Enter</kbd></li>
+                <li>Optional: weep that you are not a <a href="?id=76561197995008105" target="_blank">gaming god</a></li>
             </ol>
             <br />
             <form data-bind="submit: howlongClicked" role="form" class="form-inline">
@@ -32,7 +33,7 @@
                     <input type="text" data-bind="value: steamId64" placeholder="SteamId64" id="steamIdText" class="form-control">
                     <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: badSteamId64"></span>
                 </div>
-                <button type="submit" data-bind="enable: !processing()" class="btn btn-primary">Tell me how long</button>
+                <button id="submit" type="submit" data-bind="enable: !processing()" class="btn btn-primary">Tell me how long</button>
                 <img src="http://cdnjs.cloudflare.com/ajax/libs/file-uploader/3.7.0/loading.gif" alt="loading..." data-bind="visible: processing" />
             </form>
             <br />
