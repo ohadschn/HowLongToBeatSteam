@@ -82,11 +82,23 @@ namespace Common
             return ExecuteOperations(games, e => new [] {TableOperation.Insert(e)}, retries);
         }
 
-        public static async Task ExecuteOperations(IEnumerable<AppEntity> apps, Func<AppEntity, TableOperation[]> operationGenerator, int retries = -1)
+        public static Task ExecuteOperations(IEnumerable<AppEntity> apps, Func<AppEntity, TableOperation[]> operationGenerator, int retries = -1)
         {
             var table = GetCloudTableClient(retries).GetTableReference(SteamToHltbTableName);
+            return SplitToBatchOperations(apps, operationGenerator).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, tboi =>
+            {
+                SiteUtil.TraceInformation("Executing batch operation for bucket {0} / batch {1} {2}...", 
+                    tboi.Bucket, tboi.Batch, tboi.Final ? "(final)" : String.Empty);
+                
+                return table.ExecuteBatchAsync(tboi.Operation);
+            });
+        }
 
-            await apps.GroupBy(ae => ae.Bucket).ForEachAsync(AppEntity.Buckets, async appGroup =>
+        private static IEnumerable<TableBatchOperationInfo> SplitToBatchOperations(
+            IEnumerable<AppEntity> apps, Func<AppEntity, TableOperation[]> operationGenerator)
+        {
+            var allOperations = SiteUtil.GenerateInitializedArray(AppEntity.Buckets, i => new List<TableBatchOperationInfo>());
+            foreach (var appGroup in apps.GroupBy(ae => ae.Bucket))
             {
                 int bucket = appGroup.Key;
                 int batch = 1;
@@ -96,17 +108,16 @@ namespace Common
                     var operations = operationGenerator(appEntity);
                     if (operations.Length > MaxBatchOperations)
                     {
-                        throw new ArgumentOutOfRangeException("operationGenerator", 
+                        throw new ArgumentOutOfRangeException("operationGenerator",
                             String.Format("The operationGenerator func must return at most {0} operations", MaxBatchOperations));
                     }
 
                     if (batchOperation.Count + operations.Length > MaxBatchOperations)
                     {
-                        SiteUtil.TraceInformation("Updating bucket {0} / batch {1}...", bucket, batch++);
-                        await table.ExecuteBatchAsync(batchOperation).ConfigureAwait(false);
+                        allOperations[bucket].Add(new TableBatchOperationInfo(bucket, batch++, false, batchOperation));
                         batchOperation = new TableBatchOperation();
                     }
-                    
+
                     foreach (var operation in operations)
                     {
                         batchOperation.Add(operation);
@@ -115,10 +126,10 @@ namespace Common
 
                 if (batchOperation.Count != 0)
                 {
-                    SiteUtil.TraceInformation("Updating bucket {0} / batch {1} (final)...", bucket, batch);
-                    await table.ExecuteBatchAsync(batchOperation).ConfigureAwait(false);
+                    allOperations[bucket].Add(new TableBatchOperationInfo(bucket, batch, true, batchOperation));
                 }
-            }).ConfigureAwait(false);
+            }
+            return allOperations.Interleave();
         }
 
         public static string StartsWithFilter(string propertyName, string value)
@@ -145,6 +156,22 @@ namespace Common
             return lastChar == Char.MaxValue
                 ? str + (char) 0
                 : str.Remove(str.Length - 1, 1) + (char) (lastChar + 1);
+        }
+
+        class TableBatchOperationInfo
+        {
+            public int Bucket { get; private set; }
+            public int Batch { get; private set; }
+            public bool Final { get; private set; }
+            public TableBatchOperation Operation { get; private set; }
+
+            public TableBatchOperationInfo(int bucket, int batch, bool final, TableBatchOperation operation)
+            {
+                Bucket = bucket;
+                Batch = batch;
+                Final = final;
+                Operation = operation;
+            }
         }
     }
 }

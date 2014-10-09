@@ -54,6 +54,30 @@ namespace Common
                     })));
         }
 
+        public static IEnumerable<T> Interleave<T>(this IEnumerable<IEnumerable<T>> source)
+        {
+            var enumerators = source.Select(e => e.GetEnumerator()).ToArray();
+            try
+            {
+                bool itemsRemaining;
+                do
+                {
+                    itemsRemaining = false;
+                    foreach (var item in
+                             enumerators.Where(e => e.MoveNext()).Select(e => e.Current))
+                    {
+                        yield return item;
+                        itemsRemaining = true;
+                    }
+                }
+                while (itemsRemaining);
+            }
+            finally
+            {
+                Array.ForEach(enumerators, e => e.Dispose());
+            }
+        }
+
         [StringFormatMethod("format")]
         public static void TraceInformation(string format, params object[] args)
         {
@@ -113,6 +137,16 @@ namespace Common
             }
 
             return source.IndexOf(toCheck, comp) >= 0;
+        }
+
+        public static T[] GenerateInitializedArray<T>(int size, Func<int, T> factory)
+        {
+            var arr = new T[size];
+            for (int i = 0; i < arr.Length; i++)
+            {
+                arr[i] = factory(i);
+            }
+            return arr;
         }
 
         public static void SetDefaultConnectionLimit()
