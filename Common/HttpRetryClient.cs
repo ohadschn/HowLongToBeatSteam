@@ -24,15 +24,35 @@ namespace Common
 
         public Task<HttpResponseMessage> SendAsync(Func<HttpRequestMessage> requestFactory, string url)
         {
-            return RequestAsync(url, () => m_client.SendAsync(requestFactory()));
+            return SendAsync(requestFactory, new Uri(url));            
+        }
+
+        public Task<HttpResponseMessage> SendAsync(Func<HttpRequestMessage> requestFactory, Uri url)
+        {
+            if (url == null)
+            {
+                throw new ArgumentNullException("url");
+            }
+
+            return RequestAsync(url, () => m_client.SendAsync(requestFactory())); 
         }
 
         public Task<HttpResponseMessage> GetAsync(string url)
         {
-            return RequestAsync(url, () => m_client.GetAsync(url));            
+            return GetAsync(new Uri(url));
         }
 
-        private Task<HttpResponseMessage> RequestAsync(string uri, Func<Task<HttpResponseMessage>> requester)
+        public Task<HttpResponseMessage> GetAsync(Uri url)
+        {
+            if (url == null)
+            {
+                throw new ArgumentNullException("url");
+            }
+
+            return RequestAsync(url, () => m_client.GetAsync(url));
+        }
+
+        private Task<HttpResponseMessage> RequestAsync(Uri uri, Func<Task<HttpResponseMessage>> requester)
         {
             var retryPolicy = new RetryPolicy(CatchAllStrategy, new ExponentialBackoff(m_retries, MinBackoff, MaxBackoff, DefaultClientBackoff));
 
