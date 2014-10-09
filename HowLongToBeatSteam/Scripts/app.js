@@ -1,5 +1,17 @@
 ﻿/*global ko*/
 
+var trimNumber = function (number, digits) {
+    if (digits === undefined) {
+        digits = 2;
+    }
+    return +number.toFixed(digits);
+}
+
+var getHours = function (minutes, digits) {
+    var hours = Math.max(minutes, 0) / 60;
+    return trimNumber(hours, digits);
+};
+
 function Game(steamGame) {
 
     var self = this;
@@ -9,15 +21,15 @@ function Game(steamGame) {
 
     self.steamAppId = steamGame.SteamAppId;
     self.steamName = steamGame.SteamName;
-    self.steamPlaytime = steamGame.Playtime;
+    self.steamPlaytime = ko.observable(getHours(steamGame.Playtime));
 
     self.hltbInfo = {
         id: self.known ? steamGame.HltbInfo.Id : "",
         name: self.known ? steamGame.HltbInfo.Name : "Unknown, please update",
-        mainTtb: self.known ? steamGame.HltbInfo.MainTtb : 0,
-        extrasTtb: self.known ? steamGame.HltbInfo.ExtrasTtb : 0,
-        completionistTtb: self.known ? steamGame.HltbInfo.CompletionistTtb : 0,
-        combinedTtb: self.known ? steamGame.HltbInfo.CombinedTtb : 0,
+        mainTtb: self.known ? getHours(steamGame.HltbInfo.MainTtb) : 0,
+        extrasTtb: self.known ? getHours(steamGame.HltbInfo.ExtrasTtb) : 0,
+        completionistTtb: self.known ? getHours(steamGame.HltbInfo.CompletionistTtb) : 0,
+        combinedTtb: self.known ? getHours(steamGame.HltbInfo.CombinedTtb) : 0,
         url: self.known 
             ? "http://www.howlongtobeat.com/game.php?id=" + steamGame.HltbInfo.Id
             : "http://www.howlongtobeat.com/search.php?t=games&s=" + self.steamName,
@@ -99,15 +111,15 @@ function AppViewModel(id) {
             }
 
             count++;
-            totalPlaytime += game.steamPlaytime;
+            totalPlaytime += parseInt(game.steamPlaytime());
             totalMain += game.hltbInfo.mainTtb;
             totalExtras += game.hltbInfo.extrasTtb;
             totalCompletionist += game.hltbInfo.completionistTtb;
             totalCombined += game.hltbInfo.combinedTtb;
-            mainRemaining += Math.max(0, game.hltbInfo.mainTtb - game.steamPlaytime);
-            extrasRemaining += Math.max(0, game.hltbInfo.extrasTtb - game.steamPlaytime);
-            completionistRemaining += Math.max(0, game.hltbInfo.completionistTtb - game.steamPlaytime);
-            combinedRemaining += Math.max(0, game.hltbInfo.combinedTtb - game.steamPlaytime);
+            mainRemaining += Math.max(0, game.hltbInfo.mainTtb - parseInt(game.steamPlaytime()));
+            extrasRemaining += Math.max(0, game.hltbInfo.extrasTtb - parseInt(game.steamPlaytime()));
+            completionistRemaining += Math.max(0, game.hltbInfo.completionistTtb - parseInt(game.steamPlaytime()));
+            combinedRemaining += Math.max(0, game.hltbInfo.combinedTtb - parseInt(game.steamPlaytime()));
         }
 
         if (count === length) {
@@ -119,15 +131,15 @@ function AppViewModel(id) {
         return {
             count: count,
             missingIds: missingIdsCount > 0,
-            totalPlaytime: totalPlaytime,
-            totalMain: totalMain,
-            totalExtras: totalExtras,
-            totalCompletionist: totalCompletionist,
-            totalCombined: totalCombined,
-            mainRemaining: mainRemaining,
-            extrasRemaining: extrasRemaining,
-            completionistRemaining: completionistRemaining,
-            combinedRemaining: combinedRemaining
+            totalPlaytime: trimNumber(totalPlaytime),
+            totalMain: trimNumber(totalMain),
+            totalExtras: trimNumber(totalExtras),
+            totalCompletionist: trimNumber(totalCompletionist),
+            totalCombined: trimNumber(totalCombined),
+            mainRemaining: trimNumber(mainRemaining),
+            extrasRemaining: trimNumber(extrasRemaining),
+            completionistRemaining: trimNumber(completionistRemaining),
+            combinedRemaining: trimNumber(combinedRemaining)
         };
     });
 
@@ -176,13 +188,6 @@ function AppViewModel(id) {
     self.updateHltb = function(game) {
         $.get("api/games/update/" + game.steamAppId + "?hltb=" + game.hltbInfo.id);
         alert(game.steamAppId + "-" + game.hltbInfo.id);
-    };
-
-    self.formatDuration = function(minutes) {
-        minutes = Math.max(minutes, 0);
-        var hours = Math.floor(minutes / 60);
-        var mins = minutes % 60;
-        return hours + "h " + mins + "m";
     };
 }
 

@@ -22,9 +22,7 @@
             </div>
             <ol>
                 <li>Make sure you Steam profile is <a href="https://www.google.com/search?q=steam%20public%20profile" target="_blank">public</a></li>
-                <li>Determine your <a href="https://www.google.com/search?q=steamid64" target="_blank">SteamId64</a></li>
-                <li>Fill it out in the text box below and hit   <kbd>Enter</kbd></li>
-                <li>Optional: weep that you are not a <a href="?id=76561197995008105" target="_blank">gaming god</a></li>
+                <li>Fill out your <a href="https://www.google.com/search?q=steamid64" target="_blank">SteamId64</a> in the text box below and hit   <kbd>Enter</kbd></li>
             </ol>
             <br />
             <form data-bind="submit: howlongClicked" role="form" class="form-inline">
@@ -83,11 +81,11 @@
                         <td class="vcenter"><input type="checkbox" data-bind="checked: included" /></td>
                         <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: steamAppId"></td>
                         <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: steamName"></td>
-                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: $parent.formatDuration(steamPlaytime)"></td>
-                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: $parent.formatDuration($data.hltbInfo.mainTtb)"></td>
-                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: $parent.formatDuration($data.hltbInfo.extrasTtb)"></td>
-                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: $parent.formatDuration($data.hltbInfo.completionistTtb)"></td>
-                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: $parent.formatDuration($data.hltbInfo.combinedTtb)"></td>
+                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough')"><input type="text" class="input-short" data-bind="value: steamPlaytime" /></td>
+                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough')"><input type="text" class="input-short" data-bind="value: $data.hltbInfo.mainTtb" /></td>
+                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough')"><input type="text" class="input-short" data-bind="value: $data.hltbInfo.extrasTtb" /></td>
+                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough')"><input type="text" class="input-short" data-bind="value: $data.hltbInfo.completionistTtb" /></td>
+                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough')"><input type="text" class="input-short" data-bind="value: $data.hltbInfo.combinedTtb" /></td>
                         <td data-bind="css: 'vcenter' + (known ? '' : ' emphasized'), text: $data.hltbInfo.name"></td>
                         <td class="vcenter">
                             <input type="text" class="input-short" data-bind="value:$data.hltbInfo.id" placeholder="?"/>
@@ -102,11 +100,11 @@
                         <th></th>
                         <th>Total</th>
                         <th data-bind="text: total().count + ' games'"></th>
-                        <th data-bind="text: formatDuration(total().totalPlaytime)"></th>
-                        <th data-bind="text: formatDuration(total().totalMain)"></th>
-                        <th data-bind="text: formatDuration(total().totalExtras)"></th>
-                        <th data-bind="text: formatDuration(total().totalCompletionist)"></th>
-                        <th data-bind="text: formatDuration(total().totalCombined)"></th>
+                        <th data-bind="text: total().totalPlaytime"></th>
+                        <th data-bind="text: total().totalMain"></th>
+                        <th data-bind="text: total().totalExtras"></th>
+                        <th data-bind="text: total().totalCompletionist"></th>
+                        <th data-bind="text: total().totalCombined"></th>
                         <th></th>
                         <th></th>
                         <th></th>
@@ -124,10 +122,10 @@
                         </th>
                         <th></th>
                         <th></th>
-                        <th data-bind="text: formatDuration(total().mainRemaining)"></th>
-                        <th data-bind="text: formatDuration(total().extrasRemaining)"></th>
-                        <th data-bind="text: formatDuration(total().completionistRemaining)"></th>
-                        <th data-bind="text: formatDuration(total().combinedRemaining)"></th>
+                        <th data-bind="text: total().mainRemaining"></th>
+                        <th data-bind="text: total().extrasRemaining"></th>
+                        <th data-bind="text: total().completionistRemaining"></th>
+                        <th data-bind="text: total().combinedRemaining"></th>
                         <th></th>
                         <th></th>
                         <th></th>
