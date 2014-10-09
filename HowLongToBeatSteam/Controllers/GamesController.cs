@@ -18,6 +18,7 @@ namespace HowLongToBeatSteam.Controllers
     {
         private static readonly string SteamApiKey = ConfigurationManager.AppSettings["SteamApiKey"];
         private const string GetOwnedSteamGamesFormat = @"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={0}&steamid={1}&format=json&include_appinfo=1";
+        private const string GetPlayerSummariesFormat = @"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={0}&steamids={1}";
         private static readonly HttpRetryClient Client = new HttpRetryClient(0);
 
         class CachedGameInfo
@@ -57,7 +58,12 @@ namespace HowLongToBeatSteam.Controllers
         public async Task<OwnedGamesInfo> GetGames(long steamId)
         {
             SiteUtil.TraceInformation("Retrieving all owned games for user ID {0}...", steamId);
-            var ownedGamesResponse = await GetOwnedGames(steamId).ConfigureAwait(true);
+            var ownedGamesTask = GetOwnedGames(steamId);
+            var personaNameTask = GetPersonaName(steamId);
+
+            await Task.WhenAll(ownedGamesTask, personaNameTask).ConfigureAwait(true);
+            var ownedGamesResponse = ownedGamesTask.Result;
+            var personaName = personaNameTask.Result;
 
             SiteUtil.TraceInformation("Preparing response...");
             var games = new List<SteamApp>();
@@ -83,7 +89,7 @@ namespace HowLongToBeatSteam.Controllers
             }
 
             SiteUtil.TraceInformation("Sending response...");
-            return new OwnedGamesInfo(partialCache, games);
+            return new OwnedGamesInfo(personaName, partialCache, games);
         }
 
         private static async Task<OwnedGamesResponse> GetOwnedGames(long steamId)
@@ -117,6 +123,29 @@ namespace HowLongToBeatSteam.Controllers
             }
 
             return ownedGamesResponse;
+        }
+
+        private static async Task<string> GetPersonaName(long steamId)
+        {
+            if (steamId < 0)
+            {
+                return "Cached games";
+            }
+
+            PlayerSummariesResponse playerSummaries;
+            using (var response = await Client.GetAsync(string.Format(GetPlayerSummariesFormat, SteamApiKey, steamId)).ConfigureAwait(false))
+            {
+                playerSummaries = await response.Content.ReadAsAsync<PlayerSummariesResponse>().ConfigureAwait(false);
+            }
+
+            if (playerSummaries == null || playerSummaries.response == null ||
+                playerSummaries.response.players == null || playerSummaries.response.players.Length == 0)
+            {
+                SiteUtil.TraceError("Error retrieving player summary for user ID {0}", steamId);
+                throw new HttpResponseException(HttpStatusCode.BadRequest);
+            }
+
+            return playerSummaries.response.players[0].personaname;
         }
     }
 }

@@ -10,9 +10,12 @@ namespace HowLongToBeatSteam.Models
         public bool PartialCache { get; private set; }
         [DataMember]
         public IList<SteamApp> Games { get; private set; }
+        [DataMember]
+        public string PersonaName { get; private set; }
 
-        public OwnedGamesInfo(bool partialCache, IList<SteamApp> games)
+        public OwnedGamesInfo(string personaName, bool partialCache, IList<SteamApp> games)
         {
+            PersonaName = personaName;
             Games = games;
             PartialCache = partialCache;
         }

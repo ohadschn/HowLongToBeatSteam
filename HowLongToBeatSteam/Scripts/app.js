@@ -35,10 +35,10 @@ function AppViewModel(id) {
         self.badSteamId64(false);
     });
 
+    self.personaName = ko.observable(null);
     self.games = ko.observableArray();
     self.partialCache = ko.observable(false);
     self.processing = ko.observable(false);
-    self.toggling = ko.observable("");
     self.error = ko.observable(null);
 
     self.missingIdsAlertHidden = ko.observable(false);
@@ -52,13 +52,13 @@ function AppViewModel(id) {
         });
     };
 
-    var doModalWork = function( func ) {
+    var doModalWork = function(func) {
         $('#workingModal').modal();
-        setTimeout(function () {
+        setTimeout(function() {
             func();
             $('#workingModal').modal("hide");
         }, 0);
-    }
+    };
 
     self.toggleAll = function () {
         var include = !self.toggleAllChecked(); //binding is one way (workaround KO issue) so toggleAllChecked still has its old value
@@ -149,6 +149,7 @@ function AppViewModel(id) {
         $.get("api/games/library/" + self.steamId64())
             .done(function (data) {
                 self.partialCache(data.PartialCache);
+                self.personaName(data.PersonaName);
                 data.Games.sort(function(a, b) {
                     var aName = a.SteamName.toLowerCase();
                     var bName = b.SteamName.toLowerCase();
@@ -189,7 +190,7 @@ function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
     var results = regex.exec(location.search);
-    return results == null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
+    return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
 $(document).ready(function () {
@@ -206,7 +207,7 @@ $(document).ready(function () {
     var id = getParameterByName("id");
     ko.applyBindings(new AppViewModel(id));
 
-    if (id != null) {
+    if (id !== null) {
         $('#submit').trigger('click');
     }
 });
