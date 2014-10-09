@@ -109,7 +109,7 @@ namespace Common
                     if (operations.Length > MaxBatchOperations)
                     {
                         throw new ArgumentOutOfRangeException("operationGenerator",
-                            String.Format("The operationGenerator func must return at most {0} operations", MaxBatchOperations));
+                            String.Format(CultureInfo.InvariantCulture, "The operationGenerator func must return at most {0} operations", MaxBatchOperations));
                     }
 
                     if (batchOperation.Count + operations.Length > MaxBatchOperations)

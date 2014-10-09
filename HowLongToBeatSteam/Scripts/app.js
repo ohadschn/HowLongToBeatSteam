@@ -5,16 +5,15 @@ var trimNumber = function (number, digits) {
         digits = 2;
     }
     return +number.toFixed(digits);
-}
+};
 
-var getHours = function (minutes, digits) {
+var getHours = function (minutes, digits) { // jshint ignore:line
     var hours = Math.max(minutes, 0) / 60;
     return trimNumber(hours, digits);
 };
-
-var numberWithCommas = function (x) {
+var numberWithCommas = function (x) { // jshint ignore:line
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
+};
 
 function Game(steamGame) {
 

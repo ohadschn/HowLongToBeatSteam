@@ -141,6 +141,16 @@ namespace Common
 
         public static T[] GenerateInitializedArray<T>(int size, Func<int, T> factory)
         {
+            if (factory == null)
+            {
+                throw new ArgumentNullException("factory");
+            }
+
+            if (size < 0)
+            {
+                throw new ArgumentOutOfRangeException("size");
+            }
+
             var arr = new T[size];
             for (int i = 0; i < arr.Length; i++)
             {
