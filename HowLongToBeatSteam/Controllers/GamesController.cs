@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -129,7 +130,7 @@ namespace HowLongToBeatSteam.Controllers
         {
             if (steamId < 0)
             {
-                return "Cached games";
+                return String.Format(CultureInfo.InvariantCulture, "first {0} games", Math.Abs(steamId));
             }
 
             PlayerSummariesResponse playerSummaries;

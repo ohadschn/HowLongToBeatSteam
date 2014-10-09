@@ -12,6 +12,10 @@ var getHours = function (minutes, digits) {
     return trimNumber(hours, digits);
 };
 
+var numberWithCommas = function (x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
 function Game(steamGame) {
 
     var self = this;
@@ -21,15 +25,15 @@ function Game(steamGame) {
 
     self.steamAppId = steamGame.SteamAppId;
     self.steamName = steamGame.SteamName;
-    self.steamPlaytime = ko.observable(getHours(steamGame.Playtime));
+    self.steamPlaytime = steamGame.Playtime;
 
     self.hltbInfo = {
         id: self.known ? steamGame.HltbInfo.Id : "",
         name: self.known ? steamGame.HltbInfo.Name : "Unknown, please update",
-        mainTtb: self.known ? getHours(steamGame.HltbInfo.MainTtb) : 0,
-        extrasTtb: self.known ? getHours(steamGame.HltbInfo.ExtrasTtb) : 0,
-        completionistTtb: self.known ? getHours(steamGame.HltbInfo.CompletionistTtb) : 0,
-        combinedTtb: self.known ? getHours(steamGame.HltbInfo.CombinedTtb) : 0,
+        mainTtb: self.known ? steamGame.HltbInfo.MainTtb : 0,
+        extrasTtb: self.known ? steamGame.HltbInfo.ExtrasTtb : 0,
+        completionistTtb: self.known ? steamGame.HltbInfo.CompletionistTtb : 0,
+        combinedTtb: self.known ? steamGame.HltbInfo.CombinedTtb : 0,
         url: self.known 
             ? "http://www.howlongtobeat.com/game.php?id=" + steamGame.HltbInfo.Id
             : "http://www.howlongtobeat.com/search.php?t=games&s=" + self.steamName,
@@ -111,15 +115,15 @@ function AppViewModel(id) {
             }
 
             count++;
-            totalPlaytime += parseInt(game.steamPlaytime());
+            totalPlaytime += game.steamPlaytime;
             totalMain += game.hltbInfo.mainTtb;
             totalExtras += game.hltbInfo.extrasTtb;
             totalCompletionist += game.hltbInfo.completionistTtb;
             totalCombined += game.hltbInfo.combinedTtb;
-            mainRemaining += Math.max(0, game.hltbInfo.mainTtb - parseInt(game.steamPlaytime()));
-            extrasRemaining += Math.max(0, game.hltbInfo.extrasTtb - parseInt(game.steamPlaytime()));
-            completionistRemaining += Math.max(0, game.hltbInfo.completionistTtb - parseInt(game.steamPlaytime()));
-            combinedRemaining += Math.max(0, game.hltbInfo.combinedTtb - parseInt(game.steamPlaytime()));
+            mainRemaining += Math.max(0, game.hltbInfo.mainTtb - game.steamPlaytime);
+            extrasRemaining += Math.max(0, game.hltbInfo.extrasTtb - game.steamPlaytime);
+            completionistRemaining += Math.max(0, game.hltbInfo.completionistTtb - game.steamPlaytime);
+            combinedRemaining += Math.max(0, game.hltbInfo.combinedTtb - game.steamPlaytime);
         }
 
         if (count === length) {

@@ -22,7 +22,8 @@
             </div>
             <ol>
                 <li>Make sure you Steam profile is <a href="https://www.google.com/search?q=steam%20public%20profile" target="_blank">public</a></li>
-                <li>Fill out your <a href="https://www.google.com/search?q=steamid64" target="_blank">SteamId64</a> in the text box below and hit   <kbd>Enter</kbd></li>
+                <li>Fill out your <a href="https://www.google.com/search?q=steamid64" target="_blank">SteamId64</a> in the text box below</li>
+                <li>Hit the button or press <kbd>Enter</kbd></li>
             </ol>
             <br />
             <form data-bind="submit: howlongClicked" role="form" class="form-inline">
@@ -81,16 +82,16 @@
                         <td class="vcenter"><input type="checkbox" data-bind="checked: included" /></td>
                         <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: steamAppId"></td>
                         <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: steamName"></td>
-                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough')"><input type="text" class="input-short" data-bind="value: steamPlaytime" /></td>
-                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough')"><input type="text" class="input-short" data-bind="value: $data.hltbInfo.mainTtb" /></td>
-                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough')"><input type="text" class="input-short" data-bind="value: $data.hltbInfo.extrasTtb" /></td>
-                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough')"><input type="text" class="input-short" data-bind="value: $data.hltbInfo.completionistTtb" /></td>
-                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough')"><input type="text" class="input-short" data-bind="value: $data.hltbInfo.combinedTtb" /></td>
+                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: getHours(steamPlaytime) + 'h'"></td>
+                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: getHours($data.hltbInfo.mainTtb) + 'h'"></td>
+                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: getHours($data.hltbInfo.extrasTtb) + 'h'"></td>
+                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: getHours($data.hltbInfo.completionistTtb) + 'h'">></td>
+                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: getHours($data.hltbInfo.combinedTtb) + 'h'"></td>
                         <td data-bind="css: 'vcenter' + (known ? '' : ' emphasized'), text: $data.hltbInfo.name"></td>
                         <td class="vcenter">
                             <input type="text" class="input-short" data-bind="value:$data.hltbInfo.id" placeholder="?"/>
                         </td>
-                        <td class="vcenter">
+                        <td class="vcenter text-nowrap">
                             <button class="btn btn-info btn-sm" data-bind="click: $parent.updateHltb">Update</button>
                             <a data-bind="text: $data.hltbInfo.linkText, attr: {href: $data.hltbInfo.url}" target="_blank"></a>
                         </td>
@@ -100,18 +101,18 @@
                         <th></th>
                         <th>Total</th>
                         <th data-bind="text: total().count + ' games'"></th>
-                        <th data-bind="text: total().totalPlaytime"></th>
-                        <th data-bind="text: total().totalMain"></th>
-                        <th data-bind="text: total().totalExtras"></th>
-                        <th data-bind="text: total().totalCompletionist"></th>
-                        <th data-bind="text: total().totalCombined"></th>
+                        <th data-bind="text: numberWithCommas(trimNumber(total().totalPlaytime)) + 'h'"></th>
+                        <th data-bind="text: numberWithCommas(trimNumber(total().totalMain)) + 'h'"></th>
+                        <th data-bind="text: numberWithCommas(trimNumber(total().totalExtras)) + 'h'"></th>
+                        <th data-bind="text: numberWithCommas(trimNumber(total().totalCompletionist)) + 'h'"></th>
+                        <th data-bind="text: numberWithCommas(trimNumber(total().totalCombined)) + 'h'"></th>
                         <th></th>
                         <th></th>
                         <th></th>
                     </tr>
                     <tr class="success">
                         <th></th>
-                        <th>
+                        <th colspan="2">
                             Remaining <span 
                                           class="glyphicon glyphicon-info-sign" 
                                           id="remainingTableHeaderInfoSpan" 
@@ -121,11 +122,10 @@
                                           title="For each game, the expected time to beat is subtracted from the time played (to a minimum of zero)"></span>
                         </th>
                         <th></th>
-                        <th></th>
-                        <th data-bind="text: total().mainRemaining"></th>
-                        <th data-bind="text: total().extrasRemaining"></th>
-                        <th data-bind="text: total().completionistRemaining"></th>
-                        <th data-bind="text: total().combinedRemaining"></th>
+                        <th data-bind="text: numberWithCommas(trimNumber(total().mainRemaining)) + 'h'"></th>
+                        <th data-bind="text: numberWithCommas(trimNumber(total().extrasRemaining)) + 'h'"></th>
+                        <th data-bind="text: numberWithCommas(trimNumber(total().completionistRemaining)) + 'h'"></th>
+                        <th data-bind="text: numberWithCommas(trimNumber(total().combinedRemaining)) + 'h'"></th>
                         <th></th>
                         <th></th>
                         <th></th>
