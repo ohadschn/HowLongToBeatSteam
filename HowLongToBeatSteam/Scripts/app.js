@@ -36,7 +36,6 @@ function Game(steamGame) {
         url: self.known 
             ? "http://www.howlongtobeat.com/game.php?id=" + steamGame.HltbInfo.Id
             : "http://www.howlongtobeat.com/search.php?t=games&s=" + self.steamName,
-        linkText: self.known ? "Browse on HLTB" : "Find on HLTB",
     };
 }
 

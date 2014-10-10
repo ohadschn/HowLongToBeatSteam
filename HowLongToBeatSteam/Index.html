@@ -87,13 +87,14 @@
                         <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: getHours($data.hltbInfo.extrasTtb) + 'h'"></td>
                         <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: getHours($data.hltbInfo.completionistTtb) + 'h'">></td>
                         <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: getHours($data.hltbInfo.combinedTtb) + 'h'"></td>
-                        <td data-bind="css: 'vcenter' + (known ? '' : ' emphasized'), text: $data.hltbInfo.name"></td>
+                        <td data-bind="css: 'vcenter' + (known ? '' : ' emphasized')">
+                            <a data-bind="text: $data.hltbInfo.name, attr: {href: $data.hltbInfo.url}" target="_blank"></a>
+                        </td>
                         <td class="vcenter">
                             <input type="text" class="input-short" data-bind="value:$data.hltbInfo.id" placeholder="?"/>
                         </td>
-                        <td class="vcenter text-nowrap">
+                        <td class="vcenter">
                             <button class="btn btn-info btn-sm" data-bind="click: $parent.updateHltb">Update</button>
-                            <a data-bind="text: $data.hltbInfo.linkText, attr: {href: $data.hltbInfo.url}" target="_blank"></a>
                         </td>
                     </tr>
                     <!-- /ko -->
