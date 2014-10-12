@@ -104,10 +104,10 @@
     <Content Include="Global.asax" />
     <Content Include="Index.html" />
     <None Include="Intellisense\jquery-2.1.0-vsdoc.js" />
-    <None Include="Intellisense\knockout-3.1.0.debug.js" />
-    <None Include="Intellisense\bootstrap.css" />
-    <None Include="Intellisense\tooltip.js" />
-    <None Include="Intellisense\modal.js" />
+    <None Include="Intellisense\bootstrap-3.2.0.css" />
+    <None Include="Intellisense\bootstrap-3.2.0-tooltip.js" />
+    <None Include="Intellisense\bootstrap-3.2.0-modal.js" />
+    <Content Include="Intellisense\knockout-3.2.0-debug.js" />
     <Content Include="Resources\Clock.ico" />
     <Content Include="Scripts\app.js" />
     <Content Include="Scripts\app.min.js">

@@ -1,15 +1,11 @@
 ﻿/*global ko*/
 
-var trimNumber = function (number, digits) {
+var getHours = function (minutes, digits) { // jshint ignore:line
     if (digits === undefined) {
         digits = 2;
     }
-    return +number.toFixed(digits);
-};
-
-var getHours = function (minutes, digits) { // jshint ignore:line
     var hours = Math.max(minutes, 0) / 60;
-    return trimNumber(hours, digits);
+    return +hours.toFixed(digits);
 };
 var numberWithCommas = function (x) { // jshint ignore:line
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -49,8 +45,9 @@ function AppViewModel(id) {
         self.badSteamId64(false);
     });
 
-    self.personaName = ko.observable(null);
     self.games = ko.observableArray();
+
+    self.personaName = ko.observable(null);
     self.partialCache = ko.observable(false);
     self.processing = ko.observable(false);
     self.error = ko.observable(null);
@@ -71,7 +68,7 @@ function AppViewModel(id) {
         setTimeout(function() {
             func();
             $('#workingModal').modal("hide");
-        }, 0);
+        }, 50);
     };
 
     self.toggleAll = function () {
@@ -133,15 +130,15 @@ function AppViewModel(id) {
         return {
             count: count,
             missingIds: missingIdsCount > 0,
-            totalPlaytime: trimNumber(totalPlaytime),
-            totalMain: trimNumber(totalMain),
-            totalExtras: trimNumber(totalExtras),
-            totalCompletionist: trimNumber(totalCompletionist),
-            totalCombined: trimNumber(totalCombined),
-            mainRemaining: trimNumber(mainRemaining),
-            extrasRemaining: trimNumber(extrasRemaining),
-            completionistRemaining: trimNumber(completionistRemaining),
-            combinedRemaining: trimNumber(combinedRemaining)
+            totalPlaytime: totalPlaytime,
+            totalMain: totalMain,
+            totalExtras: totalExtras,
+            totalCompletionist: totalCompletionist,
+            totalCombined: totalCombined,
+            mainRemaining: mainRemaining,
+            extrasRemaining: extrasRemaining,
+            completionistRemaining: completionistRemaining,
+            combinedRemaining: combinedRemaining
         };
     });
 
@@ -160,8 +157,20 @@ function AppViewModel(id) {
         self.partialCacheAlertHidden(false);
         self.errorAlertHidden(false);
 
+        var updateGames = function(games, start) {
+            if (games.length < 100) {
+                self.games(games);
+                self.processing(false);
+            } else {
+                doModalWork(function () {
+                    self.games(games);
+                    self.processing(false);
+                });
+            }
+        };
+
         $.get("api/games/library/" + self.steamId64())
-            .done(function (data) {
+            .done(function(data) {
                 self.partialCache(data.PartialCache);
                 self.personaName(data.PersonaName);
                 data.Games.sort(function(a, b) {
@@ -169,20 +178,12 @@ function AppViewModel(id) {
                     var bName = b.SteamName.toLowerCase();
                     return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0));
                 });
-                var games = ko.utils.arrayMap(data.Games, function (steamGame) { return new Game(steamGame); });
-                if (games.length < 100) {
-                    self.games(games);
-                } else {
-                    doModalWork(function() {
-                        self.games(games);
-                    });
-                }
+                var games = ko.utils.arrayMap(data.Games, function(steamGame) { return new Game(steamGame); });
+                updateGames(games, 0);
             })
-            .fail(function (error) {
+            .fail(function(error) {
                 console.error(error);
                 self.error("Verify your Steam64Id and try again");
-            })
-            .always(function() {
                 self.processing(false);
             });
     };
