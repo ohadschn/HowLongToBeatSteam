@@ -2,27 +2,15 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 
 namespace Common
 {
     public static class SiteUtil
     {
-        private static readonly bool TracingDisabled = TryParseBool(ConfigurationManager.AppSettings["DisableTracing"]);
-        private static readonly bool OnCloud = TryParseBool(ConfigurationManager.AppSettings["OnCloud"]);
-
-        private static bool TryParseBool(string value)
-        {
-            bool result;
-            Boolean.TryParse(value, out result);
-            return result;
-        }
-
         public static TValue GetOrCreate<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
             where TValue : new()
         {
@@ -76,38 +64,6 @@ namespace Common
             {
                 Array.ForEach(enumerators, e => e.Dispose());
             }
-        }
-
-        [StringFormatMethod("format")]
-        public static void TraceInformation(string format, params object[] args)
-        {
-            if (!TracingDisabled)
-            {
-                Trace.TraceInformation(OnCloud ? format : GetTraceFormat(format), args);
-            }
-        }
-
-        [StringFormatMethod("format")]
-        public static void TraceWarning(string format, params object[] args)
-        {
-            if (!TracingDisabled)
-            {
-                Trace.TraceWarning(OnCloud ? format : GetTraceFormat(format), args);
-            }
-        }
-
-        [StringFormatMethod("format")]
-        public static void TraceError(string format, params object[] args)
-        {
-            if (!TracingDisabled)
-            {
-                Trace.TraceError(OnCloud ? format : GetTraceFormat(format), args);
-            }
-        }
-
-        private static string GetTraceFormat(string format)
-        {
-            return String.Format(CultureInfo.InvariantCulture, "{0:O} {1}", DateTime.Now, format);
         }
 
         public static IEnumerable<IList<T>> Partition<T>(this IEnumerable<T> enumerable, int groupSize)

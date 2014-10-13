@@ -84,6 +84,7 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="HttpRetryClient.cs" />
+    <Compile Include="SiteEventSource.cs" />
     <Compile Include="SteamJson.cs" />
     <Compile Include="SteamStoreHelper.cs" />
     <Compile Include="TableHelper.cs" />

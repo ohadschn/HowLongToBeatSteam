@@ -25,6 +25,8 @@ namespace Common
         public static async Task<ConcurrentBag<T>> GetAllApps<T>(Func<AppEntity, T> selector, string rowFilter = null, int retries = -1)
         {
             var knownSteamIds = new ConcurrentBag<T>();
+
+            SiteEventSource.Log.QueryAllAppsStart(rowFilter ?? "(none)");
             await QueryAllApps((segment, bucket) =>
             {
                 foreach (var game in segment)
@@ -32,17 +34,16 @@ namespace Common
                     knownSteamIds.Add(selector(game));
                 }
             }, rowFilter, retries).ConfigureAwait(false);
-            SiteUtil.TraceInformation("Finished getting apps. Count: {0}", knownSteamIds.Count);
+            SiteEventSource.Log.QueryAllAppsStop(rowFilter ?? "(none)", knownSteamIds.Count);
+            
             return knownSteamIds;
         }
 
         //segmentHandler(segment, bucket) will be called synchronously for each bucket but parallel across buckets
         public static async Task QueryAllApps(Action<TableQuerySegment<AppEntity>, int> segmentHandler, string rowFilter = null, int retries = -1)
         {
-            SiteUtil.TraceInformation("Getting all apps with filter: {0}", rowFilter ?? "(none)");
             var table = GetCloudTableClient(retries).GetTableReference(SteamToHltbTableName);
 
-            SiteUtil.TraceInformation("Querying table concurrently...");
             await Enumerable.Range(0, AppEntity.Buckets).ForEachAsync(AppEntity.Buckets, async bucket =>
             {
                 var partitionFilter = 
@@ -58,18 +59,18 @@ namespace Common
                 int batch = 1;
                 while (currentSegment == null || currentSegment.ContinuationToken != null)
                 {
-                    SiteUtil.TraceInformation("Retrieving mappings for bucket {0} / batch {1}...", bucket, batch);
+                    SiteEventSource.Log.RetrieveBucketBatchMappingsStart(bucket, batch);
                     currentSegment = await table.ExecuteQuerySegmentedAsync(query, currentSegment != null ? currentSegment.ContinuationToken : null).ConfigureAwait(false);
+                    SiteEventSource.Log.RetrieveBucketBatchMappingsStop(bucket, batch);
 
-                    SiteUtil.TraceInformation("Processing bucket {0} / batch {1}...", bucket, batch);
+                    SiteEventSource.Log.ProcessBucketBatchStart(bucket, batch);
                     segmentHandler(currentSegment, bucket);
+                    SiteEventSource.Log.ProcessBucketBatchStop(bucket, batch);
 
-                    SiteUtil.TraceInformation("Finished processing bucket {0} / batch {1}", bucket, batch);
                     batch++;
                 }
             }).ConfigureAwait(false);
 
-            SiteUtil.TraceInformation("Finished querying table");
         }
 
         public static Task Replace(IEnumerable<AppEntity> games, int retries = -1)
@@ -82,16 +83,21 @@ namespace Common
             return ExecuteOperations(games, e => new [] {TableOperation.Insert(e)}, retries);
         }
 
-        public static Task ExecuteOperations(IEnumerable<AppEntity> apps, Func<AppEntity, TableOperation[]> operationGenerator, int retries = -1)
+        public static async Task ExecuteOperations(IEnumerable<AppEntity> apps, Func<AppEntity, TableOperation[]> operationGenerator, int retries = -1)
         {
             var table = GetCloudTableClient(retries).GetTableReference(SteamToHltbTableName);
-            return SplitToBatchOperations(apps, operationGenerator).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, tboi =>
+
+            SiteEventSource.Log.ExecuteOperationsStart();
+            await SplitToBatchOperations(apps, operationGenerator).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, async tboi =>
             {
-                SiteUtil.TraceInformation("Executing batch operation for bucket {0} / batch {1} {2}...", 
-                    tboi.Bucket, tboi.Batch, tboi.Final ? "(final)" : String.Empty);
-                
-                return table.ExecuteBatchAsync(tboi.Operation);
-            });
+                var final = tboi.Final ? "(final)" : String.Empty;
+
+                SiteEventSource.Log.ExecuteBucketBatchOperationStart(tboi.Bucket, tboi.Batch, final);
+                await table.ExecuteBatchAsync(tboi.Operation).ConfigureAwait(false);
+                SiteEventSource.Log.ExecuteBucketBatchOperationStop(tboi.Bucket, tboi.Batch, final);
+
+            }).ConfigureAwait(false);
+            SiteEventSource.Log.ExecuteOperationsStop();
         }
 
         private static IEnumerable<TableBatchOperationInfo> SplitToBatchOperations(

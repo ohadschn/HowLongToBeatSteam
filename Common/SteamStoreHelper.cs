@@ -19,20 +19,22 @@ namespace Common
         {
             int counter = 0;
             var updates = new ConcurrentBag<AppEntity>();
+            
+            SiteEventSource.Log.RetrieveMissingStoreInformationStart();
             await missingApps.Partition(MaxSteamStoreIdsPerRequest).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, async partition =>
             {
-                Interlocked.Add(ref counter, MaxSteamStoreIdsPerRequest);
-                SiteUtil.TraceInformation("Retrieving store info for apps {0}-{1}", counter - MaxSteamStoreIdsPerRequest + 1, counter);
-                await GetStoreInfo(partition, updates, client).ConfigureAwait(false);
+                await GetStoreInfo(Interlocked.Add(ref counter, MaxSteamStoreIdsPerRequest), partition, updates, client).ConfigureAwait(false);
             }).ConfigureAwait(false);
+            SiteEventSource.Log.RetrieveMissingStoreInformationStop();
 
             return updates;
         }
 
-        public static async Task GetStoreInfo(IList<BasicStoreInfo> apps, ConcurrentBag<AppEntity> updates, HttpRetryClient client)
+        private static async Task GetStoreInfo(int counter, IList<BasicStoreInfo> apps, ConcurrentBag<AppEntity> updates, HttpRetryClient client)
         {
-            var requestUrl = String.Format(SteamStoreApiUrlTemplate, String.Join(",", apps.Select(si => si.AppId)));
-            SiteUtil.TraceInformation("Getting app store information from: {0}", requestUrl);
+            var start = counter - MaxSteamStoreIdsPerRequest + 1;
+            var requestUrl = new Uri(String.Format(SteamStoreApiUrlTemplate, String.Join(",", apps.Select(si => si.AppId))));
+            SiteEventSource.Log.RetrieveStoreInformationStart(start, counter, requestUrl);
             
             JObject jObject;
             using (var response = await client.GetAsync(requestUrl).ConfigureAwait(false))
@@ -50,13 +52,15 @@ namespace Common
 
                 if (app.AppType == type)
                 {
-                    SiteUtil.TraceInformation("Skipping already categorized app {0} / {1} ({2})", app.AppId, app.Name, type); 
+                    SiteEventSource.Log.SkippedCategorizedApp(app.AppId, app.Name, type);
                     continue;
                 }
 
-                SiteUtil.TraceInformation("Categorizing {0} / {1} as {2}", app.AppId, app.Name, type);
+                SiteEventSource.Log.CategorizingApp(app.AppId, app.Name, type);
                 updates.Add(new AppEntity(app.AppId, app.Name, type));
             }
+
+            SiteEventSource.Log.RetrieveStoreInformationStop(start, counter, requestUrl);
         }
     }
 

@@ -39,7 +39,8 @@ namespace HowLongToBeatSteam.Controllers
         {
             while (true)
             {
-                SiteUtil.TraceInformation("Updating cache...");
+                SiteEventSource.Log.QueryAllAppsStart("(none)");
+
                 await TableHelper.QueryAllApps((segment, bucket) =>
                 {
                     foreach (var appEntity in segment)
@@ -48,7 +49,7 @@ namespace HowLongToBeatSteam.Controllers
                     }
                 }, null, 100).ConfigureAwait(false); //we'll crash and get recycled after 100 failed attempts - something would have to be very wrong!
 
-                SiteUtil.TraceInformation("Finished updating cache: {0} items", Cache.Count);
+                SiteEventSource.Log.QueryAllAppsStop("(none)", Cache.Count);
                 await Task.Delay(TimeSpan.FromHours(1)).ConfigureAwait(false);
             }
 // ReSharper disable FunctionNeverReturns
@@ -58,7 +59,6 @@ namespace HowLongToBeatSteam.Controllers
         [Route("library/{steamId:long}")]
         public async Task<OwnedGamesInfo> GetGames(long steamId)
         {
-            SiteUtil.TraceInformation("Retrieving all owned games for user ID {0}...", steamId);
             var ownedGamesTask = GetOwnedGames(steamId);
             var personaNameTask = GetPersonaName(steamId);
 
@@ -95,6 +95,7 @@ namespace HowLongToBeatSteam.Controllers
 
         private static async Task<OwnedGamesResponse> GetOwnedGames(long steamId)
         {
+
             if (steamId < 0)
             {
                 return new OwnedGamesResponse
@@ -112,16 +113,20 @@ namespace HowLongToBeatSteam.Controllers
             }
 
             OwnedGamesResponse ownedGamesResponse;
+            SiteEventSource.Log.RetrieveOwnedGamesStart(steamId);
             using (var response = await Client.GetAsync(string.Format(GetOwnedSteamGamesFormat, SteamApiKey, steamId)).ConfigureAwait(false))
             {
                 ownedGamesResponse = await response.Content.ReadAsAsync<OwnedGamesResponse>().ConfigureAwait(false);
             }
+            SiteEventSource.Log.RetrieveOwnedGamesStop(steamId);
 
             if (ownedGamesResponse == null || ownedGamesResponse.response == null || ownedGamesResponse.response.games == null)
             {
+                SiteEventSource.Log
                 SiteUtil.TraceError("Error retrieving owned games for user ID {0}", steamId);
                 throw new HttpResponseException(HttpStatusCode.BadRequest);
             }
+
 
             return ownedGamesResponse;
         }

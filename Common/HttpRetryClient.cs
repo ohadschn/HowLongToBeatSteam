@@ -56,10 +56,7 @@ namespace Common
         {
             var retryPolicy = new RetryPolicy(CatchAllStrategy, new ExponentialBackoff(m_retries, MinBackoff, MaxBackoff, DefaultClientBackoff));
 
-            retryPolicy.Retrying += (sender, args) =>
-                SiteUtil.TraceWarning(
-                    "Request to URI {0} failed due to: {1}. Retrying attempt #{2} will take place in {3}",
-                    uri, args.LastException.Message, args.CurrentRetryCount, args.Delay);
+            retryPolicy.Retrying += (sender, args) => SiteEventSource.Log.HttpRequestFailed(uri, args.LastException, args.CurrentRetryCount, args.Delay);
 
             return retryPolicy.ExecuteAsync(async () =>
             {
