@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.Tracing;
+﻿using System;
+using System.Diagnostics.Tracing;
 
 namespace MissingGamesUpdater
 {
@@ -10,16 +11,38 @@ namespace MissingGamesUpdater
         {
         }
 
-        public class Keywords
+// ReSharper disable ConvertToStaticClass
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
+        public sealed class Keywords
         {
+            private Keywords() { }
             public const EventKeywords SteamApi = (EventKeywords) 1;
             public const EventKeywords MissingGamesUpdater = (EventKeywords) 2;
         }
 
-        public class Tasks
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
+        public sealed class Tasks
         {
+            private Tasks() { }
             public const EventTask RetrieveAllSteamApps = (EventTask) 1;
             public const EventTask UpdateMissingGames = (EventTask) 2;
+        }
+// ReSharper restore ConvertToStaticClass
+
+        [NonEvent]
+        public void RetrieveAllSteamAppsStart(Uri uri)
+        {
+            if (uri == null)
+            {
+                throw new ArgumentNullException("uri");
+            }
+
+            if (!IsEnabled())
+            {
+                return;
+            }
+
+            RetrieveAllSteamAppsStart(uri.ToString());
         }
 
         [Event(
@@ -29,9 +52,25 @@ namespace MissingGamesUpdater
             Level = EventLevel.Informational,
             Task = Tasks.RetrieveAllSteamApps,
             Opcode = EventOpcode.Start)]
-        public void RetrieveAllSteamAppsStart(string getSteamAppListUrl)
+        private void RetrieveAllSteamAppsStart(string uri)
         {
-            WriteEvent(1, getSteamAppListUrl);
+            WriteEvent(1, uri);
+        }
+
+        [NonEvent]
+        public void RetrieveAllSteamAppsStop(Uri uri)
+        {
+            if (uri == null)
+            {
+                throw new ArgumentNullException("uri");
+            }
+
+            if (!IsEnabled())
+            {
+                return;
+            }
+
+            RetrieveAllSteamAppsStop(uri.ToString());
         }
 
         [Event(
@@ -41,9 +80,25 @@ namespace MissingGamesUpdater
             Level = EventLevel.Informational,
             Task = Tasks.RetrieveAllSteamApps,
             Opcode = EventOpcode.Stop)]
-        public void RetrieveAllSteamAppsStop(string getSteamAppListUrl)
+        private void RetrieveAllSteamAppsStop(string uri)
         {
-            WriteEvent(2, getSteamAppListUrl);
+            WriteEvent(2, uri);
+        }
+
+        [NonEvent]
+        public void ErrorRetrievingAllSteamApps(Uri uri)
+        {
+            if (uri == null)
+            {
+                throw new ArgumentNullException("uri");
+            }
+
+            if (!IsEnabled())
+            {
+                return;
+            }
+            
+            ErrorRetrievingAllSteamApps(uri.ToString());
         }
 
         [Event(
@@ -51,9 +106,25 @@ namespace MissingGamesUpdater
             Message = "Null object received when retrieving list of all Steam apps from {0}",
             Keywords = Keywords.SteamApi,
             Level = EventLevel.Critical)]
-        public void ErrorRetrievingAllSteamApps(string getSteamAppListUrl)
+        private void ErrorRetrievingAllSteamApps(string uri)
         {
-            WriteEvent(3, getSteamAppListUrl);
+            WriteEvent(3, uri);
+        }
+
+        [NonEvent]
+        public void RetrievedAllSteamApps(Uri uri, int count)
+        {
+            if (uri == null)
+            {
+                throw new ArgumentNullException("uri");
+            }
+
+            if (!IsEnabled())
+            {
+                return;
+            }
+
+            RetrievedAllSteamApps(uri.ToString(), count);
         }
 
         [Event(
@@ -61,9 +132,9 @@ namespace MissingGamesUpdater
             Message = "Retrieved {1} games from {0}",
             Keywords = Keywords.SteamApi,
             Level = EventLevel.Informational)]
-        public void RetrievedAllSteamApps(string getSteamAppListUrl, int count)
+        private void RetrievedAllSteamApps(string uri, int count)
         {
-            WriteEvent(4, getSteamAppListUrl, count);
+            WriteEvent(4, uri, count);
         }
 
         [Event(

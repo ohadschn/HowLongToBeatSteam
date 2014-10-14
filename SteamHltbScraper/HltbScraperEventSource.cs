@@ -12,14 +12,19 @@ namespace SteamHltbScraper
         {
         }
 
-        public class Keywords
+// ReSharper disable ConvertToStaticClass
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
+        public sealed class Keywords
         {
+            private Keywords() { }
             public const EventKeywords HltbScraper = (EventKeywords) 1;
             public const EventKeywords Http = (EventKeywords) 2;
         }
 
-        public class Tasks
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
+        public sealed class Tasks
         {
+            private Tasks() { }
             public const EventTask ScrapeHltb = (EventTask) 1;
             public const EventTask ScrapeGame = (EventTask) 2;
             public const EventTask ScrapeHltbId = (EventTask) 3;
@@ -29,6 +34,7 @@ namespace SteamHltbScraper
             public const EventTask ScrapeHltbInfo = (EventTask) 7;
             public const EventTask GetGameOverviewPage = (EventTask) 8;
         }
+// ReSharper restore ConvertToStaticClass
 
         [Event(
             1,
@@ -102,6 +108,22 @@ namespace SteamHltbScraper
             WriteEvent(6, appName, hltbId);
         }
 
+        [NonEvent]
+        public void PostHltbSearchStart(Uri uri, string content)
+        {
+            if (uri == null)
+            {
+                throw new ArgumentNullException("uri");
+            }
+
+            if (!IsEnabled())
+            {
+                return;
+            }
+
+            PostHltbSearchStart(uri.ToString(), content);     
+        }
+
         [Event(
             7,
             Message = "Start posting search query to {0} (content: {1})",
@@ -109,9 +131,26 @@ namespace SteamHltbScraper
             Level = EventLevel.Informational,
             Task = Tasks.PostHltbSearch,
             Opcode = EventOpcode.Start)]
-        public void PostHltbSearchStart(string searchHltbUrl, string content)
+        private void PostHltbSearchStart(string uri, string content)
         {
-            WriteEvent(7, searchHltbUrl, content);
+            WriteEvent(7, uri, content);
+        }
+
+        [NonEvent]
+        public void PostHltbSearchStop(Uri uri, string content)
+        {
+            if (uri == null)
+            {
+                throw new ArgumentNullException("uri");
+            }
+
+            if (!IsEnabled())
+            {
+                return;
+            }
+
+            PostHltbSearchStop(uri.ToString(), content);
+            
         }
 
         [Event(
@@ -121,9 +160,9 @@ namespace SteamHltbScraper
             Level = EventLevel.Informational,
             Task = Tasks.PostHltbSearch,
             Opcode = EventOpcode.Stop)]
-        public void PostHltbSearchStop(string searchHltbUrl, string content)
+        private void PostHltbSearchStop(string uri, string content)
         {
-            WriteEvent(8, searchHltbUrl, content);
+            WriteEvent(8, uri, content);
         }
 
         [Event(
@@ -139,6 +178,11 @@ namespace SteamHltbScraper
         [NonEvent]
         public void ErrorScrapingHltbId(int current, int steamAppId, string steamName, Exception exception)
         {
+            if (exception == null)
+            {
+                throw new ArgumentNullException("exception");
+            }
+
             if (!IsEnabled())
             {
                 return;
@@ -187,6 +231,22 @@ namespace SteamHltbScraper
             WriteEvent(12, hltbName, hltbId);
         }
 
+        [NonEvent]
+        public void GetHltbGamePageStart(Uri uri)
+        {
+            if (uri == null)
+            {
+                throw new ArgumentNullException("uri");
+            }
+
+            if (!IsEnabled())
+            {
+                return;
+            }
+
+            GetHltbGamePageStart(uri.ToString());
+        }
+
         [Event(
             13,
             Message = "Start getting HLTB game page from {0}",
@@ -194,9 +254,25 @@ namespace SteamHltbScraper
             Level = EventLevel.Informational,
             Task = Tasks.GetHltbGamePage,
             Opcode = EventOpcode.Start)]
-        public void GetHltbGamePageStart(string gamePageUrl)
+        private void GetHltbGamePageStart(string uri)
         {
-            WriteEvent(13, gamePageUrl);
+            WriteEvent(13, uri);
+        }
+
+        [NonEvent]
+        public void GetHltbGamePageStop(Uri uri)
+        {
+            if (uri == null)
+            {
+                throw new ArgumentNullException("uri");
+            }
+
+            if (!IsEnabled())
+            {
+                return;
+            }
+
+            GetHltbGamePageStop(uri.ToString());
         }
 
         [Event(
@@ -206,14 +282,19 @@ namespace SteamHltbScraper
             Level = EventLevel.Informational,
             Task = Tasks.GetHltbGamePage,
             Opcode = EventOpcode.Stop)]
-        public void GetHltbGamePageStop(string gamePageUrl)
+        private void GetHltbGamePageStop(string uri)
         {
-            WriteEvent(14, gamePageUrl);
+            WriteEvent(14, uri);
         }
 
         [NonEvent]
         public void ErrorScrapingHltbName(int current, int steamAppId, string steamName, int hltbId, Exception exception)
         {
+            if (exception == null)
+            {
+                throw new ArgumentNullException("exception");
+            }
+
             if (!IsEnabled())
             {
                 return;
@@ -256,6 +337,22 @@ namespace SteamHltbScraper
             WriteEvent(17, hltbId, mainTtb, extrasTtb, completionistTtb, combinedTtb, solo, coOp, vs);
         }
 
+        [NonEvent]
+        public void GetGameOverviewPageStart(Uri uri)
+        {
+            if (uri == null)
+            {
+                throw new ArgumentNullException("uri");
+            }
+
+            if (!IsEnabled())
+            {
+                return;
+            }
+
+            GetGameOverviewPageStart(uri.ToString());
+        }
+
         [Event(
             18,
             Message = "Start getting game overview URL from {0}",
@@ -263,9 +360,25 @@ namespace SteamHltbScraper
             Level = EventLevel.Informational,
             Task = Tasks.GetGameOverviewPage,
             Opcode = EventOpcode.Start)]
-        public void GetGameOverviewPageStart(string gameOverviewUrl)
+        private void GetGameOverviewPageStart(string uri)
         {
-            WriteEvent(18, gameOverviewUrl);
+            WriteEvent(18, uri);
+        }
+
+        [NonEvent]
+        public void GetGameOverviewPageStop(Uri uri)
+        {
+            if (uri == null)
+            {
+                throw new ArgumentNullException("uri");
+            }
+
+            if (!IsEnabled())
+            {
+                return;
+            }
+
+            GetGameOverviewPageStop(uri.ToString());
         }
 
         [Event(
@@ -275,14 +388,19 @@ namespace SteamHltbScraper
             Level = EventLevel.Informational,
             Task = Tasks.GetGameOverviewPage,
             Opcode = EventOpcode.Stop)]
-        public void GetGameOverviewPageStop(string gameOverviewUrl)
+        private void GetGameOverviewPageStop(string uri)
         {
-            WriteEvent(19, gameOverviewUrl);
+            WriteEvent(19, uri);
         }
 
         [NonEvent]
         public void ErrorScrapingHltbInfo(int current, int steamAppId, string steamName, Exception exception)
         {
+            if (exception == null)
+            {
+                throw new ArgumentNullException("exception");
+            }
+
             if (!IsEnabled())
             {
                 return;

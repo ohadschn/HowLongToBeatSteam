@@ -9,7 +9,7 @@ namespace MissingGamesUpdater
 {
     class MissingUpdater
     {
-        private const string GetSteamAppListUrl = "http://api.steampowered.com/ISteamApps/GetAppList/v0001/";
+        private static readonly Uri GetSteamAppListUrl = new Uri("http://api.steampowered.com/ISteamApps/GetAppList/v0001/");
         private static HttpRetryClient s_client;
 
         static void Main()

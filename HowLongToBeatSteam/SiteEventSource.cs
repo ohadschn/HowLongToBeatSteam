@@ -10,21 +10,27 @@ namespace HowLongToBeatSteam
         {
         }
 
-        public class Keywords
+// ReSharper disable ConvertToStaticClass
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
+        public sealed class Keywords
         {
+            private Keywords() { }
             public const EventKeywords SteamApi = (EventKeywords)1;
             public const EventKeywords TableStorage = (EventKeywords) 2;
             public const EventKeywords GameController = (EventKeywords) 4;
         }
 
-        public class Tasks
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
+        public sealed class Tasks
         {
+            private Tasks() { }
             public const EventTask UpdateCache = (EventTask) 1;
             public const EventTask RetrieveOwnedGames = (EventTask) 2;
             public const EventTask PrepareResponse = (EventTask) 3;
             public const EventTask RetrievePlayerSummary = (EventTask) 4;
             public const EventTask HandleGetGamesRequest = (EventTask) 5;
         }
+// ReSharper restore ConvertToStaticClass
 
         [Event(
             1,
@@ -143,9 +149,9 @@ namespace HowLongToBeatSteam
         }
 
         [NonEvent]
-        public void SkipNonCachedApp(int appid, string name)
+        public void SkipNonCachedApp(int appId, string name)
         {
-            SkipNonCachedApp(name, appid);
+            SkipNonCachedApp(name, appId);
         }
 
         [Event(
@@ -153,15 +159,15 @@ namespace HowLongToBeatSteam
             Message = "Skipping non-cached app: {0} / {1}",
             Keywords = Keywords.GameController,
             Level = EventLevel.Warning)]
-        private void SkipNonCachedApp(string name, int appid)
+        private void SkipNonCachedApp(string name, int appId)
         {
-            WriteEvent(11, name, appid);            
+            WriteEvent(11, name, appId);            
         }
 
         [NonEvent]
-        public void SkipNonGame(int appid, string name)
+        public void SkipNonGame(int appId, string name)
         {
-            SkipNonGame(name, appid);
+            SkipNonGame(name, appId);
         }
 
         [Event(
@@ -169,9 +175,9 @@ namespace HowLongToBeatSteam
             Message = "Skipping non-game: {0} / {1}",
             Keywords = Keywords.GameController,
             Level = EventLevel.Verbose)]
-        private void SkipNonGame(string name, int appid)
+        private void SkipNonGame(string name, int appId)
         {
-            WriteEvent(12, name, appid);
+            WriteEvent(12, name, appId);
         }
 
         [Event(

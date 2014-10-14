@@ -15,15 +15,21 @@ namespace UnknownUpdater
         {
         }
 
-        public class Keywords
+// ReSharper disable ConvertToStaticClass
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
+        public sealed class Keywords
         {
+            private Keywords() {}
             public const EventKeywords UnknownUpdater = (EventKeywords) 1;
         }
 
-        public class Tasks
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
+        public sealed class Tasks
         {
+            private Tasks() { }
             public const EventTask UpdateUnknownApps = (EventTask) 1;
         }
+// ReSharper restore ConvertToStaticClass
 
         [Event(
             1,
@@ -52,6 +58,10 @@ namespace UnknownUpdater
         [NonEvent]
         public void UpdateNewlyCategorizedApps(ConcurrentBag<AppEntity> updates)
         {
+            if (updates == null)
+            {
+                throw new ArgumentNullException("updates");
+            }
             if (!IsEnabled())
             {
                 return;

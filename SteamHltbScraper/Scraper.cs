@@ -16,7 +16,7 @@ namespace SteamHltbScraper
 {
     public static class Scraper
     {
-        private const string SearchHltbUrl = @"http://www.howlongtobeat.com/search_main.php?t=games&page=1&sorthead=&sortd=Normal&plat=&detail=0";
+        private static readonly Uri SearchHltbUrl = new Uri(@"http://www.howlongtobeat.com/search_main.php?t=games&page=1&sorthead=&sortd=Normal&plat=&detail=0");
         private const string SearchHltbPostDataFormat = @"queryString={0}";
 
         private const string HltbGamePageFormat = @"http://www.howlongtobeat.com/game.php?id={0}";
@@ -120,7 +120,7 @@ namespace SteamHltbScraper
         {
             HltbScraperEventSource.Log.ScrapeHltbInfoStart(hltbId);
 
-            var gameOverviewUrl = String.Format(HltbGameOverviewPageFormat, hltbId);
+            var gameOverviewUrl = new Uri(String.Format(HltbGameOverviewPageFormat, hltbId));
 
             HltbScraperEventSource.Log.GetGameOverviewPageStart(gameOverviewUrl);
             var doc = await LoadDocument(() => Client.GetAsync(gameOverviewUrl)).ConfigureAwait(false);
@@ -156,7 +156,7 @@ namespace SteamHltbScraper
         {
             HltbScraperEventSource.Log.ScrapeHltbNameStart(hltbId);
 
-            var gamePageUrl = String.Format(HltbGamePageFormat, hltbId);
+            var gamePageUrl = new Uri(String.Format(HltbGamePageFormat, hltbId));
 
             HltbScraperEventSource.Log.GetHltbGamePageStart(gamePageUrl);
             var doc = await LoadDocument(() => Client.GetAsync(gamePageUrl)).ConfigureAwait(false);

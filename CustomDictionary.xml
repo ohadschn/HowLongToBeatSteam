@@ -2,15 +2,16 @@
       <Words>
          <Recognized>
             <Word>Hltb</Word>
-			<Word>Ttb</Word>
-			<Word>Backoff</Word>
-			<Word>Util</Word>
-			<Word>Api</Word>
-			<Word>Completionist</Word>
-			<Word>Co</Word>
+			      <Word>Ttb</Word>
+			      <Word>Backoff</Word>
+			      <Word>Util</Word>
+			      <Word>Api</Word>
+			      <Word>Completionist</Word>
+			      <Word>Co</Word>
          </Recognized>
-		 <Compound>
+		    <Compound>
             <Term CompoundAlternate="CoOp">coop</Term>
+            <Term CompoundAlternate="NonGame">nongame</Term>
          </Compound>
       </Words>
 </Dictionary>

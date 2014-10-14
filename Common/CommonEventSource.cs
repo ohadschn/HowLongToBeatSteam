@@ -11,15 +11,20 @@ namespace Common
         {
         }
 
-        public class Keywords
+// ReSharper disable ConvertToStaticClass
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
+        public sealed class Keywords
         {
+            private Keywords() {}
             public const EventKeywords Http = (EventKeywords)1;
             public const EventKeywords StoreApi = (EventKeywords)2;
             public const EventKeywords TableStorage = (EventKeywords)4;
         }
 
-        public class Tasks
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
+        public sealed class Tasks
         {
+            private Tasks() { }
             public const EventTask RetrieveMissingStoreInformation = (EventTask)1;
             public const EventTask RetrieveStoreInformation = (EventTask)2;
             public const EventTask QueryAllApps = (EventTask)3;
@@ -28,10 +33,26 @@ namespace Common
             public const EventTask ExecuteOperations = (EventTask)6;
             public const EventTask ExecuteBucketBatchOperation = (EventTask)7;
         }
+// ReSharper restore ConvertToStaticClass
 
         [NonEvent]
         public void HttpRequestFailed(Uri uri, Exception exception, int attempt, TimeSpan delay)
         {
+            if (uri == null)
+            {
+                throw new ArgumentNullException("uri");
+            }
+
+            if (exception == null)
+            {
+                throw new ArgumentNullException("exception");
+            }
+
+            if (!IsEnabled())
+            {
+                return;
+            }
+
             HttpRequestFailed(uri.ToString(), exception.Message, attempt, delay.TotalSeconds);
         }
 
@@ -72,6 +93,16 @@ namespace Common
         [NonEvent]
         public void RetrieveStoreInformationStart(int start, int end, Uri uri)
         {
+            if (uri == null)
+            {
+                throw new ArgumentNullException("uri");
+            }
+
+            if (!IsEnabled())
+            {
+                return;
+            }
+
             RetrieveStoreInformationStart(uri.ToString(), start, end);
         }
 
@@ -90,6 +121,16 @@ namespace Common
         [NonEvent]
         public void RetrieveStoreInformationStop(int start, int end, Uri uri)
         {
+            if (uri == null)
+            {
+                throw new ArgumentNullException("uri");
+            }
+
+            if (!IsEnabled())
+            {
+                return;
+            }
+
             RetrieveStoreInformationStop(uri.ToString(), start, end);
         }
 
