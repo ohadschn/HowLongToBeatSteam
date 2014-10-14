@@ -39,8 +39,7 @@ namespace HowLongToBeatSteam.Controllers
         {
             while (true)
             {
-                SiteEventSource.Log.QueryAllAppsStart("(none)");
-
+                SiteEventSource.Log.UpdateCacheStart();
                 await TableHelper.QueryAllApps((segment, bucket) =>
                 {
                     foreach (var appEntity in segment)
@@ -48,8 +47,8 @@ namespace HowLongToBeatSteam.Controllers
                         Cache[appEntity.SteamAppId] = new CachedGameInfo(appEntity.SteamName, appEntity.Measured ? new HltbInfo(appEntity) : null);
                     }
                 }, null, 100).ConfigureAwait(false); //we'll crash and get recycled after 100 failed attempts - something would have to be very wrong!
-
-                SiteEventSource.Log.QueryAllAppsStop("(none)", Cache.Count);
+                SiteEventSource.Log.UpdateCacheStop(Cache.Count);
+                
                 await Task.Delay(TimeSpan.FromHours(1)).ConfigureAwait(false);
             }
 // ReSharper disable FunctionNeverReturns
@@ -59,61 +58,60 @@ namespace HowLongToBeatSteam.Controllers
         [Route("library/{steamId:long}")]
         public async Task<OwnedGamesInfo> GetGames(long steamId)
         {
+            SiteEventSource.Log.HandleGetGamesRequestStart(steamId);
+
             var ownedGamesTask = GetOwnedGames(steamId);
             var personaNameTask = GetPersonaName(steamId);
 
             await Task.WhenAll(ownedGamesTask, personaNameTask).ConfigureAwait(true);
-            var ownedGamesResponse = ownedGamesTask.Result;
+            var ownedGames = ownedGamesTask.Result;
             var personaName = personaNameTask.Result;
 
-            SiteUtil.TraceInformation("Preparing response...");
+            SiteEventSource.Log.PrepareResponseStart();
             var games = new List<SteamApp>();
             bool partialCache = false; 
-            foreach (var game in ownedGamesResponse.response.games)
+            foreach (var game in ownedGames)
             {
                 CachedGameInfo cachedGameInfo;
                 var inCache = Cache.TryGetValue(game.appid, out cachedGameInfo);
                 if (!inCache)
                 {
-                    SiteUtil.TraceWarning("Skipping non-cached app: {0} / {1}", game.appid, game.name);
+                    SiteEventSource.Log.SkipNonCachedApp(game.appid, game.name);
                     partialCache = true;
                     continue;
                 }
                 
                 if (cachedGameInfo.HltbInfo == null)
                 {
-                    SiteUtil.TraceInformation("Skipping non-game: {0} / {1}", game.appid, game.name);
+                    SiteEventSource.Log.SkipNonGame(game.appid, game.name);
                     continue;
                 }
 
                 games.Add(new SteamApp(game.appid, game.name, game.playtime_forever, cachedGameInfo.HltbInfo.Resolved ? cachedGameInfo.HltbInfo : null));
             }
+            SiteEventSource.Log.PrepareResponseStop();
 
-            SiteUtil.TraceInformation("Sending response...");
+            SiteEventSource.Log.HandleGetGamesRequestStop(steamId);
             return new OwnedGamesInfo(personaName, partialCache, games);
         }
 
-        private static async Task<OwnedGamesResponse> GetOwnedGames(long steamId)
+        private static async Task<OwnedGame[]> GetOwnedGames(long steamId)
         {
-
             if (steamId < 0)
             {
-                return new OwnedGamesResponse
-                {
-                    response = new OwnedGames
+                return Cache
+                    .Where(kvp => kvp.Value.HltbInfo != null)
+                    .Take((int) Math.Abs(steamId))
+                    .Select(kvp => new OwnedGame
                     {
-                        games = Cache.Where(kvp => kvp.Value.HltbInfo != null).Take((int)Math.Abs(steamId)).Select(kvp => new OwnedGame
-                        {
-                            appid = kvp.Key,
-                            name = kvp.Value.SteamName,
-                            playtime_forever = 0,
-                        }).ToArray()
-                    }
-                };
+                        appid = kvp.Key,
+                        name = kvp.Value.SteamName,
+                        playtime_forever = 0,
+                    }).ToArray();
             }
 
-            OwnedGamesResponse ownedGamesResponse;
             SiteEventSource.Log.RetrieveOwnedGamesStart(steamId);
+            OwnedGamesResponse ownedGamesResponse;
             using (var response = await Client.GetAsync(string.Format(GetOwnedSteamGamesFormat, SteamApiKey, steamId)).ConfigureAwait(false))
             {
                 ownedGamesResponse = await response.Content.ReadAsAsync<OwnedGamesResponse>().ConfigureAwait(false);
@@ -122,13 +120,13 @@ namespace HowLongToBeatSteam.Controllers
 
             if (ownedGamesResponse == null || ownedGamesResponse.response == null || ownedGamesResponse.response.games == null)
             {
-                SiteEventSource.Log
-                SiteUtil.TraceError("Error retrieving owned games for user ID {0}", steamId);
+                SiteEventSource.Log.ErrorRetrievingOwnedGames(steamId);
                 throw new HttpResponseException(HttpStatusCode.BadRequest);
             }
 
-
-            return ownedGamesResponse;
+            var games = ownedGamesResponse.response.games;
+            SiteEventSource.Log.RetrievedOwnedGames(steamId, games.Length);
+            return games;
         }
 
         private static async Task<string> GetPersonaName(long steamId)
@@ -138,20 +136,24 @@ namespace HowLongToBeatSteam.Controllers
                 return String.Format(CultureInfo.InvariantCulture, "first {0} games", Math.Abs(steamId));
             }
 
+            SiteEventSource.Log.RetrievePlayerSummaryStart();
             PlayerSummariesResponse playerSummaries;
             using (var response = await Client.GetAsync(string.Format(GetPlayerSummariesFormat, SteamApiKey, steamId)).ConfigureAwait(false))
             {
                 playerSummaries = await response.Content.ReadAsAsync<PlayerSummariesResponse>().ConfigureAwait(false);
             }
+            SiteEventSource.Log.RetrievePlayerSummaryStop();
 
             if (playerSummaries == null || playerSummaries.response == null ||
                 playerSummaries.response.players == null || playerSummaries.response.players.Length == 0)
             {
-                SiteUtil.TraceError("Error retrieving player summary for user ID {0}", steamId);
-                throw new HttpResponseException(HttpStatusCode.BadRequest);
+                SiteEventSource.Log.ErrorRetrievingPersonaName(steamId);
+                return "Unknown";
             }
 
-            return playerSummaries.response.players[0].personaname;
+            var personaName = playerSummaries.response.players[0].personaname;
+            SiteEventSource.Log.ResolvedPersonaName(steamId, personaName);
+            return personaName;
         }
     }
 }

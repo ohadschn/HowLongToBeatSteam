@@ -1,5 +1,4 @@
 ﻿using System;
-using Common;
 
 namespace ManualTableUpdater
 {
@@ -11,7 +10,7 @@ namespace ManualTableUpdater
             //var games = GetAppsFromCsv();
             //GetAppsWithStoreData().Wait();
 
-            SiteUtil.TraceInformation("All done!");
+            //SiteUtil.TraceInformation("All done!");
             Console.ReadLine();
         }
 

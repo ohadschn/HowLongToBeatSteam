@@ -23,7 +23,6 @@ namespace SteamHltbScraper
         private const string HltbGameOverviewPageFormat = @"http://www.howlongtobeat.com/game_overview.php?id={0}";
 
         private static readonly int ScrapingLimit = Int32.Parse(ConfigurationManager.AppSettings["ScrapingLimit"], CultureInfo.InvariantCulture);
-
         private static readonly HttpRetryClient Client = new HttpRetryClient(4);
 
         private static void Main()
@@ -37,15 +36,17 @@ namespace SteamHltbScraper
 
         private static async Task ScrapeHltb()
         {
+            HltbScraperEventSource.Log.ScrapeHltbStart();
+
             var updates = new ConcurrentBag<AppEntity>();
             var apps = await TableHelper.GetAllApps(e => e, AppEntity.MeasuredFilter, 20).ConfigureAwait(false);
             int count = 0;
 
-            SiteUtil.TraceInformation("Scraping HLTB...");
-            await apps.Take(ScrapingLimit).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, async app => 
+            await apps.Take(ScrapingLimit).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, async app =>
             {
                 var current = Interlocked.Increment(ref count);
-                SiteUtil.TraceInformation("Beginning scraping #{0}...", current);
+                HltbScraperEventSource.Log.ScrapeGameStart(app.SteamAppId, current);
+                
                 bool added = false;
                 if (app.HltbId == -1)
                 {
@@ -55,7 +56,7 @@ namespace SteamHltbScraper
                     }
                     catch (Exception e)
                     {
-                        SiteUtil.TraceError("Scraping #{0} - Error getting HLTB ID for app {1} / {2}: {3}", current, app.SteamAppId, app.SteamName, e);
+                        HltbScraperEventSource.Log.ErrorScrapingHltbId(current, app.SteamAppId, app.SteamName, e);
                         return;
                     }
 
@@ -75,8 +76,7 @@ namespace SteamHltbScraper
                 }
                 catch (Exception e)
                 {
-                    SiteUtil.TraceError("Scraping #{0} - Error getting HLTB name for app {1} / {2} / HLTB {3}: {4}",
-                        current, app.SteamAppId, app.SteamName, app.HltbId, e);
+                    HltbScraperEventSource.Log.ErrorScrapingHltbName(current, app.SteamAppId, app.SteamName, app.HltbId, e);
                     return;
                 }
 
@@ -97,7 +97,7 @@ namespace SteamHltbScraper
                 }
                 catch (Exception e)
                 {
-                    SiteUtil.TraceError("Scraping #{0} - Error getting HLTB info for app {1} / {2}: {3}", current, app.SteamAppId, app.SteamName, e);
+                    HltbScraperEventSource.Log.ErrorScrapingHltbInfo(current, app.SteamAppId, app.SteamName, e);
                     return;
                 }
 
@@ -106,22 +106,25 @@ namespace SteamHltbScraper
                 {
                     updates.Add(app);
                 }
-                SiteUtil.TraceInformation("Scraping #{0} completed successfully", current);
+                HltbScraperEventSource.Log.ScrapeGameStop(app.SteamAppId, current);
+
             }).ConfigureAwait(false);
 
-            await TableHelper.Replace(updates, 20).ConfigureAwait(false); //The only other update to an existing game-typed entity would have to be manual which should take precedence
-            SiteUtil.TraceInformation("Done Scraping HLTB");
+            //we're using Replace since the only other update to an existing game-typed entity would have to be manual which should take precedence
+            await TableHelper.Replace(updates, 20).ConfigureAwait(false); 
+            
+            HltbScraperEventSource.Log.ScrapeHltbStop();
         }
 
         private static async Task<HltbInfo> ScrapeHltbInfo(int hltbId)
         {
-            SiteUtil.TraceInformation("Scraping HLTB info for id {0}...", hltbId);
-            var gameOverviewUrl = String.Format(HltbGameOverviewPageFormat, hltbId);
-            
-            SiteUtil.TraceInformation("Retrieving game overview URL from {0}...", gameOverviewUrl);
-            var doc = await LoadDocument(() => Client.GetAsync(gameOverviewUrl)).ConfigureAwait(false);
+            HltbScraperEventSource.Log.ScrapeHltbInfoStart(hltbId);
 
-            SiteUtil.TraceInformation("Scraping HLTB info for game {0} from HTML...", hltbId);
+            var gameOverviewUrl = String.Format(HltbGameOverviewPageFormat, hltbId);
+
+            HltbScraperEventSource.Log.GetGameOverviewPageStart(gameOverviewUrl);
+            var doc = await LoadDocument(() => Client.GetAsync(gameOverviewUrl)).ConfigureAwait(false);
+            HltbScraperEventSource.Log.GetGameOverviewPageStop(gameOverviewUrl);
 
             var list = doc.DocumentNode.Descendants("div").FirstOrDefault(n => n.GetAttributeValue("class", null) == "gprofile_times");
             if (list == null)
@@ -145,22 +148,19 @@ namespace SteamHltbScraper
                 throw new FormatException("Could not find any TTB list item for HLTB ID " + hltbId);
             }
 
-            SiteUtil.TraceInformation(
-                "Finished scraping HLTB info for hltb {0}: Main {1} Extras {2} Completionist {3} Combined {4} Solo {5} Co-Op {6} Vs. {7}",
-                hltbId, mainTtb, extrasTtb, completionistTtb, combinedTtb, solo, coOp, vs);
-
+            HltbScraperEventSource.Log.ScrapeHltbInfoStop(hltbId, mainTtb, extrasTtb, completionistTtb, combinedTtb, solo, coOp, vs);
             return new HltbInfo(mainTtb, extrasTtb, completionistTtb, combinedTtb, solo, coOp, vs);
         }
 
         private static async Task<string> ScrapeHltbName(int hltbId)
         {
-            SiteUtil.TraceInformation("Scraping HLTB name for id {0}...", hltbId);
-            var gamePageUrl = String.Format(HltbGamePageFormat, hltbId);
-            
-            SiteUtil.TraceInformation("Retrieving HLTB game page from {0}...", gamePageUrl);
-            var doc = await LoadDocument(() => Client.GetAsync(gamePageUrl)).ConfigureAwait(false);
+            HltbScraperEventSource.Log.ScrapeHltbNameStart(hltbId);
 
-            SiteUtil.TraceInformation("Scraping name for HLTB game {0} from HTML...", hltbId);
+            var gamePageUrl = String.Format(HltbGamePageFormat, hltbId);
+
+            HltbScraperEventSource.Log.GetHltbGamePageStart(gamePageUrl);
+            var doc = await LoadDocument(() => Client.GetAsync(gamePageUrl)).ConfigureAwait(false);
+            HltbScraperEventSource.Log.GetHltbGamePageStop(gamePageUrl);
 
             var headerDiv = doc.DocumentNode.Descendants().FirstOrDefault(n => n.GetAttributeValue("class", null) == "gprofile_header");
             if (headerDiv == null)
@@ -169,7 +169,8 @@ namespace SteamHltbScraper
             }
 
             var hltbName = headerDiv.InnerText.Trim();
-            SiteUtil.TraceInformation("Finished scraping HLTB name for ID {0}: {1}", hltbId, hltbName);
+
+            HltbScraperEventSource.Log.ScrapeHltbNameStop(hltbId, hltbName);
             return hltbName;
         }
 
@@ -227,22 +228,22 @@ namespace SteamHltbScraper
 
         private static async Task<int> ScrapeHltbId(string appName)
         {
-            SiteUtil.TraceInformation("Scraping HLTB ID for {0}...", appName);
+            HltbScraperEventSource.Log.ScrapeHltbIdStart(appName);
+
             var content = String.Format(SearchHltbPostDataFormat, appName);
             Func<HttpRequestMessage> requestFactory = () => new HttpRequestMessage(HttpMethod.Post, SearchHltbUrl)
             {
                 Content = new StringContent(content, Encoding.UTF8,"application/x-www-form-urlencoded")
             };
 
-            SiteUtil.TraceInformation("Posting search query to {0} (content: {1})...", SearchHltbUrl, content);
+            HltbScraperEventSource.Log.PostHltbSearchStart(SearchHltbUrl, content);
             var doc = await LoadDocument(() => Client.SendAsync(requestFactory, SearchHltbUrl)).ConfigureAwait(false);
-
-            SiteUtil.TraceInformation("Scraping HLTB ID for game {0} from HTML...", appName);
+            HltbScraperEventSource.Log.PostHltbSearchStop(SearchHltbUrl, content);
 
             var first = doc.DocumentNode.Descendants("li").FirstOrDefault();
             if (first == null)
             {
-                SiteUtil.TraceWarning("App not found in search");
+                HltbScraperEventSource.Log.GameNotFoundInSearch(appName);
                 return -1;
             }
 
@@ -265,7 +266,7 @@ namespace SteamHltbScraper
                 throw new FormatException("App link does not contain HLTB integer ID in expected location (expecting char12..end): " + idStr);
             }
 
-            SiteUtil.TraceInformation("Scraped HLTB ID for {0} : {1}", appName, hltbId);
+            HltbScraperEventSource.Log.ScrapeHltbIdStop(appName, hltbId);
             return hltbId;
         }
 

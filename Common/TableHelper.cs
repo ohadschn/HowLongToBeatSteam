@@ -26,7 +26,7 @@ namespace Common
         {
             var knownSteamIds = new ConcurrentBag<T>();
 
-            SiteEventSource.Log.QueryAllAppsStart(rowFilter ?? "(none)");
+            CommonEventSource.Log.QueryAllAppsStart(rowFilter ?? "(none)");
             await QueryAllApps((segment, bucket) =>
             {
                 foreach (var game in segment)
@@ -34,7 +34,7 @@ namespace Common
                     knownSteamIds.Add(selector(game));
                 }
             }, rowFilter, retries).ConfigureAwait(false);
-            SiteEventSource.Log.QueryAllAppsStop(rowFilter ?? "(none)", knownSteamIds.Count);
+            CommonEventSource.Log.QueryAllAppsStop(rowFilter ?? "(none)", knownSteamIds.Count);
             
             return knownSteamIds;
         }
@@ -59,13 +59,13 @@ namespace Common
                 int batch = 1;
                 while (currentSegment == null || currentSegment.ContinuationToken != null)
                 {
-                    SiteEventSource.Log.RetrieveBucketBatchMappingsStart(bucket, batch);
+                    CommonEventSource.Log.RetrieveBucketBatchMappingsStart(bucket, batch);
                     currentSegment = await table.ExecuteQuerySegmentedAsync(query, currentSegment != null ? currentSegment.ContinuationToken : null).ConfigureAwait(false);
-                    SiteEventSource.Log.RetrieveBucketBatchMappingsStop(bucket, batch);
+                    CommonEventSource.Log.RetrieveBucketBatchMappingsStop(bucket, batch);
 
-                    SiteEventSource.Log.ProcessBucketBatchStart(bucket, batch);
+                    CommonEventSource.Log.ProcessBucketBatchStart(bucket, batch);
                     segmentHandler(currentSegment, bucket);
-                    SiteEventSource.Log.ProcessBucketBatchStop(bucket, batch);
+                    CommonEventSource.Log.ProcessBucketBatchStop(bucket, batch);
 
                     batch++;
                 }
@@ -87,17 +87,17 @@ namespace Common
         {
             var table = GetCloudTableClient(retries).GetTableReference(SteamToHltbTableName);
 
-            SiteEventSource.Log.ExecuteOperationsStart();
+            CommonEventSource.Log.ExecuteOperationsStart();
             await SplitToBatchOperations(apps, operationGenerator).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, async tboi =>
             {
                 var final = tboi.Final ? "(final)" : String.Empty;
 
-                SiteEventSource.Log.ExecuteBucketBatchOperationStart(tboi.Bucket, tboi.Batch, final);
+                CommonEventSource.Log.ExecuteBucketBatchOperationStart(tboi.Bucket, tboi.Batch, final);
                 await table.ExecuteBatchAsync(tboi.Operation).ConfigureAwait(false);
-                SiteEventSource.Log.ExecuteBucketBatchOperationStop(tboi.Bucket, tboi.Batch, final);
+                CommonEventSource.Log.ExecuteBucketBatchOperationStop(tboi.Bucket, tboi.Batch, final);
 
             }).ConfigureAwait(false);
-            SiteEventSource.Log.ExecuteOperationsStop();
+            CommonEventSource.Log.ExecuteOperationsStop();
         }
 
         private static IEnumerable<TableBatchOperationInfo> SplitToBatchOperations(

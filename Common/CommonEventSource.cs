@@ -1,41 +1,32 @@
 ﻿using System;
 using System.Diagnostics.Tracing;
-using UnsafeCommon;
 
 namespace Common
 {
-    [EventSource(Name = "HowLongToBeatSteam-Backend")]
-    public sealed class SiteEventSource : UtilBaseEventSource
+    [EventSource(Name = "OS-HowLongToBeatSteam-Common")]
+    public sealed class CommonEventSource : EventSource
     {
+        public static readonly CommonEventSource Log = new CommonEventSource();
+        private CommonEventSource()
+        {
+        }
+
         public class Keywords
         {
-            public const EventKeywords Http = (EventKeywords) 1;
-            public const EventKeywords SteamApi = (EventKeywords) 2;
-            public const EventKeywords StoreApi = (EventKeywords) 4;
-            public const EventKeywords TableStorage = (EventKeywords) 8;
+            public const EventKeywords Http = (EventKeywords)1;
+            public const EventKeywords StoreApi = (EventKeywords)2;
+            public const EventKeywords TableStorage = (EventKeywords)4;
         }
 
         public class Tasks
         {
-            public const EventTask RetrieveMissingStoreInformation = (EventTask) 1;
-            public const EventTask RetrieveStoreInformation = (EventTask) 2;
-            public const EventTask QueryAllApps = (EventTask) 3;
-            public const EventTask RetrieveBucketBatchMappings = (EventTask) 4;
-            public const EventTask ProcessBucketBatch = (EventTask) 5;
-            public const EventTask ExecuteOperations = (EventTask) 6;
-            public const EventTask ExecuteBucketBatchOperation = (EventTask) 7;
-            public const EventTask RetrieveOwnedGames = (EventTask) 8;
-        }
-
-        private SiteEventSource()
-        {
-        }
-
-        private static readonly SiteEventSource s_log = new SiteEventSource();
-
-        public static SiteEventSource Log
-        {
-            get { return s_log; }
+            public const EventTask RetrieveMissingStoreInformation = (EventTask)1;
+            public const EventTask RetrieveStoreInformation = (EventTask)2;
+            public const EventTask QueryAllApps = (EventTask)3;
+            public const EventTask RetrieveBucketBatchMappings = (EventTask)4;
+            public const EventTask ProcessBucketBatch = (EventTask)5;
+            public const EventTask ExecuteOperations = (EventTask)6;
+            public const EventTask ExecuteBucketBatchOperation = (EventTask)7;
         }
 
         [NonEvent]
@@ -264,30 +255,6 @@ namespace Common
         private void ExecuteBucketBatchOperationStop(string final, int bucket, int batch)
         {
             WriteEvent(17, final, bucket, batch);
-        }
-
-        [Event(
-            18,
-            Message = "Start retrieving all owned games for user ID {0}",
-            Keywords = Keywords.SteamApi,
-            Level = EventLevel.Informational,
-            Task = Tasks.RetrieveOwnedGames,
-            Opcode = EventOpcode.Start)]
-        public void RetrieveOwnedGamesStart(long steamId)
-        {
-            WriteEvent(18, steamId);
-        }
-
-        [Event(
-            19,
-            Message = "Finished retrieving all owned games for user ID {0}",
-            Keywords = Keywords.SteamApi,
-            Level = EventLevel.Informational,
-            Task = Tasks.RetrieveOwnedGames,
-            Opcode = EventOpcode.Stop)]
-        public void RetrieveOwnedGamesStop(long steamId)
-        {
-            WriteEvent(19, steamId);
         }
     }
 }

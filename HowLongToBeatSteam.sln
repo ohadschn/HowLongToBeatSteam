@@ -15,7 +15,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MissingGamesUpdater", "Miss
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnknownUpdater", "UnknownUpdater\UnknownUpdater.csproj", "{2B5C1778-81EF-41AD-8FA2-3B0FCFEFA039}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnsafeCommon", "UnsafeCommon\UnsafeCommon.csproj", "{720F69D6-7F9E-43CA-A7AD-5203584BF391}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HltbTests", "HltbTests\HltbTests.csproj", "{45A4C82D-FB3F-4F4E-A5B5-01D34AC8F2AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,10 +47,10 @@ Global
 		{2B5C1778-81EF-41AD-8FA2-3B0FCFEFA039}.Debug|x86.Build.0 = Debug|x86
 		{2B5C1778-81EF-41AD-8FA2-3B0FCFEFA039}.Release|x86.ActiveCfg = Release|x86
 		{2B5C1778-81EF-41AD-8FA2-3B0FCFEFA039}.Release|x86.Build.0 = Release|x86
-		{720F69D6-7F9E-43CA-A7AD-5203584BF391}.Debug|x86.ActiveCfg = Debug|x86
-		{720F69D6-7F9E-43CA-A7AD-5203584BF391}.Debug|x86.Build.0 = Debug|x86
-		{720F69D6-7F9E-43CA-A7AD-5203584BF391}.Release|x86.ActiveCfg = Release|x86
-		{720F69D6-7F9E-43CA-A7AD-5203584BF391}.Release|x86.Build.0 = Release|x86
+		{45A4C82D-FB3F-4F4E-A5B5-01D34AC8F2AF}.Debug|x86.ActiveCfg = Debug|x86
+		{45A4C82D-FB3F-4F4E-A5B5-01D34AC8F2AF}.Debug|x86.Build.0 = Debug|x86
+		{45A4C82D-FB3F-4F4E-A5B5-01D34AC8F2AF}.Release|x86.ActiveCfg = Release|x86
+		{45A4C82D-FB3F-4F4E-A5B5-01D34AC8F2AF}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
