@@ -7,10 +7,17 @@ using Common;
 
 namespace UnknownUpdater
 {
-    [EventSource(Name = "OS-HowLongToBeatSteam-UnknownGamesUpdater")]
-    public class UnknownUpdaterEventSource : EventSource
+    public interface IUnknownUpdaterEventSource
     {
-        public static readonly UnknownUpdaterEventSource Log = new UnknownUpdaterEventSource();
+        void UpdateUnknownAppsStart();
+        void UpdateUnknownAppsStop();
+        void UpdateNewlyCategorizedApps(ConcurrentBag<AppEntity> updates);
+    }
+
+    [EventSource(Name = "OS-HowLongToBeatSteam-UnknownGamesUpdater")]
+    public class UnknownUpdaterEventSource : EventSource, IUnknownUpdaterEventSource
+    {
+        public static readonly IUnknownUpdaterEventSource Log = new UnknownUpdaterEventSource();
         private UnknownUpdaterEventSource()
         {
         }

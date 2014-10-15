@@ -3,10 +3,20 @@ using System.Diagnostics.Tracing;
 
 namespace MissingGamesUpdater
 {
-    [EventSource(Name = "OS-HowLongToBeatSteam-MissingGamesUpdater")]
-    public class MissingUpdaterEventSource : EventSource
+    public interface IMissingUpdaterEventSource
     {
-        public static readonly MissingUpdaterEventSource Log = new MissingUpdaterEventSource();
+        void RetrieveAllSteamAppsStart(Uri uri);
+        void RetrieveAllSteamAppsStop(Uri uri);
+        void ErrorRetrievingAllSteamApps(Uri uri);
+        void RetrievedAllSteamApps(Uri uri, int count);
+        void UpdateMissingGamesStart();
+        void UpdateMissingGamesStop();
+    }
+
+    [EventSource(Name = "OS-HowLongToBeatSteam-MissingGamesUpdater")]
+    public class MissingUpdaterEventSource : EventSource, IMissingUpdaterEventSource
+    {
+        public static readonly IMissingUpdaterEventSource Log = new MissingUpdaterEventSource();
         private MissingUpdaterEventSource()
         {
         }

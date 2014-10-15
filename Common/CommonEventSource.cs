@@ -3,10 +3,31 @@ using System.Diagnostics.Tracing;
 
 namespace Common
 {
-    [EventSource(Name = "OS-HowLongToBeatSteam-Common")]
-    public sealed class CommonEventSource : EventSource
+    public interface ICommonEventSource
     {
-        public static readonly CommonEventSource Log = new CommonEventSource();
+        void HttpRequestFailed(Uri uri, Exception exception, int attempt, TimeSpan delay);
+        void RetrieveMissingStoreInformationStart();
+        void RetrieveMissingStoreInformationStop();
+        void RetrieveStoreInformationStart(int start, int end, Uri uri);
+        void RetrieveStoreInformationStop(int start, int end, Uri uri);
+        void SkippedCategorizedApp(int appId, string name, string type);
+        void CategorizingApp(int appId, string name, string type);
+        void QueryAllAppsStart(string rowFilter);
+        void QueryAllAppsStop(string rowFilter, int count);
+        void RetrieveBucketBatchMappingsStart(int bucket, int batch);
+        void RetrieveBucketBatchMappingsStop(int bucket, int batch);
+        void ProcessBucketBatchStart(int bucket, int batch);
+        void ProcessBucketBatchStop(int bucket, int batch);
+        void ExecuteOperationsStart();
+        void ExecuteOperationsStop();
+        void ExecuteBucketBatchOperationStart(int bucket, int batch, string final);
+        void ExecuteBucketBatchOperationStop(int bucket, int batch, string final);
+    }
+
+    [EventSource(Name = "OS-HowLongToBeatSteam-Common")]
+    public sealed class CommonEventSource : EventSource, ICommonEventSource
+    {
+        public static readonly ICommonEventSource Log = new CommonEventSource();
         private CommonEventSource()
         {
         }
