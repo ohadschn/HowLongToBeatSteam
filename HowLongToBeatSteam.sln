@@ -17,6 +17,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnknownUpdater", "UnknownUp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HltbTests", "HltbTests\HltbTests.csproj", "{45A4C82D-FB3F-4F4E-A5B5-01D34AC8F2AF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{774E95F6-D2C2-4895-A087-3C8CCE2E7D53}"
+	ProjectSection(SolutionItems) = preProject
+		Enterprise Library Semantic Logging Service\SemanticLogging-svc.xml = Enterprise Library Semantic Logging Service\SemanticLogging-svc.xml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86

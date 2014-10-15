@@ -155,5 +155,11 @@ namespace HowLongToBeatSteam.Controllers
             SiteEventSource.Log.ResolvedPersonaName(steamId, personaName);
             return personaName;
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            Client.Dispose();
+            base.Dispose(disposing);
+        }
     }
 }

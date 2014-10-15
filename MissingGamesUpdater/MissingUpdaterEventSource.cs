@@ -16,7 +16,8 @@ namespace MissingGamesUpdater
     [EventSource(Name = "OS-HowLongToBeatSteam-MissingGamesUpdater")]
     public class MissingUpdaterEventSource : EventSource, IMissingUpdaterEventSource
     {
-        public static readonly IMissingUpdaterEventSource Log = new MissingUpdaterEventSource();
+        private static readonly MissingUpdaterEventSource s_log = new MissingUpdaterEventSource();
+        public static IMissingUpdaterEventSource Log { get { return s_log; } }
         private MissingUpdaterEventSource()
         {
         }

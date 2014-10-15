@@ -8,8 +8,8 @@ namespace Common
         void HttpRequestFailed(Uri uri, Exception exception, int attempt, TimeSpan delay);
         void RetrieveMissingStoreInformationStart();
         void RetrieveMissingStoreInformationStop();
-        void RetrieveStoreInformationStart(int start, int end, Uri uri);
-        void RetrieveStoreInformationStop(int start, int end, Uri uri);
+        void RetrieveStoreInformationStart(int startIndex, int endIndex, Uri uri);
+        void RetrieveStoreInformationStop(int startIndex, int endIndex, Uri uri);
         void SkippedCategorizedApp(int appId, string name, string type);
         void CategorizingApp(int appId, string name, string type);
         void QueryAllAppsStart(string rowFilter);
@@ -27,7 +27,8 @@ namespace Common
     [EventSource(Name = "OS-HowLongToBeatSteam-Common")]
     public sealed class CommonEventSource : EventSource, ICommonEventSource
     {
-        public static readonly ICommonEventSource Log = new CommonEventSource();
+        private static readonly CommonEventSource s_log = new CommonEventSource();
+        public static ICommonEventSource Log { get { return s_log; } }
         private CommonEventSource()
         {
         }
@@ -112,7 +113,7 @@ namespace Common
         }
 
         [NonEvent]
-        public void RetrieveStoreInformationStart(int start, int end, Uri uri)
+        public void RetrieveStoreInformationStart(int startIndex, int endIndex, Uri uri)
         {
             if (uri == null)
             {
@@ -124,7 +125,7 @@ namespace Common
                 return;
             }
 
-            RetrieveStoreInformationStart(uri.ToString(), start, end);
+            RetrieveStoreInformationStart(uri.ToString(), startIndex, endIndex);
         }
 
         [Event(
@@ -140,7 +141,7 @@ namespace Common
         }
 
         [NonEvent]
-        public void RetrieveStoreInformationStop(int start, int end, Uri uri)
+        public void RetrieveStoreInformationStop(int startIndex, int endIndex, Uri uri)
         {
             if (uri == null)
             {
@@ -152,7 +153,7 @@ namespace Common
                 return;
             }
 
-            RetrieveStoreInformationStop(uri.ToString(), start, end);
+            RetrieveStoreInformationStop(uri.ToString(), startIndex, endIndex);
         }
 
         [Event(

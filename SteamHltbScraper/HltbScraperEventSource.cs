@@ -30,7 +30,8 @@ namespace SteamHltbScraper
     [EventSource(Name = "OS-HowLongToBeatSteam-Scraper")]
     public class HltbScraperEventSource : EventSource, IHltbScraperEventSource
     {
-        public static readonly IHltbScraperEventSource Log = new HltbScraperEventSource();
+        private static readonly HltbScraperEventSource s_log = new HltbScraperEventSource();
+        public static IHltbScraperEventSource Log { get { return s_log; } }
 
         private HltbScraperEventSource()
         {

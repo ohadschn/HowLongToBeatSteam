@@ -157,3 +157,5 @@ $RECYCLE.BIN/
 /packages/*
 !/packages/repositories.config
 /HowLongToBeatSteam/Scripts
+/Enterprise Library Semantic Logging Service/*
+!/Enterprise Library Semantic Logging Service/SemanticLogging-svc.xml

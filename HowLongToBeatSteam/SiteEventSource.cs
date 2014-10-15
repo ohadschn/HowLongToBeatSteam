@@ -23,9 +23,10 @@ namespace HowLongToBeatSteam
     }
 
     [EventSource(Name = "OS-HowLongToBeatSteam-Site")]
-    public class SiteEventSource : EventSource, ISiteEventSource
+    public sealed class SiteEventSource : EventSource, ISiteEventSource
     {
-        public static readonly ISiteEventSource Log = new SiteEventSource();
+        private static readonly SiteEventSource s_log = new SiteEventSource();
+        public static ISiteEventSource Log { get { return s_log; } }
         private SiteEventSource()
         {
         }

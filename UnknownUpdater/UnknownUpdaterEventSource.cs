@@ -17,7 +17,8 @@ namespace UnknownUpdater
     [EventSource(Name = "OS-HowLongToBeatSteam-UnknownGamesUpdater")]
     public class UnknownUpdaterEventSource : EventSource, IUnknownUpdaterEventSource
     {
-        public static readonly IUnknownUpdaterEventSource Log = new UnknownUpdaterEventSource();
+        private static readonly UnknownUpdaterEventSource s_log = new UnknownUpdaterEventSource();
+        public static IUnknownUpdaterEventSource Log { get { return s_log; } }
         private UnknownUpdaterEventSource()
         {
         }

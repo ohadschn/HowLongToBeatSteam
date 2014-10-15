@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration xmlns="http://schemas.microsoft.com/practices/2013/entlib/semanticlogging/etw"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://schemas.microsoft.com/practices/2013/entlib/semanticlogging/etw SemanticLogging-svc.xsd">
+  <traceEventService sessionNamePrefix="HowLongToBeatSteam"/>
+  <sinks>
+    
+    <!--remove before deployment-->
+    <consoleSink name="Console">
+      <sources>
+        <eventSource name="OS-HowLongToBeatSteam-Common" level="Verbose"/>
+        <eventSource name="OS-HowLongToBeatSteam-Site" level="Verbose"/>
+        <eventSource name="OS-HowLongToBeatSteam-MissingGamesUpdater" level="Verbose"/>
+        <eventSource name="OS-HowLongToBeatSteam-UnknownGamesUpdater" level="Verbose"/>
+        <eventSource name="OS-HowLongToBeatSteam-Scraper" level="Verbose"/>
+      </sources>
+    </consoleSink>
+    
+    <!--update connection string before deployment-->
+    <windowsAzureTableSink 
+      name="AzureTable" 
+      instanceName="AzureTable" 
+      connectionString="UseDevelopmentStorage=true" 
+      maxBufferSize="100000" 
+      bufferingFlushAllTimeoutInSeconds="-1">
+      <sources>
+        <eventSource name="OS-HowLongToBeatSteam-Common" level="Verbose"/>
+        <eventSource name="OS-HowLongToBeatSteam-Site" level="Verbose"/>
+        <eventSource name="OS-HowLongToBeatSteam-MissingGamesUpdater" level="Verbose"/>
+        <eventSource name="OS-HowLongToBeatSteam-UnknownGamesUpdater" level="Verbose"/>
+        <eventSource name="OS-HowLongToBeatSteam-Scraper" level="Verbose"/>
+      </sources>
+    </windowsAzureTableSink>
+    
+  </sinks>
+</configuration>
