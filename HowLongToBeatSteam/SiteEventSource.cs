@@ -2,31 +2,10 @@
 
 namespace HowLongToBeatSteam
 {
-    public interface ISiteEventSource
-    {
-        void UpdateCacheStart();
-        void UpdateCacheStop(int count);
-        void RetrieveOwnedGamesStart(long steamId);
-        void RetrieveOwnedGamesStop(long steamId);
-        void ErrorRetrievingOwnedGames(long steamId);
-        void ErrorRetrievingPersonaName(long steamId);
-        void PrepareResponseStart();
-        void PrepareResponseStop();
-        void RetrievePlayerSummaryStart();
-        void RetrievePlayerSummaryStop();
-        void SkipNonCachedApp(int appId, string name);
-        void SkipNonGame(int appId, string name);
-        void RetrievedOwnedGames(long steamId, int count);
-        void ResolvedPersonaName(long steamId, string personaName);
-        void HandleGetGamesRequestStart(long steamId);
-        void HandleGetGamesRequestStop(long steamId);
-    }
-
     [EventSource(Name = "OS-HowLongToBeatSteam-Site")]
-    public sealed class SiteEventSource : EventSource, ISiteEventSource
+    public class SiteEventSource : EventSource
     {
-        private static readonly SiteEventSource s_log = new SiteEventSource();
-        public static ISiteEventSource Log { get { return s_log; } }
+        public static readonly SiteEventSource Log = new SiteEventSource();
         private SiteEventSource()
         {
         }

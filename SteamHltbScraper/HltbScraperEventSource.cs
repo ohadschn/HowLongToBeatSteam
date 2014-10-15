@@ -3,35 +3,10 @@ using System.Diagnostics.Tracing;
 
 namespace SteamHltbScraper
 {
-    public interface IHltbScraperEventSource
-    {
-        void ScrapeHltbStart();
-        void ScrapeHltbStop();
-        void ScrapeGameStart(int steamAppId, int current);
-        void ScrapeGameStop(int steamAppId, int current);
-        void ScrapeHltbIdStart(string appName);
-        void ScrapeHltbIdStop(string appName, int hltbId);
-        void PostHltbSearchStart(Uri uri, string content);
-        void PostHltbSearchStop(Uri uri, string content);
-        void GameNotFoundInSearch(string game);
-        void ErrorScrapingHltbId(int current, int steamAppId, string steamName, Exception exception);
-        void ScrapeHltbNameStart(int hltbId);
-        void ScrapeHltbNameStop(int hltbId, string hltbName);
-        void GetHltbGamePageStart(Uri uri);
-        void GetHltbGamePageStop(Uri uri);
-        void ErrorScrapingHltbName(int current, int steamAppId, string steamName, int hltbId, Exception exception);
-        void ScrapeHltbInfoStart(int hltbId);
-        void ScrapeHltbInfoStop(int hltbId, int mainTtb, int extrasTtb, int completionistTtb, int combinedTtb, int solo, int coOp, int vs);
-        void GetGameOverviewPageStart(Uri uri);
-        void GetGameOverviewPageStop(Uri uri);
-        void ErrorScrapingHltbInfo(int current, int steamAppId, string steamName, Exception exception);
-    }
-
     [EventSource(Name = "OS-HowLongToBeatSteam-Scraper")]
-    public class HltbScraperEventSource : EventSource, IHltbScraperEventSource
+    public class HltbScraperEventSource : EventSource
     {
-        private static readonly HltbScraperEventSource s_log = new HltbScraperEventSource();
-        public static IHltbScraperEventSource Log { get { return s_log; } }
+        public static readonly HltbScraperEventSource Log = new HltbScraperEventSource();
 
         private HltbScraperEventSource()
         {

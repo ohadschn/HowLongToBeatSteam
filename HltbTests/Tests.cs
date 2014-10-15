@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.Tracing;
-using Common;
+﻿using Common;
 using HowLongToBeatSteam;
 using Microsoft.Practices.EnterpriseLibrary.SemanticLogging.Utility;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -15,31 +14,31 @@ namespace HltbTests
         [TestMethod]
         public void TestCommonEventSource()
         {
-            EventSourceAnalyzer.InspectAll((EventSource)CommonEventSource.Log);
+            EventSourceAnalyzer.InspectAll(CommonEventSource.Log);
         }
 
         [TestMethod]
         public void TestSiteEventSource()
         {
-            EventSourceAnalyzer.InspectAll((EventSource)SiteEventSource.Log);
+            EventSourceAnalyzer.InspectAll(SiteEventSource.Log);
         }
 
         [TestMethod]
         public void TestMissingUpdaterEventSource()
         {
-            EventSourceAnalyzer.InspectAll((EventSource)MissingUpdaterEventSource.Log);
+            EventSourceAnalyzer.InspectAll(MissingUpdaterEventSource.Log);
         }
 
         [TestMethod]
         public void TestUnknownUpdaterEventSource()
         {
-            EventSourceAnalyzer.InspectAll((EventSource)UnknownUpdaterEventSource.Log);
+            EventSourceAnalyzer.InspectAll(UnknownUpdaterEventSource.Log);
         }
 
         [TestMethod]
         public void TestHltbScraperEventSource()
         {
-            EventSourceAnalyzer.InspectAll((EventSource)HltbScraperEventSource.Log);
+            EventSourceAnalyzer.InspectAll(HltbScraperEventSource.Log);
         }
     }
 }
