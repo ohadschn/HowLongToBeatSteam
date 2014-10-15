@@ -11,6 +11,10 @@ var numberWithCommas = function (x) { // jshint ignore:line
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
+Date.prototype.timeNow = function () {
+    return ((this.getHours() < 10) ? "0" : "") + this.getHours() + ":" + ((this.getMinutes() < 10) ? "0" : "") + this.getMinutes() + ":" + ((this.getSeconds() < 10) ? "0" : "") + this.getSeconds() + '.' + this.getMilliseconds();
+}
+
 function Game(steamGame) {
 
     var self = this;
@@ -31,7 +35,7 @@ function Game(steamGame) {
         combinedTtb: self.known ? steamGame.HltbInfo.CombinedTtb : 0,
         url: self.known 
             ? "http://www.howlongtobeat.com/game.php?id=" + steamGame.HltbInfo.Id
-            : "http://www.howlongtobeat.com/search.php?t=games&s=" + self.steamName,
+            : "http://www.howlongtobeat.com" + self.steamName,
     };
 }
 
@@ -51,6 +55,7 @@ function AppViewModel(id) {
     self.partialCache = ko.observable(false);
     self.processing = ko.observable(false);
     self.error = ko.observable(null);
+    self.modelText = ko.observable('Working...');
 
     self.missingIdsAlertHidden = ko.observable(false);
     self.partialCacheAlertHidden = ko.observable(false);
@@ -78,7 +83,8 @@ function AppViewModel(id) {
             return true;
         }
 
-        doModalWork(function() {
+        self.modelText("Toggling...");
+        doModalWork(function () {
             self.toggleAllCore(include);
         });
 
@@ -152,19 +158,22 @@ function AppViewModel(id) {
         }
 
         self.processing(true);
+        self.games([]);
         self.partialCache(false);
         self.missingIdsAlertHidden(false);
         self.partialCacheAlertHidden(false);
         self.errorAlertHidden(false);
 
         var updateGames = function (games, start) {
-            var end = Math.min(games.length, start + 5);
+            if (start === games.length) {
+                self.processing(false);
+                $('#workingModal').modal("hide");
+                return;
+            }
+            var end = Math.min(games.length, start + 10);
+            self.modelText(end === games.length ? "Generating game table..." : "Loading " + end + " / " + games.length);
             for (var i = start; i < end; i++) {
                 self.games.push(games[i]);
-            }
-            if (end === games.length) {
-                self.processing(false);
-                return;
             }
             setTimeout(function() {
                 updateGames(games, end);
@@ -175,7 +184,9 @@ function AppViewModel(id) {
             .done(function(data) {
                 self.partialCache(data.PartialCache);
                 self.personaName(data.PersonaName);
-                data.Games.sort(function(a, b) {
+                self.modelText("Loading 0 / " + data.Games.length);
+                $('#workingModal').modal();
+                data.Games.sort(function (a, b) {
                     var aName = a.SteamName.toLowerCase();
                     var bName = b.SteamName.toLowerCase();
                     return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0));
