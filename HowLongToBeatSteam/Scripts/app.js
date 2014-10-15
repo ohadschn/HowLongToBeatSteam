@@ -85,7 +85,7 @@ function AppViewModel(id) {
         return false;
     };
 
-    self.total = ko.computed(function () {
+    self.total = ko.pureComputed(function () {
 
         var count = 0;
         var missingIdsCount = 0;
@@ -157,16 +157,18 @@ function AppViewModel(id) {
         self.partialCacheAlertHidden(false);
         self.errorAlertHidden(false);
 
-        var updateGames = function(games, start) {
-            if (games.length < 100) {
-                self.games(games);
-                self.processing(false);
-            } else {
-                doModalWork(function () {
-                    self.games(games);
-                    self.processing(false);
-                });
+        var updateGames = function (games, start) {
+            var end = Math.min(games.length, start + 5);
+            for (var i = start; i < end; i++) {
+                self.games.push(games[i]);
             }
+            if (end === games.length) {
+                self.processing(false);
+                return;
+            }
+            setTimeout(function() {
+                updateGames(games, end);
+            }, 0);
         };
 
         $.get("api/games/library/" + self.steamId64())
