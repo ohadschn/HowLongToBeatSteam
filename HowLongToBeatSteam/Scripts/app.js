@@ -11,10 +11,6 @@ var numberWithCommas = function (x) { // jshint ignore:line
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
-Date.prototype.timeNow = function () {
-    return ((this.getHours() < 10) ? "0" : "") + this.getHours() + ":" + ((this.getMinutes() < 10) ? "0" : "") + this.getMinutes() + ":" + ((this.getSeconds() < 10) ? "0" : "") + this.getSeconds() + '.' + this.getMilliseconds();
-}
-
 function Game(steamGame) {
 
     var self = this;
@@ -158,47 +154,51 @@ function AppViewModel(id) {
         }
 
         self.processing(true);
-        self.games([]);
         self.partialCache(false);
         self.missingIdsAlertHidden(false);
         self.partialCacheAlertHidden(false);
         self.errorAlertHidden(false);
 
-        var updateGames = function (games, start) {
-            if (start === games.length) {
+        var updateGames = function (games, total) {
+            var toAdd = games.splice(0, 50);
+            self.modelText(games.length == 0 ? "Generating game table..." : "Loading games " + (total - games.length) + " / " + total);
+
+            if (toAdd.length == 0) {
                 self.processing(false);
                 $('#workingModal').modal("hide");
                 return;
             }
-            var end = Math.min(games.length, start + 10);
-            self.modelText(end === games.length ? "Generating game table..." : "Loading " + end + " / " + games.length);
-            for (var i = start; i < end; i++) {
-                self.games.push(games[i]);
-            }
-            setTimeout(function() {
-                updateGames(games, end);
+
+            ko.utils.arrayPushAll(self.games, toAdd);
+            setTimeout(function () {
+                updateGames(games, total);
             }, 0);
         };
+        
+        self.modelText("Retrieving games...");
+        $('#workingModal').modal();
 
-        $.get("api/games/library/" + self.steamId64())
-            .done(function(data) {
-                self.partialCache(data.PartialCache);
-                self.personaName(data.PersonaName);
-                self.modelText("Loading 0 / " + data.Games.length);
-                $('#workingModal').modal();
-                data.Games.sort(function (a, b) {
-                    var aName = a.SteamName.toLowerCase();
-                    var bName = b.SteamName.toLowerCase();
-                    return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0));
+        setTimeout(function() { //let modal kick in
+            $.get("api/games/library/" + self.steamId64())
+                .done(function(data) {
+                    self.partialCache(data.PartialCache);
+                    self.personaName(data.PersonaName);
+                    data.Games.sort(function(a, b) {
+                        var aName = a.SteamName.toLowerCase();
+                        var bName = b.SteamName.toLowerCase();
+                        return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0));
+                    });
+                    var games = ko.utils.arrayMap(data.Games, function(steamGame) { return new Game(steamGame); });
+                    updateGames(games, games.length);
+                })
+                .fail(function(error) {
+                    console.error(error);
+                    self.error("Verify your Steam64Id and try again");
+                    self.processing(false);
                 });
-                var games = ko.utils.arrayMap(data.Games, function(steamGame) { return new Game(steamGame); });
-                updateGames(games, 0);
-            })
-            .fail(function(error) {
-                console.error(error);
-                self.error("Verify your Steam64Id and try again");
-                self.processing(false);
-            });
+
+            self.games([]); //do this after AJAX call has been made
+        }, 0);
     };
 
     self.updateHltb = function(game) {
@@ -226,7 +226,7 @@ $(document).ready(function () {
     $('#steamIdText').focus();
 
     var id = getParameterByName("id");
-    ko.applyBindings(new AppViewModel(id));
+    ko.applyBindings(new AppViewModel(id == null ? "" : id));
 
     if (id !== null) {
         $('#submit').trigger('click');
