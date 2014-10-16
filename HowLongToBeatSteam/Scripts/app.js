@@ -161,9 +161,9 @@ function AppViewModel(id) {
 
         var updateGames = function (games, total) {
             var toAdd = games.splice(0, 50);
-            self.modelText(games.length == 0 ? "Generating game table..." : "Loading games " + (total - games.length) + " / " + total);
+            self.modelText(games.length === 0 ? "Generating game table..." : "Loading games " + (total - games.length) + " / " + total);
 
-            if (toAdd.length == 0) {
+            if (toAdd.length === 0) {
                 self.processing(false);
                 $('#workingModal').modal("hide");
                 return;
@@ -226,7 +226,7 @@ $(document).ready(function () {
     $('#steamIdText').focus();
 
     var id = getParameterByName("id");
-    ko.applyBindings(new AppViewModel(id == null ? "" : id));
+    ko.applyBindings(new AppViewModel(id === null ? "" : id));
 
     if (id !== null) {
         $('#submit').trigger('click');
