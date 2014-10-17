@@ -12,7 +12,6 @@ namespace Common.Entities
         public const int Buckets = 20;
 
         public const string UnknownType = "Unknown";
-
         private const string MeasuredKey = "Measured";
         private const string UnmeasuredKey = "Unmeasured";
 
@@ -49,18 +48,21 @@ namespace Common.Entities
         }
 
         private AppEntity(
-            int steamAppId, 
-            string steamName, 
+            int steamAppId,
+            string steamName,
             string appType,
-            int hltbId, 
-            string hltbName, 
-            int mainTtb, 
-            int extrasTtb, 
-            int completionistTtb, 
+            int hltbId,
+            string hltbName,
+            int mainTtb,
+            int extrasTtb,
+            int completionistTtb,
             int combinedTtb,
             int soloTtb,
             int coOpTtb,
             int vsTtb)
+            : base(
+                GetPartitionKey(steamAppId),
+                GetRowKey(steamAppId, appType))
         {
             SteamAppId = steamAppId;
             SteamName = steamName;
@@ -74,9 +76,16 @@ namespace Common.Entities
             SoloTtb = soloTtb;
             CoOpTtb = coOpTtb;
             VsTtb = vsTtb;
+        }
 
-            PartitionKey = CalculateBucket(steamAppId).ToString(CultureInfo.InvariantCulture);
-            RowKey = String.Format(CultureInfo.InvariantCulture, "{0}_{1}_{2}", Classify(AppType), AppType, SteamAppId);
+        internal static string GetPartitionKey(int steamAppId)
+        {
+            return CalculateBucket(steamAppId).ToString(CultureInfo.InvariantCulture);
+        }
+
+        private static string GetRowKey(int steamAppId, string appType)
+        {
+            return String.Format(CultureInfo.InvariantCulture, "{0}_{1}_{2}", Classify(appType), appType, steamAppId);
         }
 
         private static string Classify(string type)

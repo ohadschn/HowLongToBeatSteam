@@ -114,7 +114,7 @@ namespace SteamHltbScraper.Scraper
             }).ConfigureAwait(false);
 
             //we're using Replace since the only other update to an existing game-typed entity would have to be manual which should take precedence
-            await TableHelper.Replace(updates, 20).ConfigureAwait(false); 
+            await TableHelper.ReplaceApps(updates, 20).ConfigureAwait(false); 
             
             HltbScraperEventSource.Log.ScrapeHltbStop();
         }

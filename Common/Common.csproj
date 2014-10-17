@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entities\SuggestionEntity.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Entities\AppEntity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

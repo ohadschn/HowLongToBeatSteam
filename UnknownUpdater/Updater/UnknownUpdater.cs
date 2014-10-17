@@ -32,7 +32,7 @@ namespace UnknownUpdater.Updater
             UnknownUpdaterEventSource.Log.UpdateNewlyCategorizedApps(updates);
 
             var appsDict = apps.ToDictionary(ae => ae.SteamAppId);
-            await TableHelper.ExecuteOperations(updates,
+            await TableHelper.ExecuteAppOperations(updates,
                     ae => new[] {TableOperation.Delete(appsDict[ae.SteamAppId]), TableOperation.Insert(ae)}, 10).ConfigureAwait(false);
 
             UnknownUpdaterEventSource.Log.UpdateUnknownAppsStop();

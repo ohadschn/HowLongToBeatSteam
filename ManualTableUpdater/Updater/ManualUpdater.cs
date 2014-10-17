@@ -38,7 +38,7 @@ namespace ManualTableUpdater.Updater
         //    }
 
         //    SiteUtil.TraceInformation("Updating...");
-        //    TableHelper.Insert(games);
+        //    TableHelper.InsertApps(games);
         //}
     }
 }

@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Common.Entities;
 using Common.Storage;
 using Common.Util;
 using HowLongToBeatSteam.Controllers.Responses;
@@ -95,6 +96,13 @@ namespace HowLongToBeatSteam.Controllers
 
             SiteEventSource.Log.HandleGetGamesRequestStop(steamId);
             return new OwnedGamesInfo(personaName, partialCache, games);
+        }
+
+        [Route("update/{steamAppId:int}/{hltbId:int}")]
+        [HttpPost]
+        public Task UpdateGameMapping(int steamAppId, int hltbId)
+        {
+            return TableHelper.InsertSuggestion(new SuggestionEntity(steamAppId, hltbId));
         }
 
         private static async Task<OwnedGame[]> GetOwnedGames(long steamId)

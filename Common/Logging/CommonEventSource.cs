@@ -32,6 +32,7 @@ namespace Common.Logging
             public const EventTask ProcessBucketBatch = (EventTask)5;
             public const EventTask ExecuteOperations = (EventTask)6;
             public const EventTask ExecuteBucketBatchOperation = (EventTask)7;
+            public const EventTask InsertSuggestion = (EventTask)8;
         }
 // ReSharper restore ConvertToStaticClass
 
@@ -296,6 +297,30 @@ namespace Common.Logging
         private void ExecuteBucketBatchOperationStop(string final, int bucket, int batch)
         {
             WriteEvent(17, final, bucket, batch);
+        }
+
+        [Event(
+            18,
+            Message = "Start inserting suggestion for Steam ID {0}: HLTB ID {1}",
+            Keywords = Keywords.TableStorage,
+            Level = EventLevel.Informational,
+            Task = Tasks.InsertSuggestion,
+            Opcode = EventOpcode.Start)]
+        public void InsertSuggestionStart(int steamAppId, int hltbId)
+        {
+            WriteEvent(18, steamAppId, hltbId);
+        }
+
+        [Event(
+            19,
+            Message = "Finished inserting suggestion for Steam ID {0}: HLTB ID {1}",
+            Keywords = Keywords.TableStorage,
+            Level = EventLevel.Informational,
+            Task = Tasks.InsertSuggestion,
+            Opcode = EventOpcode.Stop)]
+        public void InsertSuggestionStop(int steamAppId, int hltbId)
+        {
+            WriteEvent(19, steamAppId, hltbId);
         }
     }
 }

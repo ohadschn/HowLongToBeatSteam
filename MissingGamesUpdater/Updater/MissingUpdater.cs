@@ -42,7 +42,7 @@ namespace MissingGamesUpdater.Updater
             var updates = await SteamStoreHelper.GetStoreInformationUpdates(missingApps.Select(a => new BasicStoreInfo(a.appid, a.name, null)), s_client)
                 .ConfigureAwait(false);
 
-            await TableHelper.Insert(updates, 5).ConfigureAwait(false);     //we're inserting new entries, no fear of collisions 
+            await TableHelper.InsertApps(updates, 5).ConfigureAwait(false);     //we're inserting new entries, no fear of collisions 
             MissingUpdaterEventSource.Log.UpdateMissingGamesStop();            //(even if two jobs overlap the next one will fix it)
         }
 

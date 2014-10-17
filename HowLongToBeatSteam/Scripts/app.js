@@ -11,12 +11,20 @@ var numberWithCommas = function (x) { // jshint ignore:line
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
+var GameUpdatePhase = {
+    None: "None",
+    InProgress: "InProgress",
+    Success: "Success",
+    Failure: "Failure",
+};
+
 function Game(steamGame) {
 
     var self = this;
 
     self.known = steamGame.HltbInfo !== null;
     self.included = ko.observable(true);
+    self.updatePhase = ko.observable(GameUpdatePhase.None);
 
     self.steamAppId = steamGame.SteamAppId;
     self.steamName = steamGame.SteamName;
@@ -24,14 +32,14 @@ function Game(steamGame) {
 
     self.hltbInfo = {
         id: self.known ? steamGame.HltbInfo.Id : "",
-        name: self.known ? steamGame.HltbInfo.Name : "Unknown, please update",
+        name: ko.observable(self.known ? steamGame.HltbInfo.Name : "Unknown, please update"), //we'll abuse this for update status
         mainTtb: self.known ? steamGame.HltbInfo.MainTtb : 0,
         extrasTtb: self.known ? steamGame.HltbInfo.ExtrasTtb : 0,
         completionistTtb: self.known ? steamGame.HltbInfo.CompletionistTtb : 0,
         combinedTtb: self.known ? steamGame.HltbInfo.CombinedTtb : 0,
         url: self.known 
-            ? "http://www.howlongtobeat.com/game.php?id=" + steamGame.HltbInfo.Id
-            : "http://www.howlongtobeat.com" + self.steamName,
+                ? "http://www.howlongtobeat.com/game.php?id=" + steamGame.HltbInfo.Id
+                : "http://www.howlongtobeat.com",
     };
 }
 
@@ -201,10 +209,24 @@ function AppViewModel(id) {
         }, 0);
     };
 
-    self.updateHltb = function(game) {
-        $.get("api/games/update/" + game.steamAppId + "?hltb=" + game.hltbInfo.id);
-        alert(game.steamAppId + "-" + game.hltbInfo.id);
+    self.updateHltb = function (game) {
+        game.hltbInfo.name("Updating...");
+        game.updatePhase(GameUpdatePhase.InProgress);
+        $.post("api/games/update/" + game.steamAppId + "/" + game.hltbInfo.id)
+            .done(function() {
+                game.hltbInfo.name("Update submitted for approval, please check back later");
+                game.updatePhase(GameUpdatePhase.Success);
+            })
+            .fail(function(error) {
+                console.error(error);
+                game.hltbInfo.name("Update failed, please verify the HLTB ID");
+                game.updatePhase(GameUpdatePhase.Failure);
+            });
     };
+
+    self.allowUpdate = function(game) { //defined on view model to avoid multiple definitions (one for each game in array)
+        return (game.updatePhase() == GameUpdatePhase.None) || (game.updatePhase() == GameUpdatePhase.Failure);
+    }
 }
 
 function getParameterByName(name) {
@@ -216,8 +238,7 @@ function getParameterByName(name) {
 
 $(document).ready(function () {
 
-    //fix console for old browsers
-    if (!window.console) { 
+    if (!window.console) { //fix console for old browsers
         var noOp = function () { };
         window.console = { log: noOp, warn: noOp, error: noOp };
     }

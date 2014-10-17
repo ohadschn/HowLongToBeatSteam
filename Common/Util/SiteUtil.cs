@@ -51,8 +51,7 @@ namespace Common.Util
                 do
                 {
                     itemsRemaining = false;
-                    foreach (var item in
-                             enumerators.Where(e => e.MoveNext()).Select(e => e.Current))
+                    foreach (var item in enumerators.Where(e => e.MoveNext()).Select(e => e.Current))
                     {
                         yield return item;
                         itemsRemaining = true;

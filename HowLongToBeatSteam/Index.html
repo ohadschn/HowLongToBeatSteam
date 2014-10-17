@@ -64,7 +64,6 @@
                         <th>
                             <input type="checkbox" data-bind="click: toggleAll, checked: toggleAllChecked()" />
                         </th>
-                        <th>AppId</th>
                         <th>Name</th>
                         <th>Playtime</th>
                         <th>Main</th>
@@ -80,28 +79,26 @@
                     <!-- ko foreach: games -->
                     <tr data-bind="css: known ? '' : 'info'">
                         <td class="vcenter"><input type="checkbox" data-bind="checked: included" /></td>
-                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: steamAppId"></td>
                         <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: steamName"></td>
                         <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: getHours(steamPlaytime) + 'h'"></td>
                         <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: getHours($data.hltbInfo.mainTtb) + 'h'"></td>
                         <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: getHours($data.hltbInfo.extrasTtb) + 'h'"></td>
                         <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: getHours($data.hltbInfo.completionistTtb) + 'h'">></td>
                         <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: getHours($data.hltbInfo.combinedTtb) + 'h'"></td>
-                        <td data-bind="css: 'vcenter' + (known ? '' : ' emphasized')">
-                            <a data-bind="text: $data.hltbInfo.name, attr: {href: $data.hltbInfo.url}" target="_blank"></a>
+                        <td data-bind="css: 'vcenter' + (known ? '' : ' emphasized'), attr: {colspan: $parent.allowUpdate($data) ? 1 : 3}">
+                            <a data-bind="text: $data.hltbInfo.name, attr: {href: $data.hltbInfo.url}, visible: updatePhase() == GameUpdatePhase.None" target="_blank"></a>
+                            <span data-bind="text:$data.hltbInfo.name, visible: updatePhase() != GameUpdatePhase.None"></span>
                         </td>
-                        <td class="vcenter">
+                        <td class="vcenter" data-bind="visible: $parent.allowUpdate($data)">
                             <input type="text" class="input-short" data-bind="value:$data.hltbInfo.id" placeholder="?" />
                         </td>
-                        <td class="vcenter">
+                        <td class="vcenter" data-bind="visible: $parent.allowUpdate($data)">
                             <button class="btn btn-info btn-sm" data-bind="click: $parent.updateHltb">Update</button>
                         </td>
                     </tr>
                     <!-- /ko -->
                     <tr class="success">
-                        <th></th>
-                        <th>Total</th>
-                        <th data-bind="text: total().count + ' games'"></th>
+                        <th data-bind="text: 'Total (' + total().count + ' games)'" colspan="2"></th>
                         <th data-bind="text: numberWithCommas(getHours(total().totalPlaytime)) + 'h'"></th>
                         <th data-bind="text: numberWithCommas(getHours(total().totalMain)) + 'h'"></th>
                         <th data-bind="text: numberWithCommas(getHours(total().totalExtras)) + 'h'"></th>
@@ -112,7 +109,6 @@
                         <th></th>
                     </tr>
                     <tr class="success">
-                        <th></th>
                         <th colspan="2">
                             Remaining <span class="glyphicon glyphicon-info-sign"
                                             id="remainingTableHeaderInfoSpan"
