@@ -61,9 +61,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HltbInfo.cs" />
-    <Compile Include="HltbScraperEventSource.cs" />
-    <Compile Include="Scraper.cs" />
+    <Compile Include="Scraper\HltbInfo.cs" />
+    <Compile Include="Logging\HltbScraperEventSource.cs" />
+    <Compile Include="Scraper\HltbScraper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -84,7 +84,7 @@
   </ItemGroup>
   <ItemGroup>
     <CodeAnalysisDictionary Include="..\CustomDictionary.xml">
-      <Link>CustomDictionary.xml</Link>
+      <Link>Properties\CustomDictionary.xml</Link>
     </CodeAnalysisDictionary>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

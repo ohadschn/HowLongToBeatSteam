@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics.Tracing;
 
-namespace Common
+namespace Common.Logging
 {
     [EventSource(Name = "OS-HowLongToBeatSteam-Common")]
     public sealed class CommonEventSource : EventSource

@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Common.Logging;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
-namespace Common
+namespace Common.Util
 {
     public sealed class HttpRetryClient : IDisposable
     {

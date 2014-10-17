@@ -53,7 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ManualUpdater.cs" />
+    <Compile Include="Updater\ManualUpdater.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -61,9 +61,6 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
-    <None Include="steamHltb.csv">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj">
@@ -73,7 +70,7 @@
   </ItemGroup>
   <ItemGroup>
     <CodeAnalysisDictionary Include="..\CustomDictionary.xml">
-      <Link>CustomDictionary.xml</Link>
+      <Link>Properties\CustomDictionary.xml</Link>
     </CodeAnalysisDictionary>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -5,11 +5,14 @@ using System.Configuration;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Common.Entities;
+using Common.Logging;
+using Common.Util;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace Common
+namespace Common.Storage
 {
     public static class TableHelper
     {
@@ -144,6 +147,14 @@ namespace Common
                 TableQuery.GenerateFilterCondition(propertyName, QueryComparisons.GreaterThanOrEqual, value),
                 TableOperators.And,
                 TableQuery.GenerateFilterCondition(propertyName, QueryComparisons.LessThan, IncrementLastChar(value)));
+        }
+
+        public static string DoesNotStartWithFilter(string propertyName, string value)
+        {
+            return TableQuery.CombineFilters(
+                TableQuery.GenerateFilterCondition(propertyName, QueryComparisons.LessThan, value),
+                TableOperators.Or,
+                TableQuery.GenerateFilterCondition(propertyName, QueryComparisons.GreaterThanOrEqual, IncrementLastChar(value)));
         }
 
         private static CloudTableClient GetCloudTableClient(int retries)

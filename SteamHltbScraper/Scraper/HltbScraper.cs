@@ -9,12 +9,15 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Common;
+using Common.Entities;
+using Common.Storage;
+using Common.Util;
 using HtmlAgilityPack;
+using SteamHltbScraper.Logging;
 
-namespace SteamHltbScraper
+namespace SteamHltbScraper.Scraper
 {
-    public static class Scraper
+    public static class HltbScraper
     {
         private static readonly Uri SearchHltbUrl = new Uri(@"http://www.howlongtobeat.com/search_main.php?t=games&page=1&sorthead=&sortd=Normal&plat=&detail=0");
         private const string SearchHltbPostDataFormat = @"queryString={0}";

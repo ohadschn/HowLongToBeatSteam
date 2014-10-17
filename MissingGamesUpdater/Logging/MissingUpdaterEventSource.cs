@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics.Tracing;
 
-namespace MissingGamesUpdater
+namespace MissingGamesUpdater.Logging
 {
     [EventSource(Name = "OS-HowLongToBeatSteam-MissingGamesUpdater")]
     public class MissingUpdaterEventSource : EventSource

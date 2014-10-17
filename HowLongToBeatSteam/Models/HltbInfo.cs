@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using Common;
+using Common.Entities;
 
 namespace HowLongToBeatSteam.Models
 {

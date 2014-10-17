@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Common;
+using Common.Storage;
+using Common.Store;
+using Common.Util;
+using MissingGamesUpdater.Logging;
 
-namespace MissingGamesUpdater
+namespace MissingGamesUpdater.Updater
 {
     class MissingUpdater
     {

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
+using Common.Storage;
 
-namespace ManualTableUpdater
+namespace ManualTableUpdater.Updater
 {
     class ManualUpdater
     {
@@ -11,6 +13,9 @@ namespace ManualTableUpdater
             //GetAppsWithStoreData().Wait();
 
             //SiteUtil.TraceInformation("All done!");
+            //var ids = TableHelper.GetAllApps(e => e.SteamAppId, TableHelper.DoesNotStartWithFilter(TableHelper.RowKey, "Suggestion")).Result;
+            var ids = TableHelper.GetAllApps(e => e.SteamAppId).Result;
+            Console.WriteLine(ids.Contains(12345));
             Console.ReadLine();
         }
 

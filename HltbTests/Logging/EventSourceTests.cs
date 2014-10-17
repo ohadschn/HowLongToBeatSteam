@@ -1,15 +1,15 @@
-﻿using Common;
-using HowLongToBeatSteam;
+﻿using Common.Logging;
+using HowLongToBeatSteam.Logging;
 using Microsoft.Practices.EnterpriseLibrary.SemanticLogging.Utility;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MissingGamesUpdater;
-using SteamHltbScraper;
-using UnknownUpdater;
+using MissingGamesUpdater.Logging;
+using SteamHltbScraper.Logging;
+using UnknownUpdater.Logging;
 
-namespace HltbTests
+namespace HltbTests.Logging
 {
     [TestClass]
-    public class Tests
+    public class EventSourceTests
     {
         [TestMethod]
         public void TestCommonEventSource()

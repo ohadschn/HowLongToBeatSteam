@@ -1,9 +1,13 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using Common;
+using Common.Entities;
+using Common.Storage;
+using Common.Store;
+using Common.Util;
 using Microsoft.WindowsAzure.Storage.Table;
+using UnknownUpdater.Logging;
 
-namespace UnknownUpdater
+namespace UnknownUpdater.Updater
 {
     class UnknownUpdater
     {

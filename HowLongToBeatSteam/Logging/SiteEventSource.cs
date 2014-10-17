@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.Tracing;
 
-namespace HowLongToBeatSteam
+namespace HowLongToBeatSteam.Logging
 {
     [EventSource(Name = "OS-HowLongToBeatSteam-Site")]
     public class SiteEventSource : EventSource
@@ -17,7 +17,7 @@ namespace HowLongToBeatSteam
             private Keywords() { }
             public const EventKeywords SteamApi = (EventKeywords)1;
             public const EventKeywords TableStorage = (EventKeywords) 2;
-            public const EventKeywords GameController = (EventKeywords) 4;
+            public const EventKeywords GamesController = (EventKeywords) 4;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
@@ -103,7 +103,7 @@ namespace HowLongToBeatSteam
         [Event(
             7,
             Message = "Start preparing response",
-            Keywords = Keywords.GameController,
+            Keywords = Keywords.GamesController,
             Level = EventLevel.Informational,
             Task = Tasks.PrepareResponse,
             Opcode = EventOpcode.Start)]
@@ -115,7 +115,7 @@ namespace HowLongToBeatSteam
         [Event(
             8,
             Message = "Finished preparing response",
-            Keywords = Keywords.GameController,
+            Keywords = Keywords.GamesController,
             Level = EventLevel.Informational,
             Task = Tasks.PrepareResponse,
             Opcode = EventOpcode.Stop)]
@@ -157,7 +157,7 @@ namespace HowLongToBeatSteam
         [Event(
             11,
             Message = "Skipping non-cached app: {0} / {1}",
-            Keywords = Keywords.GameController,
+            Keywords = Keywords.GamesController,
             Level = EventLevel.Warning)]
         private void SkipNonCachedApp(string name, int appId)
         {
@@ -173,7 +173,7 @@ namespace HowLongToBeatSteam
         [Event(
             12,
             Message = "Skipping non-game: {0} / {1}",
-            Keywords = Keywords.GameController,
+            Keywords = Keywords.GamesController,
             Level = EventLevel.Verbose)]
         private void SkipNonGame(string name, int appId)
         {
@@ -209,7 +209,7 @@ namespace HowLongToBeatSteam
         [Event(
             15,
             Message = "Start handling GetGames request for Steam ID {0}",
-            Keywords = Keywords.GameController,
+            Keywords = Keywords.GamesController,
             Level = EventLevel.Informational,
             Task = Tasks.HandleGetGamesRequest,
             Opcode = EventOpcode.Start)]
@@ -221,7 +221,7 @@ namespace HowLongToBeatSteam
         [Event(
             16,
             Message = "Finished handling GetGames request for Steam ID {0}",
-            Keywords = Keywords.GameController,
+            Keywords = Keywords.GamesController,
             Level = EventLevel.Informational,
             Task = Tasks.HandleGetGamesRequest,
             Opcode = EventOpcode.Start)]

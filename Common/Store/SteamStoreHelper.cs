@@ -6,9 +6,12 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Common.Entities;
+using Common.Logging;
+using Common.Util;
 using Newtonsoft.Json.Linq;
 
-namespace Common
+namespace Common.Store
 {
     public static class SteamStoreHelper
     {

@@ -2,9 +2,10 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using Common.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace Common
+namespace Common.Entities
 {
     public class AppEntity : TableEntity
     {

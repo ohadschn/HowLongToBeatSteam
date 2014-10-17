@@ -1,4 +1,4 @@
-﻿namespace SteamHltbScraper
+﻿namespace SteamHltbScraper.Scraper
 {
     public class HltbInfo
     {

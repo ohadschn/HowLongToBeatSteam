@@ -1,5 +1,5 @@
 ﻿using System.Web.Http;
-using Common;
+using Common.Util;
 using HowLongToBeatSteam.Controllers;
 
 namespace HowLongToBeatSteam

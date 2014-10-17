@@ -7,7 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace Common
+namespace Common.Util
 {
     public static class SiteUtil
     {

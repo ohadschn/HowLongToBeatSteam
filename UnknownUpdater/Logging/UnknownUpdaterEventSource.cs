@@ -3,9 +3,9 @@ using System.Collections.Concurrent;
 using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.Linq;
-using Common;
+using Common.Entities;
 
-namespace UnknownUpdater
+namespace UnknownUpdater.Logging
 {
     [EventSource(Name = "OS-HowLongToBeatSteam-UnknownGamesUpdater")]
     public class UnknownUpdaterEventSource : EventSource
