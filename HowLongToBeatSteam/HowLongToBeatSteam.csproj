@@ -122,6 +122,7 @@
     <Content Include="Scripts\app.min.js.map">
       <DependentUpon>app.min.js</DependentUpon>
     </Content>
+    <None Include="Properties\PublishProfiles\howlongtobeatsteam.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

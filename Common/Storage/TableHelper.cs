@@ -90,9 +90,9 @@ namespace Common.Storage
 
         public static async Task ExecuteAppOperations(IEnumerable<AppEntity> apps, Func<AppEntity, TableOperation[]> operationGenerator, int retries = -1)
         {
+            CommonEventSource.Log.ExecuteOperationsStart();
             var table = GetCloudTableClient(retries).GetTableReference(SteamToHltbTableName);
 
-            CommonEventSource.Log.ExecuteOperationsStart();
             await SplitToBatchOperations(apps, operationGenerator).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, async tboi =>
             {
                 var final = tboi.Final ? "(final)" : String.Empty;

@@ -17,8 +17,6 @@ namespace HowLongToBeatSteam.Models
         public int ExtrasTtb { get; private set; }
         [DataMember]
         public int CompletionistTtb { get; private set; }
-        [DataMember]
-        public int CombinedTtb { get; private set; }
         public bool Resolved { get { return Id != -1; } }
 
         public HltbInfo(AppEntity appEntity)
@@ -30,10 +28,9 @@ namespace HowLongToBeatSteam.Models
 
             Id = appEntity.HltbId;
             Name = appEntity.HltbName;
-            MainTtb = Math.Max(appEntity.MainTtb, appEntity.SoloTtb);
+            MainTtb = appEntity.MainTtb;
             ExtrasTtb = appEntity.ExtrasTtb;
             CompletionistTtb = appEntity.CompletionistTtb;
-            CombinedTtb = appEntity.CombinedTtb;
         }
     }
 }

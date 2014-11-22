@@ -271,7 +271,7 @@ namespace Common.Logging
 
         [Event(
             16,
-            Message = "Start executing batch operation for bucket {0} / batch {1} {2}",
+            Message = "Start executing batch operation for bucket {1} / batch {2} {0}",
             Keywords = Keywords.TableStorage,
             Level = EventLevel.Informational,
             Task = Tasks.ExecuteBucketBatchOperation,
@@ -289,7 +289,7 @@ namespace Common.Logging
 
         [Event(
             17,
-            Message = "Finished executing batch operation for bucket {0} / batch {1} {2}",
+            Message = "Finished executing batch operation for bucket {1} / batch {2} {0}",
             Keywords = Keywords.TableStorage,
             Level = EventLevel.Informational,
             Task = Tasks.ExecuteBucketBatchOperation,

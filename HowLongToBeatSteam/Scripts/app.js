@@ -36,8 +36,8 @@ function Game(steamGame) {
         mainTtb: self.known ? steamGame.HltbInfo.MainTtb : 0,
         extrasTtb: self.known ? steamGame.HltbInfo.ExtrasTtb : 0,
         completionistTtb: self.known ? steamGame.HltbInfo.CompletionistTtb : 0,
-        combinedTtb: self.known ? steamGame.HltbInfo.CombinedTtb : 0,
-        url: self.known 
+        steamUrl: "http://store.steampowered.com/app/" + steamGame.SteamAppId,
+        hltbUrl: self.known 
                 ? "http://www.howlongtobeat.com/game.php?id=" + steamGame.HltbInfo.Id
                 : "http://www.howlongtobeat.com",
     };
@@ -103,11 +103,9 @@ function AppViewModel(id) {
         var totalMain = 0;
         var totalExtras = 0;
         var totalCompletionist = 0;
-        var totalCombined = 0;
         var mainRemaining = 0;
         var extrasRemaining = 0;
         var completionistRemaining = 0;
-        var combinedRemaining = 0;
         var length = self.games().length;
         var arr = self.games();
 
@@ -124,11 +122,9 @@ function AppViewModel(id) {
             totalMain += game.hltbInfo.mainTtb;
             totalExtras += game.hltbInfo.extrasTtb;
             totalCompletionist += game.hltbInfo.completionistTtb;
-            totalCombined += game.hltbInfo.combinedTtb;
             mainRemaining += Math.max(0, game.hltbInfo.mainTtb - game.steamPlaytime);
             extrasRemaining += Math.max(0, game.hltbInfo.extrasTtb - game.steamPlaytime);
             completionistRemaining += Math.max(0, game.hltbInfo.completionistTtb - game.steamPlaytime);
-            combinedRemaining += Math.max(0, game.hltbInfo.combinedTtb - game.steamPlaytime);
         }
 
         if (count === length) {
@@ -144,11 +140,9 @@ function AppViewModel(id) {
             totalMain: totalMain,
             totalExtras: totalExtras,
             totalCompletionist: totalCompletionist,
-            totalCombined: totalCombined,
             mainRemaining: mainRemaining,
             extrasRemaining: extrasRemaining,
             completionistRemaining: completionistRemaining,
-            combinedRemaining: combinedRemaining
         };
     });
 
@@ -225,8 +219,8 @@ function AppViewModel(id) {
     };
 
     self.allowUpdate = function(game) { //defined on view model to avoid multiple definitions (one for each game in array)
-        return (game.updatePhase() == GameUpdatePhase.None) || (game.updatePhase() == GameUpdatePhase.Failure);
-    }
+        return (game.updatePhase() === GameUpdatePhase.None) || (game.updatePhase() === GameUpdatePhase.Failure);
+    };
 }
 
 function getParameterByName(name) {

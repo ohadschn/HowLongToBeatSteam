@@ -13,6 +13,7 @@ using Common.Entities;
 using Common.Storage;
 using Common.Util;
 using HtmlAgilityPack;
+using SteamHltbScraper.Imputation;
 using SteamHltbScraper.Logging;
 
 namespace SteamHltbScraper.Scraper
@@ -30,27 +31,39 @@ namespace SteamHltbScraper.Scraper
 
         private static void Main()
         {
-            SiteUtil.SetDefaultConnectionLimit();
-            using (Client)
-            {
-                ScrapeHltb().Wait();
-            }
+            MainAsync().Wait();
         }
 
-        private static async Task ScrapeHltb()
+        private static async Task MainAsync()
+        {
+            SiteUtil.SetDefaultConnectionLimit();
+
+            var allApps = await TableHelper.GetAllApps(e => e, AppEntity.MeasuredFilter, 20).ConfigureAwait(false);
+
+            ConcurrentBag<AppEntity> updates;
+            using (Client)
+            {
+                updates = await ScrapeHltb(allApps).ConfigureAwait(false);
+            }
+
+            Imputer.Impute(allApps.ToArray(), updates.ToArray());
+
+            //we're using Replace since the only other update to an existing game-typed entity would have to be manual which should take precedence
+            await TableHelper.ReplaceApps(allApps, 20).ConfigureAwait(false); 
+        }
+
+        private static async Task<ConcurrentBag<AppEntity>> ScrapeHltb(IEnumerable<AppEntity> allApps)
         {
             HltbScraperEventSource.Log.ScrapeHltbStart();
 
             var updates = new ConcurrentBag<AppEntity>();
-            var apps = await TableHelper.GetAllApps(e => e, AppEntity.MeasuredFilter, 20).ConfigureAwait(false);
             int count = 0;
 
-            await apps.Take(ScrapingLimit).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, async app =>
+            await allApps.Take(ScrapingLimit).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, async app =>
             {
                 var current = Interlocked.Increment(ref count);
                 HltbScraperEventSource.Log.ScrapeGameStart(app.SteamAppId, current);
-                
-                bool added = false;
+
                 if (app.HltbId == -1)
                 {
                     try
@@ -67,30 +80,16 @@ namespace SteamHltbScraper.Scraper
                     {
                         return; //app not found in search
                     }
-
-                    updates.Add(app);
-                    added = true;
                 }
 
-                string hltbName;
                 try
                 {
-                    hltbName = await ScrapeHltbName(app.HltbId).ConfigureAwait(false);
+                    app.HltbName = await ScrapeHltbName(app.HltbId).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
                     HltbScraperEventSource.Log.ErrorScrapingHltbName(current, app.SteamAppId, app.SteamName, app.HltbId, e);
                     return;
-                }
-
-                if (hltbName != app.HltbName)
-                {
-                    app.HltbName = hltbName;
-                    if (!added)
-                    {
-                        updates.Add(app);
-                        added = true;
-                    }
                 }
 
                 HltbInfo hltbInfo;
@@ -105,18 +104,13 @@ namespace SteamHltbScraper.Scraper
                 }
 
                 PopulateAppEntity(app, hltbInfo);
-                if (!added)
-                {
-                    updates.Add(app);
-                }
+                updates.Add(app);
+
                 HltbScraperEventSource.Log.ScrapeGameStop(app.SteamAppId, current);
-
             }).ConfigureAwait(false);
-
-            //we're using Replace since the only other update to an existing game-typed entity would have to be manual which should take precedence
-            await TableHelper.ReplaceApps(updates, 20).ConfigureAwait(false); 
             
             HltbScraperEventSource.Log.ScrapeHltbStop();
+            return updates;
         }
 
         private static async Task<HltbInfo> ScrapeHltbInfo(int hltbId)
@@ -137,22 +131,21 @@ namespace SteamHltbScraper.Scraper
 
             var listItems = list.Descendants("li").Take(4).ToArray();
             
-            int mainTtb, extrasTtb, completionistTtb, combinedTtb, solo, coOp, vs;
+            int mainTtb, extrasTtb, completionistTtb, soloTtb, coOp, vs;
             bool gotMain = TryGetMinutes(listItems, "main", out mainTtb);
             bool gotExtras = TryGetMinutes(listItems, "extras", out extrasTtb);
             bool gotCompletionist = TryGetMinutes(listItems, "completionist", out completionistTtb);
-            bool gotCombined = TryGetMinutes(listItems, "combined", out combinedTtb);
-            bool gotSolo = TryGetMinutes(listItems, "solo", out solo);
+            bool gotSolo = TryGetMinutes(listItems, "solo", out soloTtb);
             bool gotCoOp = TryGetMinutes(listItems, "co-op", out coOp);
             bool gotVs = TryGetMinutes(listItems, "vs", out vs);
 
-            if (!gotMain && !gotExtras && !gotCompletionist && !gotCombined && !gotSolo && !gotCoOp && !gotVs)
+            if (!gotMain && !gotExtras && !gotCompletionist && !gotSolo && !gotCoOp && !gotVs)
             {
                 throw new FormatException("Could not find any TTB list item for HLTB ID " + hltbId);
             }
 
-            HltbScraperEventSource.Log.ScrapeHltbInfoStop(hltbId, mainTtb, extrasTtb, completionistTtb, combinedTtb, solo, coOp, vs);
-            return new HltbInfo(mainTtb, extrasTtb, completionistTtb, combinedTtb, solo, coOp, vs);
+            HltbScraperEventSource.Log.ScrapeHltbInfoStop(hltbId, Math.Max(mainTtb, soloTtb), extrasTtb, completionistTtb);
+            return new HltbInfo(mainTtb, extrasTtb, completionistTtb);
         }
 
         private static async Task<string> ScrapeHltbName(int hltbId)
@@ -236,7 +229,7 @@ namespace SteamHltbScraper.Scraper
             var content = String.Format(SearchHltbPostDataFormat, appName);
             Func<HttpRequestMessage> requestFactory = () => new HttpRequestMessage(HttpMethod.Post, SearchHltbUrl)
             {
-                Content = new StringContent(content, Encoding.UTF8,"application/x-www-form-urlencoded")
+                Content = new StringContent(content, Encoding.UTF8, "application/x-www-form-urlencoded")
             };
 
             HltbScraperEventSource.Log.PostHltbSearchStart(SearchHltbUrl, content);
@@ -289,10 +282,6 @@ namespace SteamHltbScraper.Scraper
             app.MainTtb = hltbInfo.MainTtb;
             app.ExtrasTtb = hltbInfo.ExtrasTtb;
             app.CompletionistTtb = hltbInfo.CompletionistTtb;
-            app.CombinedTtb = hltbInfo.CombinedTtb;
-            app.SoloTtb = hltbInfo.Solo;
-            app.CoOpTtb = hltbInfo.CoOp;
-            app.VsTtb = hltbInfo.Vs;
         }
     }
 }

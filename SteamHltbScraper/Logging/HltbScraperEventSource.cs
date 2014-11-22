@@ -3,6 +3,12 @@ using System.Diagnostics.Tracing;
 
 namespace SteamHltbScraper.Logging
 {
+    public enum ImputationMissType
+    {
+        MainMoreThanExtras,
+        ExtrasMoreThanComplete,
+    }
+
     [EventSource(Name = "OS-HowLongToBeatSteam-Scraper")]
     public class HltbScraperEventSource : EventSource
     {
@@ -18,7 +24,8 @@ namespace SteamHltbScraper.Logging
         {
             private Keywords() { }
             public const EventKeywords HltbScraper = (EventKeywords) 1;
-            public const EventKeywords Http = (EventKeywords) 2;
+            public const EventKeywords Http = (EventKeywords)2;
+            public const EventKeywords Imputation = (EventKeywords)4;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
@@ -33,6 +40,9 @@ namespace SteamHltbScraper.Logging
             public const EventTask GetHltbGamePage = (EventTask) 6;
             public const EventTask ScrapeHltbInfo = (EventTask) 7;
             public const EventTask GetGameOverviewPage = (EventTask) 8;
+            public const EventTask CalculateImputation = (EventTask) 9;
+            public const EventTask InvokeR = (EventTask) 10;
+            public const EventTask Impute = (EventTask) 11;
         }
 // ReSharper restore ConvertToStaticClass
 
@@ -327,14 +337,14 @@ namespace SteamHltbScraper.Logging
 
         [Event(
             17,
-            Message = "Finished scraping HLTB info for hltb {0}: Main {1} Extras {2} Completionist {3} Combined {4} Solo {5} Co-Op {6} Vs. {7}",
+            Message = "Finished scraping HLTB info for hltb {0}: Main {1} Extras {2} Completionist {3}",
             Keywords = Keywords.HltbScraper,
             Level = EventLevel.Informational,
             Task = Tasks.ScrapeHltbInfo,
             Opcode = EventOpcode.Stop)]
-        public void ScrapeHltbInfoStop(int hltbId, int mainTtb, int extrasTtb, int completionistTtb, int combinedTtb, int solo, int coOp, int vs)
+        public void ScrapeHltbInfoStop(int hltbId, int mainTtb, int extrasTtb, int completionistTtb)
         {
-            WriteEvent(17, hltbId, mainTtb, extrasTtb, completionistTtb, combinedTtb, solo, coOp, vs);
+            WriteEvent(17, hltbId, mainTtb, extrasTtb, completionistTtb);
         }
 
         [NonEvent]
@@ -417,6 +427,88 @@ namespace SteamHltbScraper.Logging
         private void ErrorScrapingHltbInfo(int current, int steamAppId, string steamName, string exception)
         {
             WriteEvent(20, current, steamAppId, steamName, exception);
+        }
+
+        [Event(
+            21,
+            Message = "Start calculating imputed values",
+            Keywords = Keywords.HltbScraper | Keywords.Imputation,
+            Level = EventLevel.Informational,
+            Task = Tasks.CalculateImputation,
+            Opcode = EventOpcode.Start)]
+        public void CalculateImputationStart()
+        {
+             WriteEvent(21);   
+        }
+
+        [Event(
+            22,
+            Message = "Finished calculating imputed values",
+            Keywords = Keywords.HltbScraper | Keywords.Imputation,
+            Level = EventLevel.Informational,
+            Task = Tasks.CalculateImputation,
+            Opcode = EventOpcode.Stop)]
+        public void CalculateImputationStop()
+        {
+            WriteEvent(22);
+        }
+
+        [Event(
+            23,
+            Message = "Start running R script",
+            Keywords = Keywords.HltbScraper | Keywords.Imputation,
+            Level = EventLevel.Informational,
+            Task = Tasks.InvokeR,
+            Opcode = EventOpcode.Start)]
+        public void InvokeRStart()
+        {
+            WriteEvent(23);
+        }
+
+        [Event(
+            24,
+            Message = "Finished running R script",
+            Keywords = Keywords.HltbScraper | Keywords.Imputation,
+            Level = EventLevel.Informational,
+            Task = Tasks.InvokeR,
+            Opcode = EventOpcode.Stop)]
+        public void InvokeRStop()
+        {
+            WriteEvent(24);
+        }
+
+        [Event(
+            25,
+            Message = "Start imputing",
+            Keywords = Keywords.HltbScraper | Keywords.Imputation,
+            Level = EventLevel.Informational,
+            Task = Tasks.Impute,
+            Opcode = EventOpcode.Start)]
+        public void ImputeStart()
+        {
+            WriteEvent(25);
+        }
+
+        [Event(
+            26,
+            Message = "Finished imputing",
+            Keywords = Keywords.HltbScraper | Keywords.Imputation,
+            Level = EventLevel.Informational,
+            Task = Tasks.Impute,
+            Opcode = EventOpcode.Stop)]
+        public void ImputeStop()
+        {
+            WriteEvent(26);
+        }
+
+        [Event(
+            27,
+            Message = "Imputation miss of type {0}: {1} > {2}",
+            Keywords = Keywords.HltbScraper | Keywords.Imputation,
+            Level = EventLevel.Warning)]
+        public void ImputationMiss(ImputationMissType missType, int large, int small)
+        {
+            WriteEvent(27, (int)missType, large, small);
         }
     }
 }

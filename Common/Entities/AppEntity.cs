@@ -20,12 +20,11 @@ namespace Common.Entities
         public int HltbId { get; set; }
         public string HltbName { get; set; }
         public int MainTtb { get; set; }
+        public bool MainTtbImputed { get; set; }
         public int ExtrasTtb { get; set; }
+        public bool ExtrasTtbImputed { get; set; }
         public int CompletionistTtb { get; set; }
-        public int CombinedTtb { get; set; }
-        public int SoloTtb { get; set; }
-        public int CoOpTtb { get; set; }
-        public int VsTtb { get; set; }
+        public bool CompletionistTtbImputed { get; set; }
         public string AppType { get; set; }
 
         [IgnoreProperty]
@@ -43,39 +42,21 @@ namespace Common.Entities
             get { return TableHelper.StartsWithFilter(TableHelper.RowKey, String.Format(CultureInfo.InvariantCulture, "{0}_{1}", UnmeasuredKey, UnknownType)); }
         }
 
-        public AppEntity(int steamAppId, string steamName, string appType) : this(steamAppId, steamName, appType, -1, null, 0, 0, 0, 0, 0, 0, 0)
-        {
-        }
-
-        private AppEntity(
-            int steamAppId,
-            string steamName,
-            string appType,
-            int hltbId,
-            string hltbName,
-            int mainTtb,
-            int extrasTtb,
-            int completionistTtb,
-            int combinedTtb,
-            int soloTtb,
-            int coOpTtb,
-            int vsTtb)
-            : base(
+        public AppEntity(int steamAppId, string steamName, string appType) : base(
                 GetPartitionKey(steamAppId),
                 GetRowKey(steamAppId, appType))
         {
             SteamAppId = steamAppId;
             SteamName = steamName;
             AppType = appType;
-            HltbId = hltbId;
-            HltbName = hltbName;
-            MainTtb = mainTtb;
-            ExtrasTtb = extrasTtb;
-            CompletionistTtb = completionistTtb;
-            CombinedTtb = combinedTtb;
-            SoloTtb = soloTtb;
-            CoOpTtb = coOpTtb;
-            VsTtb = vsTtb;
+            HltbId = -1;
+            HltbName = null;
+            MainTtb = 0;
+            MainTtbImputed = true;
+            ExtrasTtb = 0;
+            ExtrasTtbImputed = true;
+            CompletionistTtb = 0;
+            CompletionistTtbImputed = true;
         }
 
         internal static string GetPartitionKey(int steamAppId)
@@ -114,8 +95,8 @@ namespace Common.Entities
         public override string ToString()
         {
             return string.Format(CultureInfo.InvariantCulture, 
-                "SteamAppId: {0}, SteamName: {1}, HltbId: {2}, HltbName: {3}, MainTtb: {4}, ExtrasTtb: {5}, CompletionistTtb: {6}, CombinedTtb: {7}",
-                SteamAppId, SteamName, HltbId, HltbName, MainTtb, ExtrasTtb, CompletionistTtb, CombinedTtb);
+                "SteamAppId: {0}, SteamName: {1}, HltbId: {2}, HltbName: {3}, MainTtb: {4}, ExtrasTtb: {5}, CompletionistTtb: {6}",
+                SteamAppId, SteamName, HltbId, HltbName, MainTtb, ExtrasTtb, CompletionistTtb);
         }
     }
 }
