@@ -49,11 +49,11 @@ function Game(steamGame) {
 function AppViewModel(id) {
     var self = this;
 
-    self.steamId64 = ko.observable(id);
-    self.badSteamId64 = ko.observable(false);
+    self.steamVanityUrlName = ko.observable(id);
+    self.badSteamVanityUrlName = ko.observable(false);
 
     $("#steamIdText").keydown(function() {
-        self.badSteamId64(false);
+        self.badSteamVanityUrlName(false);
     });
 
     self.games = ko.observableArray();
@@ -150,9 +150,9 @@ function AppViewModel(id) {
     });
 
     self.howlongClicked = function () {
-        if (self.steamId64().length === 0 || !(/^\s*-?\d+\s*$/.test(self.steamId64()))) {
-            self.badSteamId64(true);
-            self.error("Your Steam64ID must be a 64-bit integer");
+        if (self.steamVanityUrlName().length === 0) {
+            self.badSteamVanityUrlName(true);
+            self.error("Please specify your Steam Profile ID");
             return;
         } else {
             self.error(null);
@@ -184,7 +184,7 @@ function AppViewModel(id) {
         $('#workingModal').modal();
 
         setTimeout(function() { //let modal kick in
-            $.get("api/games/library/" + self.steamId64())
+            $.get("api/games/library/" + self.steamVanityUrlName())
                 .done(function(data) {
                     self.partialCache(data.PartialCache);
                     self.personaName(data.PersonaName);

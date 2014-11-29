@@ -53,7 +53,7 @@ namespace HowLongToBeatSteam.Logging
 
         [Event(
             2,
-            Message = "Finished querying table storage for all apps to update cache - count: {1}",
+            Message = "Finished querying table storage for all apps to update cache - count: {0}",
             Keywords = Keywords.TableStorage,
             Level = EventLevel.Informational,
             Task = Tasks.UpdateCache,
@@ -263,7 +263,7 @@ namespace HowLongToBeatSteam.Logging
 
         [Event(
             19,
-            Message = "Invalid response resolving user vanity URL name {0}",
+            Message = "Invalid response resolving user vanity URL name {0}: {1}",
             Keywords = Keywords.SteamApi,
             Level = EventLevel.Error)]
         public void VanityUrlResolutionInvalidResponse(string userVanityUrlName, VanityUrlResolutionInvalidResponseType invalidResponseType)
