@@ -82,9 +82,9 @@
                             <a data-bind="text:steamName, attr: {href: $data.hltbInfo.steamUrl}" target="_blank"></a>
                         </td>
                         <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: getHours(steamPlaytime) + 'h'"></td>
-                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: getHours($data.hltbInfo.mainTtb) + 'h'"></td>
-                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: getHours($data.hltbInfo.extrasTtb) + 'h'"></td>
-                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: getHours($data.hltbInfo.completionistTtb) + 'h'">></td>
+                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough') + ($data.hltbInfo.mainTtbImputed ? '' : ' emphasized'), text: getHours($data.hltbInfo.mainTtb) + 'h'"></td>
+                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough') + ($data.hltbInfo.extrasTtbImputed ? '' : ' emphasized'), text: getHours($data.hltbInfo.extrasTtb) + 'h'"></td>
+                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough') + ($data.hltbInfo.completionistTtbImputed ? '' : ' emphasized'), text: getHours($data.hltbInfo.completionistTtb) + 'h'">></td>
                         <td data-bind="css: 'vcenter' + (known ? '' : ' emphasized'), attr: {colspan: $parent.allowUpdate($data) ? 1 : 3}">
                             <a data-bind="text: $data.hltbInfo.name, attr: {href: $data.hltbInfo.hltbUrl}, visible: updatePhase() == GameUpdatePhase.None" target="_blank"></a>
                             <span data-bind="text:$data.hltbInfo.name, visible: updatePhase() != GameUpdatePhase.None"></span>

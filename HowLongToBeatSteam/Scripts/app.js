@@ -22,7 +22,7 @@ function Game(steamGame) {
 
     var self = this;
 
-    self.known = steamGame.HltbInfo !== null;
+    self.known = steamGame.HltbInfo.Id !== -1;
     self.included = ko.observable(true);
     self.updatePhase = ko.observable(GameUpdatePhase.None);
 
@@ -33,9 +33,12 @@ function Game(steamGame) {
     self.hltbInfo = {
         id: self.known ? steamGame.HltbInfo.Id : "",
         name: ko.observable(self.known ? steamGame.HltbInfo.Name : "Unknown, please update"), //we'll abuse this for update status
-        mainTtb: self.known ? steamGame.HltbInfo.MainTtb : 0,
-        extrasTtb: self.known ? steamGame.HltbInfo.ExtrasTtb : 0,
-        completionistTtb: self.known ? steamGame.HltbInfo.CompletionistTtb : 0,
+        mainTtb: steamGame.HltbInfo.MainTtb,
+        mainTtbImputed: steamGame.HltbInfo.MainTtbImputed,
+        extrasTtb: steamGame.HltbInfo.ExtrasTtb,
+        extrasTtbImputed: steamGame.HltbInfo.ExtrasTtbImputed,
+        completionistTtb: steamGame.HltbInfo.CompletionistTtb,
+        completionistTtbImputed: steamGame.HltbInfo.CompletionistTtbImputed,
         steamUrl: "http://store.steampowered.com/app/" + steamGame.SteamAppId,
         hltbUrl: self.known 
                 ? "http://www.howlongtobeat.com/game.php?id=" + steamGame.HltbInfo.Id
