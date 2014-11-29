@@ -6,137 +6,138 @@
     <link rel="stylesheet" href="Styles/hltbs.min.css">
     <link rel="shortcut icon" href="Resources/Clock.ico">
 </head>
-    <body>
-        <div class="modal" id="workingModal" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="workingLabel" data-backdrop="static">
-            <div class="modal-dialog modal-sm">
-                <div class="modal-content">
-                    <div class="modal-body">
-                        <span id="workingLabel" data-bind="text: modelText">Working...</span>
-                    </div>
+<body>
+    <div class="modal" id="workingModal" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="workingLabel" data-backdrop="static">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <span id="workingLabel" data-bind="text: modelText">Working...</span>
                 </div>
             </div>
         </div>
-        <div class="content">
-            <div class="page-header">
-                <h1>How Long To Beat Steam</h1>
-            </div>
-            <ol>
-                <li>Make sure you Steam profile is <a href="https://www.google.com/search?q=steam%20public%20profile" target="_blank">public</a></li>
-                <li>Fill out your <a href="https://www.google.com/search?q=steamid64" target="_blank">SteamId64</a> in the text box below</li>
-                <li>Hit the button or press <kbd>Enter</kbd></li>
-            </ol>
-            <br />
-            <form data-bind="submit: howlongClicked" role="form" class="form-inline">
-                <div data-bind="css: (badSteamId64() ? 'has-error ' : '') + 'has-feedback form-group'">
-                    <label class="control-label sr-only" for="steamIdText">Input with success</label>
-                    <input type="text" data-bind="value: steamId64" placeholder="SteamId64" id="steamIdText" class="form-control">
-                    <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: badSteamId64"></span>
-                </div>
-                <button id="submit" type="submit" data-bind="enable: !processing()" class="btn btn-primary">Tell me how long</button>
-                <img src="http://cdnjs.cloudflare.com/ajax/libs/file-uploader/3.7.0/loading.gif" alt="loading..." data-bind="visible: processing" />
-                <h4 data-bind="text: 'Welcome ' + personaName() + '!', visible: personaName() !== null"></h4>
-            </form>
-            <br />
-            <div class="alert alert-danger alert-dismissible" role="alert" data-bind="visible: error() && !errorAlertHidden()">
-                <button type="button" class="close" data-bind="click: function () { errorAlertHidden(true); }">
-                    <span aria-hidden="true">&times;</span>
-                    <span class="sr-only">Close</span>
-                </button>
-                <strong>Error</strong> <span data-bind="text: error"></span>
-            </div>
-            <div class="alert alert-warning alert-dismissible" role="alert" data-bind="visible: partialCache() && !partialCacheAlertHidden()">
-                <button type="button" class="close" data-bind="click: function() { partialCacheAlertHidden(true); }">
-                    <span aria-hidden="true">&times;</span>
-                    <span class="sr-only">Close</span>
-                </button>
-                <strong>Warning</strong> Some games haven't been cached by the site's engine yet - please check back later
-            </div>
-            <div class="alert alert-info alert-dismissible" role="alert" data-bind="visible: total().missingIds && !missingIdsAlertHidden()">
-                <button type="button" class="close" data-bind="click: function() { missingIdsAlertHidden(true); }">
-                    <span aria-hidden="true">&times;</span>
-                    <span class="sr-only">Close</span>
-                </button>
-                <strong>Note</strong> Some games are missing their <abbr title="HowLongToBeat">HLTB</abbr> IDs - please locate them on HLTB and update their IDs (embedded in the URL: http://www.howlongtobeat.com/game.php?id=<mark>XXXX</mark>)
-            </div>
-            <table class="table table-striped table-hover table-condensed table-responsive" data-bind="visible: games().length>0 && !processing()">
-                <thead>
-                    <tr>
-                        <th>
-                            <input type="checkbox" data-bind="click: toggleAll, checked: toggleAllChecked()" />
-                        </th>
-                        <th>Name</th>
-                        <th>Playtime</th>
-                        <th>Main</th>
-                        <th>Main + Extras</th>
-                        <th>Completionist</th>
-                        <th>HLTB Name</th>
-                        <th>HLTB ID</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- ko foreach: games -->
-                    <tr data-bind="css: known ? '' : 'info'">
-                        <td class="vcenter"><input type="checkbox" data-bind="checked: included" /></td>
-                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough')">
-                            <a data-bind="text:steamName, attr: {href: $data.hltbInfo.steamUrl}" target="_blank"></a>
-                        </td>
-                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: getHours(steamPlaytime) + 'h'"></td>
-                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough') + ($data.hltbInfo.mainTtbImputed ? '' : ' emphasized'), text: getHours($data.hltbInfo.mainTtb) + 'h'"></td>
-                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough') + ($data.hltbInfo.extrasTtbImputed ? '' : ' emphasized'), text: getHours($data.hltbInfo.extrasTtb) + 'h'"></td>
-                        <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough') + ($data.hltbInfo.completionistTtbImputed ? '' : ' emphasized'), text: getHours($data.hltbInfo.completionistTtb) + 'h'">></td>
-                        <td data-bind="css: 'vcenter' + (known ? '' : ' emphasized'), attr: {colspan: $parent.allowUpdate($data) ? 1 : 3}">
-                            <a data-bind="text: $data.hltbInfo.name, attr: {href: $data.hltbInfo.hltbUrl}, visible: updatePhase() == GameUpdatePhase.None" target="_blank"></a>
-                            <span data-bind="text:$data.hltbInfo.name, visible: updatePhase() != GameUpdatePhase.None"></span>
-                        </td>
-                        <td class="vcenter" data-bind="visible: $parent.allowUpdate($data)">
-                            <input type="text" class="input-short" data-bind="value:$data.hltbInfo.id" placeholder="?" />
-                        </td>
-                        <td class="vcenter" data-bind="visible: $parent.allowUpdate($data)">
-                            <button class="btn btn-info btn-sm" data-bind="click: $parent.updateHltb">Update</button>
-                        </td>
-                    </tr>
-                    <!-- /ko -->
-                    <tr class="success">
-                        <th data-bind="text: 'Total (' + total().count + ' games)'" colspan="2"></th>
-                        <th data-bind="text: numberWithCommas(getHours(total().totalPlaytime)) + 'h'"></th>
-                        <th data-bind="text: numberWithCommas(getHours(total().totalMain)) + 'h'"></th>
-                        <th data-bind="text: numberWithCommas(getHours(total().totalExtras)) + 'h'"></th>
-                        <th data-bind="text: numberWithCommas(getHours(total().totalCompletionist)) + 'h'"></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                    </tr>
-                    <tr class="success">
-                        <th colspan="2">
-                            Remaining <span class="glyphicon glyphicon-info-sign"
-                                            id="remainingTableHeaderInfoSpan"
-                                            data-placement="right"
-                                            data-toggle="tooltip"
-                                            data-container="body"
-                                            title="For each game, the expected time to beat is subtracted from the time played (to a minimum of zero)"></span>
-                        </th>
-                        <th></th>
-                        <th data-bind="text: numberWithCommas(getHours(total().mainRemaining)) + 'h'"></th>
-                        <th data-bind="text: numberWithCommas(getHours(total().extrasRemaining)) + 'h'"></th>
-                        <th data-bind="text: numberWithCommas(getHours(total().completionistRemaining)) + 'h'"></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                    </tr>
-                </tbody>
-            </table>
+    </div>
+    <div class="content">
+        <div class="page-header">
+            <h1>How Long To Beat Steam</h1>
         </div>
-        <div class="footer">
-            <a href="https://azure.microsoft.com/" target="_blank">Powered by Azure.</a>
-            <a href="http://steampowered.com" target="_blank">Powered by Steam.</a>
-            <br/>
-            Copyright Ohad Schneider &copy; 2014
+        <ol>
+            <li>Make sure you Steam profile is <a href="https://www.google.com/search?q=steam%20public%20profile" target="_blank">public</a></li>
+            <li>Fill out your <a href="https://www.google.com/search?q=steamid64" target="_blank">SteamId64</a> in the text box below</li>
+            <li>Hit the button or press <kbd>Enter</kbd></li>
+        </ol>
+        <br />
+        <form data-bind="submit: howlongClicked" role="form" class="form-inline">
+            <div data-bind="css: (badSteamId64() ? 'has-error ' : '') + 'has-feedback form-group'">
+                <label class="control-label sr-only" for="steamIdText">Input with success</label>
+                <input type="text" data-bind="value: steamId64" placeholder="SteamId64" id="steamIdText" class="form-control">
+                <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: badSteamId64"></span>
+            </div>
+            <button id="submit" type="submit" data-bind="enable: !processing()" class="btn btn-primary">Tell me how long</button>
+            <img src="http://cdnjs.cloudflare.com/ajax/libs/file-uploader/3.7.0/loading.gif" alt="loading..." data-bind="visible: processing" />
+            <h4 data-bind="text: 'Welcome ' + personaName() + '!', visible: personaName() !== null"></h4>
+        </form>
+        <br />
+        <div class="alert alert-danger alert-dismissible" role="alert" data-bind="visible: error() && !errorAlertHidden()">
+            <button type="button" class="close" data-bind="click: function () { errorAlertHidden(true); }">
+                <span aria-hidden="true">&times;</span>
+                <span class="sr-only">Close</span>
+            </button>
+            <strong>Error</strong> <span data-bind="text: error"></span>
         </div>
-        <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.1.min.js"></script>
-        <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/knockout/3.2.0/knockout-min.js"></script>
-        <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/tooltip.min.js"></script>
-        <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/modal.min.js"></script>
-        <script type="text/javascript" src="Scripts/app.min.js"></script>
-    </body>
+        <div class="alert alert-warning alert-dismissible" role="alert" data-bind="visible: partialCache() && !partialCacheAlertHidden()">
+            <button type="button" class="close" data-bind="click: function() { partialCacheAlertHidden(true); }">
+                <span aria-hidden="true">&times;</span>
+                <span class="sr-only">Close</span>
+            </button>
+            <strong>Warning</strong> Some games haven't been cached by the site's engine yet - please check back later
+        </div>
+        <div class="alert alert-info alert-dismissible" role="alert" data-bind="visible: total().missingIds && !missingIdsAlertHidden()">
+            <button type="button" class="close" data-bind="click: function() { missingIdsAlertHidden(true); }">
+                <span aria-hidden="true">&times;</span>
+                <span class="sr-only">Close</span>
+            </button>
+            <strong>Note</strong> Some games are missing their <abbr title="HowLongToBeat">HLTB</abbr> IDs - please locate them on HLTB and update their IDs (embedded in the URL: http://www.howlongtobeat.com/game.php?id=<mark>XXXX</mark>)
+        </div>
+        <table class="table table-striped table-hover table-condensed table-responsive" data-bind="visible: games().length>0 && !processing()">
+            <thead>
+                <tr>
+                    <th>
+                        <input type="checkbox" data-bind="click: toggleAll, checked: toggleAllChecked()" />
+                    </th>
+                    <th>Name</th>
+                    <th>Playtime</th>
+                    <th>Main</th>
+                    <th>Main + Extras</th>
+                    <th>Completionist</th>
+                    <th>HLTB Name</th>
+                    <th>HLTB ID</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- ko foreach: games -->
+                <tr data-bind="css: known ? '' : 'info'">
+                    <td class="vcenter"><input type="checkbox" data-bind="checked: included" /></td>
+                    <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough')">
+                        <a data-bind="text:steamName, attr: {href: $data.hltbInfo.steamUrl}" target="_blank"></a>
+                    </td>
+                    <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough'), text: getHours(steamPlaytime) + 'h'"></td>
+                    <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough') + ($data.hltbInfo.mainTtbImputed ? '' : ' emphasized'), text: getHours($data.hltbInfo.mainTtb) + 'h'"></td>
+                    <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough') + ($data.hltbInfo.extrasTtbImputed ? '' : ' emphasized'), text: getHours($data.hltbInfo.extrasTtb) + 'h'"></td>
+                    <td data-bind="css: 'vcenter' + (included() ? '' : ' strikeThrough') + ($data.hltbInfo.completionistTtbImputed ? '' : ' emphasized'), text: getHours($data.hltbInfo.completionistTtb) + 'h'">></td>
+                    <td data-bind="css: 'vcenter' + (known ? '' : ' emphasized'), attr: {colspan: $parent.allowUpdate($data) ? 1 : 3}">
+                        <a data-bind="text: $data.hltbInfo.name, attr: {href: $data.hltbInfo.hltbUrl}, visible: updatePhase() == GameUpdatePhase.None" target="_blank"></a>
+                        <span data-bind="text:$data.hltbInfo.name, visible: updatePhase() != GameUpdatePhase.None"></span>
+                    </td>
+                    <td class="vcenter" data-bind="visible: $parent.allowUpdate($data)">
+                        <input type="text" class="input-short" data-bind="value:$data.hltbInfo.id" placeholder="?" />
+                    </td>
+                    <td class="vcenter" data-bind="visible: $parent.allowUpdate($data)">
+                        <button class="btn btn-info btn-sm" data-bind="click: $parent.updateHltb">Update</button>
+                    </td>
+                </tr>
+                <!-- /ko -->
+                <tr class="success">
+                    <th data-bind="text: 'Total (' + total().count + ' games)'" colspan="2"></th>
+                    <th data-bind="text: numberWithCommas(getHours(total().totalPlaytime)) + 'h'"></th>
+                    <th data-bind="text: numberWithCommas(getHours(total().totalMain)) + 'h'"></th>
+                    <th data-bind="text: numberWithCommas(getHours(total().totalExtras)) + 'h'"></th>
+                    <th data-bind="text: numberWithCommas(getHours(total().totalCompletionist)) + 'h'"></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                </tr>
+                <tr class="success">
+                    <th colspan="2">
+                        Remaining <span class="glyphicon glyphicon-info-sign"
+                                        id="remainingTableHeaderInfoSpan"
+                                        data-placement="right"
+                                        data-toggle="tooltip"
+                                        data-container="body"
+                                        title="For each game, the expected time to beat is subtracted from the time played (to a minimum of zero)"></span>
+                    </th>
+                    <th></th>
+                    <th data-bind="text: numberWithCommas(getHours(total().mainRemaining)) + 'h'"></th>
+                    <th data-bind="text: numberWithCommas(getHours(total().extrasRemaining)) + 'h'"></th>
+                    <th data-bind="text: numberWithCommas(getHours(total().completionistRemaining)) + 'h'"></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="footer">
+        <a href="https://azure.microsoft.com/" target="_blank">Powered by Azure.</a>
+        <a href="http://steampowered.com" target="_blank">Powered by Steam.</a>
+        <br />
+        Copyright Ohad Schneider &copy; 2014
+        <a href="mailto:howlongtobeatsteam@outlook.com?subject=HowLongToBeatSteam">Contact</a>
+    </div>
+    <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/knockout/3.2.0/knockout-min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/tooltip.min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/modal.min.js"></script>
+    <script type="text/javascript" src="Scripts/app.min.js"></script>
+</body>
 </html>
