@@ -59,7 +59,7 @@ namespace Common.Logging
 
         [Event(
             1,
-            Message = "Request to URI {0} failed due to: {1}. Retrying attempt #{2} will take place in {3}",
+            Message = "Request to URI {0} failed due to: {1}. Retrying attempt #{2} will take place in {3} seconds",
             Keywords = Keywords.Http,
             Level = EventLevel.Warning)]
         private void HttpRequestFailed(string uri, string exceptionMessage, int attempt, double delaySeconds)

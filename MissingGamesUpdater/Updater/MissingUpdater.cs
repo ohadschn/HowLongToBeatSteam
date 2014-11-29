@@ -17,7 +17,7 @@ namespace MissingGamesUpdater.Updater
         static void Main()
         {
             SiteUtil.SetDefaultConnectionLimit();
-            using (s_client = new HttpRetryClient(5))
+            using (s_client = new HttpRetryClient(500))
             {
                 UpdateMissingGames().Wait();                
             }
@@ -36,7 +36,7 @@ namespace MissingGamesUpdater.Updater
             var knownSteamIds = tableTask.Result;
 
             var knownSteamIdsHash = new HashSet<int>(knownSteamIds);
-            var missingApps = apps.Where(a => !knownSteamIdsHash.Contains(a.appid));
+            var missingApps = apps.Where(a => !knownSteamIdsHash.Contains(a.appid)).Take(20);
 
             var updates = await SteamStoreHelper.GetStoreInformationUpdates(missingApps.Select(a => new BasicStoreInfo(a.appid, a.name, null)), s_client)
                 .ConfigureAwait(false);

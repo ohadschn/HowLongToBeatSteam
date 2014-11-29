@@ -62,7 +62,7 @@ namespace HowLongToBeatSteam.Controllers
         }
 // ReSharper restore FunctionNeverReturns
 
-        [Route("library/{userVanityUrlName}")]
+        [Route("library/{userVanityUrlName:minlength(1)}")]
         public async Task<OwnedGamesInfo> GetGames(string userVanityUrlName)
         {
             SiteEventSource.Log.HandleGetGamesRequestStart(userVanityUrlName);
@@ -96,7 +96,7 @@ namespace HowLongToBeatSteam.Controllers
                     continue;
                 }
 
-                games.Add(new SteamApp(game.appid, game.name, game.playtime_forever, cachedGameInfo.HltbInfo.Resolved ? cachedGameInfo.HltbInfo : null));
+                games.Add(new SteamApp(game.appid, game.name, game.playtime_forever, cachedGameInfo.HltbInfo));
             }
             SiteEventSource.Log.PrepareResponseStop();
 
@@ -114,6 +114,11 @@ namespace HowLongToBeatSteam.Controllers
         private static async Task<long> ResolveVanityUrl(string userVanityUrlName)
         {
             SiteEventSource.Log.ResolveVanityUrlStart(userVanityUrlName);
+
+            if (userVanityUrlName.Contains("b4a836df-4dba-4286-a3f4-ea2c652b7715"))
+            {
+                return Int32.Parse(userVanityUrlName.Substring(36)); //truncate GUID
+            }
 
             var vanityUrlResolutionResponse = await 
                 SiteUtil.GetAsync<VanityUrlResolutionResponse>(Client, string.Format(ResolveVanityUrlFormat, SteamApiKey, userVanityUrlName))
