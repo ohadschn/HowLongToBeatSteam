@@ -36,7 +36,7 @@ namespace MissingGamesUpdater.Updater
             var knownSteamIds = tableTask.Result;
 
             var knownSteamIdsHash = new HashSet<int>(knownSteamIds);
-            var missingApps = apps.Where(a => !knownSteamIdsHash.Contains(a.appid)).Take(20);
+            var missingApps = apps.Where(a => !knownSteamIdsHash.Contains(a.appid));
 
             var updates = await SteamStoreHelper.GetStoreInformationUpdates(missingApps.Select(a => new BasicStoreInfo(a.appid, a.name, null)), s_client)
                 .ConfigureAwait(false);
