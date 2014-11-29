@@ -109,9 +109,11 @@
     <Compile Include="Controllers\GamesController.cs" />
     <Compile Include="Controllers\Responses\OwnedGamesResponse.cs" />
     <Compile Include="Controllers\Responses\PlayerSummariesResponse.cs" />
+    <Compile Include="Controllers\Responses\VanityUrlResolutionResponse.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Models\OwnedGamesInfo.cs" />
     <Compile Include="Models\HltbInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

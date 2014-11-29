@@ -2,6 +2,12 @@
 
 namespace HowLongToBeatSteam.Logging
 {
+    public enum VanityUrlResolutionInvalidResponseType
+    {
+        Unknown = 0,
+        SteamIdIsNotAnInt64 = 1,
+    }
+
     [EventSource(Name = "OS-HowLongToBeatSteam-Site")]
     public class SiteEventSource : EventSource
     {
@@ -29,6 +35,7 @@ namespace HowLongToBeatSteam.Logging
             public const EventTask PrepareResponse = (EventTask) 3;
             public const EventTask RetrievePlayerSummary = (EventTask) 4;
             public const EventTask HandleGetGamesRequest = (EventTask) 5;
+            public const EventTask ResolveVanityUrl = (EventTask) 6;
         }
 // ReSharper restore ConvertToStaticClass
 
@@ -208,26 +215,70 @@ namespace HowLongToBeatSteam.Logging
 
         [Event(
             15,
-            Message = "Start handling GetGames request for Steam ID {0}",
+            Message = "Start handling GetGames request for Steam user {0}",
             Keywords = Keywords.GamesController,
             Level = EventLevel.Informational,
             Task = Tasks.HandleGetGamesRequest,
             Opcode = EventOpcode.Start)]
-        public void HandleGetGamesRequestStart(long steamId)
+        public void HandleGetGamesRequestStart(string userVanityUrlName)
         {
-            WriteEvent(15, steamId);
+            WriteEvent(15, userVanityUrlName);
         }
 
         [Event(
             16,
-            Message = "Finished handling GetGames request for Steam ID {0}",
+            Message = "Finished handling GetGames request for Steam user {0}",
             Keywords = Keywords.GamesController,
             Level = EventLevel.Informational,
             Task = Tasks.HandleGetGamesRequest,
             Opcode = EventOpcode.Start)]
-        public void HandleGetGamesRequestStop(long steamId)
+        public void HandleGetGamesRequestStop(string userVanityUrlName)
         {
-            WriteEvent(16, steamId);
+            WriteEvent(16, userVanityUrlName);
+        }
+
+        [Event(
+            17,
+            Message = "Start resolving Steam 64 ID from user vanity URL name {0}",
+            Keywords = Keywords.SteamApi,
+            Level = EventLevel.Informational,
+            Task = Tasks.ResolveVanityUrl,
+            Opcode = EventOpcode.Start)]
+        public void ResolveVanityUrlStart(string userVanityUrlName)
+        {
+            WriteEvent(17, userVanityUrlName);
+        }
+
+        [Event(
+            18,
+            Message = "Finished resolving Steam 64 ID from user vanity URL name {0}",
+            Keywords = Keywords.SteamApi,
+            Level = EventLevel.Informational,
+            Task = Tasks.ResolveVanityUrl,
+            Opcode = EventOpcode.Stop)]
+        public void ResolveVanityUrlStop(string userVanityUrlName)
+        {
+            WriteEvent(18, userVanityUrlName);
+        }
+
+        [Event(
+            19,
+            Message = "Invalid response resolving user vanity URL name {0}",
+            Keywords = Keywords.SteamApi,
+            Level = EventLevel.Error)]
+        public void VanityUrlResolutionInvalidResponse(string userVanityUrlName, VanityUrlResolutionInvalidResponseType invalidResponseType)
+        {
+            WriteEvent(19, userVanityUrlName, (int)invalidResponseType);
+        }
+
+        [Event(
+            20,
+            Message = "Error resolving user vanity URL name {0}: {1}",
+            Keywords = Keywords.SteamApi,
+            Level = EventLevel.Warning)]
+        public void ErrorResolvingVanityUrl(string userVanityUrlName, string errorMessage)
+        {
+            WriteEvent(20, userVanityUrlName, errorMessage);
         }
     }
 }

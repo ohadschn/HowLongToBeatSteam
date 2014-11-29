@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Common.Storage;
 using Common.Store;
@@ -49,11 +48,9 @@ namespace MissingGamesUpdater.Updater
         private static async Task<IList<App>> GetAllSteamApps()
         {
             MissingUpdaterEventSource.Log.RetrieveAllSteamAppsStart(GetSteamAppListUrl);
-            AllGamesRoot allGamesRoot;
-            using (var response = await s_client.GetAsync(GetSteamAppListUrl).ConfigureAwait(false))
-            {
-                allGamesRoot = await response.Content.ReadAsAsync<AllGamesRoot>().ConfigureAwait(false);
-            }
+
+            var allGamesRoot = await SiteUtil.GetAsync<AllGamesRoot>(s_client, GetSteamAppListUrl).ConfigureAwait(false);
+
             MissingUpdaterEventSource.Log.RetrieveAllSteamAppsStop(GetSteamAppListUrl);
 
             if (allGamesRoot == null || allGamesRoot.applist == null || allGamesRoot.applist.apps == null || allGamesRoot.applist.apps.app == null)

@@ -5,7 +5,6 @@ using System.Configuration;
 using System.Globalization;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Common.Entities;
@@ -21,8 +20,13 @@ namespace HowLongToBeatSteam.Controllers
     public class GamesController : ApiController
     {
         private static readonly string SteamApiKey = ConfigurationManager.AppSettings["SteamApiKey"];
+
+        private const string ResolveVanityUrlFormat = @"http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key={0}&vanityurl={1}";
+        private const int VanityUrlResolutionSuccess = 1;
+
         private const string GetOwnedSteamGamesFormat = @"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={0}&steamid={1}&format=json&include_appinfo=1";
         private const string GetPlayerSummariesFormat = @"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={0}&steamids={1}";
+        
         private static readonly HttpRetryClient Client = new HttpRetryClient(0);
 
         class CachedGameInfo
@@ -58,10 +62,12 @@ namespace HowLongToBeatSteam.Controllers
         }
 // ReSharper restore FunctionNeverReturns
 
-        [Route("library/{steamId:long}")]
-        public async Task<OwnedGamesInfo> GetGames(long steamId)
+        [Route("library/{userVanityUrlName}")]
+        public async Task<OwnedGamesInfo> GetGames(string userVanityUrlName)
         {
-            SiteEventSource.Log.HandleGetGamesRequestStart(steamId);
+            SiteEventSource.Log.HandleGetGamesRequestStart(userVanityUrlName);
+
+            long steamId = await ResolveVanityUrl(userVanityUrlName).ConfigureAwait(true);
 
             var ownedGamesTask = GetOwnedGames(steamId);
             var personaNameTask = GetPersonaName(steamId);
@@ -94,7 +100,7 @@ namespace HowLongToBeatSteam.Controllers
             }
             SiteEventSource.Log.PrepareResponseStop();
 
-            SiteEventSource.Log.HandleGetGamesRequestStop(steamId);
+            SiteEventSource.Log.HandleGetGamesRequestStop(userVanityUrlName);
             return new OwnedGamesInfo(personaName, partialCache, games);
         }
 
@@ -103,6 +109,37 @@ namespace HowLongToBeatSteam.Controllers
         public Task UpdateGameMapping(int steamAppId, int hltbId)
         {
             return TableHelper.InsertSuggestion(new SuggestionEntity(steamAppId, hltbId));
+        }
+
+        private static async Task<long> ResolveVanityUrl(string userVanityUrlName)
+        {
+            SiteEventSource.Log.ResolveVanityUrlStart(userVanityUrlName);
+
+            var vanityUrlResolutionResponse = await 
+                SiteUtil.GetAsync<VanityUrlResolutionResponse>(Client, string.Format(ResolveVanityUrlFormat, SteamApiKey, userVanityUrlName))
+                .ConfigureAwait(false);
+
+            if (vanityUrlResolutionResponse.response == null)
+            {
+                SiteEventSource.Log.VanityUrlResolutionInvalidResponse(userVanityUrlName, VanityUrlResolutionInvalidResponseType.Unknown);
+                throw new HttpResponseException(HttpStatusCode.BadRequest);
+            }
+            
+            if (vanityUrlResolutionResponse.response.success != VanityUrlResolutionSuccess)
+            {
+                SiteEventSource.Log.ErrorResolvingVanityUrl(userVanityUrlName, vanityUrlResolutionResponse.response.message);
+                throw new HttpResponseException(HttpStatusCode.BadRequest);
+            }
+
+            long steam64Id;
+            if (!Int64.TryParse(vanityUrlResolutionResponse.response.steamid, out steam64Id))
+            {
+                SiteEventSource.Log.VanityUrlResolutionInvalidResponse(userVanityUrlName, VanityUrlResolutionInvalidResponseType.SteamIdIsNotAnInt64);
+                throw new HttpResponseException(HttpStatusCode.BadRequest); 
+            }
+
+            SiteEventSource.Log.ResolveVanityUrlStop(userVanityUrlName);
+            return steam64Id;
         }
 
         private static async Task<OwnedGame[]> GetOwnedGames(long steamId)
@@ -121,11 +158,10 @@ namespace HowLongToBeatSteam.Controllers
             }
 
             SiteEventSource.Log.RetrieveOwnedGamesStart(steamId);
-            OwnedGamesResponse ownedGamesResponse;
-            using (var response = await Client.GetAsync(string.Format(GetOwnedSteamGamesFormat, SteamApiKey, steamId)).ConfigureAwait(false))
-            {
-                ownedGamesResponse = await response.Content.ReadAsAsync<OwnedGamesResponse>().ConfigureAwait(false);
-            }
+            
+            var ownedGamesResponse = await
+                SiteUtil.GetAsync<OwnedGamesResponse>(Client, string.Format(GetOwnedSteamGamesFormat, SteamApiKey, steamId)).ConfigureAwait(false);
+            
             SiteEventSource.Log.RetrieveOwnedGamesStop(steamId);
 
             if (ownedGamesResponse == null || ownedGamesResponse.response == null || ownedGamesResponse.response.games == null)
@@ -147,11 +183,10 @@ namespace HowLongToBeatSteam.Controllers
             }
 
             SiteEventSource.Log.RetrievePlayerSummaryStart();
-            PlayerSummariesResponse playerSummaries;
-            using (var response = await Client.GetAsync(string.Format(GetPlayerSummariesFormat, SteamApiKey, steamId)).ConfigureAwait(false))
-            {
-                playerSummaries = await response.Content.ReadAsAsync<PlayerSummariesResponse>().ConfigureAwait(false);
-            }
+            
+            var playerSummaries = await 
+                SiteUtil.GetAsync<PlayerSummariesResponse>(Client,string.Format(GetPlayerSummariesFormat, SteamApiKey, steamId)).ConfigureAwait(false);
+
             SiteEventSource.Log.RetrievePlayerSummaryStop();
 
             if (playerSummaries == null || playerSummaries.response == null ||

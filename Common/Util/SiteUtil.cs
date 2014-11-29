@@ -5,6 +5,7 @@ using System.Configuration;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Common.Util
@@ -126,6 +127,22 @@ namespace Common.Util
         public static int MaxConcurrentHttpRequests
         {
             get { return s_maxConcurrentHttpRequests.Value; }
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1057:StringUriOverloadsCallSystemUriOverloads")]
+        public static Task<T> GetAsync<T>(HttpRetryClient client, string url)
+        {
+            return GetAsync<T>(client, new Uri(url));
+        }
+
+        public static async Task<T> GetAsync<T>(HttpRetryClient client, Uri url)
+        {
+            T deserializedResponse;
+            using (var response = await client.GetAsync(url).ConfigureAwait(false))
+            {
+                deserializedResponse = await response.Content.ReadAsAsync<T>().ConfigureAwait(false);
+            }
+            return deserializedResponse;
         }
     }
 }

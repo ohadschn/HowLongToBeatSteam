@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Common.Entities;
@@ -38,12 +37,8 @@ namespace Common.Store
             var start = counter - MaxSteamStoreIdsPerRequest + 1;
             var requestUrl = new Uri(String.Format(SteamStoreApiUrlTemplate, String.Join(",", apps.Select(si => si.AppId))));
             CommonEventSource.Log.RetrieveStoreInformationStart(start, counter, requestUrl);
-            
-            JObject jObject;
-            using (var response = await client.GetAsync(requestUrl).ConfigureAwait(false))
-            {
-                jObject = await response.Content.ReadAsAsync<JObject>().ConfigureAwait(false);
-            }
+
+            var jObject = await SiteUtil.GetAsync<JObject>(client, requestUrl).ConfigureAwait(false);
 
             foreach (var app in apps)
             {
