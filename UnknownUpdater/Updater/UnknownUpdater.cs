@@ -11,7 +11,7 @@ namespace UnknownUpdater.Updater
 {
     class UnknownUpdater
     {
-        private static readonly HttpRetryClient Client = new HttpRetryClient(5);
+        private static readonly HttpRetryClient Client = new HttpRetryClient(100);
         static void Main()
         {
             SiteUtil.SetDefaultConnectionLimit();

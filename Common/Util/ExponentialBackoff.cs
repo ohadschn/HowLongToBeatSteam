@@ -5,11 +5,10 @@ namespace Common.Util
 {
     public class ExponentialBackoff : RetryStrategy
     {
-        private const double DeltaFactorMin = 0.8;
-        private const double DeltaFactorMax = 1.2;
         private readonly int m_retryCount;
-        private readonly double m_minBackoff;
-        private readonly double m_maxBackoff;
+        private readonly int m_minBackoff;
+        private readonly int m_maxBackoffMin;
+        private readonly int m_maxBackoffMax;
         private readonly int m_deltaBackoffMin;
         private readonly int m_deltaBackoffMax;
 
@@ -81,11 +80,13 @@ namespace Common.Util
                     String.Format("min backoff {0} larger than max backoff {1}", minBackoff.TotalMilliseconds, maxBackoff.TotalMilliseconds));
             }
 
+            //all checked integers + shared random + report issue/fix
             m_retryCount = retryCount;
-            m_minBackoff = minBackoff.TotalMilliseconds;
-            m_maxBackoff = maxBackoff.TotalMilliseconds;
-            m_deltaBackoffMin = (int)(deltaBackoff.TotalMilliseconds * DeltaFactorMin);
-            m_deltaBackoffMax = checked((int)(deltaBackoff.TotalMilliseconds * DeltaFactorMax));
+            m_minBackoff = checked((int)(minBackoff.TotalMilliseconds));
+            m_maxBackoffMin = checked((int)(maxBackoff.TotalMilliseconds * 0.6));
+            m_maxBackoffMax = checked((int)(maxBackoff.TotalMilliseconds));
+            m_deltaBackoffMin = checked((int)(deltaBackoff.TotalMilliseconds * 0.8));
+            m_deltaBackoffMax = checked((int)(deltaBackoff.TotalMilliseconds * 1.2));
         }
 
         /// <summary>
@@ -98,13 +99,10 @@ namespace Common.Util
             {
                 if (currentRetryCount < m_retryCount)
                 {
-                    var random = new Random();
-
-                    var delta = (Math.Pow(2.0, currentRetryCount) - 1.0) * random.Next(m_deltaBackoffMin, m_deltaBackoffMax);
-                    var interval = Math.Min(m_minBackoff + delta, m_maxBackoff);
+                    var delta = (Math.Pow(2.0, currentRetryCount) - 1.0) * RandomGenerator.Next(m_deltaBackoffMin, m_deltaBackoffMax);
+                    var interval = Math.Min(m_minBackoff + delta, RandomGenerator.Next(m_maxBackoffMin, m_maxBackoffMax));
 
                     retryInterval = TimeSpan.FromMilliseconds(interval);
-
                     return true;
                 }
 

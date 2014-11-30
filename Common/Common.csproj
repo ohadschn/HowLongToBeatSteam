@@ -71,6 +71,7 @@
     <Compile Include="Store\SteamJson.cs" />
     <Compile Include="Store\SteamStoreHelper.cs" />
     <Compile Include="Storage\TableHelper.cs" />
+    <Compile Include="Util\RandomGenerator.cs" />
     <Compile Include="Util\SiteUtil.cs" />
   </ItemGroup>
   <ItemGroup>

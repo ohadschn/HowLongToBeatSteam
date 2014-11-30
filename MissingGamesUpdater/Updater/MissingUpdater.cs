@@ -17,7 +17,7 @@ namespace MissingGamesUpdater.Updater
         static void Main()
         {
             SiteUtil.SetDefaultConnectionLimit();
-            using (s_client = new HttpRetryClient(500))
+            using (s_client = new HttpRetryClient(100))
             {
                 UpdateMissingGames().Wait();                
             }
