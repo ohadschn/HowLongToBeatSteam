@@ -66,6 +66,7 @@ function AppViewModel(id) {
     self.missingIdsAlertHidden = ko.observable(false);
     self.partialCacheAlertHidden = ko.observable(false);
     self.errorAlertHidden = ko.observable(false);
+    self.imputedAlertHidden = ko.observable(false);
 
     self.toggleAllChecked = ko.observable(true);
     self.toggleAllCore = function(include) {
@@ -101,6 +102,7 @@ function AppViewModel(id) {
 
         var count = 0;
         var missingIdsCount = 0;
+        var imputedCount = 0;
         var totalPlaytime = 0;
         var totalMain = 0;
         var totalExtras = 0;
@@ -114,6 +116,7 @@ function AppViewModel(id) {
         for (var i = 0; i < length; ++i) {
             var game = arr[i];
             missingIdsCount += !game.known;
+            imputedCount += (game.hltbInfo.mainTtbImputed || game.hltbInfo.extrasTtbImputed || game.hltbInfo.completionistTtbImputed) ? 1 : 0;
 
             if (!game.included()) {
                 continue;
@@ -138,6 +141,7 @@ function AppViewModel(id) {
         return {
             count: count,
             missingIds: missingIdsCount > 0,
+            imputedCount: imputedCount,
             totalPlaytime: totalPlaytime,
             totalMain: totalMain,
             totalExtras: totalExtras,
@@ -162,6 +166,7 @@ function AppViewModel(id) {
         self.missingIdsAlertHidden(false);
         self.partialCacheAlertHidden(false);
         self.errorAlertHidden(false);
+        self.imputedAlertHidden(false);
 
         var updateGames = function (games, total) {
             var toAdd = games.splice(0, 50);
@@ -198,6 +203,7 @@ function AppViewModel(id) {
                     console.error(error);
                     self.error("Verify your Steam64Id and try again");
                     self.processing(false);
+                    $('#workingModal').modal("hide");
                 });
 
             self.games([]); //do this after AJAX call has been made
