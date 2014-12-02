@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Common.Logging;
 using Common.Storage;
 using Common.Store;
 using Common.Util;
@@ -16,10 +17,17 @@ namespace MissingGamesUpdater.Updater
 
         static void Main()
         {
-            SiteUtil.SetDefaultConnectionLimit();
-            using (s_client = new HttpRetryClient(100))
+            try
             {
-                UpdateMissingGames().Wait();                
+                SiteUtil.SetDefaultConnectionLimit();
+                using (s_client = new HttpRetryClient(100))
+                {
+                    UpdateMissingGames().Wait();                
+                }
+            }
+            finally
+            {
+                EventSourceRegistrar.DisposeEventListeners();
             }
         }
 

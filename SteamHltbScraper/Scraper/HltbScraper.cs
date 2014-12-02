@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Common.Entities;
+using Common.Logging;
 using Common.Storage;
 using Common.Util;
 using HtmlAgilityPack;
@@ -31,7 +32,14 @@ namespace SteamHltbScraper.Scraper
 
         private static void Main()
         {
-            MainAsync().Wait();
+            try
+            {
+                MainAsync().Wait();
+            }
+            finally
+            {
+                EventSourceRegistrar.DisposeEventListeners();
+            }
         }
 
         private static async Task MainAsync()

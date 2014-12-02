@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 namespace Common.Util
@@ -77,7 +78,7 @@ namespace Common.Util
             if (minBackoff.TotalMilliseconds > maxBackoff.TotalMilliseconds)
             {
                 throw new ArgumentOutOfRangeException("minBackoff",
-                    String.Format("min backoff {0} larger than max backoff {1}", minBackoff.TotalMilliseconds, maxBackoff.TotalMilliseconds));
+                    String.Format(CultureInfo.InvariantCulture, "min backoff {0} larger than max backoff {1}", minBackoff.TotalMilliseconds, maxBackoff.TotalMilliseconds));
             }
 
             //all checked integers + shared random + report issue/fix

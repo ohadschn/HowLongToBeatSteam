@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -25,7 +24,6 @@ namespace HowLongToBeatSteam.Controllers
         private const int VanityUrlResolutionSuccess = 1;
 
         private const string GetOwnedSteamGamesFormat = @"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={0}&steamid={1}&format=json&include_appinfo=1";
-        private const string GetPlayerSummariesFormat = @"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={0}&steamids={1}";
         
         private static readonly HttpRetryClient Client = new HttpRetryClient(0);
 
@@ -68,13 +66,7 @@ namespace HowLongToBeatSteam.Controllers
             SiteEventSource.Log.HandleGetGamesRequestStart(userVanityUrlName);
 
             long steamId = await ResolveVanityUrl(userVanityUrlName).ConfigureAwait(true);
-
-            var ownedGamesTask = GetOwnedGames(steamId);
-            var personaNameTask = GetPersonaName(steamId);
-
-            await Task.WhenAll(ownedGamesTask, personaNameTask).ConfigureAwait(true);
-            var ownedGames = ownedGamesTask.Result;
-            var personaName = personaNameTask.Result;
+            var ownedGames = await GetOwnedGames(steamId).ConfigureAwait(true);
 
             SiteEventSource.Log.PrepareResponseStart();
             var games = new List<SteamApp>();
@@ -101,7 +93,7 @@ namespace HowLongToBeatSteam.Controllers
             SiteEventSource.Log.PrepareResponseStop();
 
             SiteEventSource.Log.HandleGetGamesRequestStop(userVanityUrlName);
-            return new OwnedGamesInfo(personaName, partialCache, games);
+            return new OwnedGamesInfo(partialCache, games);
         }
 
         [Route("update/{steamAppId:int}/{hltbId:int}")]
@@ -178,32 +170,6 @@ namespace HowLongToBeatSteam.Controllers
             var games = ownedGamesResponse.response.games;
             SiteEventSource.Log.RetrievedOwnedGames(steamId, games.Length);
             return games;
-        }
-
-        private static async Task<string> GetPersonaName(long steamId)
-        {
-            if (steamId < 0)
-            {
-                return String.Format(CultureInfo.InvariantCulture, "first {0} games", Math.Abs(steamId));
-            }
-
-            SiteEventSource.Log.RetrievePlayerSummaryStart();
-            
-            var playerSummaries = await 
-                SiteUtil.GetAsync<PlayerSummariesResponse>(Client,string.Format(GetPlayerSummariesFormat, SteamApiKey, steamId)).ConfigureAwait(false);
-
-            SiteEventSource.Log.RetrievePlayerSummaryStop();
-
-            if (playerSummaries == null || playerSummaries.response == null ||
-                playerSummaries.response.players == null || playerSummaries.response.players.Length == 0)
-            {
-                SiteEventSource.Log.ErrorRetrievingPersonaName(steamId);
-                return "Unknown";
-            }
-
-            var personaName = playerSummaries.response.players[0].personaname;
-            SiteEventSource.Log.ResolvedPersonaName(steamId, personaName);
-            return personaName;
         }
     }
 }

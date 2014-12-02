@@ -1,22 +1,29 @@
 ﻿using System;
 using System.Linq;
+using Common.Logging;
 using Common.Storage;
 
 namespace ManualTableUpdater.Updater
 {
     class ManualUpdater
     {
-
         static void Main()
         {
-            //var games = GetAppsFromCsv();
-            //GetAppsWithStoreData().Wait();
+            try
+            {
+                //var games = GetAppsFromCsv();
+                //GetAppsWithStoreData().Wait();
 
-            //SiteUtil.TraceInformation("All done!");
-            //var ids = TableHelper.GetAllApps(e => e.SteamAppId, TableHelper.DoesNotStartWithFilter(TableHelper.RowKey, "Suggestion")).Result;
-            var ids = TableHelper.GetAllApps(e => e.SteamAppId).Result;
-            Console.WriteLine(ids.Contains(12345));
-            Console.ReadLine();
+                //SiteUtil.TraceInformation("All done!");
+                //var ids = TableHelper.GetAllApps(e => e.SteamAppId, TableHelper.DoesNotStartWithFilter(TableHelper.RowKey, "Suggestion")).Result;
+                var ids = TableHelper.GetAllApps(e => e.SteamAppId).Result;
+                Console.WriteLine(ids.Contains(12345));
+                Console.ReadLine();
+            }
+            finally
+            {
+                EventSourceRegistrar.DisposeEventListeners();
+            }
         }
 
         //public static void GetAppsFromCsv()

@@ -2,7 +2,7 @@
 
 namespace Common.Util
 {
-    public class RandomGenerator
+    public static class RandomGenerator
     {        
         private static readonly Random s_global = new Random();
 

@@ -15,8 +15,8 @@ namespace Common.Store
 {
     public static class SteamStoreHelper
     {
-        public const string SteamStoreApiUrlTemplate = "http://store.steampowered.com/api/appdetails/?appids={0}";
-        public static int MaxSteamStoreIdsPerRequest = GetOptionalIntFromConfig("MaxSteamStoreIdsPerRequest", 50);
+        private const string SteamStoreApiUrlTemplate = "http://store.steampowered.com/api/appdetails/?appids={0}";
+        private static readonly int MaxSteamStoreIdsPerRequest = GetOptionalIntFromConfig("MaxSteamStoreIdsPerRequest", 50);
 
         private static int GetOptionalIntFromConfig(string keyName, int defaultValue)
         {

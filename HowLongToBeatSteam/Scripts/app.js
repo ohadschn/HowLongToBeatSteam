@@ -58,7 +58,6 @@ function AppViewModel(id) {
 
     self.games = ko.observableArray();
 
-    self.personaName = ko.observable(null);
     self.partialCache = ko.observable(false);
     self.processing = ko.observable(false);
     self.error = ko.observable(null);
@@ -187,7 +186,6 @@ function AppViewModel(id) {
             $.get("api/games/library/" + self.steamVanityUrlName())
                 .done(function(data) {
                     self.partialCache(data.PartialCache);
-                    self.personaName(data.PersonaName);
                     data.Games.sort(function(a, b) {
                         var aName = a.SteamName.toLowerCase();
                         var bName = b.SteamName.toLowerCase();

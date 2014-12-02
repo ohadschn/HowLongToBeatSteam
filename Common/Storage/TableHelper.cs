@@ -20,7 +20,7 @@ namespace Common.Storage
         public const string RowKey = "RowKey";
 
         private const int MaxBatchOperations = 100;
-        private static readonly string TableStorageConnectionString = ConfigurationManager.ConnectionStrings["Hltbs"].ConnectionString;
+        public static readonly string TableStorageConnectionString = ConfigurationManager.ConnectionStrings["Hltbs"].ConnectionString;
         private static readonly string SteamToHltbTableName = ConfigurationManager.AppSettings["SteamToHltbTableName"];
         
         private static readonly TimeSpan DefaultDeltaBackoff = TimeSpan.FromSeconds(4);
@@ -178,7 +178,7 @@ namespace Common.Storage
             var cloudTableClient = CloudStorageAccount.Parse(TableStorageConnectionString).CreateCloudTableClient();
             if (retries >= 0)
             {
-                cloudTableClient.DefaultRequestOptions.RetryPolicy = new ExponentialRetry(DefaultDeltaBackoff, retries);
+                cloudTableClient.RetryPolicy = new ExponentialRetry(DefaultDeltaBackoff, retries);
             }
             return cloudTableClient;
         }

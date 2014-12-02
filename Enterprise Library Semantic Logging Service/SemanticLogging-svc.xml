@@ -17,7 +17,7 @@
     </consoleSink>
     
     <!--update connection string before deployment-->
-    <windowsAzureTableSink 
+<!--    <windowsAzureTableSink 
       name="AzureTable" 
       instanceName="AzureTable" 
       connectionString="UseDevelopmentStorage=true" 
@@ -30,7 +30,7 @@
         <eventSource name="OS-HowLongToBeatSteam-UnknownGamesUpdater" level="Verbose"/>
         <eventSource name="OS-HowLongToBeatSteam-Scraper" level="Verbose"/>
       </sources>
-    </windowsAzureTableSink>
+    </windowsAzureTableSink>-->
     
   </sinks>
 </configuration>

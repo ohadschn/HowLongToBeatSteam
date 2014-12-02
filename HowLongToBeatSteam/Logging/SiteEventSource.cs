@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.Tracing;
+using Common.Logging;
 
 namespace HowLongToBeatSteam.Logging
 {
@@ -9,7 +10,7 @@ namespace HowLongToBeatSteam.Logging
     }
 
     [EventSource(Name = "OS-HowLongToBeatSteam-Site")]
-    public class SiteEventSource : EventSource
+    public class SiteEventSource : EventSourceBase
     {
         public static readonly SiteEventSource Log = new SiteEventSource();
         private SiteEventSource()
@@ -98,16 +99,6 @@ namespace HowLongToBeatSteam.Logging
         }
 
         [Event(
-            6,
-            Message = "Error retrieving player summary for user ID {0}",
-            Keywords = Keywords.SteamApi,
-            Level = EventLevel.Warning)]
-        public void ErrorRetrievingPersonaName(long steamId)
-        {
-            WriteEvent(6, steamId);
-        }
-
-        [Event(
             7,
             Message = "Start preparing response",
             Keywords = Keywords.GamesController,
@@ -129,30 +120,6 @@ namespace HowLongToBeatSteam.Logging
         public void PrepareResponseStop()
         {
             WriteEvent(8);
-        }
-
-        [Event(
-            9,
-            Message = "Start retrieving player summary",
-            Keywords = Keywords.SteamApi,
-            Level = EventLevel.Informational,
-            Task = Tasks.RetrievePlayerSummary,
-            Opcode = EventOpcode.Start)]
-        public void RetrievePlayerSummaryStart()
-        {
-            WriteEvent(9);
-        }
-
-        [Event(
-            10,
-            Message = "Finished retrieving player summary",
-            Keywords = Keywords.SteamApi,
-            Level = EventLevel.Informational,
-            Task = Tasks.RetrievePlayerSummary,
-            Opcode = EventOpcode.Stop)]
-        public void RetrievePlayerSummaryStop()
-        {
-            WriteEvent(10);
         }
 
         [NonEvent]
@@ -195,22 +162,6 @@ namespace HowLongToBeatSteam.Logging
         public void RetrievedOwnedGames(long steamId, int count)
         {
             WriteEvent(13, steamId, count);
-        }
-
-        [NonEvent]
-        public void ResolvedPersonaName(long steamId, string personaName)
-        {
-            ResolvedPersonaName(personaName, steamId);
-        }
-
-        [Event(
-            14,
-            Message = "Resolved persona name of Steam ID {1} to {0}",
-            Keywords = Keywords.SteamApi,
-            Level = EventLevel.Informational)]
-        private void ResolvedPersonaName(string personaName, long steamId)
-        {
-            WriteEvent(14, personaName, steamId);
         }
 
         [Event(

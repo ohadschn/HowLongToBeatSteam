@@ -34,7 +34,6 @@
             </div>
             <button id="submit" type="submit" data-bind="enable: !processing()" class="btn btn-primary">Tell me how long</button>
             <img src="http://cdnjs.cloudflare.com/ajax/libs/file-uploader/3.7.0/loading.gif" alt="loading..." data-bind="visible: processing" />
-            <h4 data-bind="text: 'Welcome ' + personaName() + '!', visible: personaName() !== null"></h4>
         </form>
         <br />
         <div class="alert alert-danger alert-dismissible" role="alert" data-bind="visible: error() && !errorAlertHidden()">

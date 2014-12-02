@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Common.Entities;
+using Common.Logging;
 using Common.Storage;
 using Common.Store;
 using Common.Util;
@@ -14,10 +15,17 @@ namespace UnknownUpdater.Updater
         private static readonly HttpRetryClient Client = new HttpRetryClient(100);
         static void Main()
         {
-            SiteUtil.SetDefaultConnectionLimit();
-            using (Client)
+            try
             {
-                UpdateUnknownApps().Wait();
+                SiteUtil.SetDefaultConnectionLimit();
+                using (Client)
+                {
+                    UpdateUnknownApps().Wait();
+                }
+            }
+            finally
+            {
+                EventSourceRegistrar.DisposeEventListeners();
             }
         }
 

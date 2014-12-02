@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.Tracing;
+using Common.Logging;
 
 namespace SteamHltbScraper.Logging
 {
@@ -10,7 +11,7 @@ namespace SteamHltbScraper.Logging
     }
 
     [EventSource(Name = "OS-HowLongToBeatSteam-Scraper")]
-    public class HltbScraperEventSource : EventSource
+    public class HltbScraperEventSource : EventSourceBase
     {
         public static readonly HltbScraperEventSource Log = new HltbScraperEventSource();
 

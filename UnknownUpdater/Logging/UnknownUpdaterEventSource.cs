@@ -4,11 +4,12 @@ using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.Linq;
 using Common.Entities;
+using Common.Logging;
 
 namespace UnknownUpdater.Logging
 {
     [EventSource(Name = "OS-HowLongToBeatSteam-UnknownGamesUpdater")]
-    public class UnknownUpdaterEventSource : EventSource
+    public class UnknownUpdaterEventSource : EventSourceBase
     {
         public static readonly UnknownUpdaterEventSource Log = new UnknownUpdaterEventSource();
         private UnknownUpdaterEventSource()

@@ -63,8 +63,11 @@ namespace SteamHltbScraper.Imputation
             foreach (var app in allApps.Except(notMissing)) //not not missing = missing
             {
                 app.MainTtb = mainAvg;
+                app.MainTtbImputed = true;
                 app.ExtrasTtb = extrasAvg;
+                app.ExtrasTtbImputed = true;
                 app.CompletionistTtb = completionistAvg;
+                app.CompletionistTtbImputed = true;
             }
         }
 
