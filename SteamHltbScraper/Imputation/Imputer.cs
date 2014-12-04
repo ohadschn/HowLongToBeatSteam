@@ -83,12 +83,12 @@ namespace SteamHltbScraper.Imputation
 
             File.WriteAllText(Path.Combine(dataPath, "ttb.csv"), csvString);
 
+            HltbScraperEventSource.Log.CopyRStart();
+            StartAndWaitForProcess("Robocopy.exe", String.Format(CultureInfo.InvariantCulture, "R {0} /e", Path.Combine(dataPath, "R")));
+            HltbScraperEventSource.Log.CopyRStop();
+
             HltbScraperEventSource.Log.InvokeRStart();
-            using (var proc = Process.Start(@"R\bin\i386\Rscript.exe", @"Imputation\Impute.R"))
-            {
-                Trace.Assert(proc != null, "Cannot execute RScript.exe");
-                proc.WaitForExit();
-            }
+            StartAndWaitForProcess(Path.Combine(Path.Combine(dataPath, "R"), @"bin\i386\Rscript.exe"), @"Imputation\Impute.R");
             HltbScraperEventSource.Log.InvokeRStop();
 
             //skip header row and discard blank lines
@@ -104,6 +104,15 @@ namespace SteamHltbScraper.Imputation
             }
 
             HltbScraperEventSource.Log.CalculateImputationStop();
+        }
+
+        private static void StartAndWaitForProcess(string fileName, string arguments)
+        {
+            using (var proc = Process.Start(fileName, arguments))
+            {
+                Trace.Assert(proc != null, String.Format(CultureInfo.InvariantCulture, "Cannot execute {0} {1}", fileName, arguments));
+                proc.WaitForExit();
+            }
         }
 
         internal static string GetDataPath()

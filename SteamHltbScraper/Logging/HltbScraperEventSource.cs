@@ -43,7 +43,8 @@ namespace SteamHltbScraper.Logging
             public const EventTask GetGameOverviewPage = (EventTask) 8;
             public const EventTask CalculateImputation = (EventTask) 9;
             public const EventTask InvokeR = (EventTask) 10;
-            public const EventTask Impute = (EventTask) 11;
+            public const EventTask Impute = (EventTask)11;
+            public const EventTask CopyR = (EventTask)12;
         }
 // ReSharper restore ConvertToStaticClass
 
@@ -510,6 +511,30 @@ namespace SteamHltbScraper.Logging
         public void ImputationMiss(ImputationMissType missType, int large, int small)
         {
             WriteEvent(27, (int)missType, large, small);
+        }
+
+        [Event(
+            28,
+            Message = "Start copying R folder",
+            Keywords = Keywords.HltbScraper | Keywords.Imputation,
+            Level = EventLevel.Informational,
+            Task = Tasks.CopyR,
+            Opcode = EventOpcode.Start)]
+        public void CopyRStart()
+        {
+            WriteEvent(28);
+        }
+
+        [Event(
+            29,
+            Message = "Finished copying R folder",
+            Keywords = Keywords.HltbScraper | Keywords.Imputation,
+            Level = EventLevel.Informational,
+            Task = Tasks.CopyR,
+            Opcode = EventOpcode.Stop)]
+        public void CopyRStop()
+        {
+            WriteEvent(29);
         }
     }
 }
