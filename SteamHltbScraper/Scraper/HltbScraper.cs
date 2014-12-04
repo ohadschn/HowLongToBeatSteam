@@ -46,7 +46,7 @@ namespace SteamHltbScraper.Scraper
         {
             SiteUtil.SetDefaultConnectionLimit();
 
-            var allApps = await TableHelper.GetAllApps(e => e, AppEntity.MeasuredFilter, 20).ConfigureAwait(false);
+            var allApps = (await TableHelper.GetAllApps(e => e, AppEntity.MeasuredFilter, 20).ConfigureAwait(false)).Take(ScrapingLimit).ToArray();
 
             ConcurrentBag<AppEntity> updates;
             using (Client)
@@ -67,7 +67,7 @@ namespace SteamHltbScraper.Scraper
             var updates = new ConcurrentBag<AppEntity>();
             int count = 0;
 
-            await allApps.Take(ScrapingLimit).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, async app =>
+            await allApps.ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, async app =>
             {
                 var current = Interlocked.Increment(ref count);
                 HltbScraperEventSource.Log.ScrapeGameStart(app.SteamAppId, current);
