@@ -5,17 +5,15 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Common.Entities;
+using RDotNet;
 using SteamHltbScraper.Logging;
 
 namespace SteamHltbScraper.Imputation
 {
-    //*Note* Only R's 'bin', 'etc', and 'library' folders are needed. 
-    //       The following packages must be present in the library folder:
-    //----------------------------------------------------------------------------------------------------------------//
-    //base,boot,class,cluster,codetools,colorspace,compiler,datasets,DEoptimR,digest,foreign,GGally,ggplot2,graphics
-    //grDevices,grid,gtable,KernSmooth,lattice,MASS,Matrix,methods,mgcv,munsell,mvtnorm,nlme,nnet,parallel,pcaPP,pls
-    //plyr,proto,Rcpp,reshape,reshape2,robCompositions,robustbase,rpart,rrcov,scales,spatial,splines,stats,stats4
-    //stringr,survival,tcltk,tools,utils
+    //required packages in library folder:
+    //************************************
+    //colorspace, DEoptimR, dichromat, digest, GGally, ggplot2, gtable, labeling, munsell, mvtnorm, pcaPP, pls, plyr, proto, RColorBrewer
+    //Rcpp, reshape, reshape2, robCompositions, robustbase, rrcov, scales, stringr
 
     public static class Imputer
     {
@@ -84,10 +82,10 @@ namespace SteamHltbScraper.Imputation
             File.WriteAllText(Path.Combine(dataPath, "ttb.csv"), csvString);
 
             HltbScraperEventSource.Log.InvokeRStart();
-            using (var proc = Process.Start(@"R\bin\i386\Rscript.exe", @"Imputation\Impute.R"))
+            REngine.SetEnvironmentVariables();
+            using (var engine = REngine.GetInstance())
             {
-                Trace.Assert(proc != null, "Cannot execute RScript.exe");
-                proc.WaitForExit();
+                engine.Evaluate("source('Imputation/Impute.R')");
             }
             HltbScraperEventSource.Log.InvokeRStop();
 

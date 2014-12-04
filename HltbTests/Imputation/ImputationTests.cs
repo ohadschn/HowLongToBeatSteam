@@ -14,8 +14,6 @@ namespace HltbTests.Imputation
         [TestMethod]
         public void TestImputation()
         {
-            File.Delete(Path.Combine(Imputer.GetDataPath(), Imputer.ImputedCsvFileName));
-
             var apps = File.ReadLines("Imputation\\ttb.csv").Select(row =>
             {
                 var app = new AppEntity();

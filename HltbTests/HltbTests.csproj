@@ -72,6 +72,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\PrepareWebJobFolder.bat">
+      <Link>PrepareWebJobFolder.bat</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="..\SteamHltbScraper\Imputation\Impute.R">
       <Link>Imputation\Impute.R</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -134,14 +138,7 @@
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>mkdir R
-
-
-echo robocopy "%25R%25" R /s /e
-robocopy "%25R%25" R /s /e
-
-IF %25ERRORLEVEL%25 GEQ 8 exit 1
-exit 0</PostBuildEvent>
+    <PostBuildEvent>PrepareWebJobFolder.bat</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
