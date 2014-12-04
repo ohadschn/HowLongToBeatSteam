@@ -82,7 +82,7 @@ namespace SteamHltbScraper.Imputation
             File.WriteAllText(Path.Combine(dataPath, "ttb.csv"), csvString);
 
             HltbScraperEventSource.Log.InvokeRStart();
-            REngine.SetEnvironmentVariables();
+            REngine.SetEnvironmentVariables("R/bin/i386", "R");
             using (var engine = REngine.GetInstance())
             {
                 engine.Evaluate("source('Imputation/Impute.R')");

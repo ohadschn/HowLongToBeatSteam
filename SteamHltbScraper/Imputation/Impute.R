@@ -8,7 +8,7 @@ sink(file.path(dataPath, "R.log"));
 ttb = read.csv(file=file.path(dataPath, "ttb.csv"),head=FALSE,sep=",");
 
 #Load imputation library
-.libPaths("library");
+.libPaths("R/library");
 library(robCompositions);
 
 #impute
