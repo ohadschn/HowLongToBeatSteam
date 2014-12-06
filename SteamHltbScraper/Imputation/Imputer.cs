@@ -75,6 +75,12 @@ namespace SteamHltbScraper.Imputation
 
             var dataPath = GetDataPath();
 
+            using (var proc = Process.Start("Robocopy.exe", String.Format(@"R {0} /e", Path.Combine(dataPath, "R"))))
+            {
+                Trace.Assert(proc != null, "Could not start Robocopy");
+                proc.WaitForExit();
+            }
+
             var csvString = string.Join(Environment.NewLine,
                 allApps.Select(a => string.Format(CultureInfo.InvariantCulture, "{0},{1},{2}",
                     Observation(a.MainTtb), Observation(a.ExtrasTtb), Observation(a.CompletionistTtb))));
@@ -82,7 +88,7 @@ namespace SteamHltbScraper.Imputation
             File.WriteAllText(Path.Combine(dataPath, "ttb.csv"), csvString);
 
             HltbScraperEventSource.Log.InvokeRStart();
-            REngine.SetEnvironmentVariables("R/bin/i386", "R");
+            REngine.SetEnvironmentVariables(Path.Combine(dataPath, @"R\bin\i386"), Path.Combine(dataPath, "R"));
             using (var engine = REngine.GetInstance())
             {
                 engine.Evaluate("source('Imputation/Impute.R')");
