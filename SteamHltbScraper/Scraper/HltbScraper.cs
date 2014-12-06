@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -27,7 +25,7 @@ namespace SteamHltbScraper.Scraper
         private const string HltbGamePageFormat = @"http://www.howlongtobeat.com/game.php?id={0}";
         private const string HltbGameOverviewPageFormat = @"http://www.howlongtobeat.com/game_overview.php?id={0}";
 
-        private static readonly int ScrapingLimit = Int32.Parse(ConfigurationManager.AppSettings["ScrapingLimit"], CultureInfo.InvariantCulture);
+        private static readonly int ScrapingLimit = SiteUtil.GetOptionalValueFromConfig("ScrapingLimit", int.MaxValue);
         private static readonly HttpRetryClient Client = new HttpRetryClient(4);
 
         private static void Main()
