@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -129,7 +130,7 @@ namespace Common.Util
             get { return s_maxConcurrentHttpRequests.Value; }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1057:StringUriOverloadsCallSystemUriOverloads")]
+        [SuppressMessage("Microsoft.Design", "CA1057:StringUriOverloadsCallSystemUriOverloads")]
         public static Task<T> GetAsync<T>(HttpRetryClient client, string url)
         {
             return GetAsync<T>(client, new Uri(url));
@@ -143,6 +144,33 @@ namespace Common.Util
                 deserializedResponse = await response.Content.ReadAsAsync<T>().ConfigureAwait(false);
             }
             return deserializedResponse;
+        }
+
+        public static string CurrentTimestamp
+        {
+            get
+            {
+                var now = DateTime.Now;
+                return String.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}-{3}.{4}.{5}.{6}",
+                    now.Year, now.Month.ToString("00", CultureInfo.InvariantCulture), now.Day.ToString("00", CultureInfo.InvariantCulture),
+                    now.Hour, now.Minute.ToString("00", CultureInfo.InvariantCulture), now.Second.ToString("00", CultureInfo.InvariantCulture), now.Millisecond.ToString("000", CultureInfo.InvariantCulture));
+            }
+        }
+
+        public static int GetOptionalValueFromConfig(string keyName, int defaultValue)
+        {
+            int val;
+            return Int32.TryParse(ConfigurationManager.AppSettings[keyName], out val)
+                ? val
+                : defaultValue;
+        }
+
+        public static bool GetOptionalValueFromConfig(string keyName, bool defaultValue)
+        {
+            bool val;
+            return Boolean.TryParse(ConfigurationManager.AppSettings[keyName], out val)
+                ? val
+                : defaultValue;
         }
     }
 }

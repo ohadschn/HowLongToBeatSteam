@@ -4,12 +4,6 @@ using Common.Logging;
 
 namespace SteamHltbScraper.Logging
 {
-    public enum ImputationMissType
-    {
-        MainMoreThanExtras,
-        ExtrasMoreThanComplete,
-    }
-
     [EventSource(Name = "OS-HowLongToBeatSteam-Scraper")]
     public class HltbScraperEventSource : EventSourceBase
     {
@@ -24,9 +18,11 @@ namespace SteamHltbScraper.Logging
         public sealed class Keywords
         {
             private Keywords() { }
-            public const EventKeywords HltbScraper = (EventKeywords) 1;
+            public const EventKeywords Scraping = (EventKeywords) 1;
             public const EventKeywords Http = (EventKeywords)2;
             public const EventKeywords Imputation = (EventKeywords)4;
+            public const EventKeywords AzureML = (EventKeywords)8;
+            public const EventKeywords BlobStorage = (EventKeywords)16;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
@@ -42,15 +38,17 @@ namespace SteamHltbScraper.Logging
             public const EventTask ScrapeHltbInfo = (EventTask) 7;
             public const EventTask GetGameOverviewPage = (EventTask) 8;
             public const EventTask CalculateImputation = (EventTask) 9;
-            public const EventTask InvokeR = (EventTask) 10;
+            public const EventTask SubmitImputationJob = (EventTask) 10;
             public const EventTask Impute = (EventTask) 11;
+            public const EventTask UploadTtbToBlob = (EventTask) 12;
+            public const EventTask PollImputationJobStatus = (EventTask) 13;
         }
 // ReSharper restore ConvertToStaticClass
 
         [Event(
             1,
             Message = "Start scraping HLTB",
-            Keywords = Keywords.HltbScraper,
+            Keywords = Keywords.Scraping,
             Level = EventLevel.Informational,
             Task = Tasks.ScrapeHltb,
             Opcode = EventOpcode.Start)]
@@ -61,8 +59,8 @@ namespace SteamHltbScraper.Logging
 
         [Event(
             2,
-            Message = "Start scraping HLTB",
-            Keywords = Keywords.HltbScraper,
+            Message = "Finished scraping HLTB",
+            Keywords = Keywords.Scraping,
             Level = EventLevel.Informational,
             Task = Tasks.ScrapeHltb,
             Opcode = EventOpcode.Stop)]
@@ -74,7 +72,7 @@ namespace SteamHltbScraper.Logging
         [Event(
             3,
             Message = "Start scraping Steam ID {0} (#{1})",
-            Keywords = Keywords.HltbScraper,
+            Keywords = Keywords.Scraping,
             Level = EventLevel.Informational,
             Task = Tasks.ScrapeGame,
             Opcode = EventOpcode.Start)]
@@ -86,7 +84,7 @@ namespace SteamHltbScraper.Logging
         [Event(
             4,
             Message = "Finished scraping Steam ID {0} (#{1})",
-            Keywords = Keywords.HltbScraper,
+            Keywords = Keywords.Scraping,
             Level = EventLevel.Informational,
             Task = Tasks.ScrapeGame,
             Opcode = EventOpcode.Stop)]
@@ -98,7 +96,7 @@ namespace SteamHltbScraper.Logging
         [Event(
             5,
             Message = "Start scraping HLTB ID for '{0}'",
-            Keywords = Keywords.HltbScraper,
+            Keywords = Keywords.Scraping,
             Level = EventLevel.Informational,
             Task = Tasks.ScrapeHltbId,
             Opcode = EventOpcode.Start)]
@@ -110,7 +108,7 @@ namespace SteamHltbScraper.Logging
         [Event(
             6,
             Message = "Finished scraping HLTB ID for '{0}': {1}",
-            Keywords = Keywords.HltbScraper,
+            Keywords = Keywords.Scraping,
             Level = EventLevel.Informational,
             Task = Tasks.ScrapeHltbId,
             Opcode = EventOpcode.Stop)]
@@ -179,7 +177,7 @@ namespace SteamHltbScraper.Logging
         [Event(
             9,
             Message = "Game '{0}' not found in search",
-            Keywords = Keywords.HltbScraper,
+            Keywords = Keywords.Scraping,
             Level = EventLevel.Warning)]
         public void GameNotFoundInSearch(string game)
         {
@@ -205,7 +203,7 @@ namespace SteamHltbScraper.Logging
         [Event(
             10,
             Message = "Scraping #{0} - Error resolving HLTB ID for app {1} / {2}: {3}",
-            Keywords = Keywords.HltbScraper,
+            Keywords = Keywords.Scraping,
             Level = EventLevel.Error)]
         private void ErrorScrapingHltbId(int current, int steamAppId, string steamName, string exception)
         {
@@ -215,7 +213,7 @@ namespace SteamHltbScraper.Logging
         [Event(
             11,
             Message = "Start scraping HLTB name for id {0}",
-            Keywords = Keywords.HltbScraper,
+            Keywords = Keywords.Scraping,
             Level = EventLevel.Informational,
             Task = Tasks.ScrapeHltbName,
             Opcode = EventOpcode.Start)]
@@ -233,7 +231,7 @@ namespace SteamHltbScraper.Logging
         [Event(
             12,
             Message = "Finished scraping HLTB name for id {0}: {1}",
-            Keywords = Keywords.HltbScraper,
+            Keywords = Keywords.Scraping,
             Level = EventLevel.Informational,
             Task = Tasks.ScrapeHltbName,
             Opcode = EventOpcode.Stop)]
@@ -317,7 +315,7 @@ namespace SteamHltbScraper.Logging
         [Event(
             15,
             Message = "Scraping #{0} - Error resolving HLTB name for app {1} / {2} / HLTB {3}: {4}",
-            Keywords = Keywords.HltbScraper,
+            Keywords = Keywords.Scraping,
             Level = EventLevel.Error)]
         private void ErrorScrapingHltbName(int current, int steamAppId, string steamName, int hltbId, string exception)
         {
@@ -327,7 +325,7 @@ namespace SteamHltbScraper.Logging
         [Event(
             16,
             Message = "Start scraping HLTB info for HLTB ID {0}",
-            Keywords = Keywords.HltbScraper,
+            Keywords = Keywords.Scraping,
             Level = EventLevel.Informational,
             Task = Tasks.ScrapeHltbInfo,
             Opcode = EventOpcode.Start)]
@@ -339,7 +337,7 @@ namespace SteamHltbScraper.Logging
         [Event(
             17,
             Message = "Finished scraping HLTB info for hltb {0}: Main {1} Extras {2} Completionist {3}",
-            Keywords = Keywords.HltbScraper,
+            Keywords = Keywords.Scraping,
             Level = EventLevel.Informational,
             Task = Tasks.ScrapeHltbInfo,
             Opcode = EventOpcode.Stop)]
@@ -423,7 +421,7 @@ namespace SteamHltbScraper.Logging
         [Event(
             20,
             Message = "Scraping #{0} - Error resolving HLTB info for app {1} / {2}: {3}",
-            Keywords = Keywords.HltbScraper,
+            Keywords = Keywords.Scraping,
             Level = EventLevel.Error)]
         private void ErrorScrapingHltbInfo(int current, int steamAppId, string steamName, string exception)
         {
@@ -433,7 +431,7 @@ namespace SteamHltbScraper.Logging
         [Event(
             21,
             Message = "Start calculating imputed values",
-            Keywords = Keywords.HltbScraper | Keywords.Imputation,
+            Keywords = Keywords.Imputation,
             Level = EventLevel.Informational,
             Task = Tasks.CalculateImputation,
             Opcode = EventOpcode.Start)]
@@ -445,7 +443,7 @@ namespace SteamHltbScraper.Logging
         [Event(
             22,
             Message = "Finished calculating imputed values",
-            Keywords = Keywords.HltbScraper | Keywords.Imputation,
+            Keywords = Keywords.Imputation,
             Level = EventLevel.Informational,
             Task = Tasks.CalculateImputation,
             Opcode = EventOpcode.Stop)]
@@ -456,32 +454,32 @@ namespace SteamHltbScraper.Logging
 
         [Event(
             23,
-            Message = "Start running R script",
-            Keywords = Keywords.HltbScraper | Keywords.Imputation,
+            Message = "Start submitting imputation job",
+            Keywords = Keywords.Imputation | Keywords.AzureML,
             Level = EventLevel.Informational,
-            Task = Tasks.InvokeR,
+            Task = Tasks.SubmitImputationJob,
             Opcode = EventOpcode.Start)]
-        public void InvokeRStart()
+        public void SubmitImputationJobStart()
         {
             WriteEvent(23);
         }
 
         [Event(
             24,
-            Message = "Finished running R script",
-            Keywords = Keywords.HltbScraper | Keywords.Imputation,
+            Message = "Finished submitting imputation job, ID: {0}",
+            Keywords = Keywords.Imputation | Keywords.AzureML,
             Level = EventLevel.Informational,
-            Task = Tasks.InvokeR,
+            Task = Tasks.SubmitImputationJob,
             Opcode = EventOpcode.Stop)]
-        public void InvokeRStop()
+        public void SubmitImputationJobStop(string jobId)
         {
-            WriteEvent(24);
+            WriteEvent(24, jobId);
         }
 
         [Event(
             25,
             Message = "Start imputing",
-            Keywords = Keywords.HltbScraper | Keywords.Imputation,
+            Keywords = Keywords.Imputation,
             Level = EventLevel.Informational,
             Task = Tasks.Impute,
             Opcode = EventOpcode.Start)]
@@ -493,7 +491,7 @@ namespace SteamHltbScraper.Logging
         [Event(
             26,
             Message = "Finished imputing",
-            Keywords = Keywords.HltbScraper | Keywords.Imputation,
+            Keywords = Keywords.Imputation,
             Level = EventLevel.Informational,
             Task = Tasks.Impute,
             Opcode = EventOpcode.Stop)]
@@ -505,11 +503,79 @@ namespace SteamHltbScraper.Logging
         [Event(
             27,
             Message = "Imputation miss of type {0}: {1} > {2}",
-            Keywords = Keywords.HltbScraper | Keywords.Imputation,
+            Keywords = Keywords.Imputation,
             Level = EventLevel.Warning)]
-        public void ImputationMiss(ImputationMissType missType, int large, int small)
+        public void ImputationMiss(string missType, int large, int small)
         {
-            WriteEvent(27, (int)missType, large, small);
+            WriteEvent(27, missType, large, small);
+        }
+
+        [Event(
+            28,
+            Message = "Start uploading TTB input to blob {0}",
+            Keywords = Keywords.Imputation | Keywords.BlobStorage | Keywords.AzureML,
+            Level = EventLevel.Informational,
+            Task = Tasks.UploadTtbToBlob,
+            Opcode = EventOpcode.Start)]
+        public void UploadTtbToBlobStart(string blobName)
+        {
+            WriteEvent(28, blobName);
+        }
+
+        [Event(
+            29,
+            Message = "Finished uploading TTB input to blob {0}",
+            Keywords = Keywords.Imputation | Keywords.BlobStorage | Keywords.AzureML,
+            Level = EventLevel.Informational,
+            Task = Tasks.UploadTtbToBlob,
+            Opcode = EventOpcode.Stop)]
+        public void UploadTtbToBlobStop(string blobName)
+        {
+            WriteEvent(29, blobName);
+        }
+
+        [Event(
+            30,
+            Message = "Start polling imputation job status",
+            Keywords = Keywords.Imputation | Keywords.Http | Keywords.AzureML,
+            Level = EventLevel.Informational,
+            Task = Tasks.PollImputationJobStatus,
+            Opcode = EventOpcode.Start)]
+        public void PollImputationJobStatusStart()
+        {
+            WriteEvent(30);
+        }
+
+        [Event(
+            31,
+            Message = "Finished polling imputation job status",
+            Keywords = Keywords.Imputation | Keywords.Http | Keywords.AzureML,
+            Level = EventLevel.Informational,
+            Task = Tasks.PollImputationJobStatus,
+            Opcode = EventOpcode.Stop)]
+        public void PollImputationJobStatusStop()
+        {
+            WriteEvent(31);
+        }
+
+        [Event(
+            32,
+            Message = "Imputation job status is: {0}",
+            Keywords = Keywords.Imputation | Keywords.AzureML,
+            Level = EventLevel.Informational)]
+        public void ExpectedPollingStatusRetrieved(string status)
+        {
+            WriteEvent(32, status);
+        }
+
+        [Event(
+            33,
+            Message = "Imputation job status is: {0} ({1})",
+            Keywords = Keywords.Imputation | Keywords.AzureML,
+            Level = EventLevel.Error)]
+        public void UnexpectedPollingStatusRetrieved(string status, string details)
+        {
+            WriteEvent(33, status, details);
         }
     }
 }

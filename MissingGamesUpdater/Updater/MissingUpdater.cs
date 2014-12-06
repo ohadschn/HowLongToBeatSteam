@@ -36,7 +36,7 @@ namespace MissingGamesUpdater.Updater
             MissingUpdaterEventSource.Log.UpdateMissingGamesStart();
 
             var steamTask = GetAllSteamApps();
-            var tableTask = TableHelper.GetAllApps(ae => ae.SteamAppId);
+            var tableTask = StorageHelper.GetAllApps(ae => ae.SteamAppId);
             
             await Task.WhenAll(steamTask, tableTask).ConfigureAwait(false);
 
@@ -49,7 +49,7 @@ namespace MissingGamesUpdater.Updater
             var updates = await SteamStoreHelper.GetStoreInformationUpdates(missingApps.Select(a => new BasicStoreInfo(a.appid, a.name, null)), s_client)
                 .ConfigureAwait(false);
 
-            await TableHelper.InsertApps(updates, 5).ConfigureAwait(false);     //we're inserting new entries, no fear of collisions 
+            await StorageHelper.InsertApps(updates, 5).ConfigureAwait(false);     //we're inserting new entries, no fear of collisions 
             MissingUpdaterEventSource.Log.UpdateMissingGamesStop();            //(even if two jobs overlap the next one will fix it)
         }
 

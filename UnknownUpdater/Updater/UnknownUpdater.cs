@@ -33,14 +33,14 @@ namespace UnknownUpdater.Updater
         {
             UnknownUpdaterEventSource.Log.UpdateUnknownAppsStart();
             
-            var apps = await TableHelper.GetAllApps(ae => ae, AppEntity.UnknownFilter, 5).ConfigureAwait(false);
+            var apps = await StorageHelper.GetAllApps(ae => ae, AppEntity.UnknownFilter, 5).ConfigureAwait(false);
             var updates = await SteamStoreHelper.GetStoreInformationUpdates(
                         apps.Select(ae => new BasicStoreInfo(ae.SteamAppId, ae.SteamName, ae.AppType)), Client).ConfigureAwait(false);
 
             UnknownUpdaterEventSource.Log.UpdateNewlyCategorizedApps(updates);
 
             var appsDict = apps.ToDictionary(ae => ae.SteamAppId);
-            await TableHelper.ExecuteAppOperations(updates,
+            await StorageHelper.ExecuteAppOperations(updates,
                     ae => new[] {TableOperation.Delete(appsDict[ae.SteamAppId]), TableOperation.Insert(ae)}, 10).ConfigureAwait(false);
 
             UnknownUpdaterEventSource.Log.UpdateUnknownAppsStop();

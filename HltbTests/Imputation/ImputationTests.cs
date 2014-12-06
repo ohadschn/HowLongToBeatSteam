@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Common.Entities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SteamHltbScraper.Imputation;
@@ -12,7 +13,7 @@ namespace HltbTests.Imputation
     public class ImputationTests
     {
         [TestMethod]
-        public void TestImputation()
+        public async Task TestImputation()
         {
             var apps = File.ReadLines("Imputation\\ttb.csv").Select(row =>
             {
@@ -21,7 +22,7 @@ namespace HltbTests.Imputation
                 return app;
             }).ToArray();
 
-            Imputer.Impute(apps, apps);
+            await Imputer.Impute(apps, apps).ConfigureAwait(false);
 
             foreach (var app in apps)
             {

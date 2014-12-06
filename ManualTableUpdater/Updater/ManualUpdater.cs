@@ -15,8 +15,8 @@ namespace ManualTableUpdater.Updater
                 //GetAppsWithStoreData().Wait();
 
                 //SiteUtil.TraceInformation("All done!");
-                //var ids = TableHelper.GetAllApps(e => e.SteamAppId, TableHelper.DoesNotStartWithFilter(TableHelper.RowKey, "Suggestion")).Result;
-                var ids = TableHelper.GetAllApps(e => e.SteamAppId).Result;
+                //var ids = StorageHelper.GetAllApps(e => e.SteamAppId, StorageHelper.DoesNotStartWithFilter(StorageHelper.RowKey, "Suggestion")).Result;
+                var ids = StorageHelper.GetAllApps(e => e.SteamAppId).Result;
                 Console.WriteLine(ids.Contains(12345));
                 Console.ReadLine();
             }
@@ -45,7 +45,7 @@ namespace ManualTableUpdater.Updater
         //    }
 
         //    SiteUtil.TraceInformation("Updating...");
-        //    TableHelper.InsertApps(games);
+        //    StorageHelper.InsertApps(games);
         //}
     }
 }

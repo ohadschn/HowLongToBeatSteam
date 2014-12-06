@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Common.Logging;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
@@ -16,6 +17,12 @@ namespace Common.Util
 
         private readonly int m_retries;
         private readonly HttpClient m_client;
+
+        public AuthenticationHeaderValue DefaultRequestAuthorization
+        {
+            get { return m_client.DefaultRequestHeaders.Authorization; }
+            set { m_client.DefaultRequestHeaders.Authorization = value; }
+        }
 
         public HttpRetryClient(int retries)
         {
@@ -51,6 +58,22 @@ namespace Common.Util
             }
 
             return RequestAsync(url, () => m_client.GetAsync(url));
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#")]
+        public Task<HttpResponseMessage> PostAsJsonAsync<T>(string requestUri, T value)
+        {
+            return PostAsJsonAsync(new Uri(requestUri), value);
+        }
+
+        public Task<HttpResponseMessage> PostAsJsonAsync<T>(Uri requestUri, T value)
+        {
+            if (requestUri == null)
+            {
+                throw new ArgumentNullException("requestUri");
+            }
+
+            return RequestAsync(requestUri, () => m_client.PostAsJsonAsync(requestUri, value));
         }
 
         private Task<HttpResponseMessage> RequestAsync(Uri uri, Func<Task<HttpResponseMessage>> requester)

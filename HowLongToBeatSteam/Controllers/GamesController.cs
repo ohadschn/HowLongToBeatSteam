@@ -45,7 +45,7 @@ namespace HowLongToBeatSteam.Controllers
             while (true)
             {
                 SiteEventSource.Log.UpdateCacheStart();
-                await TableHelper.QueryAllApps((segment, bucket) =>
+                await StorageHelper.QueryAllApps((segment, bucket) =>
                 {
                     foreach (var appEntity in segment)
                     {
@@ -100,7 +100,7 @@ namespace HowLongToBeatSteam.Controllers
         [HttpPost]
         public Task UpdateGameMapping(int steamAppId, int hltbId)
         {
-            return TableHelper.InsertSuggestion(new SuggestionEntity(steamAppId, hltbId));
+            return StorageHelper.InsertSuggestion(new SuggestionEntity(steamAppId, hltbId));
         }
 
         private static async Task<long> ResolveVanityUrl(string userVanityUrlName)

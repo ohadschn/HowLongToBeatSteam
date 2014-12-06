@@ -46,7 +46,7 @@ namespace SteamHltbScraper.Scraper
         {
             SiteUtil.SetDefaultConnectionLimit();
 
-            var allApps = (await TableHelper.GetAllApps(e => e, AppEntity.MeasuredFilter, 20).ConfigureAwait(false)).Take(ScrapingLimit).ToArray();
+            var allApps = (await StorageHelper.GetAllApps(e => e, AppEntity.MeasuredFilter, 20).ConfigureAwait(false)).Take(ScrapingLimit).ToArray();
 
             ConcurrentBag<AppEntity> updates;
             using (Client)
@@ -54,10 +54,10 @@ namespace SteamHltbScraper.Scraper
                 updates = await ScrapeHltb(allApps).ConfigureAwait(false);
             }
 
-            Imputer.Impute(allApps.ToArray(), updates.ToArray());
+            await Imputer.Impute(allApps.ToArray(), updates.ToArray()).ConfigureAwait(false);
 
             //we're using Replace since the only other update to an existing game-typed entity would have to be manual which should take precedence
-            await TableHelper.ReplaceApps(allApps, 20).ConfigureAwait(false); 
+            await StorageHelper.ReplaceApps(allApps, 20).ConfigureAwait(false); 
         }
 
         private static async Task<ConcurrentBag<AppEntity>> ScrapeHltb(IEnumerable<AppEntity> allApps)

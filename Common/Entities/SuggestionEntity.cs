@@ -25,7 +25,7 @@ namespace Common.Entities
 
         public static string NotSuggestionFilter
         {
-            get { return TableHelper.DoesNotStartWithFilter(TableHelper.RowKey, "Suggestion"); }
+            get { return StorageHelper.DoesNotStartWithFilter(StorageHelper.RowKey, "Suggestion"); }
         }
     }
 }

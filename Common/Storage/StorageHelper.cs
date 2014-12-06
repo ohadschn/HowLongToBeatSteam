@@ -9,18 +9,19 @@ using Common.Entities;
 using Common.Logging;
 using Common.Util;
 using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Common.Storage
 {
-    public static class TableHelper
+    public static class StorageHelper
     {
         public const string PartitionKey = "PartitionKey";
         public const string RowKey = "RowKey";
 
         private const int MaxBatchOperations = 100;
-        public static readonly string TableStorageConnectionString = ConfigurationManager.ConnectionStrings["Hltbs"].ConnectionString;
+        public static readonly string AzureStorageConnectionString = ConfigurationManager.ConnectionStrings["Hltbs"].ConnectionString;
         private static readonly string SteamToHltbTableName = ConfigurationManager.AppSettings["SteamToHltbTableName"];
         
         private static readonly TimeSpan DefaultDeltaBackoff = TimeSpan.FromSeconds(4);
@@ -175,12 +176,22 @@ namespace Common.Storage
 
         private static CloudTableClient GetCloudTableClient(int retries)
         {
-            var cloudTableClient = CloudStorageAccount.Parse(TableStorageConnectionString).CreateCloudTableClient();
+            var cloudTableClient = CloudStorageAccount.Parse(AzureStorageConnectionString).CreateCloudTableClient();
             if (retries >= 0)
             {
                 cloudTableClient.RetryPolicy = new ExponentialRetry(DefaultDeltaBackoff, retries);
             }
             return cloudTableClient;
+        }
+
+        public static CloudBlobClient GetCloudBlobClient(int retries)
+        {
+            var cloudBlobClient = CloudStorageAccount.Parse(AzureStorageConnectionString).CreateCloudBlobClient();
+            if (retries >= 0)
+            {
+                cloudBlobClient.RetryPolicy = new ExponentialRetry(DefaultDeltaBackoff, retries);
+            }
+            return cloudBlobClient;
         }
 
         private static string IncrementLastChar(string str)

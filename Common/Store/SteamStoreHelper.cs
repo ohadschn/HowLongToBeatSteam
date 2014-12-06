@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -16,15 +15,7 @@ namespace Common.Store
     public static class SteamStoreHelper
     {
         private const string SteamStoreApiUrlTemplate = "http://store.steampowered.com/api/appdetails/?appids={0}";
-        private static readonly int MaxSteamStoreIdsPerRequest = GetOptionalIntFromConfig("MaxSteamStoreIdsPerRequest", 50);
-
-        private static int GetOptionalIntFromConfig(string keyName, int defaultValue)
-        {
-            int val;
-            return int.TryParse(ConfigurationManager.AppSettings[keyName], out val)
-                ? val
-                : defaultValue;
-        }
+        private static readonly int MaxSteamStoreIdsPerRequest = SiteUtil.GetOptionalValueFromConfig("MaxSteamStoreIdsPerRequest", 50);
 
         public static async Task<ConcurrentBag<AppEntity>> GetStoreInformationUpdates(IEnumerable<BasicStoreInfo> missingApps, HttpRetryClient client)
         {

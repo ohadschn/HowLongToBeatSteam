@@ -34,12 +34,12 @@ namespace Common.Entities
 
         public static string MeasuredFilter
         {
-            get { return TableHelper.StartsWithFilter(TableHelper.RowKey, MeasuredKey); }
+            get { return StorageHelper.StartsWithFilter(StorageHelper.RowKey, MeasuredKey); }
         }
 
         public static string UnknownFilter
         {
-            get { return TableHelper.StartsWithFilter(TableHelper.RowKey, String.Format(CultureInfo.InvariantCulture, "{0}_{1}", UnmeasuredKey, UnknownType)); }
+            get { return StorageHelper.StartsWithFilter(StorageHelper.RowKey, String.Format(CultureInfo.InvariantCulture, "{0}_{1}", UnmeasuredKey, UnknownType)); }
         }
 
         public AppEntity(int steamAppId, string steamName, string appType) : base(
