@@ -49,6 +49,7 @@ namespace Common.Storage
         {
             rowFilter = rowFilter ?? SuggestionEntity.NotSuggestionFilter;
             var table = GetCloudTableClient(retries).GetTableReference(SteamToHltbTableName);
+            await table.CreateIfNotExistsAsync().ConfigureAwait(false);
 
             await Enumerable.Range(0, AppEntity.Buckets).ForEachAsync(AppEntity.Buckets, async bucket =>
             {
@@ -93,6 +94,7 @@ namespace Common.Storage
         {
             CommonEventSource.Log.ExecuteOperationsStart();
             var table = GetCloudTableClient(retries).GetTableReference(SteamToHltbTableName);
+            await table.CreateIfNotExistsAsync().ConfigureAwait(false);
 
             await SplitToBatchOperations(apps, operationGenerator).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, async tboi =>
             {
@@ -114,6 +116,7 @@ namespace Common.Storage
             }
 
             var table = GetCloudTableClient(retries).GetTableReference(SteamToHltbTableName);
+            await table.CreateIfNotExistsAsync().ConfigureAwait(false);
 
             CommonEventSource.Log.InsertSuggestionStart(suggestion.SteamAppId, suggestion.HltbId);
             await table.ExecuteAsync(TableOperation.InsertOrReplace(suggestion)).ConfigureAwait(false);
