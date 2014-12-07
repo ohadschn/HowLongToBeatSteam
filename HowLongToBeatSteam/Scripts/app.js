@@ -31,7 +31,8 @@ function Game(steamGame) {
     self.steamPlaytime = steamGame.Playtime;
 
     self.hltbInfo = {
-        id: self.known ? steamGame.HltbInfo.Id : "",
+        originalId: self.known ? steamGame.HltbInfo.Id : "",
+        id: ko.observable(self.known ? steamGame.HltbInfo.Id : ""),
         name: ko.observable(self.known ? steamGame.HltbInfo.Name : "Unknown, please update"), //we'll abuse this for update status
         mainTtb: steamGame.HltbInfo.MainTtb,
         mainTtbImputed: steamGame.HltbInfo.MainTtbImputed,
@@ -201,7 +202,7 @@ function AppViewModel(id) {
                 })
                 .fail(function(error) {
                     console.error(error);
-                    self.error("Verify your Steam64Id and try again");
+                    self.error("Verify your Steam profile ID and make sure it is public in your Steam profile settings");
                     self.processing(false);
                     $('#workingModal').modal("hide");
                 });
@@ -213,7 +214,7 @@ function AppViewModel(id) {
     self.updateHltb = function (game) {
         game.hltbInfo.name("Updating...");
         game.updatePhase(GameUpdatePhase.InProgress);
-        $.post("api/games/update/" + game.steamAppId + "/" + game.hltbInfo.id)
+        $.post("api/games/update/" + game.steamAppId + "/" + game.hltbInfo.id())
             .done(function() {
                 game.hltbInfo.name("Update submitted for approval, please check back later");
                 game.updatePhase(GameUpdatePhase.Success);
@@ -244,7 +245,7 @@ $(document).ready(function () {
         window.console = { log: noOp, warn: noOp, error: noOp };
     }
 
-    $('#remainingTableHeaderInfoSpan').tooltip();
+    $('[data-toggle="tooltip"]').tooltip();
     $('#steamIdText').focus();
 
     var id = getParameterByName("id");

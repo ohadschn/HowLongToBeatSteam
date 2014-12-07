@@ -20,14 +20,12 @@
         <div class="page-header">
             <h1>How Long To Beat Steam</h1>
         </div>
-        <ol>
-            <li>Make sure you Steam profile is <a href="https://www.google.com/search?q=steam%20public%20profile" target="_blank">public</a></li>
-            <li>Fill out your <abbr title="The name that appears at the top of your Steam profile page">Steam profile ID</abbr> in the text box below</li>
-            <li>Hit the button or press <kbd>Enter</kbd></li>
-        </ol>
-        <br />
         <form data-bind="submit: howlongClicked" role="form" class="form-inline">
             <div data-bind="css: (badSteamVanityUrlName() ? 'has-error ' : '') + 'has-feedback form-group'">
+                <span class="glyphicon glyphicon glyphicon-question-sign"
+                      data-placement="bottom"
+                      data-toggle="tooltip"
+                      title="Your Profile ID is the name that appears at the top of your Steam profile page"></span>
                 <label class="control-label sr-only" for="steamIdText">Input with success</label>
                 <input type="text" data-bind="value: steamVanityUrlName" placeholder="Profile ID" id="steamIdText" class="form-control">
                 <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: badSteamVanityUrlName"></span>
@@ -95,11 +93,11 @@
                         <a data-bind="text: $data.hltbInfo.name, attr: {href: $data.hltbInfo.hltbUrl}, visible: updatePhase() == GameUpdatePhase.None" target="_blank"></a>
                         <span data-bind="text:$data.hltbInfo.name, visible: updatePhase() != GameUpdatePhase.None"></span>
                     </td>
-                    <td class="vcenter" data-bind="visible: $parent.allowUpdate($data)">
-                        <input type="text" class="input-short" data-bind="value:$data.hltbInfo.id" placeholder="?" />
-                    </td>
-                    <td class="vcenter" data-bind="visible: $parent.allowUpdate($data)">
-                        <button class="btn btn-info btn-sm" data-bind="click: $parent.updateHltb">Update</button>
+                    <td class="vcenter" data-bind="visible: $parent.allowUpdate($data)" colspan="2">
+                        <form role="form">
+                            <input type="text" class="input-short" data-bind="value:$data.hltbInfo.id, valueUpdate:'afterkeydown'" placeholder="?" />
+                            <button type="submit" class="btn btn-info btn-sm" data-bind="click: $parent.updateHltb, enable: $data.hltbInfo.id() != $data.hltbInfo.originalId">Update</button>
+                        </form>
                     </td>
                 </tr>
                 <!-- /ko -->
@@ -116,7 +114,6 @@
                 <tr class="success">
                     <th colspan="2">
                         Remaining <span class="glyphicon glyphicon-info-sign"
-                                        id="remainingTableHeaderInfoSpan"
                                         data-placement="right"
                                         data-toggle="tooltip"
                                         data-container="body"
