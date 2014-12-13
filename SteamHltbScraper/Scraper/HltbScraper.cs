@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -30,6 +31,7 @@ namespace SteamHltbScraper.Scraper
 
         private static void Main()
         {
+            EventSource.SetCurrentThreadActivityId(Guid.NewGuid());
             try
             {
                 MainAsync().Wait();

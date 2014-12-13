@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Threading.Tasks;
 using Common.Logging;
@@ -17,6 +18,7 @@ namespace MissingGamesUpdater.Updater
 
         static void Main()
         {
+            EventSource.SetCurrentThreadActivityId(Guid.NewGuid());
             try
             {
                 SiteUtil.SetDefaultConnectionLimit();

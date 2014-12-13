@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -44,6 +45,8 @@ namespace HowLongToBeatSteam.Controllers
         {
             while (true)
             {
+                EventSource.SetCurrentThreadActivityId(Guid.NewGuid());
+
                 SiteEventSource.Log.UpdateCacheStart();
                 await StorageHelper.QueryAllApps((segment, bucket) =>
                 {
@@ -63,6 +66,8 @@ namespace HowLongToBeatSteam.Controllers
         [Route("library/{userVanityUrlName:minlength(1)}")]
         public async Task<OwnedGamesInfo> GetGames(string userVanityUrlName)
         {
+            EventSource.SetCurrentThreadActivityId(Guid.NewGuid());
+
             SiteEventSource.Log.HandleGetGamesRequestStart(userVanityUrlName);
 
             long steamId = await ResolveVanityUrl(userVanityUrlName).ConfigureAwait(true);
@@ -100,6 +105,7 @@ namespace HowLongToBeatSteam.Controllers
         [HttpPost]
         public Task UpdateGameMapping(int steamAppId, int hltbId)
         {
+            EventSource.SetCurrentThreadActivityId(Guid.NewGuid());
             return StorageHelper.InsertSuggestion(new SuggestionEntity(steamAppId, hltbId));
         }
 
