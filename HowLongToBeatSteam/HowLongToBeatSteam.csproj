@@ -102,6 +102,12 @@
     <Content Include="Scripts\app.min.js">
       <DependentUpon>app.js</DependentUpon>
     </Content>
+    <Content Include="Scripts\knockout-datatable.js">
+      <DependentUpon>knockout-datatable.coffee</DependentUpon>
+    </Content>
+    <Content Include="Scripts\knockout-datatable.min.js">
+      <DependentUpon>knockout-datatable.js</DependentUpon>
+    </Content>
     <Content Include="Styles\hltbs.css" />
     <Content Include="Styles\hltbs.min.css">
       <DependentUpon>hltbs.css</DependentUpon>
@@ -131,6 +137,13 @@
       <DependentUpon>app.min.js</DependentUpon>
     </Content>
     <None Include="Properties\PublishProfiles\howlongtobeatsteam.pubxml" />
+    <Content Include="Scripts\knockout-datatable.coffee" />
+    <Content Include="Scripts\knockout-datatable.js.map">
+      <DependentUpon>knockout-datatable.js</DependentUpon>
+    </Content>
+    <Content Include="Scripts\knockout-datatable.min.js.map">
+      <DependentUpon>knockout-datatable.min.js</DependentUpon>
+    </Content>
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

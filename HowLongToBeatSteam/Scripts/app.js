@@ -1,4 +1,5 @@
 ﻿/*global ko*/
+/*global DataTable*/
 
 var getHours = function (minutes, digits) { // jshint ignore:line
     if (digits === undefined) {
@@ -28,23 +29,26 @@ function Game(steamGame) {
 
     self.steamAppId = steamGame.SteamAppId;
     self.steamName = steamGame.SteamName;
+    
     self.steamPlaytime = steamGame.Playtime;
+    self.steamUrl = "http://store.steampowered.com/app/" + steamGame.SteamAppId;
 
-    self.hltbInfo = {
-        originalId: self.known ? steamGame.HltbInfo.Id : "",
-        id: ko.observable(self.known ? steamGame.HltbInfo.Id : ""),
-        name: ko.observable(self.known ? steamGame.HltbInfo.Name : "Unknown, please update"), //we'll abuse this for update status
-        mainTtb: steamGame.HltbInfo.MainTtb,
-        mainTtbImputed: steamGame.HltbInfo.MainTtbImputed,
-        extrasTtb: steamGame.HltbInfo.ExtrasTtb,
-        extrasTtbImputed: steamGame.HltbInfo.ExtrasTtbImputed,
-        completionistTtb: steamGame.HltbInfo.CompletionistTtb,
-        completionistTtbImputed: steamGame.HltbInfo.CompletionistTtbImputed,
-        steamUrl: "http://store.steampowered.com/app/" + steamGame.SteamAppId,
-        hltbUrl: self.known 
-                ? "http://www.howlongtobeat.com/game.php?id=" + steamGame.HltbInfo.Id
-                : "http://www.howlongtobeat.com",
-    };
+    self.hltbOriginalId= self.known ? steamGame.HltbInfo.Id : "";
+    self.hltbId = ko.observable(self.known ? steamGame.HltbInfo.Id : "");
+    self.hltbName = ko.observable(self.known ? steamGame.HltbInfo.Name : "Unknown; please update"); //we'll abuse this for update status
+    self.hltbMainTtb = steamGame.HltbInfo.MainTtb;
+    self.hltbMainTtbImputed = steamGame.HltbInfo.MainTtbImputed;
+    self.hltbExtrasTtb = steamGame.HltbInfo.ExtrasTtb;
+    self.hltbExtrasTtbImputed = steamGame.HltbInfo.ExtrasTtbImputed;
+    self.hltbCompletionistTtb = steamGame.HltbInfo.CompletionistTtb;
+    self.hltbCompletionistTtbImputed = steamGame.HltbInfo.CompletionistTtbImputed;
+    self.hltbUrl = self.known
+        ? "http://www.howlongtobeat.com/game.php?id=" + steamGame.HltbInfo.Id
+        : "http://www.howlongtobeat.com";
+}
+
+Game.prototype.match = function(filter) {
+    return this.steamName.toLowerCase().indexOf(filter.toLowerCase()) != -1;
 }
 
 function AppViewModel(id) {
@@ -57,7 +61,18 @@ function AppViewModel(id) {
         self.badSteamVanityUrlName(false);
     });
 
-    self.games = ko.observableArray();
+    var tableOptions = {
+        recordWord: 'game',
+        sortDir: 'asc',
+        sortField: 'steamName',
+        perPage: 50,
+        unsortedClass: "glyphicon glyphicon-sort",
+        ascSortClass: "glyphicon glyphicon-sort-by-attributes",
+        descSortClass: "glyphicon glyphicon-sort-by-attributes-alt"
+    };
+
+    self.gameTable = new DataTable([], tableOptions);
+    self.pageSizeOptions =  [25, 50, 100];
 
     self.partialCache = ko.observable(false);
     self.processing = ko.observable(false);
@@ -71,7 +86,7 @@ function AppViewModel(id) {
 
     self.toggleAllChecked = ko.observable(true);
     self.toggleAllCore = function(include) {
-        ko.utils.arrayForEach(self.games(), function(game) {
+        ko.utils.arrayForEach(self.gameTable.rows(), function(game) {
             game.included(include);
         });
     };
@@ -86,7 +101,7 @@ function AppViewModel(id) {
 
     self.toggleAll = function () {
         var include = !self.toggleAllChecked(); //binding is one way (workaround KO issue) so toggleAllChecked still has its old value
-        if (self.games().length < 100) {
+        if (self.gameTable.rows().length < 100) {
             self.toggleAllCore(include);
             return true;
         }
@@ -111,13 +126,13 @@ function AppViewModel(id) {
         var mainRemaining = 0;
         var extrasRemaining = 0;
         var completionistRemaining = 0;
-        var length = self.games().length;
-        var arr = self.games();
+        var length = self.gameTable.filteredRows().length;
+        var arr = self.gameTable.filteredRows();
 
         for (var i = 0; i < length; ++i) {
             var game = arr[i];
             missingIdsCount += !game.known;
-            imputedCount += (game.hltbInfo.mainTtbImputed || game.hltbInfo.extrasTtbImputed || game.hltbInfo.completionistTtbImputed) ? 1 : 0;
+            imputedCount += (game.hltbMainTtbImputed || game.hltbExtrasTtbImputed || game.hltbCompletionistTtbImputed) ? 1 : 0;
 
             if (!game.included()) {
                 continue;
@@ -125,12 +140,12 @@ function AppViewModel(id) {
 
             count++;
             totalPlaytime += game.steamPlaytime;
-            totalMain += game.hltbInfo.mainTtb;
-            totalExtras += game.hltbInfo.extrasTtb;
-            totalCompletionist += game.hltbInfo.completionistTtb;
-            mainRemaining += Math.max(0, game.hltbInfo.mainTtb - game.steamPlaytime);
-            extrasRemaining += Math.max(0, game.hltbInfo.extrasTtb - game.steamPlaytime);
-            completionistRemaining += Math.max(0, game.hltbInfo.completionistTtb - game.steamPlaytime);
+            totalMain += game.hltbMainTtb;
+            totalExtras += game.hltbExtrasTtb;
+            totalCompletionist += game.hltbCompletionistTtb;
+            mainRemaining += Math.max(0, game.hltbMainTtb - game.steamPlaytime);
+            extrasRemaining += Math.max(0, game.hltbExtrasTtb - game.steamPlaytime);
+            completionistRemaining += Math.max(0, game.hltbCompletionistTtb - game.steamPlaytime);
         }
 
         if (count === length) {
@@ -179,7 +194,7 @@ function AppViewModel(id) {
                 return;
             }
 
-            ko.utils.arrayPushAll(self.games, toAdd);
+            ko.utils.arrayPushAll(self.gameTable.rows, toAdd);
             setTimeout(function () {
                 updateGames(games, total);
             }, 0);
@@ -207,21 +222,21 @@ function AppViewModel(id) {
                     $('#workingModal').modal("hide");
                 });
 
-            self.games([]); //do this after AJAX call has been made
+            self.gameTable.rows([]); //do this after AJAX call has been made
         }, 0);
     };
 
     self.updateHltb = function (game) {
-        game.hltbInfo.name("Updating...");
+        game.hltbName("Updating...");
         game.updatePhase(GameUpdatePhase.InProgress);
-        $.post("api/games/update/" + game.steamAppId + "/" + game.hltbInfo.id())
+        $.post("api/games/update/" + game.steamAppId + "/" + game.hltbId())
             .done(function() {
-                game.hltbInfo.name("Update submitted for approval, please check back later");
+                game.hltbName("Update submitted for approval, please check back later");
                 game.updatePhase(GameUpdatePhase.Success);
             })
             .fail(function(error) {
                 console.error(error);
-                game.hltbInfo.name("Update failed, please verify the HLTB ID");
+                game.hltbName("Update failed, please verify the HLTB ID");
                 game.updatePhase(GameUpdatePhase.Failure);
             });
     };
