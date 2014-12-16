@@ -32,6 +32,9 @@ table tbody tr td.vcenter {
 .rightMargin {
     margin-right: 5px;
 }
+.no-top-margin {
+    margin-top: 0;
+}
 .sortable {
     cursor: pointer;
     -webkit-touch-callout: none;

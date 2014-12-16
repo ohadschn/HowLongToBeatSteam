@@ -8,9 +8,17 @@ var getHours = function (minutes, digits) { // jshint ignore:line
     var hours = Math.max(minutes, 0) / 60;
     return +hours.toFixed(digits);
 };
+
 var numberWithCommas = function (x) { // jshint ignore:line
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
+
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
+    var results = regex.exec(location.search);
+    return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
 
 var GameUpdatePhase = {
     None: "None",
@@ -47,9 +55,9 @@ function Game(steamGame) {
         : "http://www.howlongtobeat.com";
 }
 
-Game.prototype.match = function(filter) {
-    return this.steamName.toLowerCase().indexOf(filter.toLowerCase()) != -1;
-}
+Game.prototype.match = function(filter) { //define in prototype to prevent memory footprint on each instance
+    return this.steamName.toLowerCase().indexOf(filter.toLowerCase()) !== -1;
+};
 
 function AppViewModel(id) {
     var self = this;
@@ -72,12 +80,11 @@ function AppViewModel(id) {
     };
 
     self.gameTable = new DataTable([], tableOptions);
-    self.pageSizeOptions =  [25, 50, 100];
+    self.pageSizeOptions =  [10, 25, 50];
 
     self.partialCache = ko.observable(false);
     self.processing = ko.observable(false);
     self.error = ko.observable(null);
-    self.modelText = ko.observable('Working...');
 
     self.missingIdsAlertHidden = ko.observable(false);
     self.partialCacheAlertHidden = ko.observable(false);
@@ -85,33 +92,16 @@ function AppViewModel(id) {
     self.imputedAlertHidden = ko.observable(false);
 
     self.toggleAllChecked = ko.observable(true);
+
     self.toggleAllCore = function(include) {
         ko.utils.arrayForEach(self.gameTable.rows(), function(game) {
             game.included(include);
         });
     };
 
-    var doModalWork = function(func) {
-        $('#workingModal').modal();
-        setTimeout(function() {
-            func();
-            $('#workingModal').modal("hide");
-        }, 50);
-    };
-
     self.toggleAll = function () {
-        var include = !self.toggleAllChecked(); //binding is one way (workaround KO issue) so toggleAllChecked still has its old value
-        if (self.gameTable.rows().length < 100) {
-            self.toggleAllCore(include);
-            return true;
-        }
-
-        self.modelText("Toggling...");
-        doModalWork(function () {
-            self.toggleAllCore(include);
-        });
-
-        return false;
+        self.toggleAllCore(!self.toggleAllChecked()); //binding is one way (workaround KO issue) so toggleAllChecked still has its old value
+        return true;
     };
 
     self.total = ko.pureComputed(function () {
@@ -166,7 +156,7 @@ function AppViewModel(id) {
             extrasRemaining: extrasRemaining,
             completionistRemaining: completionistRemaining,
         };
-    });
+    }).extend({ rateLimit: 0 });
 
     self.howlongClicked = function () {
         if (self.steamVanityUrlName().length === 0) {
@@ -184,46 +174,18 @@ function AppViewModel(id) {
         self.errorAlertHidden(false);
         self.imputedAlertHidden(false);
 
-        var updateGames = function (games, total) {
-            var toAdd = games.splice(0, 50);
-            self.modelText(games.length === 0 ? "Generating game table..." : "Loading games " + (total - games.length) + " / " + total);
-
-            if (toAdd.length === 0) {
+        $.get("api/games/library/" + self.steamVanityUrlName())
+            .done(function(data) {
+                self.partialCache(data.PartialCache);
+                self.gameTable.rows(ko.utils.arrayMap(data.Games, function(steamGame) { return new Game(steamGame); }));
+            })
+            .fail(function(error) {
+                console.error(error);
+                self.error("Verify your Steam profile ID and make sure it is public in your Steam profile settings");
+            })
+            .always(function() {
                 self.processing(false);
-                $('#workingModal').modal("hide");
-                return;
-            }
-
-            ko.utils.arrayPushAll(self.gameTable.rows, toAdd);
-            setTimeout(function () {
-                updateGames(games, total);
-            }, 0);
-        };
-        
-        self.modelText("Retrieving games...");
-        $('#workingModal').modal();
-
-        setTimeout(function() { //let modal kick in
-            $.get("api/games/library/" + self.steamVanityUrlName())
-                .done(function(data) {
-                    self.partialCache(data.PartialCache);
-                    data.Games.sort(function(a, b) {
-                        var aName = a.SteamName.toLowerCase();
-                        var bName = b.SteamName.toLowerCase();
-                        return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0));
-                    });
-                    var games = ko.utils.arrayMap(data.Games, function(steamGame) { return new Game(steamGame); });
-                    updateGames(games, games.length);
-                })
-                .fail(function(error) {
-                    console.error(error);
-                    self.error("Verify your Steam profile ID and make sure it is public in your Steam profile settings");
-                    self.processing(false);
-                    $('#workingModal').modal("hide");
-                });
-
-            self.gameTable.rows([]); //do this after AJAX call has been made
-        }, 0);
+            });
     };
 
     self.updateHltb = function (game) {
@@ -244,13 +206,6 @@ function AppViewModel(id) {
     self.allowUpdate = function(game) { //defined on view model to avoid multiple definitions (one for each game in array)
         return (game.updatePhase() === GameUpdatePhase.None) || (game.updatePhase() === GameUpdatePhase.Failure);
     };
-}
-
-function getParameterByName(name) {
-    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
-    var results = regex.exec(location.search);
-    return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
 $(document).ready(function () {
