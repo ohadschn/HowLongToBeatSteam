@@ -86,10 +86,8 @@ function AppViewModel(id) {
     self.processing = ko.observable(false);
     self.error = ko.observable(null);
 
-    self.missingIdsAlertHidden = ko.observable(false);
-    self.partialCacheAlertHidden = ko.observable(false);
+    self.alertHidden = ko.observable(false);
     self.errorAlertHidden = ko.observable(false);
-    self.imputedAlertHidden = ko.observable(false);
 
     self.toggleAllChecked = ko.observable(true);
 
@@ -169,10 +167,8 @@ function AppViewModel(id) {
 
         self.processing(true);
         self.partialCache(false);
-        self.missingIdsAlertHidden(false);
-        self.partialCacheAlertHidden(false);
+        self.alertHidden(false);
         self.errorAlertHidden(false);
-        self.imputedAlertHidden(false);
 
         $.get("api/games/library/" + self.steamVanityUrlName())
             .done(function(data) {
@@ -181,7 +177,8 @@ function AppViewModel(id) {
             })
             .fail(function(error) {
                 console.error(error);
-                self.error("Verify your Steam profile ID and make sure it is public in your Steam profile settings");
+                self.gameTable.rows([]);
+                self.error('Verify your Steam profile ID and make sure it is set to "public" in your Steam profile settings');
             })
             .always(function() {
                 self.processing(false);
