@@ -1,0 +1,25 @@
+{
+    "name": "HowLongToBeatSteam",
+    "version": "1.0.0.0",
+    "authors": [
+        "Ohad Schneider <ohad188@gmail.com>"
+    ],
+    "description": "Calculate how long it would take to beat your entire Steam library",
+    "main": "HowLongToBeatSteam.csproj",
+    "keywords": [
+        "Steam"
+    ],
+    "license": "Commercial",
+    "homepage": "ohadsc.wordpress.com",
+    "private": true,
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests"
+    ],
+    "dependencies": {
+        "knockout-datatable": ">=0.5.0"
+  }
+}

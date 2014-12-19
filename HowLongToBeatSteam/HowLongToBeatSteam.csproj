@@ -90,8 +90,12 @@
     <CodeAnalysisDictionary Include="..\CustomDictionary.xml">
       <Link>Properties\CustomDictionary.xml</Link>
     </CodeAnalysisDictionary>
+    <Content Include="bower_components\knockout-datatable\knockout-datatable.js" />
+    <Content Include="bower_components\knockout-datatable\knockout-datatable.min.js" />
     <Content Include="Global.asax" />
     <Content Include="Index.html" />
+    <Content Include="bower.json" />
+    <Content Include="bower_components\knockout-datatable\knockout-datatable.min.js.map" />
     <None Include="Intellisense\jquery-2.1.0-vsdoc.js" />
     <None Include="Intellisense\bootstrap-3.2.0.css" />
     <None Include="Intellisense\bootstrap-3.2.0-tooltip.js" />
@@ -101,12 +105,6 @@
     <Content Include="Scripts\app.js" />
     <Content Include="Scripts\app.min.js">
       <DependentUpon>app.js</DependentUpon>
-    </Content>
-    <Content Include="Scripts\knockout-datatable.js">
-      <DependentUpon>knockout-datatable.coffee</DependentUpon>
-    </Content>
-    <Content Include="Scripts\knockout-datatable.min.js">
-      <DependentUpon>knockout-datatable.js</DependentUpon>
     </Content>
     <Content Include="Styles\hltbs.css" />
     <Content Include="Styles\hltbs.min.css">
@@ -137,13 +135,6 @@
       <DependentUpon>app.min.js</DependentUpon>
     </Content>
     <None Include="Properties\PublishProfiles\howlongtobeatsteam.pubxml" />
-    <Content Include="Scripts\knockout-datatable.coffee" />
-    <Content Include="Scripts\knockout-datatable.js.map">
-      <DependentUpon>knockout-datatable.js</DependentUpon>
-    </Content>
-    <Content Include="Scripts\knockout-datatable.min.js.map">
-      <DependentUpon>knockout-datatable.min.js</DependentUpon>
-    </Content>
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
