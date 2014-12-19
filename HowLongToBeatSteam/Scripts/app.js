@@ -83,6 +83,9 @@ function AppViewModel(id) {
     self.pageSizeOptions =  [10, 25, 50];
 
     self.partialCache = ko.observable(false);
+    self.imputedTtbs = ko.observable(false);
+    self.missingHltbIds = ko.observable(false);
+
     self.processing = ko.observable(false);
     self.error = ko.observable(null);
 
@@ -105,8 +108,6 @@ function AppViewModel(id) {
     self.total = ko.pureComputed(function () {
 
         var count = 0;
-        var missingIdsCount = 0;
-        var imputedCount = 0;
         var totalPlaytime = 0;
         var totalMain = 0;
         var totalExtras = 0;
@@ -119,8 +120,6 @@ function AppViewModel(id) {
 
         for (var i = 0; i < length; ++i) {
             var game = arr[i];
-            missingIdsCount += !game.known;
-            imputedCount += (game.hltbMainTtbImputed || game.hltbExtrasTtbImputed || game.hltbCompletionistTtbImputed) ? 1 : 0;
 
             if (!game.included()) {
                 continue;
@@ -144,8 +143,6 @@ function AppViewModel(id) {
 
         return {
             count: count,
-            missingIds: missingIdsCount > 0,
-            imputedCount: imputedCount,
             totalPlaytime: totalPlaytime,
             totalMain: totalMain,
             totalExtras: totalExtras,
@@ -167,13 +164,25 @@ function AppViewModel(id) {
 
         self.processing(true);
         self.partialCache(false);
+        self.imputedTtbs(false);
+        self.missingHltbIds(false);
         self.alertHidden(false);
         self.errorAlertHidden(false);
 
         $.get("api/games/library/" + self.steamVanityUrlName())
             .done(function(data) {
                 self.partialCache(data.PartialCache);
-                self.gameTable.rows(ko.utils.arrayMap(data.Games, function(steamGame) { return new Game(steamGame); }));
+                self.gameTable.rows(ko.utils.arrayMap(data.Games, function(steamGame) {
+                    var game = new Game(steamGame);
+                    if (!game.known) {
+                        self.missingHltbIds(true);
+                        self.imputedTtbs(true);
+                    }
+                    else if (game.hltbMainTtbImputed || game.hltbExtrasTtbImputed || game.hltbCompletionistTtbImputed) {
+                        self.imputedTtbs(true);
+                    }
+                    return game;
+                }));
             })
             .fail(function(error) {
                 console.error(error);

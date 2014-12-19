@@ -32,16 +32,16 @@
             </button>
             <strong>Error</strong> <span data-bind="text: error"></span>
         </div>
-        <div class="alert alert-info alert-dismissible" role="alert" 
-             data-bind="visible: (partialCache() || total().missingIds || total().imputedCount > 0) && !alertHidden()">
+        <div class="alert alert-info alert-dismissible" role="alert"
+             data-bind="visible: (partialCache() || missingHltbIds() || imputedTtbs()) && !alertHidden()">
             <button type="button" class="close" data-bind="click: function() {alertHidden(true); }">
                 <span aria-hidden="true">&times;</span>
                 <span class="sr-only">Close</span>
             </button>
             <ul>
                 <li data-bind="visible: partialCache">Some games <strong>haven't been processed</strong> by the site's engine yet, please check back later (games that have been removed from the Steam store are not supported).</li>
-                <li data-bind="visible: total().missingIds">Some games are <strong>missing their <abbr title="HowLongToBeat">HLTB</abbr> IDs</strong> - please locate them on HLTB and update their IDs (embedded in the URL: http://www.howlongtobeat.com/game.php?id=<mark>XXXX</mark>)</li>
-                <li data-bind="visible: total().imputedCount > 0">Some play times were missing from <abbr title="HowLongToBeat">HLTB</abbr> and were therefore <a href="http://en.wikipedia.org/wiki/Imputation_%28statistics%29" class="alert-link" target="_blank">statistically imputed</a>. Imputed values are <span class="emphasized">italicized</span>.</li>
+                <li data-bind="visible: missingHltbIds">Some games are <strong>missing their <abbr title="HowLongToBeat">HLTB</abbr> IDs</strong> - please locate them on HLTB and update their IDs (embedded in the URL: http://www.howlongtobeat.com/game.php?id=<mark>XXXX</mark>)</li>
+                <li data-bind="visible: imputedTtbs">Some play times were missing from <abbr title="HowLongToBeat">HLTB</abbr> and were therefore <a href="http://en.wikipedia.org/wiki/Imputation_%28statistics%29" class="alert-link" target="_blank">statistically imputed</a>. Imputed values are <span class="emphasized">italicized</span>.</li>
             </ul>
         </div>
         <div data-bind="with: gameTable, visible: gameTable.rows().length>0 && !processing()">
