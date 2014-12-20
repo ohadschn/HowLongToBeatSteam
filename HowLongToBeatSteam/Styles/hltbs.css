@@ -19,6 +19,9 @@ table tbody tr td.vcenter {
 .input-short {
     width: 60px;
 }
+.input-long {
+    width: 300px !important;
+}
 .strikeThrough {
     text-decoration: line-through;
 }

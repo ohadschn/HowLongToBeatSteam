@@ -89,7 +89,7 @@ function AppViewModel(id) {
     self.processing = ko.observable(false);
     self.error = ko.observable(null);
 
-    self.alertHidden = ko.observable(false);
+    self.alertHidden = ko.observable(true);
     self.errorAlertHidden = ko.observable(false);
 
     self.toggleAllChecked = ko.observable(true);
@@ -197,7 +197,7 @@ function AppViewModel(id) {
         self.partialCache(false);
         self.imputedTtbs(false);
         self.missingHltbIds(false);
-        self.alertHidden(false);
+        self.alertHidden(true);
         self.errorAlertHidden(false);
 
         $.get("api/games/library/" + self.steamVanityUrlName())
@@ -216,9 +216,10 @@ function AppViewModel(id) {
                 }));
                 setTimeout(function() {
                     $('html, body').animate({
-                        scrollTop: $("#chartContainer").offset().top
+                        scrollTop: $("#alertContainer").offset().top - 10
                     }, 2000);
                 }, 0);
+                self.alertHidden(false);
             })
             .fail(function(error) {
                 console.error(error);
