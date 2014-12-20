@@ -108,10 +108,10 @@ function AppViewModel(id) {
     self.total = ko.pureComputed(function () {
 
         var count = 0;
-        var totalPlaytime = 0;
-        var totalMain = 0;
-        var totalExtras = 0;
-        var totalCompletionist = 0;
+        var playTime = 0;
+        var mainTtb = 0;
+        var extrasTtb = 0;
+        var completionistTtb = 0;
         var mainRemaining = 0;
         var extrasRemaining = 0;
         var completionistRemaining = 0;
@@ -126,10 +126,10 @@ function AppViewModel(id) {
             }
 
             count++;
-            totalPlaytime += game.steamPlaytime;
-            totalMain += game.hltbMainTtb;
-            totalExtras += game.hltbExtrasTtb;
-            totalCompletionist += game.hltbCompletionistTtb;
+            playTime += game.steamPlaytime;
+            mainTtb += game.hltbMainTtb;
+            extrasTtb += game.hltbExtrasTtb;
+            completionistTtb += game.hltbCompletionistTtb;
             mainRemaining += Math.max(0, game.hltbMainTtb - game.steamPlaytime);
             extrasRemaining += Math.max(0, game.hltbExtrasTtb - game.steamPlaytime);
             completionistRemaining += Math.max(0, game.hltbCompletionistTtb - game.steamPlaytime);
@@ -143,15 +143,37 @@ function AppViewModel(id) {
 
         return {
             count: count,
-            totalPlaytime: totalPlaytime,
-            totalMain: totalMain,
-            totalExtras: totalExtras,
-            totalCompletionist: totalCompletionist,
+            playTime: playTime,
+            mainTtb: mainTtb,
+            extrasTtb: extrasTtb,
+            completionistTtb: completionistTtb,
             mainRemaining: mainRemaining,
             extrasRemaining: extrasRemaining,
             completionistRemaining: completionistRemaining,
         };
     }).extend({ rateLimit: 0 });
+
+    Chart.defaults.global.tooltipTemplate = "<%= value %>";
+    Chart.defaults.global.responsive = true;
+
+    var playtimeChart = new Chart($("#playtimeChart").get(0).getContext("2d"))
+                        .Bar({ labels: ["Playtime", "Main", "Extras", "Complete"], datasets: [{ data: [0, 0, 0, 0] }] });
+    
+    var remainingChart = new Chart($("#remainingChart").get(0).getContext("2d"))
+                        .Bar({ labels: ["Main", "Extras", "Complete"], datasets: [{ data: [0, 0, 0] }] });
+
+    self.chartComputed = ko.computed(function() {
+        playtimeChart.datasets[0].bars[0].value = getHours(self.total().playTime, 0);
+        playtimeChart.datasets[0].bars[1].value = getHours(self.total().mainTtb, 0);
+        playtimeChart.datasets[0].bars[2].value = getHours(self.total().extrasTtb, 0);
+        playtimeChart.datasets[0].bars[3].value = getHours(self.total().completionistTtb, 0);
+        playtimeChart.update();
+
+        remainingChart.datasets[0].bars[0].value = getHours(self.total().mainRemaining, 0);
+        remainingChart.datasets[0].bars[1].value = getHours(self.total().extrasRemaining, 0);
+        remainingChart.datasets[0].bars[2].value = getHours(self.total().completionistRemaining, 0);
+        remainingChart.update();
+    });
 
     self.howlongClicked = function () {
         if (self.steamVanityUrlName().length === 0) {
