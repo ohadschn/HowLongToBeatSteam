@@ -73,7 +73,7 @@ function AppViewModel(id) {
         recordWord: 'game',
         sortDir: 'asc',
         sortField: 'steamName',
-        perPage: 50,
+        perPage: 10,
         unsortedClass: "glyphicon glyphicon-sort",
         ascSortClass: "glyphicon glyphicon-sort-by-attributes",
         descSortClass: "glyphicon glyphicon-sort-by-attributes-alt"
@@ -156,11 +156,20 @@ function AppViewModel(id) {
     Chart.defaults.global.tooltipTemplate = "<%= value %>";
     Chart.defaults.global.responsive = true;
 
+    var dataset = {
+        fillColor: "rgba(151,187,205,0.5)",
+        strokeColor: "rgba(151,187,205,0.8)",
+        highlightFill: "rgba(151,187,205,0.75)",
+        highlightStroke: "rgba(151,187,205,1)",
+        data: [0, 0, 0, 0]
+    }
+
     var playtimeChart = new Chart($("#playtimeChart").get(0).getContext("2d"))
-                        .Bar({ labels: ["Playtime", "Main", "Extras", "Complete"], datasets: [{ data: [0, 0, 0, 0] }] });
-    
+                        .Bar({ labels: ["Current", "Main", "Extras", "Complete"], datasets: [dataset] });
+
+    dataset.data = [0, 0, 0];
     var remainingChart = new Chart($("#remainingChart").get(0).getContext("2d"))
-                        .Bar({ labels: ["Main", "Extras", "Complete"], datasets: [{ data: [0, 0, 0] }] });
+                        .Bar({ labels: ["Main", "Extras", "Complete"], datasets: [dataset] });
 
     self.chartComputed = ko.computed(function() {
         playtimeChart.datasets[0].bars[0].value = getHours(self.total().playTime, 0);
@@ -205,6 +214,11 @@ function AppViewModel(id) {
                     }
                     return game;
                 }));
+                setTimeout(function() {
+                    $('html, body').animate({
+                        scrollTop: $("#chartContainer").offset().top
+                    }, 2000);
+                }, 0);
             })
             .fail(function(error) {
                 console.error(error);

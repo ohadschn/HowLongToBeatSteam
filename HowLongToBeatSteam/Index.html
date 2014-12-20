@@ -17,7 +17,7 @@
         </div>
         <form data-bind="submit: howlongClicked" role="form" class="form-inline">
             <div data-bind="css: (badSteamVanityUrlName() ? 'has-error ' : '') + 'has-feedback form-group'">
-                <span class="glyphicon glyphicon glyphicon-question-sign"
+                <span class="glyphicon glyphicon glyphicon-question-sign text-info"
                       data-placement="bottom"
                       data-toggle="tooltip"
                       title="Your Profile ID is the name that appears at the top of your Steam profile page. Make sure it is set to public in Steam's privacy settings."></span>
@@ -49,18 +49,41 @@
             </ul>
         </div>
         <div data-bind="with: gameTable, visible: gameTable.rows().length>0 && !processing()">
-            <div class="container-fluid">
+            <div id="chartContainer" class="container-fluid">
                 <div class="row">
                     <div class="col-md-3">
-                        <h3>Total playtime and times to beat</h3>
+                        <h3 class="text-center">
+                            Total playtime
+                            <small class="text-info">
+                                <span>
+                                    <span class="glyphicon glyphicon-info-sign"
+                                          data-placement="right"
+                                          data-toggle="tooltip"
+                                          data-container="body"
+                                          title="Total Steam playtime compared to the time it would take to beat all the games in the account (in different completion levels)"></span>
+                                </span>
+                            </small>
+                        </h3>
                         <canvas id="playtimeChart"></canvas>
                     </div>
                     <div class="col-md-3">
-                        <h3>Remaining time to beat</h3>
+                        <h3 class="text-center">
+                            Playtime remaining
+                            <small class="text-info">
+                                <span>
+                                    <span class="glyphicon glyphicon-info-sign"
+                                          data-placement="right"
+                                          data-toggle="tooltip"
+                                          data-container="body"
+                                          title="For each game, the expected time to beat is subtracted from the time played (to a minimum of zero)"></span>
+                                </span>
+                            </small>
+                        </h3>
                         <canvas id="remainingChart"></canvas>
                     </div>
                 </div>
             </div>
+            <hr/>
             <div class="pull-right">
                 <strong>Games per page</strong>
                 <select data-bind="options: $root.pageSizeOptions, value: perPage"></select>
@@ -131,32 +154,6 @@
                         </td>
                     </tr>
                     <!-- /ko -->
-                    <tr class="success">
-                        <th data-bind="text: 'Total (' + $root.total().count + ' games)'" colspan="2"></th>
-                        <th data-bind="text: numberWithCommas(getHours($root.total().playTime)) + 'h'"></th>
-                        <th data-bind="text: numberWithCommas(getHours($root.total().mainTtb)) + 'h'"></th>
-                        <th data-bind="text: numberWithCommas(getHours($root.total().extrasTtb)) + 'h'"></th>
-                        <th data-bind="text: numberWithCommas(getHours($root.total().completionistTtb)) + 'h'"></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                    </tr>
-                    <tr class="success">
-                        <th colspan="2">
-                            Remaining <span class="glyphicon glyphicon-info-sign"
-                                            data-placement="right"
-                                            data-toggle="tooltip"
-                                            data-container="body"
-                                            title="For each game, the expected time to beat is subtracted from the time played (to a minimum of zero)"></span>
-                        </th>
-                        <th></th>
-                        <th data-bind="text: numberWithCommas(getHours($root.total().mainRemaining)) + 'h'"></th>
-                        <th data-bind="text: numberWithCommas(getHours($root.total().extrasRemaining)) + 'h'"></th>
-                        <th data-bind="text: numberWithCommas(getHours($root.total().completionistRemaining)) + 'h'"></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                    </tr>
                 </tbody>
             </table>
             <div data-bind="visible: pages() > 1">
