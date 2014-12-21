@@ -184,6 +184,31 @@ function AppViewModel(id) {
         remainingChart.update();
     });
 
+    var scrollToAlerts = function() {
+        $('html, body').animate({
+            scrollTop: $("#alertContainer").offset().top - 10
+        }, 1000);
+    }
+
+    var fixColumnWidth = function() {
+        var tableWidth = $("#gameTable").width();
+
+        var compressedColumnWidth = 0;
+        $.each($("table th.compressed"), function () {
+            var widthWithMargin = $(this).width() + 10;
+            compressedColumnWidth += widthWithMargin;
+            $(this).css("width", widthWithMargin  + "px");
+        });
+
+        var expandedCount = $("table th.expanded").size();
+        var expandedColumnWidth = (tableWidth - compressedColumnWidth) / expandedCount;
+        $("table th.expanded").css("width", expandedColumnWidth + "px");
+
+        $("#gameTable").css('table-layout', "fixed");
+    }
+
+    var firstTableRender = true;
+
     self.howlongClicked = function () {
         if (self.steamVanityUrlName().length === 0) {
             self.badSteamVanityUrlName(true);
@@ -214,12 +239,16 @@ function AppViewModel(id) {
                     }
                     return game;
                 }));
-                setTimeout(function() {
-                    $('html, body').animate({
-                        scrollTop: $("#alertContainer").offset().top - 10
-                    }, 2000);
-                }, 0);
+
                 self.alertHidden(false);
+                scrollToAlerts();
+
+                if (firstTableRender) {
+                    firstTableRender = false;
+                    setTimeout(function() {
+                        fixColumnWidth();
+                    }, 0);
+                }
             })
             .fail(function(error) {
                 console.error(error);
