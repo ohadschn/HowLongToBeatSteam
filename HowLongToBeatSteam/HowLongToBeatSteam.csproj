@@ -102,7 +102,8 @@
     <None Include="Intellisense\bootstrap-3.2.0-modal.js" />
     <None Include="Intellisense\Chart.js" />
     <Content Include="Intellisense\knockout-3.2.0-debug.js" />
-    <Content Include="Resources\Clock.ico" />
+    <Content Include="Resources\SteamClock.ico" />
+    <Content Include="Resources\SteamClock.svg" />
     <Content Include="Scripts\app.js" />
     <Content Include="Scripts\app.min.js">
       <DependentUpon>app.js</DependentUpon>

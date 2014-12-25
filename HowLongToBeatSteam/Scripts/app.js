@@ -184,10 +184,11 @@ function AppViewModel(id) {
         remainingChart.update();
     });
 
+    var scrollDuration = 1000;
     var scrollToAlerts = function() {
         $('html, body').animate({
             scrollTop: $("#alertContainer").offset().top - 10
-        }, 1000);
+        }, scrollDuration);
     }
 
     var fixColumnWidth = function() {
@@ -224,6 +225,7 @@ function AppViewModel(id) {
         self.missingHltbIds(false);
         self.alertHidden(true);
         self.errorAlertHidden(false);
+        self.gameTable.filter('');
 
         $.get("api/games/library/" + self.steamVanityUrlName())
             .done(function(data) {
@@ -247,7 +249,7 @@ function AppViewModel(id) {
                     firstTableRender = false;
                     setTimeout(function() {
                         fixColumnWidth();
-                    }, 0);
+                    }, scrollDuration / 2);
                 }
             })
             .fail(function(error) {

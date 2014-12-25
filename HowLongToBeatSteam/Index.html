@@ -4,7 +4,7 @@
     <title>How long to beat Steam</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="Styles/hltbs.min.css">
-    <link rel="shortcut icon" href="Resources/Clock.ico">
+    <link rel="shortcut icon" href="Resources/SteamClock.ico">
     <!--[if lt IE 9]>
       <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -13,8 +13,19 @@
 <body>
     <div class="content">
         <div class="page-header">
-            <h1>How Long To Beat Steam</h1>
+            <img src="Resources/SteamClock.svg" alt="How Long To Beat Steam"/>
+            <span class="h1 text-vertical-middle">How Long To Beat Steam</span>
         </div>
+        <p class="lead">
+            Find out how long it would take to beat your entire Steam library in the different <a href="http://www.howlongtobeat.com">HowLongToBeat.com</a> completion levels:
+        </p>
+        <blockquote>
+            <ul class="list-unstyled">
+                <li><strong>Main</strong> You complete the main objectives, just enough to see the credits roll.</li>
+                <li><strong>Extras</strong> You take your time, discover and complete additional tasks not required.</li>
+                <li><strong>Complete</strong> You strive for every achievement, every medal and conquer all that the game has to offer.</li>
+            </ul>
+        </blockquote>
         <form data-bind="submit: howlongClicked" role="form" class="form-inline">
             <div data-bind="css: (badSteamVanityUrlName() ? 'has-error ' : '') + 'has-feedback form-group'">
                 <span class="glyphicon glyphicon glyphicon-question-sign text-info"
@@ -45,7 +56,6 @@
                 <li data-bind="visible: partialCache">Some games <strong>haven't been processed</strong> by the site's engine yet, please check back later (games that have been removed from the Steam store are not supported).</li>
                 <li data-bind="visible: missingHltbIds">Some games are <strong>missing their <abbr title="HowLongToBeat">HLTB</abbr> IDs</strong> - please locate them on HLTB and update their IDs (embedded in the URL: http://www.howlongtobeat.com/game.php?id=<mark>XXXX</mark>)</li>
                 <li data-bind="visible: imputedTtbs">Some play times were missing from <abbr title="HowLongToBeat">HLTB</abbr> and were therefore <a href="http://en.wikipedia.org/wiki/Imputation_%28statistics%29" class="alert-link" target="_blank">statistically imputed</a>. Imputed values are <span class="emphasized">italicized</span>.</li>
-                <li>Refer to <a href="http://www.HowLongToBeat.com/" class="alert-link" target="_blank">howlongtobeat.com</a> for the precise definitions of the <i>main</i>, <i>extras</i>, and <i>completionist</i> game completion levels.</li>
             </ul>
         </div>
         <div data-bind="with: gameTable, visible: gameTable.rows().length>0 && !processing()">
@@ -83,7 +93,7 @@
                     </div>
                 </div>
             </div>
-            <hr/>
+            <hr />
             <div class="pull-right">
                 <strong>Games per page</strong>
                 <select data-bind="options: $root.pageSizeOptions, value: perPage"></select>
