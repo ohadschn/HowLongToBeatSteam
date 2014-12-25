@@ -12,33 +12,25 @@
 </head>
 <body>
     <div class="content">
-        <div class="page-header">
-            <img src="Resources/SteamClock.svg" alt="How Long To Beat Steam"/>
-            <span class="h1 text-vertical-middle">How Long To Beat Steam</span>
-        </div>
-        <p class="lead">
-            Find out how long it would take to beat your entire Steam library in the different <a href="http://www.howlongtobeat.com">HowLongToBeat.com</a> completion levels:
-        </p>
-        <blockquote>
-            <ul class="list-unstyled">
-                <li><strong>Main</strong> You complete the main objectives, just enough to see the credits roll.</li>
-                <li><strong>Extras</strong> You take your time, discover and complete additional tasks not required.</li>
-                <li><strong>Complete</strong> You strive for every achievement, every medal and conquer all that the game has to offer.</li>
-            </ul>
-        </blockquote>
-        <form data-bind="submit: howlongClicked" role="form" class="form-inline">
-            <div data-bind="css: (badSteamVanityUrlName() ? 'has-error ' : '') + 'has-feedback form-group'">
-                <span class="glyphicon glyphicon glyphicon-question-sign text-info"
-                      data-placement="bottom"
-                      data-toggle="tooltip"
-                      title="Your Profile ID is the name that appears at the top of your Steam profile page. Make sure it is set to public in Steam's privacy settings."></span>
-                <label class="control-label sr-only" for="steamIdText">Input with success</label>
-                <input type="text" data-bind="value: steamVanityUrlName" placeholder="Profile ID (must be public)" id="steamIdText" class="form-control input-long">
-                <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: badSteamVanityUrlName"></span>
+        <div class="text-center">
+            <div class="page-header">
+                <img src="Resources/SteamClock.svg" alt="How Long To Beat Steam"/>
+                <span class="h1 text-vertical-middle">How Long To Beat Steam</span>
             </div>
-            <button id="submit" type="submit" data-bind="enable: !processing()" class="btn btn-primary">Tell me how long</button>
-            <img src="http://cdnjs.cloudflare.com/ajax/libs/file-uploader/3.7.0/loading.gif" alt="loading..." data-bind="visible: processing" />
-        </form>
+            <form data-bind="submit: howlongClicked" role="form" class="form-inline">
+                <div data-bind="css: (badSteamVanityUrlName() ? 'has-error ' : '') + 'has-feedback form-group'">
+                    <span class="glyphicon glyphicon glyphicon-question-sign text-info"
+                          data-placement="bottom"
+                          data-toggle="tooltip"
+                          title="Your Profile ID is the name that appears at the top of your Steam profile page. Make sure it is set to public in Steam's privacy settings."></span>
+                    <label class="control-label sr-only" for="steamIdText">Input with success</label>
+                    <input type="text" data-bind="value: steamVanityUrlName" placeholder="Profile ID (must be public)" id="steamIdText" class="form-control input-long">
+                    <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: badSteamVanityUrlName"></span>
+                </div>
+                <button id="submit" type="submit" data-bind="enable: !processing()" class="btn btn-primary">Tell me how long</button>
+                <img src="http://cdnjs.cloudflare.com/ajax/libs/file-uploader/3.7.0/loading.gif" alt="loading..." data-bind="visible: processing" />
+            </form>
+        </div>
         <br />
         <div class="alert alert-danger alert-dismissible" role="alert" data-bind="visible: error() && !errorAlertHidden()">
             <button type="button" class="close" data-bind="click: function () { errorAlertHidden(true); }">
@@ -59,6 +51,16 @@
             </ul>
         </div>
         <div data-bind="with: gameTable, visible: gameTable.rows().length>0 && !processing()">
+            <p class="lead">
+                <a href="http://www.howlongtobeat.com">HowLongToBeat.com</a> completion level legend:
+            </p>
+            <blockquote>
+                <ul class="list-unstyled">
+                    <li><strong>Main</strong> You complete the main objectives, just enough to see the credits roll.</li>
+                    <li><strong>Extras</strong> You take your time, discover and complete additional tasks not required.</li>
+                    <li><strong>Complete</strong> You strive for every achievement, every medal and conquer all that the game has to offer.</li>
+                </ul>
+            </blockquote>
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-md-3">
@@ -138,7 +140,7 @@
                         <th class="compressed">HLTB ID</th>
                     </tr>
                 </thead>
-                <tbody data-bind="foreach: pagedRows">
+                <tbody data-bind="foreach: { data: pagedRows, afterRender: $root.tableRendered }">
                     <tr data-bind="css: known ? '' : 'info'">
                         <td class="vcenter compressed"><input type="checkbox" data-bind="checked: included" /></td>
                         <td data-bind="css: 'vcenter expanded' + (included() ? '' : ' strikeThrough')">

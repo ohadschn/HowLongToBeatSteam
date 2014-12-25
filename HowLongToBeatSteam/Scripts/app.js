@@ -191,24 +191,30 @@ function AppViewModel(id) {
         }, scrollDuration);
     }
 
-    var fixColumnWidth = function() {
-        var tableWidth = $("#gameTable").width();
-
-        var compressedColumnWidth = 0;
-        $.each($("table th.compressed"), function () {
-            var widthWithMargin = $(this).width() + 10;
-            compressedColumnWidth += widthWithMargin;
-            $(this).css("width", widthWithMargin  + "px");
-        });
-
-        var expandedCount = $("table th.expanded").size();
-        var expandedColumnWidth = (tableWidth - compressedColumnWidth) / expandedCount;
-        $("table th.expanded").css("width", expandedColumnWidth + "px");
-
-        $("#gameTable").css('table-layout', "fixed");
-    }
-
     var firstTableRender = true;
+    self.tableRendered = function () {
+        if (!firstTableRender || $("#gameTable tbody").children().length !== self.gameTable.perPage()) {
+            return;
+        }
+        firstTableRender = false;
+
+        setTimeout(function() {
+            var tableWidth = $("#gameTable").width();
+
+            var compressedColumnWidth = 0;
+            $.each($("table th.compressed"), function() {
+                var widthWithMargin = $(this).width() + 10;
+                compressedColumnWidth += widthWithMargin;
+                $(this).css("width", widthWithMargin + "px");
+            });
+
+            var expandedCount = $("table th.expanded").size();
+            var expandedColumnWidth = (tableWidth - compressedColumnWidth) / expandedCount;
+            $("table th.expanded").css("width", expandedColumnWidth + "px");
+
+            $("#gameTable").css('table-layout', "fixed");
+        }, 0);
+    }
 
     self.howlongClicked = function () {
         if (self.steamVanityUrlName().length === 0) {
@@ -244,13 +250,6 @@ function AppViewModel(id) {
 
                 self.alertHidden(false);
                 scrollToAlerts();
-
-                if (firstTableRender) {
-                    firstTableRender = false;
-                    setTimeout(function() {
-                        fixColumnWidth();
-                    }, scrollDuration / 2);
-                }
             })
             .fail(function(error) {
                 console.error(error);
