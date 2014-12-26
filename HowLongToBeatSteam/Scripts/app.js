@@ -1,5 +1,6 @@
 ﻿/*global ko*/
 /*global DataTable*/
+/*global Chart*/
 
 var getHours = function (minutes, digits) { // jshint ignore:line
     if (digits === undefined) {
@@ -78,6 +79,8 @@ function AppViewModel(id) {
         ascSortClass: "glyphicon glyphicon-sort-by-attributes",
         descSortClass: "glyphicon glyphicon-sort-by-attributes-alt"
     };
+
+    self.introPage = ko.observable(true);
 
     self.gameTable = new DataTable([], tableOptions);
     self.pageSizeOptions =  [10, 25, 50];
@@ -162,7 +165,7 @@ function AppViewModel(id) {
         highlightFill: "rgba(151,187,205,0.75)",
         highlightStroke: "rgba(151,187,205,1)",
         data: [0, 0, 0, 0]
-    }
+    };
 
     var playtimeChart = new Chart($("#playtimeChart").get(0).getContext("2d"))
                         .Bar({ labels: ["Current", "Main", "Extras", "Complete"], datasets: [dataset] });
@@ -189,10 +192,10 @@ function AppViewModel(id) {
         $('html, body').animate({
             scrollTop: $("#alertContainer").offset().top - 10
         }, scrollDuration);
-    }
+    };
 
     var firstTableRender = true;
-    self.tableRendered = function () {
+    self.tableRendered = function() {
         if (!firstTableRender || $("#gameTable tbody").children().length !== self.gameTable.perPage()) {
             return;
         }
@@ -214,9 +217,17 @@ function AppViewModel(id) {
 
             $("#gameTable").css('table-layout', "fixed");
         }, 0);
-    }
+    };
 
+    var firstLoad = true;
     self.howlongClicked = function () {
+
+        if (firstLoad) {
+            $.backstretch("destroy", false);
+            self.introPage(false);
+            firstLoad = false;
+        }
+
         if (self.steamVanityUrlName().length === 0) {
             self.badSteamVanityUrlName(true);
             self.error("Please specify your Steam Profile ID");
@@ -241,8 +252,7 @@ function AppViewModel(id) {
                     if (!game.known) {
                         self.missingHltbIds(true);
                         self.imputedTtbs(true);
-                    }
-                    else if (game.hltbMainTtbImputed || game.hltbExtrasTtbImputed || game.hltbCompletionistTtbImputed) {
+                    } else if (game.hltbMainTtbImputed || game.hltbExtrasTtbImputed || game.hltbCompletionistTtbImputed) {
                         self.imputedTtbs(true);
                     }
                     return game;
@@ -256,7 +266,7 @@ function AppViewModel(id) {
                 self.gameTable.rows([]);
                 self.error('Verify your Steam profile ID and make sure it is set to "public" in your Steam profile settings');
             })
-            .always(function() {
+            .always(function () {
                 self.processing(false);
             });
     };
@@ -290,6 +300,7 @@ $(document).ready(function () {
 
     $('[data-toggle="tooltip"]').tooltip();
     $('#steamIdText').focus();
+    $.backstretch("http://res2.windows.microsoft.com/resbox/en/windows%207/main/b1697ff2-4fef-4125-a4c4-f3dcaa68a0aa_12.jpg");
 
     var id = getParameterByName("id");
     ko.applyBindings(new AppViewModel(id === null ? "" : id));

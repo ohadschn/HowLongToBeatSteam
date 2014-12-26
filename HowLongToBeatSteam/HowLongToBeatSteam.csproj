@@ -101,9 +101,11 @@
     <None Include="Intellisense\bootstrap-3.2.0-tooltip.js" />
     <None Include="Intellisense\bootstrap-3.2.0-modal.js" />
     <None Include="Intellisense\Chart.js" />
+    <None Include="Intellisense\jquery.backstretch.js" />
     <Content Include="Intellisense\knockout-3.2.0-debug.js" />
     <Content Include="Resources\SteamClock.ico" />
     <Content Include="Resources\SteamClock.svg" />
+    <Content Include="Resources\SteamClockWhite.svg" />
     <Content Include="Scripts\app.js" />
     <Content Include="Scripts\app.min.js">
       <DependentUpon>app.js</DependentUpon>

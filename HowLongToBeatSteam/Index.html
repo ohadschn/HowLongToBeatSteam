@@ -12,14 +12,12 @@
 </head>
 <body>
     <div class="content">
-        <div class="text-center">
-            <div class="page-header">
-                <img src="Resources/SteamClock.svg" alt="How Long To Beat Steam"/>
-                <span class="h1 text-vertical-middle">How Long To Beat Steam</span>
-            </div>
+        <div class="header" data-bind="style: {color: introPage() ? 'white' : 'inherit', 'background-color': introPage() ? 'rgba(0, 0, 0, 0.2)' : 'inherit'}">
+            <img data-bind="attr:{src: introPage() ? 'Resources/SteamClockWhite.svg' : 'Resources/SteamClock.svg'}" alt="How Long To Beat Steam" />
+            <span class="h1 text-vertical-middle">How Long To Beat Steam</span>
             <form data-bind="submit: howlongClicked" role="form" class="form-inline">
                 <div data-bind="css: (badSteamVanityUrlName() ? 'has-error ' : '') + 'has-feedback form-group'">
-                    <span class="glyphicon glyphicon glyphicon-question-sign text-info"
+                    <span class="glyphicon glyphicon glyphicon-question-sign"
                           data-placement="bottom"
                           data-toggle="tooltip"
                           title="Your Profile ID is the name that appears at the top of your Steam profile page. Make sure it is set to public in Steam's privacy settings."></span>
@@ -51,16 +49,18 @@
             </ul>
         </div>
         <div data-bind="with: gameTable, visible: gameTable.rows().length>0 && !processing()">
-            <p class="lead">
-                <a href="http://www.howlongtobeat.com">HowLongToBeat.com</a> completion level legend:
-            </p>
-            <blockquote>
-                <ul class="list-unstyled">
-                    <li><strong>Main</strong> You complete the main objectives, just enough to see the credits roll.</li>
-                    <li><strong>Extras</strong> You take your time, discover and complete additional tasks not required.</li>
-                    <li><strong>Complete</strong> You strive for every achievement, every medal and conquer all that the game has to offer.</li>
-                </ul>
-            </blockquote>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3><a href="http://www.howlongtobeat.com">HowLongToBeat.com</a> completion levels</h3>
+                </div>
+                <div class="panel-body">
+                    <ul class="list-unstyled">
+                        <li><strong>Main</strong> You complete the main objectives, just enough to see the credits roll.</li>
+                        <li><strong>Extras</strong> You take your time, discover and complete additional tasks not required.</li>
+                        <li><strong>Complete</strong> You strive for every achievement, every medal and conquer all that the game has to offer.</li>
+                    </ul>
+                </div>
+            </div>
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-md-3">
@@ -182,7 +182,7 @@
             </div>
         </div>
     </div>
-    <div class="footer">
+    <div class="footer" data-bind="visible: !introPage()">
         <a href="https://azure.microsoft.com/" target="_blank">Powered by Azure.</a>
         <a href="http://steampowered.com" target="_blank">Powered by Steam.</a>
         <br />
@@ -192,6 +192,7 @@
     <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.1.min.js"></script>
     <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/knockout/3.2.0/knockout-min.js"></script>
     <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/tooltip.min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jquery-backstretch/2.0.4/jquery.backstretch.min.js"></script>
     <script type="text/javascript" src="http://cdn.jsdelivr.net/chart.js/1.0.1-beta.4/Chart.min.js"></script>
     <script type="text/javascript" src="bower_components/knockout-datatable/knockout-datatable.min.js"></script>
     <script type="text/javascript" src="Scripts/app.min.js"></script>
