@@ -9,6 +9,11 @@
     margin: 30px 0 20px;
     text-align: center;
 }
+.loader {
+    position: fixed;
+    left: 50%;
+    top: 45%;
+}
 .footer {
   position: absolute;
   bottom: 0;

@@ -26,9 +26,9 @@
                     <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: badSteamVanityUrlName"></span>
                 </div>
                 <button id="submit" type="submit" data-bind="enable: !processing()" class="btn btn-primary">Tell me how long</button>
-                <img src="http://cdnjs.cloudflare.com/ajax/libs/file-uploader/3.7.0/loading.gif" alt="loading..." data-bind="visible: processing" />
             </form>
         </div>
+        <div class="loader" data-bind="visible: processing"></div>
         <br />
         <div class="alert alert-danger alert-dismissible" role="alert" data-bind="visible: error() && !errorAlertHidden()">
             <button type="button" class="close" data-bind="click: function () { errorAlertHidden(true); }">
@@ -109,31 +109,35 @@
                             <input type="checkbox" data-bind="click: $root.toggleAll, checked: $root.toggleAllChecked()" />
                         </th>
                         <th class="sortable expanded" unselectable="on" data-bind="click: toggleSort('steamName')">
-                            Name
+                            Game
                             <span data-bind="css: sortClass('steamName')" aria-hidden="true"></span>
                         </th>
                         <th class="sortable compressed" unselectable="on" data-bind="click: toggleSort('steamPlaytime')">
                             <span data-placement="top"
                                   data-toggle="tooltip"
-                                  title="Steam playtime (in hours)">Playtime</span>
+                                  data-container="body"
+                                  title="Current Steam playtime (in hours)">Playtime</span>
                             <span data-bind="css: sortClass('steamPlaytime')" aria-hidden="true"></span>
                         </th>
                         <th class="sortable compressed" unselectable="on" data-bind="click: toggleSort('hltbMainTtb')">
                             <span data-placement="top"
                                   data-toggle="tooltip"
-                                  title="Time (in hours) to complete the main objectives, just enough to see the credits roll">Main</span>
+                                  data-container="body"
+                                  title="Time to beat main objectives (hours)">Main</span>
                             <span data-bind="css: sortClass('hltbMainTtb')" aria-hidden="true"></span>
                         </th>
                         <th class="sortable compressed" unselectable="on" data-bind="click: toggleSort('hltbExtrasTtb')">
                             <span data-placement="top"
                                   data-toggle="tooltip"
-                                  title="Time (in hours) to complete the main objectives, as well as discover and complete additional tasks not required">Extras</span>
+                                  data-container="body"
+                                  title="Time to beat main+extra objectives (hours)">Extras</span>
                             <span data-bind="css: sortClass('hltbExtrasTtb')" aria-hidden="true"></span>
                         </th>
                         <th class="sortable compressed" unselectable="on" data-bind="click: toggleSort('hltbCompletionistTtb')">
                             <span data-placement="top"
                                   data-toggle="tooltip"
-                                  title="Time (in hours) to complete the main objectives, as well as every possible quest and achievement">Complete</span>
+                                  data-container="body"
+                                  title="Time to complete all possible objectives (hours)">Complete</span>
                             <span data-bind="css: sortClass('hltbCompletionistTtb')" aria-hidden="true"></span>
                         </th>
                         <th class="expanded">HLTB Name</th>
@@ -193,6 +197,8 @@
     <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/knockout/3.2.0/knockout-min.js"></script>
     <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/tooltip.min.js"></script>
     <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jquery-backstretch/2.0.4/jquery.backstretch.min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/spin.js/2.0.1/spin.min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/spin.js/2.0.1/jquery.spin.min.js"></script>
     <script type="text/javascript" src="http://cdn.jsdelivr.net/chart.js/1.0.1-beta.4/Chart.min.js"></script>
     <script type="text/javascript" src="bower_components/knockout-datatable/knockout-datatable.min.js"></script>
     <script type="text/javascript" src="Scripts/app.min.js"></script>

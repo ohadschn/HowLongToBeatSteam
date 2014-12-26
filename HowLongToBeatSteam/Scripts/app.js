@@ -216,7 +216,7 @@ function AppViewModel(id) {
             $("table th.expanded").css("width", expandedColumnWidth + "px");
 
             $("#gameTable").css('table-layout', "fixed");
-        }, 0);
+        }, 100);
     };
 
     var firstLoad = true;
@@ -227,6 +227,8 @@ function AppViewModel(id) {
             self.introPage(false);
             firstLoad = false;
         }
+
+        $('.loader').spin({ lines: 12, length: 35, width: 8, radius: 50 });
 
         if (self.steamVanityUrlName().length === 0) {
             self.badSteamVanityUrlName(true);
@@ -268,6 +270,7 @@ function AppViewModel(id) {
             })
             .always(function () {
                 self.processing(false);
+                $('.loader').spin(false);
             });
     };
 
