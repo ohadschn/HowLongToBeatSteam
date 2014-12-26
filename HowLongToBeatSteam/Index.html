@@ -11,25 +11,25 @@
     <![endif]-->
 </head>
 <body>
-    <div class="content">
-        <div class="header" data-bind="style: {color: introPage() ? 'white' : 'inherit', 'background-color': introPage() ? 'rgba(0, 0, 0, 0.2)' : 'inherit'}">
-            <img data-bind="attr:{src: introPage() ? 'Resources/SteamClockWhite.svg' : 'Resources/SteamClock.svg'}" alt="How Long To Beat Steam" />
-            <span class="h1 text-vertical-middle">How Long To Beat Steam</span>
-            <form data-bind="submit: howlongClicked" role="form" class="form-inline">
-                <div data-bind="css: (badSteamVanityUrlName() ? 'has-error ' : '') + 'has-feedback form-group'">
-                    <span class="glyphicon glyphicon glyphicon-question-sign"
-                          data-placement="bottom"
-                          data-toggle="tooltip"
-                          title="Your Profile ID is the name that appears at the top of your Steam profile page. Make sure it is set to public in Steam's privacy settings."></span>
-                    <label class="control-label sr-only" for="steamIdText">Input with success</label>
-                    <input type="text" data-bind="value: steamVanityUrlName" placeholder="Profile ID (must be public)" id="steamIdText" class="form-control input-long">
-                    <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: badSteamVanityUrlName"></span>
-                </div>
-                <button id="submit" type="submit" data-bind="enable: !processing()" class="btn btn-primary">Tell me how long</button>
-            </form>
-        </div>
+    <div class="header" data-bind="style: {color: introPage() ? 'white' : 'inherit', 'background-color': introPage() ? 'rgba(0, 0, 0, 0.2)' : 'inherit'}">
+        <img data-bind="attr:{src: introPage() ? 'Resources/SteamClockWhite.svg' : 'Resources/SteamClock.svg'}" alt="How Long To Beat Steam" />
+        <span class="h1 text-vertical-middle">How Long To Beat Steam</span>
+        <form data-bind="submit: vanityUrlSubmitted, attr: { action: '#/' + steamVanityUrlName() }" role="form" class="form-inline">
+            <div data-bind="css: (badSteamVanityUrlName() ? 'has-error ' : '') + 'has-feedback form-group'">
+                <span class="glyphicon glyphicon glyphicon-question-sign"
+                      data-placement="bottom"
+                      data-toggle="tooltip"
+                      data-container="body"
+                      title="Your profile ID can be found in your Steam profile page URL: steamcommunity.com/id/<ID>. Make sure it is set to public in Steam's privacy settings."></span>
+                <label class="control-label sr-only" for="steamIdText">Input with success</label>
+                <input id="steamIdText" type="text" data-bind="value: steamVanityUrlName" placeholder="Profile ID (must be public)" class="form-control input-long">
+                <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: badSteamVanityUrlName"></span>
+            </div>
+            <button type="submit" data-bind="enable: !processing()" class="btn btn-primary">Tell me how long</button>
+        </form>
+    </div>
+    <div class="content" data-bind="visible: !introPage()">
         <div class="loader" data-bind="visible: processing"></div>
-        <br />
         <div class="alert alert-danger alert-dismissible" role="alert" data-bind="visible: error() && !errorAlertHidden()">
             <button type="button" class="close" data-bind="click: function () { errorAlertHidden(true); }">
                 <span aria-hidden="true">&times;</span>
@@ -51,7 +51,7 @@
         <div data-bind="with: gameTable, visible: gameTable.rows().length>0 && !processing()">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <h3><a href="http://www.howlongtobeat.com">HowLongToBeat.com</a> completion levels</h3>
+                    <h3><a href="http://www.howlongtobeat.com" target="_blank">HowLongToBeat.com</a> completion levels</h3>
                 </div>
                 <div class="panel-body">
                     <ul class="list-unstyled">
@@ -194,6 +194,7 @@
         <a href="mailto:howlongtobeatsteam@outlook.com?subject=HowLongToBeatSteam">Contact</a>
     </div>
     <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/sammy.js/0.7.6/sammy.min.js"></script>
     <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/knockout/3.2.0/knockout-min.js"></script>
     <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/tooltip.min.js"></script>
     <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jquery-backstretch/2.0.4/jquery.backstretch.min.js"></script>

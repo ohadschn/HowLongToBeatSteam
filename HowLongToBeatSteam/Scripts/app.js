@@ -14,13 +14,6 @@ var numberWithCommas = function (x) { // jshint ignore:line
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
-function getParameterByName(name) {
-    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
-    var results = regex.exec(location.search);
-    return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
-}
-
 var GameUpdatePhase = {
     None: "None",
     InProgress: "InProgress",
@@ -60,10 +53,10 @@ Game.prototype.match = function(filter) { //define in prototype to prevent memor
     return this.steamName.toLowerCase().indexOf(filter.toLowerCase()) !== -1;
 };
 
-function AppViewModel(id) {
+function AppViewModel() {
     var self = this;
 
-    self.steamVanityUrlName = ko.observable(id);
+    self.steamVanityUrlName = ko.observable();
     self.badSteamVanityUrlName = ko.observable(false);
 
     $("#steamIdText").keydown(function() {
@@ -174,16 +167,16 @@ function AppViewModel(id) {
     var remainingChart = new Chart($("#remainingChart").get(0).getContext("2d"))
                         .Bar({ labels: ["Main", "Extras", "Complete"], datasets: [dataset] });
 
-    self.chartComputed = ko.computed(function() {
-        playtimeChart.datasets[0].bars[0].value = getHours(self.total().playTime, 0);
-        playtimeChart.datasets[0].bars[1].value = getHours(self.total().mainTtb, 0);
-        playtimeChart.datasets[0].bars[2].value = getHours(self.total().extrasTtb, 0);
-        playtimeChart.datasets[0].bars[3].value = getHours(self.total().completionistTtb, 0);
+    self.total.subscribe(function(total) {
+        playtimeChart.datasets[0].bars[0].value = getHours(total.playTime, 0);
+        playtimeChart.datasets[0].bars[1].value = getHours(total.mainTtb, 0);
+        playtimeChart.datasets[0].bars[2].value = getHours(total.extrasTtb, 0);
+        playtimeChart.datasets[0].bars[3].value = getHours(total.completionistTtb, 0);
         playtimeChart.update();
 
-        remainingChart.datasets[0].bars[0].value = getHours(self.total().mainRemaining, 0);
-        remainingChart.datasets[0].bars[1].value = getHours(self.total().extrasRemaining, 0);
-        remainingChart.datasets[0].bars[2].value = getHours(self.total().completionistRemaining, 0);
+        remainingChart.datasets[0].bars[0].value = getHours(total.mainRemaining, 0);
+        remainingChart.datasets[0].bars[1].value = getHours(total.extrasRemaining, 0);
+        remainingChart.datasets[0].bars[2].value = getHours(total.completionistRemaining, 0);
         remainingChart.update();
     });
 
@@ -219,13 +212,16 @@ function AppViewModel(id) {
         }, 100);
     };
 
-    var firstLoad = true;
-    self.howlongClicked = function () {
+    self.vanityUrlSubmitted = function() {
+        if (window.location.hash === "#/" + self.steamVanityUrlName()) { 
+            self.loadGames(); //no submission will take place since it's the same URL, so just load again
+        }
+    }
 
-        if (firstLoad) {
-            $.backstretch("destroy", false);
-            self.introPage(false);
-            firstLoad = false;
+    self.loadGames = function () {
+
+        if (self.currentRequest !== undefined) {
+            self.currentRequest.abort(); //in case of hash tag navigation while we're loading
         }
 
         $('.loader').spin({ lines: 12, length: 35, width: 8, radius: 50 });
@@ -246,7 +242,7 @@ function AppViewModel(id) {
         self.errorAlertHidden(false);
         self.gameTable.filter('');
 
-        $.get("api/games/library/" + self.steamVanityUrlName())
+        self.currentRequest = $.get("api/games/library/" + self.steamVanityUrlName())
             .done(function(data) {
                 self.partialCache(data.PartialCache);
                 self.gameTable.rows(ko.utils.arrayMap(data.Games, function(steamGame) {
@@ -264,9 +260,9 @@ function AppViewModel(id) {
                 scrollToAlerts();
             })
             .fail(function(error) {
-                console.error(error);
+                console.error(error); //TODO replace console print with user error display
                 self.gameTable.rows([]);
-                self.error('Verify your Steam profile ID and make sure it is set to "public" in your Steam profile settings');
+                self.error('verify your Steam profile ID and make sure it is set to "public" in your Steam profile settings');
             })
             .always(function () {
                 self.processing(false);
@@ -296,19 +292,38 @@ function AppViewModel(id) {
 
 $(document).ready(function () {
 
-    if (!window.console) { //fix console for old browsers
+    //Fix console for old browsers
+    if (!window.console) { 
         var noOp = function () { };
         window.console = { log: noOp, warn: noOp, error: noOp };
     }
 
+    //Fix up layout
     $('[data-toggle="tooltip"]').tooltip();
     $('#steamIdText').focus();
-    $.backstretch("http://res2.windows.microsoft.com/resbox/en/windows%207/main/b1697ff2-4fef-4125-a4c4-f3dcaa68a0aa_12.jpg");
 
-    var id = getParameterByName("id");
-    ko.applyBindings(new AppViewModel(id === null ? "" : id));
+    //Init knockout
+    var viewModel = new AppViewModel();
+    ko.applyBindings(viewModel);
 
-    if (id !== null) {
-        $('#submit').trigger('click');
-    }
+    //Init sammy
+    var sammyApp = $.sammy(function () {
+
+        this.get('#/', function () {
+            viewModel.introPage(true);
+            $.backstretch("http://res2.windows.microsoft.com/resbox/en/windows%207/main/b1697ff2-4fef-4125-a4c4-f3dcaa68a0aa_12.jpg");
+        });
+
+        this.get('#/:vanityUrlName', function () {
+            viewModel.introPage(false);
+            if ($(document.body).data('backstretch') !== undefined) {
+                $.backstretch("destroy", false);
+            }
+
+            viewModel.steamVanityUrlName(this.params['vanityUrlName']);
+            viewModel.loadGames();
+        });
+    });
+
+    sammyApp.run("#/");
 });
