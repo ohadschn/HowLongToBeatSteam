@@ -96,12 +96,11 @@
                 </div>
             </div>
             <hr />
-            <div class="pull-right">
+            <div class="pull-right tableInfo">
                 <strong>Games per page</strong>
                 <select data-bind="options: $root.pageSizeOptions, value: perPage"></select>
             </div>
-            <strong class="rightMargin">Search</strong>
-            <input type="text" data-bind="textInput: filter" />
+            <input type="text" class="tableInfo" data-bind="textInput: filter" placeholder="Filter" />
             <table id="gameTable" class="table table-striped table-hover table-responsive">
                 <thead>
                     <tr>
@@ -169,21 +168,20 @@
                     </tr>
                 </tbody>
             </table>
-            <div data-bind="visible: pages() > 1">
-                <ul class="pagination no-top-margin">
-                    <li data-bind="css: leftPagerClass, click: prevPage">
-                        <a href="#">&laquo;</a>
-                    </li>
-                    <!-- ko foreach: {data: (new Array(pages()))} -->
-                    <li data-bind="css: $parent.pageClass($index() + 1)">
-                        <a href="#" data-bind="text: $index() + 1, click: $parent.gotoPage($index() + 1)"></a>
-                    </li>
-                    <!-- /ko -->
-                    <li data-bind="css: rightPagerClass, click: nextPage">
-                        <a href="#">&raquo;</a>
-                    </li>
-                </ul>
-            </div>
+            <strong class="pull-right tableInfo" data-bind="text: recordsText"></strong>
+            <ul class="pagination gamePagination">
+                <li data-bind="css: leftPagerClass, click: prevPage">
+                    <a href="#">&laquo;</a>
+                </li>
+                <!-- ko foreach: {data: (new Array(pages()))} -->
+                <li data-bind="css: $parent.pageClass($index() + 1)">
+                    <a href="#" data-bind="text: $index() + 1, click: $parent.gotoPage($index() + 1)"></a>
+                </li>
+                <!-- /ko -->
+                <li data-bind="css: rightPagerClass, click: nextPage">
+                    <a href="#">&raquo;</a>
+                </li>
+            </ul>
         </div>
     </div>
     <div class="footer" data-bind="visible: !introPage()">

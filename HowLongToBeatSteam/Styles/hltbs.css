@@ -42,11 +42,12 @@ table tbody tr td.vcenter {
     white-space: nowrap;
     width: 1%;
 }
-.rightMargin {
-    margin-right: 5px;
-}
-.no-top-margin {
+.gamePagination {
     margin-top: 0;
+    display: table-cell;
+}
+.tableInfo {
+    margin: 6px 6px 6px 6px;
 }
 .sortable {
     cursor: pointer;
