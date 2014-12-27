@@ -209,7 +209,7 @@ function AppViewModel() {
             $("table th.expanded").css("width", expandedColumnWidth + "px");
 
             $("#gameTable").css('table-layout', "fixed");
-        }, 100);
+        }, scrollDuration / 2);
     };
 
     self.vanityUrlSubmitted = function() {
