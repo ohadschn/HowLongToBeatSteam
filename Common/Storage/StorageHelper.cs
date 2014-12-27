@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,8 +20,8 @@ namespace Common.Storage
         public const string RowKey = "RowKey";
 
         private const int MaxBatchOperations = 100;
-        public static readonly string AzureStorageConnectionString = ConfigurationManager.ConnectionStrings["Hltbs"].ConnectionString;
-        private static readonly string SteamToHltbTableName = ConfigurationManager.AppSettings["SteamToHltbTableName"];
+        public static readonly string AzureStorageConnectionString = SiteUtil.GetMandatoryCustomConnectionStringFromConfig("Hltbs");
+        private static readonly string SteamToHltbTableName = SiteUtil.GetMandatoryValueFromConfig("SteamToHltbTableName");
         
         private static readonly TimeSpan DefaultDeltaBackoff = TimeSpan.FromSeconds(4);
 

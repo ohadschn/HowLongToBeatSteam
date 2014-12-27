@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -19,7 +18,7 @@ namespace SteamHltbScraper.Imputation
     public static class Imputer
     {
         internal const string ImputedCsvFileName = "imputed.csv";
-        private static readonly string ApiKey = ConfigurationManager.AppSettings["AzureMlImputeApiKey"];
+        private static readonly string ApiKey = SiteUtil.GetMandatoryValueFromConfig("AzureMlImputeApiKey");
         private const string AzureMlImputeServiceBaseUrl = @"https://ussouthcentral.services.azureml.net/workspaces/379440377d144ed7b3e82e952cfc2819/services/59552aca10d942899334d43f70a5131a/jobs";
         private static readonly int AzureMlImputePollIntervalMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollIntervalMs", 1000);
         private static readonly int AzureMlImputePollTimeoutMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollTimeoutMs", 120 * 1000);

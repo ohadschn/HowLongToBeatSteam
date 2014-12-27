@@ -208,8 +208,7 @@ namespace Common.Util
         }
 
         private static readonly Lazy<int> s_maxConcurrentHttpRequests = new Lazy<int>(() =>
-            Environment.ProcessorCount*
-            Int32.Parse(ConfigurationManager.AppSettings["MaxDegreeOfConcurrencyFactor"], CultureInfo.InvariantCulture));
+            Environment.ProcessorCount*GetOptionalValueFromConfig("MaxDegreeOfConcurrencyFactor", 12));
 
         public static int MaxConcurrentHttpRequests
         {
@@ -254,20 +253,53 @@ namespace Common.Util
             }
         }
 
-        public static int GetOptionalValueFromConfig(string keyName, int defaultValue)
+        public static int GetOptionalValueFromConfig(string key, int defaultValue)
         {
             int val;
-            return Int32.TryParse(ConfigurationManager.AppSettings[keyName], out val)
+            return Int32.TryParse(GetValueFromConfig(key), out val)
                 ? val
                 : defaultValue;
         }
 
-        public static bool GetOptionalValueFromConfig(string keyName, bool defaultValue)
+        public static bool GetOptionalValueFromConfig(string key, bool defaultValue)
         {
             bool val;
-            return Boolean.TryParse(ConfigurationManager.AppSettings[keyName], out val)
+            return Boolean.TryParse(GetValueFromConfig(key), out val)
                 ? val
                 : defaultValue;
+        }
+
+        public static string GetMandatoryValueFromConfig(string key)
+        {
+            var val = GetValueFromConfig(key);
+            if (val == null)
+            {
+                throw new ConfigurationErrorsException("Missing mandatory configuration: " + key);
+            }
+            return val;
+        }
+
+        private static string GetValueFromConfig(string key)
+        {
+            return ConfigurationManager.AppSettings[key] ?? Environment.GetEnvironmentVariable(key);
+        }
+
+        public static string GetMandatoryCustomConnectionStringFromConfig(string key)
+        {
+            var val = GetCustomConnectionStringFromConfig(key);
+            if (val == null)
+            {
+                throw new ConfigurationErrorsException("Missing mandatory connection string: " + key);
+            }
+            return val; 
+        }
+
+        private static string GetCustomConnectionStringFromConfig(string key)
+        {
+            var connectionString = ConfigurationManager.ConnectionStrings[key];
+            return (connectionString != null)
+                ? connectionString.ConnectionString
+                : Environment.GetEnvironmentVariable("CUSTOMCONNSTR_" + key);
         }
     }
 }
