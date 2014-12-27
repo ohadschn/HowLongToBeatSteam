@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
@@ -282,11 +281,6 @@ namespace Common.Util
 
         private static string GetValueFromConfig(string key)
         {
-            foreach (DictionaryEntry environmentVariable in Environment.GetEnvironmentVariables())
-            {
-                Trace.WriteLine(environmentVariable.Key + " : " + environmentVariable.Value);
-                Console.WriteLine(environmentVariable.Key + " : " + environmentVariable.Value);
-            }
             return ConfigurationManager.AppSettings[key] ?? Environment.GetEnvironmentVariable(key);
         }
 
@@ -302,11 +296,6 @@ namespace Common.Util
 
         private static string GetCustomConnectionStringFromConfig(string key)
         {
-            foreach (DictionaryEntry environmentVariable in Environment.GetEnvironmentVariables())
-            {
-                Trace.WriteLine(environmentVariable.Key + " : " + environmentVariable.Value);
-                Console.WriteLine(environmentVariable.Key + " : " + environmentVariable.Value);
-            }
             var connectionString = ConfigurationManager.ConnectionStrings[key];
             return (connectionString != null)
                 ? connectionString.ConnectionString
