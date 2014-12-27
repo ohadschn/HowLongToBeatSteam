@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Diagnostics.Tracing;
 using Common.Util;
 using Microsoft.Practices.EnterpriseLibrary.SemanticLogging;
@@ -23,6 +24,11 @@ namespace Common.Logging
         static private readonly ConcurrentBag<EventListenerInfo> s_listeners = new ConcurrentBag<EventListenerInfo>(); 
         public static void RegisterEventListener(EventSource source, ObservableEventListener listener)
         {
+            if (listener == null)
+            {
+                throw new ArgumentNullException("listener");
+            }
+
             s_listeners.Add(new EventListenerInfo(source, listener));
 
             if (s_logTplEvents)

@@ -2,11 +2,12 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Common.Util
@@ -30,6 +31,7 @@ namespace Common.Util
             return ret;
         }
 
+        //http://blogs.msdn.com/b/pfxteam/archive/2012/03/05/10278165.aspx
         public static Task ForEachAsync<T>(this IEnumerable<T> collection, int maxDegreeOfConcurrency, Func<T, Task> taskFactory)
         {
             return Task.WhenAll(Partitioner.Create(collection).GetPartitions(maxDegreeOfConcurrency).Select(partition => Task.Run(async delegate
@@ -44,6 +46,90 @@ namespace Common.Util
                     })));
         }
 
+        public static Task<T> GetFirstResult<T>(Func<CancellationToken, Task<T>> taskFactory, int parallelization, Action<Exception> exceptionHandler)
+        {
+            return GetFirstResult(Enumerable.Repeat(0, parallelization).Select(i => taskFactory), exceptionHandler);
+        }
+
+        public static async Task<T> GetFirstResult<T>(this IEnumerable<Func<CancellationToken, Task<T>>> taskFactories, Action<Exception> exceptionHandler)
+        {
+            T ret = default(T);
+            var cts = new CancellationTokenSource();
+
+            var proxified = taskFactories.Select(tf => tf(cts.Token)).ProxifyByCompletion();
+
+            int i;
+            for (i = 0; i < proxified.Length; i++)
+            {
+                try
+                {
+                    ret = await proxified[i].ConfigureAwait(false);
+                    break;
+                }
+                catch (Exception e)
+                {
+                    exceptionHandler(e);
+                    if (i == proxified.Length - 1)
+                    {
+                        throw new InvalidOperationException("All tasks failed. See inner exception for last failure.", e);
+                    }
+                }
+            }
+
+            cts.Cancel();
+
+            for (int j = i+1; j < proxified.Length; j++)
+            {
+                proxified[j].ContinueWith(t => exceptionHandler(t.Exception), TaskContinuationOptions.OnlyOnFaulted).Forget();
+            }
+
+            return ret;
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "task")]
+        public static void Forget(this Task task) //suppress CS4014
+        {
+        }
+
+        //http://blogs.msdn.com/b/pfxteam/archive/2012/08/02/processing-tasks-as-they-complete.aspx
+        public static Task<T>[] ProxifyByCompletion<T>(this IEnumerable<Task<T>> tasks)
+        {
+            var inputTasks = tasks.ToArray();
+            var buckets = new TaskCompletionSource<T>[inputTasks.Length];
+            var results = new Task<T>[inputTasks.Length];
+
+            for (int i = 0; i < buckets.Length; i++)
+            {
+                buckets[i] = new TaskCompletionSource<T>();
+                results[i] = buckets[i].Task;
+            }
+
+            int nextTaskIndex = -1;
+            foreach (var inputTask in inputTasks)
+            {
+                inputTask.ContinueWith(completed =>
+                {
+                    var bucket = buckets[Interlocked.Increment(ref nextTaskIndex)];
+                    if (completed.IsFaulted)
+                    {
+                        Trace.Assert(completed.Exception != null, "faulted exception has null Exception field");
+                        bucket.TrySetException(completed.Exception.InnerExceptions);
+                    }
+                    else if (completed.IsCanceled)
+                    {
+                        bucket.TrySetCanceled();
+                    }
+                    else
+                    {
+                        bucket.TrySetResult(completed.Result);
+                    }
+                }, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+            }
+
+            return results;
+        }
+
+        //http://stackoverflow.com/a/26276284/67824
         public static IEnumerable<T> Interleave<T>(this IEnumerable<IEnumerable<T>> source)
         {
             var enumerators = source.Select(e => e.GetEnumerator()).ToArray();
@@ -130,18 +216,29 @@ namespace Common.Util
             get { return s_maxConcurrentHttpRequests.Value; }
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1057:StringUriOverloadsCallSystemUriOverloads")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1057:StringUriOverloadsCallSystemUriOverloads")]
         public static Task<T> GetAsync<T>(HttpRetryClient client, string url)
         {
-            return GetAsync<T>(client, new Uri(url));
+            return GetAsync<T>(client, new Uri(url), CancellationToken.None);
         }
 
-        public static async Task<T> GetAsync<T>(HttpRetryClient client, Uri url)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1057:StringUriOverloadsCallSystemUriOverloads")]
+        public static Task<T> GetAsync<T>(HttpRetryClient client, string url, CancellationToken ct)
+        {
+            return GetAsync<T>(client, new Uri(url), ct);
+        }
+
+        public static Task<T> GetAsync<T>(HttpRetryClient client, Uri url)
+        {
+            return GetAsync<T>(client, url, CancellationToken.None);
+        }
+
+        public static async Task<T> GetAsync<T>(HttpRetryClient client, Uri url, CancellationToken ct)
         {
             T deserializedResponse;
-            using (var response = await client.GetAsync(url).ConfigureAwait(false))
+            using (var response = await client.GetAsync(url, ct).ConfigureAwait(false))
             {
-                deserializedResponse = await response.Content.ReadAsAsync<T>().ConfigureAwait(false);
+                deserializedResponse = await response.Content.ReadAsAsync<T>(ct).ConfigureAwait(false);
             }
             return deserializedResponse;
         }

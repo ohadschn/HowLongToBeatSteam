@@ -149,7 +149,7 @@ function AppViewModel() {
         };
     }).extend({ rateLimit: 0 });
 
-    Chart.defaults.global.tooltipTemplate = "<%= value %>";
+    Chart.defaults.global.tooltipTemplate = "<%= value %> hours";
     Chart.defaults.global.responsive = true;
 
     var dataset = {
@@ -213,10 +213,10 @@ function AppViewModel() {
     };
 
     self.vanityUrlSubmitted = function() {
-        if (window.location.hash === "#/" + self.steamVanityUrlName()) { 
+        if (window.location.hash === "#/" + self.steamVanityUrlName()) {
             self.loadGames(); //no submission will take place since it's the same URL, so just load again
         }
-    }
+    };
 
     self.loadGames = function () {
 
@@ -320,7 +320,7 @@ $(document).ready(function () {
                 $.backstretch("destroy", false);
             }
 
-            viewModel.steamVanityUrlName(this.params['vanityUrlName']);
+            viewModel.steamVanityUrlName(this.params.vanityUrlName);
             viewModel.loadGames();
         });
     });

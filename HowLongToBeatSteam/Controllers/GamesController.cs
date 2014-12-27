@@ -5,6 +5,7 @@ using System.Configuration;
 using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Common.Entities;
@@ -21,9 +22,11 @@ namespace HowLongToBeatSteam.Controllers
     {
         private static readonly string SteamApiKey = ConfigurationManager.AppSettings["SteamApiKey"];
 
+        private static readonly int s_vanitUrlResolutionParallelization = SiteUtil.GetOptionalValueFromConfig("VanitUrlResolutionParallelization", 4);
         private const string ResolveVanityUrlFormat = @"http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key={0}&vanityurl={1}";
         private const int VanityUrlResolutionSuccess = 1;
 
+        private static readonly int s_ownedGamesRetrievalParallelization = SiteUtil.GetOptionalValueFromConfig("VanitUrlResolutionParallelization", 2);
         private const string GetOwnedSteamGamesFormat = @"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={0}&steamid={1}&format=json&include_appinfo=1";
         
         private static readonly HttpRetryClient Client = new HttpRetryClient(0);
@@ -70,8 +73,11 @@ namespace HowLongToBeatSteam.Controllers
 
             SiteEventSource.Log.HandleGetGamesRequestStart(userVanityUrlName);
 
-            long steamId = await ResolveVanityUrl(userVanityUrlName).ConfigureAwait(true);
-            var ownedGames = await GetOwnedGames(steamId).ConfigureAwait(true);
+            long steamId = await 
+                SiteUtil.GetFirstResult(ct => ResolveVanityUrl(userVanityUrlName, ct), s_vanitUrlResolutionParallelization, e => { }).ConfigureAwait(true);
+
+            var ownedGames = await 
+                SiteUtil.GetFirstResult(ct => GetOwnedGames(steamId, ct), s_ownedGamesRetrievalParallelization, e => { }).ConfigureAwait(true);
 
             SiteEventSource.Log.PrepareResponseStart();
             var games = new List<SteamApp>();
@@ -109,7 +115,7 @@ namespace HowLongToBeatSteam.Controllers
             return StorageHelper.InsertSuggestion(new SuggestionEntity(steamAppId, hltbId));
         }
 
-        private static async Task<long> ResolveVanityUrl(string userVanityUrlName)
+        private static async Task<long> ResolveVanityUrl(string userVanityUrlName, CancellationToken ct)
         {
             SiteEventSource.Log.ResolveVanityUrlStart(userVanityUrlName);
 
@@ -119,7 +125,7 @@ namespace HowLongToBeatSteam.Controllers
             }
 
             var vanityUrlResolutionResponse = await 
-                SiteUtil.GetAsync<VanityUrlResolutionResponse>(Client, string.Format(ResolveVanityUrlFormat, SteamApiKey, userVanityUrlName))
+                SiteUtil.GetAsync<VanityUrlResolutionResponse>(Client, string.Format(ResolveVanityUrlFormat, SteamApiKey, userVanityUrlName), ct)
                 .ConfigureAwait(false);
 
             if (vanityUrlResolutionResponse.response == null)
@@ -145,7 +151,7 @@ namespace HowLongToBeatSteam.Controllers
             return steam64Id;
         }
 
-        private static async Task<OwnedGame[]> GetOwnedGames(long steamId)
+        private static async Task<OwnedGame[]> GetOwnedGames(long steamId, CancellationToken ct)
         {
             if (steamId < 0)
             {
@@ -163,7 +169,7 @@ namespace HowLongToBeatSteam.Controllers
             SiteEventSource.Log.RetrieveOwnedGamesStart(steamId);
             
             var ownedGamesResponse = await
-                SiteUtil.GetAsync<OwnedGamesResponse>(Client, string.Format(GetOwnedSteamGamesFormat, SteamApiKey, steamId)).ConfigureAwait(false);
+                SiteUtil.GetAsync<OwnedGamesResponse>(Client, string.Format(GetOwnedSteamGamesFormat, SteamApiKey, steamId), ct).ConfigureAwait(false);
             
             SiteEventSource.Log.RetrieveOwnedGamesStop(steamId);
 
