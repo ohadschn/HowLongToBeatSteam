@@ -7,6 +7,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Runtime.Caching;
 using Common.Entities;
 using Common.Storage;
 using Common.Util;
@@ -21,11 +22,11 @@ namespace HowLongToBeatSteam.Controllers
     {
         private static readonly string SteamApiKey = SiteUtil.GetMandatoryValueFromConfig("SteamApiKey");
 
-        private static readonly int s_vanitUrlResolutionParallelization = SiteUtil.GetOptionalValueFromConfig("VanitUrlResolutionParallelization", 6);
+        private static readonly int s_vanitUrlResolutionParallelization = SiteUtil.GetOptionalValueFromConfig("VanitUrlResolutionParallelization", 5);
         private const string ResolveVanityUrlFormat = @"http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key={0}&vanityurl={1}";
         private const int VanityUrlResolutionSuccess = 1;
 
-        private static readonly int s_ownedGamesRetrievalParallelization = SiteUtil.GetOptionalValueFromConfig("VanitUrlResolutionParallelization", 2);
+        private static readonly int s_ownedGamesRetrievalParallelization = SiteUtil.GetOptionalValueFromConfig("OwnedGamesRetrievalParallelization", 5);
         private const string GetOwnedSteamGamesFormat = @"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={0}&steamid={1}&format=json&include_appinfo=1";
         
         private static readonly HttpRetryClient Client = new HttpRetryClient(0);
@@ -72,8 +73,19 @@ namespace HowLongToBeatSteam.Controllers
 
             SiteEventSource.Log.HandleGetGamesRequestStart(userVanityUrlName);
 
-            long steamId = await 
-                SiteUtil.GetFirstResult(ct => ResolveVanityUrl(userVanityUrlName, ct), s_vanitUrlResolutionParallelization, e => { }).ConfigureAwait(true);
+            long steamId;
+
+            var cachedSteamId = MemoryCache.Default[userVanityUrlName];
+            if (cachedSteamId != null)
+            {
+                steamId = (long) cachedSteamId;
+            }
+            else
+            {
+                steamId = await SiteUtil.GetFirstResult(
+                    ct => ResolveVanityUrl(userVanityUrlName, ct), s_vanitUrlResolutionParallelization, e => { }).ConfigureAwait(true);
+                MemoryCache.Default[userVanityUrlName] = steamId;
+            }
 
             var ownedGames = await 
                 SiteUtil.GetFirstResult(ct => GetOwnedGames(steamId, ct), s_ownedGamesRetrievalParallelization, e => { }).ConfigureAwait(true);
