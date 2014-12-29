@@ -16,8 +16,14 @@ namespace ManualTableUpdater.Updater
 
                 //SiteUtil.TraceInformation("All done!");
                 //var ids = StorageHelper.GetAllApps(e => e.SteamAppId, StorageHelper.DoesNotStartWithFilter(StorageHelper.RowKey, "Suggestion")).Result;
-                var ids = StorageHelper.GetAllApps(e => e.SteamAppId).Result;
-                Console.WriteLine(ids.Contains(12345));
+                foreach (var app in StorageHelper.GetAllApps(e => e).Result
+                    .Where(a => a.MainTtb == 0 && a.ExtrasTtb == 0 && a.CompletionistTtb == 0 && 
+                        (!a.MainTtbImputed || !a.ExtrasTtbImputed || !a.CompletionistTtbImputed)))
+                {
+                    Console.WriteLine(app);
+                }
+
+                Console.WriteLine("Press any key to continute...");
                 Console.ReadLine();
             }
             finally

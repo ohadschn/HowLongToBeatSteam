@@ -42,8 +42,8 @@ namespace SteamHltbScraper.Imputation
             foreach (var app in previous)
             {
                 app.MainTtb = app.MainTtbImputed ? 0 : app.MainTtb;
-                app.ExtrasTtb = app.ExtrasTtbImputed ? 0 : app.MainTtb;
-                app.CompletionistTtb = app.CompletionistTtbImputed ? 0 : app.MainTtb;
+                app.ExtrasTtb = app.ExtrasTtbImputed ? 0 : app.ExtrasTtb;
+                app.CompletionistTtb = app.CompletionistTtbImputed ? 0 : app.CompletionistTtb;
             }
         }
 
@@ -73,11 +73,11 @@ namespace SteamHltbScraper.Imputation
             }
         }
 
-        private static async Task ImputeCore(IReadOnlyList<AppEntity> allApps)
+        private static async Task ImputeCore(IReadOnlyList<AppEntity> notMissing)
         {
             HltbScraperEventSource.Log.CalculateImputationStart();
 
-            string imputed = await InvokeImputationService(allApps).ConfigureAwait(false);
+            string imputed = await InvokeImputationService(notMissing).ConfigureAwait(false);
 
             //skip header row and discard blank lines
             var imputedRows = imputed
@@ -85,21 +85,21 @@ namespace SteamHltbScraper.Imputation
                 .Skip(1) 
                 .Where(s => !String.IsNullOrWhiteSpace(s)).ToArray();
 
-            Trace.Assert(allApps.Count == imputedRows.Length,
-                String.Format(CultureInfo.InvariantCulture, "imputation count mismatch: expected {0}, actual {1}", allApps.Count, imputedRows.Length));
+            Trace.Assert(notMissing.Count == imputedRows.Length,
+                String.Format(CultureInfo.InvariantCulture, "imputation count mismatch: expected {0}, actual {1}", notMissing.Count, imputedRows.Length));
             
-            for (int i = 0; i < allApps.Count; i++)
+            for (int i = 0; i < notMissing.Count; i++)
             {
-                UpdateFromCsvRow(allApps[i], imputedRows[i]);
-                FixImputationMiss(allApps[i]);
+                UpdateFromCsvRow(notMissing[i], imputedRows[i]);
+                FixImputationMiss(notMissing[i]);
             }
 
             HltbScraperEventSource.Log.CalculateImputationStop();
         }
 
-        private static async Task<string> InvokeImputationService(IReadOnlyList<AppEntity> allApps)
+        private static async Task<string> InvokeImputationService(IReadOnlyList<AppEntity> notMissing)
         {
-            var blobPath = await UploadTtbInputToBlob(allApps).ConfigureAwait(false);
+            var blobPath = await UploadTtbInputToBlob(notMissing).ConfigureAwait(false);
 
             using (var client = new HttpRetryClient(20))
             {
@@ -173,10 +173,10 @@ namespace SteamHltbScraper.Imputation
             return jobId;
         }
 
-        private static async Task<string> UploadTtbInputToBlob(IReadOnlyList<AppEntity> allApps)
+        private static async Task<string> UploadTtbInputToBlob(IReadOnlyList<AppEntity> notMissing)
         {
             var csvString = "Main,Extras,Complete" + Environment.NewLine + string.Join(Environment.NewLine,
-                allApps.Select(a => string.Format(CultureInfo.InvariantCulture, "{0},{1},{2}", a.MainTtb, a.ExtrasTtb, a.CompletionistTtb)));
+                notMissing.Select(a => string.Format(CultureInfo.InvariantCulture, "{0},{1},{2}", a.MainTtb, a.ExtrasTtb, a.CompletionistTtb)));
 
             var blobName = String.Format(CultureInfo.InvariantCulture, "ttb-{0}.csv", SiteUtil.CurrentTimestamp);
 
@@ -191,13 +191,6 @@ namespace SteamHltbScraper.Imputation
             HltbScraperEventSource.Log.UploadTtbToBlobStop(blobName);
 
             return blob.Uri.LocalPath;
-        }
-
-        internal static string GetDataPath()
-        {
-            var dataPath = Environment.GetEnvironmentVariable("WEBJOBS_DATA_PATH");
-            Trace.Assert(dataPath != null, "WEBJOBS_DATA_PATH environment variable undefined!");
-            return dataPath;
         }
 
         private static void MarkImputed(IEnumerable<AppEntity> updates)

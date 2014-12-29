@@ -94,9 +94,7 @@ namespace Common.Entities
 
         public override string ToString()
         {
-            return string.Format(CultureInfo.InvariantCulture, 
-                "SteamAppId: {0}, SteamName: {1}, HltbId: {2}, HltbName: {3}, MainTtb: {4}, ExtrasTtb: {5}, CompletionistTtb: {6}",
-                SteamAppId, SteamName, HltbId, HltbName, MainTtb, ExtrasTtb, CompletionistTtb);
+            return string.Format( CultureInfo.InvariantCulture, "SteamAppId: {0}, SteamName: {1}, HltbId: {2}, HltbName: {3}, MainTtb: {4}, MainTtbImputed: {5}, ExtrasTtb: {6}, ExtrasTtbImputed: {7}, CompletionistTtb: {8}, CompletionistTtbImputed: {9}, AppType: {10}", SteamAppId, SteamName, HltbId, HltbName, MainTtb, MainTtbImputed, ExtrasTtb, ExtrasTtbImputed, CompletionistTtb, CompletionistTtbImputed, AppType);
         }
     }
 }
