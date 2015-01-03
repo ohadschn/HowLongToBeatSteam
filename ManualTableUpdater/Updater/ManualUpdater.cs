@@ -23,7 +23,7 @@ namespace ManualTableUpdater.Updater
                     Console.WriteLine(app);
                 }
 
-                Console.WriteLine("Press any key to continute...");
+                Console.WriteLine("Press any key to continue...");
                 Console.ReadLine();
             }
             finally

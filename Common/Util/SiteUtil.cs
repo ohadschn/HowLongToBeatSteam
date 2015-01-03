@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace Common.Util
 {
@@ -44,6 +45,23 @@ namespace Common.Util
                             }
                         }
                     })));
+        }
+
+        private const char ListSeparator = ';';
+        private const char ListSeparatorReplacement = '-';
+        public static string ToFlatString(this IEnumerable<string> strings)
+        {
+            return String.Join(ListSeparator.ToString(CultureInfo.InvariantCulture),
+                strings.Select(s => s.Replace(ListSeparator, ListSeparatorReplacement)));
+        }
+
+        public static string[] ToStringArray([NotNull] this string flatList)
+        {
+            if (flatList == null)
+            {
+                throw new ArgumentNullException("flatList");
+            }
+            return flatList.Split(ListSeparator);
         }
 
         public static Task<T> GetFirstResult<T>(Func<CancellationToken, Task<T>> taskFactory, int parallelization, Action<Exception> exceptionHandler)

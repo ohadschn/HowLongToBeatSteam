@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -54,11 +55,84 @@ namespace Common.Store
                     continue;
                 }
 
-                CommonEventSource.Log.CategorizingApp(app.AppId, app.Name, type);
-                updates.Add(new AppEntity(app.AppId, app.Name, type));
+                if (type == AppEntity.UnknownType)
+                {
+                    CommonEventSource.Log.CategorizingUnknownApp(app.AppId, app.Name);
+                    updates.Add(new AppEntity(app.AppId, app.Name, AppEntity.UnknownType));
+                    return;
+                }
+
+                Trace.Assert(appInfo.data != null, "appInfo.data != null");
+                var platforms = GetPlatforms(appInfo);
+                var categories = GetCategories(appInfo.data.categories);
+                var genres = GetGenres(appInfo.data.genres);
+                var publishers = GetDistinctListOrUnknown(appInfo.data.publishers);
+                var developers = GetDistinctListOrUnknown(appInfo.data.developers);
+                var releaseDate = GetReleaseDate(appInfo.data.release_date);
+                var metaCriticScore = GetMetaCriticScore(appInfo.data.metacritic);
+                CommonEventSource.Log.CategorizingApp(app.AppId, app.Name, type, platforms, categories.ToFlatString(),
+                    genres.ToFlatString(), publishers.ToFlatString(), developers.ToFlatString(), releaseDate, metaCriticScore);
+                updates.Add(new AppEntity(app.AppId, app.Name, type, platforms, categories, genres, publishers, developers, releaseDate, metaCriticScore));
             }
 
             CommonEventSource.Log.RetrieveStoreInformationStop(start, counter, requestUrl);
+        }
+
+        private static readonly string[] Unknown = { "Unknown" };
+        private static IReadOnlyList<string> GetGenres(IEnumerable<Genre> genres)
+        {
+            return genres == null
+                ? Unknown
+                : GetDistinctListOrUnknown(genres.Select(g => g.description));
+        }
+
+        private static IReadOnlyList<string> GetCategories(IEnumerable<Category> categories)
+        {
+            return categories == null
+                ? Unknown
+                : GetDistinctListOrUnknown(categories.Select(c => c.description));
+        }
+
+        private static IReadOnlyList<string> GetDistinctListOrUnknown(IEnumerable<string> values)
+        {
+            if (values == null)
+            {
+                return Unknown;
+            }
+            var distinct = values.Where(s => !String.IsNullOrWhiteSpace(s)).Distinct().ToArray();
+            return (distinct.Length > 0) ? distinct : Unknown;
+        }
+
+        private static DateTime GetReleaseDate(ReleaseDate releaseDate)
+        {
+            if (releaseDate == null)
+            {
+                return DateTime.MaxValue;
+            }
+
+            DateTime ret;
+            return DateTime.TryParse(releaseDate.date, out ret)
+                ? ret
+                : DateTime.MaxValue;
+        }
+
+        private static int GetMetaCriticScore(Metacritic metacritic)
+        {
+            return metacritic == null
+                ? -1
+                : metacritic.score;
+        }
+
+        private static Entities.Platforms GetPlatforms(StoreAppInfo appInfo)
+        {
+            if (appInfo.data.platforms == null)
+            {
+                return Entities.Platforms.None;
+            }
+
+            return (appInfo.data.platforms.windows ? Entities.Platforms.Windows : Entities.Platforms.None)
+                   | (appInfo.data.platforms.mac ? Entities.Platforms.Mac : Entities.Platforms.None)
+                   | (appInfo.data.platforms.linux ? Entities.Platforms.Linux : Entities.Platforms.None);
         }
     }
 

@@ -1,12 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using Common.Storage;
+using Common.Util;
+using JetBrains.Annotations;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Common.Entities
 {
+    [Flags]
+    public enum Platforms
+    {
+        None,
+        Windows,
+        Mac,
+        Linux
+    }
     public class AppEntity : TableEntity
     {
         public const int Buckets = 20;
@@ -26,11 +37,43 @@ namespace Common.Entities
         public int CompletionistTtb { get; set; }
         public bool CompletionistTtbImputed { get; set; }
         public string AppType { get; set; }
+        public int PlatformsValue { get; set; } //for use by the Azure client libraries only
+        [IgnoreProperty] public Platforms Platforms
+        {
+            get { return (Platforms) PlatformsValue; }
+            set { PlatformsValue = (int) value; }
+        }
+        public string CategoriesFlat { get; set; } //for use by the Azure client libraries only
+        [IgnoreProperty] public IReadOnlyList<string> Categories 
+        {
+            get { return CategoriesFlat.ToStringArray(); }
+            set { CategoriesFlat = value.ToFlatString(); }
+        }
+        public string GenresFlat { get; set; } //for use by the Azure client libraries only
+        [IgnoreProperty] public IReadOnlyList<string> Genres
+        {
+            get { return GenresFlat.ToStringArray(); }
+            set { GenresFlat = value.ToFlatString(); }
+        }
 
-        [IgnoreProperty]
-        public int Bucket { get { return int.Parse(PartitionKey, CultureInfo.InvariantCulture); } }
-        [IgnoreProperty]
-        public bool Measured { get { return RowKey.StartsWith(MeasuredKey, StringComparison.Ordinal); } }
+        public string DevelopersFlat { get; set; } //for use by the Azure client libraries only
+        [IgnoreProperty] public IReadOnlyList<string> Developers
+        {
+            get { return DevelopersFlat.ToStringArray(); }
+            set { DevelopersFlat = value.ToFlatString(); }
+        }
+
+        public string PublishersFlat { get; set; } //for use by the Azure client libraries only
+        [IgnoreProperty] public IReadOnlyList<string> Publishers
+        {
+            get { return PublishersFlat.ToStringArray(); } 
+            set { PublishersFlat = value.ToFlatString(); }
+        }
+        public DateTime ReleaseDate { get; set; }
+        public int MetacriticScore { get; set; }
+
+        [IgnoreProperty] public int Bucket { get { return int.Parse(PartitionKey, CultureInfo.InvariantCulture); } }
+        [IgnoreProperty] public bool Measured { get { return RowKey.StartsWith(MeasuredKey, StringComparison.Ordinal); } }
 
         public static string MeasuredFilter
         {
@@ -42,6 +85,41 @@ namespace Common.Entities
             get { return StorageHelper.StartsWithFilter(StorageHelper.RowKey, String.Format(CultureInfo.InvariantCulture, "{0}_{1}", UnmeasuredKey, UnknownType)); }
         }
 
+        public AppEntity() //required by azure storage client library
+        {
+        }
+
+        public AppEntity(int steamAppId, string steamName, string appType, Platforms platforms,
+            [NotNull] IReadOnlyList<string> categories, [NotNull] IReadOnlyList<string> genres,
+            [NotNull] IReadOnlyList<string> publishers, [NotNull] IReadOnlyList<string> developers, 
+            DateTime releaseDate, int metacriticScore)
+            : this(steamAppId, steamName, appType)
+        {
+            if (categories == null)
+            {
+                throw new ArgumentNullException("categories");
+            }
+            if (genres == null)
+            {
+                throw new ArgumentNullException("genres");
+            }
+            if (publishers == null)
+            {
+                throw new ArgumentNullException("publishers");
+            }
+            if (developers == null)
+            {
+                throw new ArgumentNullException("developers");
+            }
+            Platforms = platforms;
+            Categories = categories;
+            Genres = genres;
+            Publishers = publishers;
+            Developers = developers;
+            ReleaseDate = releaseDate;
+            MetacriticScore = metacriticScore;
+        }
+
         public AppEntity(int steamAppId, string steamName, string appType) : base(
                 GetPartitionKey(steamAppId),
                 GetRowKey(steamAppId, appType))
@@ -49,6 +127,7 @@ namespace Common.Entities
             SteamAppId = steamAppId;
             SteamName = steamName;
             AppType = appType;
+
             HltbId = -1;
             HltbName = null;
             MainTtb = 0;
@@ -85,11 +164,7 @@ namespace Common.Entities
             {
                 hash = md5.ComputeHash(Encoding.UTF8.GetBytes(steamAppId.ToString(CultureInfo.InvariantCulture)));
             }
-            return Math.Abs(BitConverter.ToInt32(hash, 0) % Buckets);
-        }
-
-        public AppEntity() //needed by Azure client library
-        {
+            return Math.Abs(BitConverter.ToInt32(hash, 0)%Buckets);
         }
 
         public override string ToString()

@@ -20,9 +20,10 @@ namespace Common.Storage
         public const string RowKey = "RowKey";
 
         private const int MaxBatchOperations = 100;
-        public static readonly string AzureStorageConnectionString = SiteUtil.GetMandatoryCustomConnectionStringFromConfig("Hltbs");
+
         private static readonly string SteamToHltbTableName = SiteUtil.GetMandatoryValueFromConfig("SteamToHltbTableName");
-        
+        public static readonly string AzureStorageConnectionString = SiteUtil.GetMandatoryCustomConnectionStringFromConfig("HltbsTables");
+        public static readonly string AzureStorageBlobConnectionString = SiteUtil.GetMandatoryCustomConnectionStringFromConfig("HltbsBlobs");        
         private static readonly TimeSpan DefaultDeltaBackoff = TimeSpan.FromSeconds(4);
 
         public static async Task<ConcurrentBag<T>> GetAllApps<T>(Func<AppEntity, T> selector, string rowFilter = null, int retries = -1)

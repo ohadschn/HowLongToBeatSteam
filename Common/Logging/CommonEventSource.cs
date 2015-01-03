@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.Tracing;
+using Common.Entities;
 
 namespace Common.Logging
 {
@@ -159,12 +160,23 @@ namespace Common.Logging
 
         [Event(
             7,
-            Message = "Categorizing {0} / {1} as '{2}'",
+            Message = "Categorizing {0} / {1} as 'Unknown'",
             Keywords = Keywords.StoreApi,
             Level = EventLevel.Informational)]
-        public void CategorizingApp(int appId, string name, string type)
+        public void CategorizingUnknownApp(int appId, string name)
         {
-            WriteEvent(7, appId, name, type);
+            WriteEvent(7, appId, name);
+        }
+
+        [Event(
+            107,
+            Message = "Categorizing {0} / {1} as '{2}'. Platforms: {3}. Categories: {4}. Genres: {5}. Publishers: {6}. Developers: {7}. Release date: {8}. MetaCritic score: {9}",
+            Keywords = Keywords.StoreApi,
+            Level = EventLevel.Informational)]
+        public void CategorizingApp(int appId, string name, string type, Platforms platforms, string categories, string genres, 
+            string publishers, string developers, DateTime releaseDate, int metacriticScore)
+        {
+            WriteEvent(107, appId, name, type, (int)platforms, categories, genres, publishers, developers, releaseDate, metacriticScore);
         }
 
         [Event(
