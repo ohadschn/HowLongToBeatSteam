@@ -109,7 +109,9 @@
                         <th class="compressed">
                             <input type="checkbox" data-bind="click: $root.toggleAll, checked: $root.toggleAllChecked()" />
                         </th>
+                        <!-- ReSharper disable UnknownCssClass -->
                         <th class="sortable expanded" unselectable="on" data-bind="click: toggleSort('steamName')">
+                        <!-- ReSharper restore UnknownCssClass -->
                             Game
                             <span data-bind="css: sortClass('steamName')" aria-hidden="true"></span>
                         </th>
@@ -141,7 +143,9 @@
                                   title="Time to complete all possible objectives (hours)">Complete</span>
                             <span data-bind="css: sortClass('hltbCompletionistTtb')" aria-hidden="true"></span>
                         </th>
+                        <!-- ReSharper disable UnknownCssClass -->
                         <th class="expanded">HLTB Name</th>
+                        <!-- ReSharper restore UnknownCssClass -->
                         <th class="compressed">HLTB ID</th>
                     </tr>
                 </thead>

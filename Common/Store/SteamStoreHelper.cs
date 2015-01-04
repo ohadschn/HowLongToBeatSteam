@@ -70,26 +70,25 @@ namespace Common.Store
                 var developers = GetDistinctListOrUnknown(appInfo.data.developers);
                 var releaseDate = GetReleaseDate(appInfo.data.release_date);
                 var metaCriticScore = GetMetaCriticScore(appInfo.data.metacritic);
-                CommonEventSource.Log.CategorizingApp(app.AppId, app.Name, type, platforms, categories.ToFlatString(),
-                    genres.ToFlatString(), publishers.ToFlatString(), developers.ToFlatString(), releaseDate, metaCriticScore);
+                CommonEventSource.Log.CategorizingApp(app.AppId, app.Name, type, platforms, categories.ToFlatString(), genres.ToFlatString(), 
+                    publishers.ToFlatString(), developers.ToFlatString(), releaseDate.ToString(CultureInfo.InvariantCulture), metaCriticScore);
                 updates.Add(new AppEntity(app.AppId, app.Name, type, platforms, categories, genres, publishers, developers, releaseDate, metaCriticScore));
             }
 
             CommonEventSource.Log.RetrieveStoreInformationStop(start, counter, requestUrl);
         }
 
-        private static readonly string[] Unknown = { "Unknown" };
         private static IReadOnlyList<string> GetGenres(IEnumerable<Genre> genres)
         {
             return genres == null
-                ? Unknown
+                ? AppEntity.UnknownList
                 : GetDistinctListOrUnknown(genres.Select(g => g.description));
         }
 
         private static IReadOnlyList<string> GetCategories(IEnumerable<Category> categories)
         {
             return categories == null
-                ? Unknown
+                ? AppEntity.UnknownList
                 : GetDistinctListOrUnknown(categories.Select(c => c.description));
         }
 
@@ -97,29 +96,29 @@ namespace Common.Store
         {
             if (values == null)
             {
-                return Unknown;
+                return AppEntity.UnknownList;
             }
             var distinct = values.Where(s => !String.IsNullOrWhiteSpace(s)).Distinct().ToArray();
-            return (distinct.Length > 0) ? distinct : Unknown;
+            return (distinct.Length > 0) ? distinct : AppEntity.UnknownList;
         }
 
         private static DateTime GetReleaseDate(ReleaseDate releaseDate)
         {
             if (releaseDate == null)
             {
-                return DateTime.MaxValue;
+                return AppEntity.UnknownDate;
             }
 
             DateTime ret;
             return DateTime.TryParse(releaseDate.date, out ret)
                 ? ret
-                : DateTime.MaxValue;
+                : AppEntity.UnknownDate;
         }
 
         private static int GetMetaCriticScore(Metacritic metacritic)
         {
             return metacritic == null
-                ? -1
+                ? AppEntity.UnknownScore
                 : metacritic.score;
         }
 

@@ -19,7 +19,7 @@ namespace SteamHltbScraper.Imputation
     {
         internal const string ImputedCsvFileName = "imputed.csv";
         private static readonly string ApiKey = SiteUtil.GetMandatoryValueFromConfig("AzureMlImputeApiKey");
-        private const string AzureMlImputeServiceBaseUrl = @"https://ussouthcentral.services.azureml.net/workspaces/379440377d144ed7b3e82e952cfc2819/services/59552aca10d942899334d43f70a5131a/jobs";
+        private static readonly string AzureMlImputeServiceBaseUrl = SiteUtil.GetMandatoryValueFromConfig("AzureMlImputeServiceBaseUrl");
         private static readonly int AzureMlImputePollIntervalMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollIntervalMs", 1000);
         private static readonly int AzureMlImputePollTimeoutMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollTimeoutMs", 120 * 1000);
 
@@ -156,7 +156,7 @@ namespace SteamHltbScraper.Imputation
             {
                 Input = new AzureBlobDataReference
                 {
-                    ConnectionString = StorageHelper.AzureStorageConnectionString,
+                    ConnectionString = StorageHelper.AzureStorageBlobConnectionString,
                     RelativeLocation = inputBlobPath,
                 },
                 GlobalParameters = new Dictionary<string, string>(),

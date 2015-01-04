@@ -22,7 +22,7 @@ namespace MissingGamesUpdater.Updater
             try
             {
                 SiteUtil.SetDefaultConnectionLimit();
-                using (s_client = new HttpRetryClient(100))
+                using (s_client = new HttpRetryClient(200))
                 {
                     UpdateMissingGames().Wait();                
                 }
@@ -51,8 +51,8 @@ namespace MissingGamesUpdater.Updater
             var updates = await SteamStoreHelper.GetStoreInformationUpdates(missingApps.Select(a => new BasicStoreInfo(a.appid, a.name, null)), s_client)
                 .ConfigureAwait(false);
 
-            await StorageHelper.InsertApps(updates, 5).ConfigureAwait(false);     //we're inserting new entries, no fear of collisions 
-            MissingUpdaterEventSource.Log.UpdateMissingGamesStop();            //(even if two jobs overlap the next one will fix it)
+            await StorageHelper.InsertApps(updates, 5).ConfigureAwait(false);       //we're inserting new entries, no fear of collisions 
+            MissingUpdaterEventSource.Log.UpdateMissingGamesStop();                 //(even if two jobs overlap the next one will fix it)
         }
 
         private static async Task<IList<App>> GetAllSteamApps()

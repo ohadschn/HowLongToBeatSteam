@@ -91,7 +91,7 @@
     <CodeAnalysisDictionary Include="..\CustomDictionary.xml">
       <Link>Properties\CustomDictionary.xml</Link>
     </CodeAnalysisDictionary>
-    <Content Include="bower_components\knockout-datatable\knockout-datatable.js" />
+    <None Include="bower_components\knockout-datatable\knockout-datatable.js" />
     <Content Include="bower_components\knockout-datatable\knockout-datatable.min.js" />
     <Content Include="Global.asax" />
     <Content Include="Index.html" />

@@ -14,7 +14,7 @@ namespace Common.Logging
         {
             var listener = new ObservableEventListener();
             listener.EnableEvents(this, EventLevel.LogAlways, Keywords.All);
-            listener.LogToWindowsAzureTable("AzureTable", StorageHelper.AzureStorageConnectionString);
+            listener.LogToWindowsAzureTable("AzureTable", StorageHelper.AzureStorageTablesConnectionString);
             if (s_logToConsole)
             {
                 listener.LogToConsole();

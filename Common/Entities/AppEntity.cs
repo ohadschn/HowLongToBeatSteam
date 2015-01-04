@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
@@ -13,10 +14,10 @@ namespace Common.Entities
     [Flags]
     public enum Platforms
     {
-        None,
-        Windows,
-        Mac,
-        Linux
+        None    = 0,
+        Windows = 1,
+        Mac     = 2,
+        Linux   = 4,
     }
     public class AppEntity : TableEntity
     {
@@ -25,6 +26,10 @@ namespace Common.Entities
         public const string UnknownType = "Unknown";
         private const string MeasuredKey = "Measured";
         private const string UnmeasuredKey = "Unmeasured";
+
+        public static readonly IReadOnlyList<string> UnknownList = new ReadOnlyCollection<string>(new[] { "Unknown" });
+        public static readonly DateTime UnknownDate = new DateTime(1800, 01, 01); //has to be later than 1600 for Windows file time compatibility
+        public static readonly int UnknownScore = -1;
 
         public int SteamAppId { get; set; }
         public string SteamName { get; set; }
@@ -136,6 +141,14 @@ namespace Common.Entities
             ExtrasTtbImputed = true;
             CompletionistTtb = 0;
             CompletionistTtbImputed = true;
+
+            Platforms = Platforms.None;
+            Categories = UnknownList;
+            Genres = UnknownList;
+            Publishers = UnknownList;
+            Developers = UnknownList;
+            ReleaseDate = UnknownDate;
+            MetacriticScore = UnknownScore;
         }
 
         internal static string GetPartitionKey(int steamAppId)

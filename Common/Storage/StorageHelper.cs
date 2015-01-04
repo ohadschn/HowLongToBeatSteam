@@ -22,7 +22,7 @@ namespace Common.Storage
         private const int MaxBatchOperations = 100;
 
         private static readonly string SteamToHltbTableName = SiteUtil.GetMandatoryValueFromConfig("SteamToHltbTableName");
-        public static readonly string AzureStorageConnectionString = SiteUtil.GetMandatoryCustomConnectionStringFromConfig("HltbsTables");
+        public static readonly string AzureStorageTablesConnectionString = SiteUtil.GetMandatoryCustomConnectionStringFromConfig("HltbsTables");
         public static readonly string AzureStorageBlobConnectionString = SiteUtil.GetMandatoryCustomConnectionStringFromConfig("HltbsBlobs");        
         private static readonly TimeSpan DefaultDeltaBackoff = TimeSpan.FromSeconds(4);
 
@@ -179,7 +179,7 @@ namespace Common.Storage
 
         private static CloudTableClient GetCloudTableClient(int retries)
         {
-            var cloudTableClient = CloudStorageAccount.Parse(AzureStorageConnectionString).CreateCloudTableClient();
+            var cloudTableClient = CloudStorageAccount.Parse(AzureStorageTablesConnectionString).CreateCloudTableClient();
             if (retries >= 0)
             {
                 cloudTableClient.RetryPolicy = new ExponentialRetry(DefaultDeltaBackoff, retries);
@@ -189,7 +189,7 @@ namespace Common.Storage
 
         public static CloudBlobClient GetCloudBlobClient(int retries)
         {
-            var cloudBlobClient = CloudStorageAccount.Parse(AzureStorageConnectionString).CreateCloudBlobClient();
+            var cloudBlobClient = CloudStorageAccount.Parse(AzureStorageBlobConnectionString).CreateCloudBlobClient();
             if (retries >= 0)
             {
                 cloudBlobClient.RetryPolicy = new ExponentialRetry(DefaultDeltaBackoff, retries);

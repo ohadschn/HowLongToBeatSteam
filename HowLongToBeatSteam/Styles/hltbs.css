@@ -23,13 +23,19 @@
   padding: 5px 10px 5px;
 }
 .body-intro {
-    backgroundColor : black;
+    /* ReSharper disable CssNotResolved */
+    backgroundColor : black; 
+    /* ReSharper restore CssNotResolved */
     background-color: black;
 }
 .header-intro {
     color: white;
+    /* ReSharper disable CssNotResolved */
+    /* ReSharper disable RequiresFallbackColor */
     backgroundColor: black;
     backgroundColor: rgba(0, 0, 0, 0.2);
+    /* ReSharper restore RequiresFallbackColor */
+    /* ReSharper restore CssNotResolved */
     background-color: black;
     background-color: rgba(0, 0, 0, 0.2);
 }
@@ -62,9 +68,13 @@ table tbody tr td.vcenter {
 }
 .sortable {
     cursor: pointer;
+    /* ReSharper disable UnknownCssVendorExtension */
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+    /* ReSharper restore UnknownCssVendorExtension */
+    /* ReSharper disable CssBrowserCompatibility */
     user-select: none;
+    /* ReSharper restore CssBrowserCompatibility */
 }

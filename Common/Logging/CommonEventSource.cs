@@ -174,7 +174,7 @@ namespace Common.Logging
             Keywords = Keywords.StoreApi,
             Level = EventLevel.Informational)]
         public void CategorizingApp(int appId, string name, string type, Platforms platforms, string categories, string genres, 
-            string publishers, string developers, DateTime releaseDate, int metacriticScore)
+            string publishers, string developers, string releaseDate, int metacriticScore)
         {
             WriteEvent(107, appId, name, type, (int)platforms, categories, genres, publishers, developers, releaseDate, metacriticScore);
         }
