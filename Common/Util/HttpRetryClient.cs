@@ -112,7 +112,8 @@ namespace Common.Util
         {
             var retryPolicy = new RetryPolicy(CatchAllStrategy, new ExponentialBackoff(m_retries, MinBackoff, MaxBackoff, DefaultClientBackoff));
 
-            retryPolicy.Retrying += (sender, args) => CommonEventSource.Log.HttpRequestFailed(uri, args.LastException, args.CurrentRetryCount, args.Delay);
+            retryPolicy.Retrying += (sender, args) => 
+                CommonEventSource.Log.HttpRequestFailed(uri, args.LastException, args.CurrentRetryCount, m_retries, args.Delay);
 
             return retryPolicy.ExecuteAsync(async () =>
             {

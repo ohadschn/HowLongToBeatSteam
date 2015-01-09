@@ -42,6 +42,7 @@ namespace SteamHltbScraper.Logging
             public const EventTask Impute = (EventTask) 11;
             public const EventTask UploadTtbToBlob = (EventTask) 12;
             public const EventTask PollImputationJobStatus = (EventTask) 13;
+            public const EventTask ImputeGenre = (EventTask) 14;
         }
 // ReSharper restore ConvertToStaticClass
 
@@ -501,13 +502,70 @@ namespace SteamHltbScraper.Logging
         }
 
         [Event(
+            125,
+            Message = "Start imputing genre {0} ({1} games)",
+            Keywords = Keywords.Imputation,
+            Level = EventLevel.Informational,
+            Task = Tasks.ImputeGenre,
+            Opcode = EventOpcode.Start)]
+        public void ImputeGenreStart(string genre, int count)
+        {
+            WriteEvent(125, genre, count);
+        }
+
+        [Event(
+            126,
+            Message = "Finished imputing genre {0} ({1} games)",
+            Keywords = Keywords.Imputation,
+            Level = EventLevel.Informational,
+            Task = Tasks.ImputeGenre,
+            Opcode = EventOpcode.Stop)]
+        public void ImputeGenreStop(string genre, int count)
+        {
+            WriteEvent(126, genre, count);
+        }
+
+        [Event(
             27,
-            Message = "Imputation miss of type {0}: {1} > {2}",
+            Message = "Imputation miss in game {0} ({1}): {2}/{3}/{4} (imputed: {8}/{9}/{10}) Substituted with: {5}/{6}/{7}",
             Keywords = Keywords.Imputation,
             Level = EventLevel.Warning)]
-        public void ImputationMiss(string missType, int large, int small)
+        public void ImputationMiss(
+            string steamName, int steamId, int originalImputedMain, int originalImputedExtras, int originalImputedCompletionist, 
+            int main, int extras, int completionist, bool mainImputed, bool extrasImputed, bool completionistImputed)
         {
-            WriteEvent(27, missType, large, small);
+            WriteEvent(27, steamName, steamId, originalImputedMain, originalImputedExtras, originalImputedCompletionist, 
+                main, extras, completionist, mainImputed, extrasImputed, completionistImputed);
+        }
+
+        [Event(
+            127,
+            Message = "Error imputing genre {0} - falling back to unified imputation values",
+            Keywords = Keywords.Imputation,
+            Level = EventLevel.Warning)]
+        public void ImputationError(string genre)
+        {
+            WriteEvent(127, genre);
+        }
+
+        [Event(
+            227,
+            Message = "Imputation overrode original value. Game: {0}/{1}. Original {2}: {3}. Imputed {2}: {4}",
+            Keywords = Keywords.Imputation,
+            Level = EventLevel.Error)]
+        public void ImputationOverrodeOriginalValue(int steamId, string steamName, string ttbType, int original, int overriden)
+        {
+            WriteEvent(227, steamId, steamName, ttbType, original, overriden);
+        }
+
+        [Event(
+            327,
+            Message = "Genre {0} has no TTBs",
+            Keywords = Keywords.Imputation,
+            Level = EventLevel.Error)]
+        public void GenreHasNoTtbs(string genre)
+        {
+            WriteEvent(327, genre);
         }
 
         [Event(

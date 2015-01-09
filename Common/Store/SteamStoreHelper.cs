@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -51,38 +50,72 @@ namespace Common.Store
 
                 if (app.AppType == type)
                 {
-                    CommonEventSource.Log.SkippedCategorizedApp(app.AppId, app.Name, type);
+                    CommonEventSource.Log.SkippedPopulatedApp(app.AppId, app.Name, type);
                     continue;
                 }
 
                 if (type == AppEntity.UnknownType)
                 {
-                    CommonEventSource.Log.CategorizingUnknownApp(app.AppId, app.Name);
+                    CommonEventSource.Log.PopulatingUnknownApp(app.AppId, app.Name);
                     updates.Add(new AppEntity(app.AppId, app.Name, AppEntity.UnknownType));
                     return;
                 }
 
-                Trace.Assert(appInfo.data != null, "appInfo.data != null");
-                var platforms = GetPlatforms(appInfo);
-                var categories = GetCategories(appInfo.data.categories);
-                var genres = GetGenres(appInfo.data.genres);
-                var publishers = GetDistinctListOrUnknown(appInfo.data.publishers);
-                var developers = GetDistinctListOrUnknown(appInfo.data.developers);
-                var releaseDate = GetReleaseDate(appInfo.data.release_date);
-                var metaCriticScore = GetMetaCriticScore(appInfo.data.metacritic);
-                CommonEventSource.Log.CategorizingApp(app.AppId, app.Name, type, platforms, categories.ToFlatString(), genres.ToFlatString(), 
-                    publishers.ToFlatString(), developers.ToFlatString(), releaseDate.ToString(CultureInfo.InvariantCulture), metaCriticScore);
-                updates.Add(new AppEntity(app.AppId, app.Name, type, platforms, categories, genres, publishers, developers, releaseDate, metaCriticScore));
+                PopulateApp(updates, appInfo, app, type);
             }
 
             CommonEventSource.Log.RetrieveStoreInformationStop(start, counter, requestUrl);
         }
 
+        private static void PopulateApp(ConcurrentBag<AppEntity> updates, StoreAppInfo appInfo, BasicStoreInfo app, string type)
+        {
+            var platforms = GetPlatforms(appInfo);
+            var categories = GetCategories(appInfo.data.categories);
+            var genres = GetGenres(appInfo.data.genres);
+            var publishers = GetDistinctListOrUnknown(appInfo.data.publishers);
+            var developers = GetDistinctListOrUnknown(appInfo.data.developers);
+            var releaseDate = GetReleaseDate(appInfo.data.release_date);
+            var metaCriticScore = GetMetaCriticScore(appInfo.data.metacritic);
+
+            if (ContainsAppGenre(genres))
+            {
+                type = "app";
+            }
+            else if (!categories.Contains("Single-player", StringComparer.OrdinalIgnoreCase))
+            {
+                type = "multiplayerOnlyGame";
+            }
+
+            CommonEventSource.Log.PopulateApp(
+                app.AppId, app.Name, type, platforms, categories.ToFlatString(), genres.ToFlatString(), 
+                publishers.ToFlatString(), developers.ToFlatString(), releaseDate.ToString(CultureInfo.InvariantCulture), metaCriticScore);
+
+            updates.Add(new AppEntity(app.AppId, app.Name, type, platforms, categories, genres, publishers, developers, releaseDate, metaCriticScore));
+        }
+
+        private static bool ContainsAppGenre(IReadOnlyList<string> genres)
+        {
+            var currentAppGenres = new HashSet<string>(genres, StringComparer.OrdinalIgnoreCase);
+            currentAppGenres.IntersectWith(new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Audio Production",
+                "Video Production",
+                "Web Publishing",
+                "Utilities",
+                "Design & Illustration",
+                "Animation & Modeling",
+                "Accounting",
+                "Education",
+            });
+            return currentAppGenres.Count > 0;
+        }
+
         private static IReadOnlyList<string> GetGenres(IEnumerable<Genre> genres)
         {
+            var nonGenres = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {"Free to Play", "Early Access"};
             return genres == null
                 ? AppEntity.UnknownList
-                : GetDistinctListOrUnknown(genres.Select(g => g.description));
+                : GetDistinctListOrUnknown(genres.Select(g => g.description).Where(g => !nonGenres.Contains(g)));
         }
 
         private static IReadOnlyList<string> GetCategories(IEnumerable<Category> categories)

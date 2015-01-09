@@ -49,8 +49,12 @@ namespace Common.Util
 
         private const char ListSeparator = ';';
         private const char ListSeparatorReplacement = '-';
-        public static string ToFlatString(this IEnumerable<string> strings)
+        public static string ToFlatString([NotNull] this IEnumerable<string> strings)
         {
+            if (strings == null)
+            {
+                throw new ArgumentNullException("strings");
+            }
             return String.Join(ListSeparator.ToString(CultureInfo.InvariantCulture),
                 strings.Select(s => s.Replace(ListSeparator, ListSeparatorReplacement)));
         }
@@ -271,6 +275,11 @@ namespace Common.Util
             }
         }
 
+        public static string GetOptionalValueFromConfig(string key, string defaultValue)
+        {
+            return GetValueFromConfig(key) ?? defaultValue;
+        }
+
         public static int GetOptionalValueFromConfig(string key, int defaultValue)
         {
             int val;
@@ -297,7 +306,7 @@ namespace Common.Util
             return val;
         }
 
-        private static string GetValueFromConfig(string key)
+        public static string GetValueFromConfig(string key)
         {
             return ConfigurationManager.AppSettings[key] ?? Environment.GetEnvironmentVariable(key);
         }

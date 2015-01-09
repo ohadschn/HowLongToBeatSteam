@@ -10,6 +10,8 @@
             <Word>Co</Word>
            <Word>Proxify</Word>
            <Word>Metacritic</Word>
+           <Word>Overriden</Word>
+           <Word>dlc</Word>
          </Recognized>
 		    <Compound>
             <Term CompoundAlternate="CoOp">coop</Term>

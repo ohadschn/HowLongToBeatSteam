@@ -15,6 +15,20 @@ using SteamHltbScraper.Logging;
 
 namespace SteamHltbScraper.Imputation
 {
+    internal class TtbRatios
+    {
+        public double MainExtras { get; private set; }
+        public double ExtrasCompletionist { get; private set; }
+        public double ExtrasPlacement { get; private set; }
+
+        public TtbRatios(double mainExtras, double extrasCompletionist, double extrasPlacement)
+        {
+            MainExtras = mainExtras;
+            ExtrasCompletionist = extrasCompletionist;
+            ExtrasPlacement = extrasPlacement;
+        }
+    }
+
     public static class Imputer
     {
         internal const string ImputedCsvFileName = "imputed.csv";
@@ -22,86 +36,163 @@ namespace SteamHltbScraper.Imputation
         private static readonly string AzureMlImputeServiceBaseUrl = SiteUtil.GetMandatoryValueFromConfig("AzureMlImputeServiceBaseUrl");
         private static readonly int AzureMlImputePollIntervalMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollIntervalMs", 1000);
         private static readonly int AzureMlImputePollTimeoutMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollTimeoutMs", 120 * 1000);
+        private static readonly string BlobContainerName = SiteUtil.GetOptionalValueFromConfig("BlobContainerName", "jobdata");
 
         internal static async Task Impute(IReadOnlyList<AppEntity> allApps, IReadOnlyList<AppEntity> updates)
         {
             HltbScraperEventSource.Log.ImputeStart();
 
             MarkImputed(updates);
-            ZeroPreviouslyImputed(allApps.Except(updates));
 
-            var notMissing = allApps.Where(a => !a.MainTtbImputed || !a.ExtrasTtbImputed || !a.CompletionistTtbImputed).ToArray();
-            await ImputeCore(notMissing).ConfigureAwait(false);
-            FillMissing(allApps, notMissing);
+            //first impute all together
+            const string allGenre = "<ALL>";
+            HltbScraperEventSource.Log.ImputeGenreStart(allGenre, allApps.Count);
+            var totalRatios = GetTtbRatios(allApps, null);
+            await Impute(allApps, allGenre, totalRatios, true).ConfigureAwait(false);
+            HltbScraperEventSource.Log.ImputeGenreStop(allGenre, allApps.Count);
+
+            //now impute separately - if any genre fails, fall back to the coarse-grained imputed values calculated above
+            foreach (var genreApps in allApps.GroupBy(a => String.Format("{0} ({1})", a.Genres.First(), a.IsGame ? "game" : "dlc/mod")))
+            {
+                string genre = genreApps.Key;
+                var genreAppsArr = genreApps.ToArray();
+
+                HltbScraperEventSource.Log.ImputeGenreStart(genre, genreAppsArr.Length);
+                await Impute(genreAppsArr, genre, GetTtbRatios(genreAppsArr, totalRatios), false).ConfigureAwait(false);
+                HltbScraperEventSource.Log.ImputeGenreStop(genre, genreAppsArr.Length);
+            }
 
             HltbScraperEventSource.Log.ImputeStop();
         }
 
-        private static void ZeroPreviouslyImputed(IEnumerable<AppEntity> previous)
+        private static TtbRatios GetTtbRatios(IReadOnlyCollection<AppEntity> apps, TtbRatios fallback)
         {
-            foreach (var app in previous)
+            var ratios = GetTtbRatiosCore(apps);
+
+            const double tolerance = 0.0001;
+            bool mainExtrasMissing = Math.Abs(ratios.MainExtras) < tolerance;
+            bool extrasCompletionistMissing = Math.Abs(ratios.ExtrasCompletionist) < tolerance;
+            bool extrasPlacementMissing = Math.Abs(ratios.ExtrasPlacement) < tolerance;
+
+            if (fallback == null && (mainExtrasMissing || extrasCompletionistMissing || extrasPlacementMissing))
             {
-                app.MainTtb = app.MainTtbImputed ? 0 : app.MainTtb;
-                app.ExtrasTtb = app.ExtrasTtbImputed ? 0 : app.ExtrasTtb;
-                app.CompletionistTtb = app.CompletionistTtbImputed ? 0 : app.CompletionistTtb;
+                throw new InvalidOperationException("No record exists for which both main and extras (or extras and completionist) are present");
             }
+
+            return new TtbRatios(
+                mainExtrasMissing ? fallback.MainExtras : ratios.MainExtras,
+                extrasCompletionistMissing ? fallback.ExtrasCompletionist : ratios.ExtrasCompletionist,
+                extrasPlacementMissing ? fallback.ExtrasPlacement : ratios.ExtrasPlacement);
         }
 
-        private static void FillMissing(IReadOnlyList<AppEntity> allApps, IReadOnlyList<AppEntity> notMissing)
+        private static TtbRatios GetTtbRatiosCore(IReadOnlyCollection<AppEntity> apps)
         {
+            var mainExtrasRatios = apps
+                .Where(a => !a.MainTtbImputed && !a.ExtrasTtbImputed)
+                .Select(a => (double)a.MainTtb / (double)a.ExtrasTtb)
+                .ToArray();
+
+            var extrasCompletionistRatios = apps
+                .Where(a => !a.ExtrasTtbImputed && !a.CompletionistTtbImputed)
+                .Select(a => (double)a.ExtrasTtb / (double)a.CompletionistTtb)
+                .ToArray();
+
+            var extrasPlacements = apps
+                .Where(a => !a.MainTtbImputed && !a.ExtrasTtbImputed && !a.CompletionistTtbImputed && (a.MainTtb < a.CompletionistTtb))
+                .Select(a => (double)(a.ExtrasTtb - a.MainTtb) / (double)(a.CompletionistTtb - a.MainTtb))
+                .ToArray();
+
+            return new TtbRatios(
+                mainExtrasRatios.Length == 0 ? 0 : mainExtrasRatios.Average(),
+                extrasCompletionistRatios.Length == 0 ? 0 : extrasCompletionistRatios.Average(),
+                extrasPlacements.Length == 0 ? 0 : extrasPlacements.Average());
+        }
+
+        private static async Task Impute(IReadOnlyCollection<AppEntity> apps, string genre, TtbRatios ratios, bool initial)
+        {
+            var notCompletelyMissing = apps.Where(a => !a.MainTtbImputed || !a.ExtrasTtbImputed || !a.CompletionistTtbImputed).ToArray();
+            if (notCompletelyMissing.Length == 0)
+            {
+                if (initial)
+                {
+                    throw new InvalidOperationException("All TTBs are missing");
+                }
+                HltbScraperEventSource.Log.GenreHasNoTtbs(genre);
+                return;
+            }
+
+            try
+            {
+                await ImputeCore(notCompletelyMissing, ratios).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                HltbScraperEventSource.Log.ImputationError(genre);
+                if (initial)
+                {
+                    throw;
+                }
+            }
+            
+            FillCompletelyMissing(apps, notCompletelyMissing);
+        }
+
+        private static void FillCompletelyMissing(IEnumerable<AppEntity> allApps, IReadOnlyCollection<AppEntity> notCompletelyMissing)
+        {
+            Trace.Assert(notCompletelyMissing.Count > 0, "Empty notCompletelyMissing");
+
+            //Calculate the average of imputed values
             int mainSum = 0;
             int extrasSum = 0;
             int completionistSum = 0;
-            foreach (var app in notMissing)
+            foreach (var app in notCompletelyMissing)
             {
                 mainSum += app.MainTtb;
                 extrasSum += app.ExtrasTtb;
                 completionistSum += app.CompletionistTtb;
             }
 
-            int mainAvg = mainSum/notMissing.Count;
-            int extrasAvg = extrasSum / notMissing.Count;
-            int completionistAvg = completionistSum / notMissing.Count;
-            foreach (var app in allApps.Except(notMissing)) //not not missing = missing
+            //Use the averages for the completely missing entries
+            int mainAvg = mainSum/notCompletelyMissing.Count;
+            int extrasAvg = extrasSum / notCompletelyMissing.Count;
+            int completionistAvg = completionistSum / notCompletelyMissing.Count;
+
+            foreach (var app in allApps.Except(notCompletelyMissing)) //not not completely missing = completely missing
             {
                 app.MainTtb = mainAvg;
-                app.MainTtbImputed = true;
                 app.ExtrasTtb = extrasAvg;
-                app.ExtrasTtbImputed = true;
                 app.CompletionistTtb = completionistAvg;
-                app.CompletionistTtbImputed = true;
             }
         }
 
-        private static async Task ImputeCore(IReadOnlyList<AppEntity> notMissing)
+        private static async Task ImputeCore(IReadOnlyList<AppEntity> notCompletelyMissing, TtbRatios ratios)
         {
             HltbScraperEventSource.Log.CalculateImputationStart();
 
-            string imputed = await InvokeImputationService(notMissing).ConfigureAwait(false);
+            string imputed = await InvokeImputationService(notCompletelyMissing).ConfigureAwait(false);
 
-            //skip header row and discard blank lines
             var imputedRows = imputed
                 .Split(new [] {Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries)
-                .Skip(1) 
+                .Skip(1) //skip header row
                 .Where(s => !String.IsNullOrWhiteSpace(s)).ToArray();
 
-            Trace.Assert(notMissing.Count == imputedRows.Length,
-                String.Format(CultureInfo.InvariantCulture, "imputation count mismatch: expected {0}, actual {1}", notMissing.Count, imputedRows.Length));
+            Trace.Assert(notCompletelyMissing.Count == imputedRows.Length,
+                String.Format(CultureInfo.InvariantCulture, "imputation count mismatch: expected {0}, actual {1}",
+                    notCompletelyMissing.Count, imputedRows.Length));
             
-            for (int i = 0; i < notMissing.Count; i++)
+            for (int i = 0; i < notCompletelyMissing.Count; i++)
             {
-                UpdateFromCsvRow(notMissing[i], imputedRows[i]);
-                FixImputationMiss(notMissing[i]);
+                UpdateFromCsvRow(notCompletelyMissing[i], imputedRows[i], ratios);
             }
 
             HltbScraperEventSource.Log.CalculateImputationStop();
         }
 
-        private static async Task<string> InvokeImputationService(IReadOnlyList<AppEntity> notMissing)
+        private static async Task<string> InvokeImputationService(IReadOnlyList<AppEntity> notCompletelyMissing)
         {
-            var blobPath = await UploadTtbInputToBlob(notMissing).ConfigureAwait(false);
+            var blobPath = await UploadTtbInputToBlob(notCompletelyMissing).ConfigureAwait(false);
 
-            using (var client = new HttpRetryClient(20))
+            using (var client = new HttpRetryClient(50))
             {
                 client.DefaultRequestAuthorization = new AuthenticationHeaderValue("Bearer", ApiKey);
                 string jobId = await SubmitImputationJob(client, blobPath).ConfigureAwait(false);
@@ -176,13 +267,16 @@ namespace SteamHltbScraper.Imputation
         private static async Task<string> UploadTtbInputToBlob(IReadOnlyList<AppEntity> notMissing)
         {
             var csvString = "Main,Extras,Complete" + Environment.NewLine + string.Join(Environment.NewLine,
-                notMissing.Select(a => string.Format(CultureInfo.InvariantCulture, "{0},{1},{2}", a.MainTtb, a.ExtrasTtb, a.CompletionistTtb)));
+                notMissing.Select(a => string.Format(CultureInfo.InvariantCulture, "{0},{1},{2}",
+                    a.MainTtbImputed ? 0 : a.MainTtb,
+                    a.ExtrasTtbImputed ? 0 : a.ExtrasTtb,
+                    a.CompletionistTtbImputed ? 0 : a.CompletionistTtb)));
 
             var blobName = String.Format(CultureInfo.InvariantCulture, "ttb-{0}.csv", SiteUtil.CurrentTimestamp);
 
             HltbScraperEventSource.Log.UploadTtbToBlobStart(blobName);
 
-            var container = StorageHelper.GetCloudBlobClient(20).GetContainerReference("jobdata");
+            var container = StorageHelper.GetCloudBlobClient(20).GetContainerReference(BlobContainerName);
             await container.CreateIfNotExistsAsync().ConfigureAwait(false);
 
             var blob = container.GetBlockBlobReference(blobName);
@@ -203,46 +297,90 @@ namespace SteamHltbScraper.Imputation
             }
         }
 
-        internal static void UpdateFromCsvRow(AppEntity appEntity, string row)
+        internal static void UpdateFromCsvRow(AppEntity appEntity, string row, TtbRatios ratios)
         {
             var ttbs = row.Split(',');
-            Trace.Assert(ttbs.Length == 3);
+            Trace.Assert(ttbs.Length == 3, "Invalid CSV row, contains more than 3 values: " + row);
 
-            appEntity.MainTtb = GetRoundedValue(ttbs[0]);
-            appEntity.ExtrasTtb = GetRoundedValue(ttbs[1]);
-            appEntity.CompletionistTtb = GetRoundedValue(ttbs[2]);
+            var imputedMain = GetRoundedValue(ttbs[0]);
+            var imputedExtras = GetRoundedValue(ttbs[1]);
+            var imputedCompletionist = GetRoundedValue(ttbs[2]);
+
+            UpdateFromImputedValues(appEntity, imputedMain, imputedExtras, imputedCompletionist, ratios);
         }
 
-        private static void FixImputationMiss(AppEntity appEntity)
+        private static void UpdateFromImputedValues(
+            AppEntity appEntity, int imputedMain, int imputedExtras, int imputedCompletionist, TtbRatios ratios)
         {
-            if (appEntity.MainTtb > appEntity.ExtrasTtb)
+            HandleOverridenTtb(appEntity, "main", appEntity.MainTtb, appEntity.MainTtbImputed, ref imputedMain);
+            HandleOverridenTtb(appEntity, "extras", appEntity.ExtrasTtb, appEntity.ExtrasTtbImputed, ref imputedExtras);
+            HandleOverridenTtb(appEntity, "completionist", appEntity.CompletionistTtb, appEntity.CompletionistTtbImputed, ref imputedCompletionist);
+
+            int originalImputedMain = imputedMain;
+            int originalImputedExtras = imputedExtras;
+            int originalImputedCompletionist = imputedCompletionist;
+
+            bool imputationMiss = false;
+            if (imputedMain > imputedExtras)
             {
-                HltbScraperEventSource.Log.ImputationMiss("Main>Extras", appEntity.MainTtb, appEntity.ExtrasTtb);
-                if (appEntity.MainTtbImputed)
+                imputationMiss = true;
+
+                if (appEntity.MainTtbImputed) //main imputed (possibly extras as well)
                 {
-                    appEntity.MainTtb = appEntity.ExtrasTtb;
+                    imputedMain = (int) (imputedExtras*ratios.MainExtras);
                 }
-                else //only extras imputed
+                else //extras imputed (main not imputed)
                 {
-                    appEntity.ExtrasTtb = appEntity.MainTtb;
+                    imputedExtras = (int) (imputedMain/ratios.MainExtras);
                 }
             }
 
-            if (appEntity.ExtrasTtb > appEntity.CompletionistTtb)
+            if (imputedExtras > imputedCompletionist)
             {
-                HltbScraperEventSource.Log.ImputationMiss("Extras>Completionist", appEntity.ExtrasTtb, appEntity.CompletionistTtb);
-                if (appEntity.CompletionistTtbImputed)
+                imputationMiss = true;
+
+                if (appEntity.CompletionistTtbImputed) //completionist imputed (possibly extras as well)
                 {
-                    appEntity.CompletionistTtb = appEntity.ExtrasTtb;
+                    imputedCompletionist = (int) (imputedExtras/ratios.ExtrasCompletionist);
                 }
-                else //only extras imputed
+                else //extras imputed (completionist not imputed)
                 {
-                    appEntity.ExtrasTtb = appEntity.CompletionistTtb;
+                    //we'll use the extras placement to avoid reducing extras below main
+                    imputedExtras = (int) (imputedMain + ratios.ExtrasPlacement*(imputedCompletionist - imputedMain)); 
                 }
+            }
+
+            if (imputationMiss)
+            {
+                LogImputationMiss(
+                    appEntity, originalImputedMain, originalImputedExtras, originalImputedCompletionist,
+                    imputedMain, imputedExtras, imputedCompletionist);
+            }
+
+            appEntity.MainTtb = imputedMain;
+            appEntity.ExtrasTtb = imputedExtras;
+            appEntity.CompletionistTtb = imputedCompletionist;
+        }
+
+        private static void LogImputationMiss(
+            AppEntity appEntity, int originalImputedMain, int originalImputedExtras, int originalImputedCompletionist, 
+            int imputedMain, int imputedExtras, int imputedCompletionist)
+        {
+            HltbScraperEventSource.Log.ImputationMiss(
+                appEntity.SteamName, appEntity.SteamAppId, originalImputedMain, originalImputedExtras, originalImputedCompletionist, 
+                imputedMain, imputedExtras, imputedCompletionist, appEntity.MainTtbImputed, appEntity.ExtrasTtbImputed, appEntity.CompletionistTtbImputed);
+        }
+
+        private static void HandleOverridenTtb(AppEntity appEntity, string ttbType, int currentTtb, bool ttbImputed, ref int imputed)
+        {           
+            if (!ttbImputed && currentTtb != imputed)
+            {
+                HltbScraperEventSource.Log.ImputationOverrodeOriginalValue(appEntity.SteamAppId, appEntity.SteamName, ttbType, currentTtb, imputed);
+                imputed = currentTtb;
             }
         }
 
-        private static int GetRoundedValue(string value)
+        internal static int GetRoundedValue(string value)
         {
             return (int)Math.Round(Double.Parse(value, CultureInfo.InvariantCulture));
         }

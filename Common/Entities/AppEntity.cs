@@ -24,8 +24,11 @@ namespace Common.Entities
         public const int Buckets = 20;
 
         public const string UnknownType = "Unknown";
-        private const string MeasuredKey = "Measured";
-        private const string UnmeasuredKey = "Unmeasured";
+        public const string MeasuredKey = "Measured";
+        public const string UnmeasuredKey = "Unmeasured";
+        public const string GameTypeName = "game";
+        public const string DlcTypeName = "dlc";
+        public const string ModTypeName = "mod";
 
         public static readonly IReadOnlyList<string> UnknownList = new ReadOnlyCollection<string>(new[] { "Unknown" });
         public static readonly DateTime UnknownDate = new DateTime(1800, 01, 01); //has to be later than 1600 for Windows file time compatibility
@@ -42,6 +45,9 @@ namespace Common.Entities
         public int CompletionistTtb { get; set; }
         public bool CompletionistTtbImputed { get; set; }
         public string AppType { get; set; }
+        public bool IsGame { get { return String.Equals(AppType, GameTypeName, StringComparison.OrdinalIgnoreCase); }}
+        public bool IsDlc { get { return String.Equals(AppType, DlcTypeName, StringComparison.OrdinalIgnoreCase); } }
+        public bool IsMod { get { return String.Equals(AppType, ModTypeName, StringComparison.OrdinalIgnoreCase); } }
         public int PlatformsValue { get; set; } //for use by the Azure client libraries only
         [IgnoreProperty] public Platforms Platforms
         {
@@ -163,9 +169,8 @@ namespace Common.Entities
 
         private static string Classify(string type)
         {
-            return String.Equals(type, "game", StringComparison.OrdinalIgnoreCase) ||
-                   String.Equals(type, "dlc", StringComparison.OrdinalIgnoreCase)  ||
-                   String.Equals(type, "mod", StringComparison.OrdinalIgnoreCase)
+            var measured = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {GameTypeName, DlcTypeName, ModTypeName};
+            return measured.Contains(type) 
                 ? MeasuredKey
                 : UnmeasuredKey;
         }
@@ -182,7 +187,7 @@ namespace Common.Entities
 
         public override string ToString()
         {
-            return string.Format( CultureInfo.InvariantCulture, "SteamAppId: {0}, SteamName: {1}, HltbId: {2}, HltbName: {3}, MainTtb: {4}, MainTtbImputed: {5}, ExtrasTtb: {6}, ExtrasTtbImputed: {7}, CompletionistTtb: {8}, CompletionistTtbImputed: {9}, AppType: {10}", SteamAppId, SteamName, HltbId, HltbName, MainTtb, MainTtbImputed, ExtrasTtb, ExtrasTtbImputed, CompletionistTtb, CompletionistTtbImputed, AppType);
+            return string.Format(CultureInfo.InvariantCulture, "SteamAppId: {0}, SteamName: {1}, HltbId: {2}, HltbName: {3}, MainTtb: {4}, MainTtbImputed: {5}, ExtrasTtb: {6}, ExtrasTtbImputed: {7}, CompletionistTtb: {8}, CompletionistTtbImputed: {9}, AppType: {10}, Platforms: {11}, Categories: {12}, Genres: {13}, Developers: {14}, Publishers: {15}, ReleaseDate: {16}, MetacriticScore: {17}", SteamAppId, SteamName, HltbId, HltbName, MainTtb, MainTtbImputed, ExtrasTtb, ExtrasTtbImputed, CompletionistTtb, CompletionistTtbImputed, AppType, Platforms, CategoriesFlat, GenresFlat, DevelopersFlat, PublishersFlat, ReleaseDate, MetacriticScore);
         }
     }
 }

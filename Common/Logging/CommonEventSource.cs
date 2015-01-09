@@ -38,7 +38,7 @@ namespace Common.Logging
 // ReSharper restore ConvertToStaticClass
 
         [NonEvent]
-        public void HttpRequestFailed(Uri uri, Exception exception, int attempt, TimeSpan delay)
+        public void HttpRequestFailed(Uri uri, Exception exception, int attempt, int totalRetries, TimeSpan delay)
         {
             if (uri == null)
             {
@@ -55,17 +55,17 @@ namespace Common.Logging
                 return;
             }
 
-            HttpRequestFailed(uri.ToString(), exception.Message, attempt, delay.TotalSeconds);
+            HttpRequestFailed(uri.ToString(), exception.Message, attempt, totalRetries, delay.TotalSeconds);
         }
 
         [Event(
             1,
-            Message = "Request to URI {0} failed due to: {1}. Retrying attempt #{2} will take place in {3} seconds",
+            Message = "Request to URI {0} failed due to: {1}. Retrying attempt #{2} / {3} will take place in {4} seconds",
             Keywords = Keywords.Http,
             Level = EventLevel.Warning)]
-        private void HttpRequestFailed(string uri, string exceptionMessage, int attempt, double delaySeconds)
+        private void HttpRequestFailed(string uri, string exceptionMessage, int attempt, int totalRetries, double delaySeconds)
         {
-            WriteEvent(1, uri, exceptionMessage, attempt, delaySeconds);
+            WriteEvent(1, uri, exceptionMessage, attempt, totalRetries, delaySeconds);
         }
 
         [Event(
@@ -153,7 +153,7 @@ namespace Common.Logging
             Message = "Skipping already categorized app {0} / {1} ({2})",
             Keywords = Keywords.StoreApi,
             Level = EventLevel.Informational)]
-        public void SkippedCategorizedApp(int appId, string name, string type)
+        public void SkippedPopulatedApp(int appId, string name, string type)
         {
             WriteEvent(6, appId, name, type);
         }
@@ -163,7 +163,7 @@ namespace Common.Logging
             Message = "Categorizing {0} / {1} as 'Unknown'",
             Keywords = Keywords.StoreApi,
             Level = EventLevel.Informational)]
-        public void CategorizingUnknownApp(int appId, string name)
+        public void PopulatingUnknownApp(int appId, string name)
         {
             WriteEvent(7, appId, name);
         }
@@ -173,7 +173,7 @@ namespace Common.Logging
             Message = "Categorizing {0} / {1} as '{2}'. Platforms: {3}. Categories: {4}. Genres: {5}. Publishers: {6}. Developers: {7}. Release date: {8}. MetaCritic score: {9}",
             Keywords = Keywords.StoreApi,
             Level = EventLevel.Informational)]
-        public void CategorizingApp(int appId, string name, string type, Platforms platforms, string categories, string genres, 
+        public void PopulateApp(int appId, string name, string type, Platforms platforms, string categories, string genres, 
             string publishers, string developers, string releaseDate, int metacriticScore)
         {
             WriteEvent(107, appId, name, type, (int)platforms, categories, genres, publishers, developers, releaseDate, metacriticScore);
