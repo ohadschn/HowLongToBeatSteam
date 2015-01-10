@@ -265,8 +265,10 @@ namespace SteamHltbScraper.Imputation
 
         private static async Task<string> UploadTtbInputToBlob(IReadOnlyList<AppEntity> notMissing)
         {
-            var csvString = "Main,Extras,Complete" + Environment.NewLine + string.Join(Environment.NewLine,
-                notMissing.Select(a => string.Format(CultureInfo.InvariantCulture, "{0},{1},{2}",
+            var csvString = "Game,Main,Extras,Complete" + Environment.NewLine + string.Join(Environment.NewLine,
+                notMissing.Select(a => string.Format(CultureInfo.InvariantCulture, "{0} ({1}),{2},{3},{4}",
+                    a.SteamName.Replace(",", "-"), 
+                    a.SteamAppId,
                     a.MainTtbImputed ? 0 : a.MainTtb,
                     a.ExtrasTtbImputed ? 0 : a.ExtrasTtb,
                     a.CompletionistTtbImputed ? 0 : a.CompletionistTtb)));
