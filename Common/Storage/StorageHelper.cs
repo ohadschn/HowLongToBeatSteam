@@ -182,7 +182,7 @@ namespace Common.Storage
             var cloudTableClient = CloudStorageAccount.Parse(AzureStorageTablesConnectionString).CreateCloudTableClient();
             if (retries >= 0)
             {
-                cloudTableClient.RetryPolicy = new ExponentialRetry(DefaultDeltaBackoff, retries);
+                cloudTableClient.DefaultRequestOptions.RetryPolicy = new ExponentialRetry(DefaultDeltaBackoff, retries);
             }
             return cloudTableClient;
         }
@@ -192,7 +192,7 @@ namespace Common.Storage
             var cloudBlobClient = CloudStorageAccount.Parse(AzureStorageBlobConnectionString).CreateCloudBlobClient();
             if (retries >= 0)
             {
-                cloudBlobClient.RetryPolicy = new ExponentialRetry(DefaultDeltaBackoff, retries);
+                cloudBlobClient.DefaultRequestOptions.RetryPolicy = new ExponentialRetry(DefaultDeltaBackoff, retries);
             }
             return cloudBlobClient;
         }
