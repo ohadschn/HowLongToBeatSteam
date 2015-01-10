@@ -2,7 +2,6 @@
 using System.Linq;
 using Common.Logging;
 using Common.Storage;
-using Common.Util;
 
 namespace ManualTableUpdater.Updater
 {
@@ -12,10 +11,9 @@ namespace ManualTableUpdater.Updater
         {
             try
             {
-                using (var client = new HttpRetryClient(1))
-                {
-                    client.GetAsync("http://jklasdhsajlkqwewqrt23231dhsalkjdahlk.com").Wait();
-                }
+                //var allApps = StorageHelper.GetAllApps(e => e, AppEntity.MeasuredFilter, 20).Result.ToArray();
+                //Imputer.Impute(allApps)
+                
                 //var games = GetAppsFromCsv();
                 //GetAppsWithStoreData().Wait();
 
@@ -27,11 +25,14 @@ namespace ManualTableUpdater.Updater
                 //    Console.WriteLine("{0} ({1}): {2} | {3}", app.SteamName, app.AppType, app.GenresFlat, app.CategoriesFlat);
                 //}
 
-                //foreach (var app in StorageHelper.GetAllApps(a => a).Result
-                //    .Where(a => String.Equals(a.Genres.First(), "Education", StringComparison.OrdinalIgnoreCase)))
-                //{
-                //    Console.WriteLine("{0} ({1}): {2} | {3}", app.SteamName, app.AppType, app.GenresFlat, app.CategoriesFlat);                    
-                //}
+                foreach (var app in StorageHelper.GetAllApps(a => a).Result
+                    .Where(a => a.Genres.Contains("Massively Multiplayer", StringComparer.OrdinalIgnoreCase) && a.Measured && a.Categories.Contains("Single-player", StringComparer.OrdinalIgnoreCase)))
+                {
+                    Console.WriteLine("{10} / {0} ({9}): {1}/{2}/{3} ({4}/{5}/{6}) | {7} | {8}",
+                        app.SteamName, app.MainTtb, app.ExtrasTtb, app.CompletionistTtb,
+                        app.MainTtbImputed, app.ExtrasTtbImputed, app.CompletionistTtbImputed,
+                        app.GenresFlat, app.CategoriesFlat, app.AppType, app.SteamAppId);
+                }
 
                 //var measured = StorageHelper.GetAllApps(e => e, AppEntity.MeasuredFilter).Result;
                 //StorageHelper.GetAllApps(e => e, AppEntity.MeasuredFilter).Result;

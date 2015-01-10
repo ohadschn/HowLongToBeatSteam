@@ -38,11 +38,54 @@ namespace Common.Entities
         public string SteamName { get; set; }
         public int HltbId { get; set; }
         public string HltbName { get; set; }
-        public int MainTtb { get; set; }
+
+        private int m_mainTtb;
+
+        public int MainTtb
+        {
+            get { return m_mainTtb; }
+            set
+            {
+                m_mainTtb = value;
+                if (value == 0)
+                {
+                    MainTtbImputed = true;
+                }
+            }
+        }
+
         public bool MainTtbImputed { get; set; }
-        public int ExtrasTtb { get; set; }
+
+        private int m_extrasTtb;
+        public int ExtrasTtb
+        {
+            get { return m_extrasTtb; }
+            set
+            {
+                m_extrasTtb = value;
+                if (value == 0)
+                {
+                    ExtrasTtbImputed = true;
+                }
+            }
+        }
+
         public bool ExtrasTtbImputed { get; set; }
-        public int CompletionistTtb { get; set; }
+
+        private int m_completionistTtb;
+        public int CompletionistTtb
+        {
+            get { return m_completionistTtb; }
+            set
+            {
+                m_completionistTtb = value;
+                if (value == 0)
+                {
+                    CompletionistTtbImputed = true;
+                }
+            }
+        }
+
         public bool CompletionistTtbImputed { get; set; }
         public string AppType { get; set; }
         public bool IsGame { get { return String.Equals(AppType, GameTypeName, StringComparison.OrdinalIgnoreCase); }}
@@ -142,11 +185,8 @@ namespace Common.Entities
             HltbId = -1;
             HltbName = null;
             MainTtb = 0;
-            MainTtbImputed = true;
             ExtrasTtb = 0;
-            ExtrasTtbImputed = true;
             CompletionistTtb = 0;
-            CompletionistTtbImputed = true;
 
             Platforms = Platforms.None;
             Categories = UnknownList;

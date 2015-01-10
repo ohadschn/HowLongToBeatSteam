@@ -67,6 +67,10 @@
       <Project>{046818B8-EF77-4AF3-9EF6-3B4CC98715B2}</Project>
       <Name>Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SteamHltbScraper\SteamHltbScraper.csproj">
+      <Project>{B6C78316-2C1D-4459-AAAA-84B6F430D88D}</Project>
+      <Name>SteamHltbScraper</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <CodeAnalysisDictionary Include="..\CustomDictionary.xml">

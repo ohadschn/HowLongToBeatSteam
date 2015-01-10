@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Linq;
@@ -48,23 +47,21 @@ namespace SteamHltbScraper.Scraper
 
             var allApps = (await StorageHelper.GetAllApps(e => e, AppEntity.MeasuredFilter, 20).ConfigureAwait(false)).Take(ScrapingLimit).ToArray();
 
-            ConcurrentBag<AppEntity> updates;
             using (Client)
             {
-                updates = await ScrapeHltb(allApps).ConfigureAwait(false);
+                await ScrapeHltb(allApps).ConfigureAwait(false);
             }
 
-            await Imputer.Impute(allApps.ToArray(), updates.ToArray()).ConfigureAwait(false);
+            await Imputer.Impute(allApps).ConfigureAwait(false);
 
             //we're using Replace since the only other update to an existing game-typed entity would have to be manual which should take precedence
             await StorageHelper.ReplaceApps(allApps, 20).ConfigureAwait(false); 
         }
 
-        private static async Task<ConcurrentBag<AppEntity>> ScrapeHltb(IEnumerable<AppEntity> allApps)
+        private static async Task ScrapeHltb(IEnumerable<AppEntity> allApps)
         {
             HltbScraperEventSource.Log.ScrapeHltbStart();
 
-            var updates = new ConcurrentBag<AppEntity>();
             int count = 0;
 
             await allApps.ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, async app =>
@@ -112,13 +109,11 @@ namespace SteamHltbScraper.Scraper
                 }
 
                 PopulateAppEntity(app, hltbInfo);
-                updates.Add(app);
 
                 HltbScraperEventSource.Log.ScrapeGameStop(app.SteamAppId, current);
             }).ConfigureAwait(false);
             
             HltbScraperEventSource.Log.ScrapeHltbStop();
-            return updates;
         }
 
         private static async Task<HltbInfo> ScrapeHltbInfo(int hltbId)

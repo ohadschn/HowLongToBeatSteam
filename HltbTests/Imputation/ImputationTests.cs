@@ -30,13 +30,18 @@ namespace HltbTests.Imputation
                 Trace.Assert(ttbs.Length == 3, "Invalid CSV row, contains more than 3 values: " + row);
 
                 app.MainTtb = Imputer.GetRoundedValue(ttbs[0]);
+                app.MainTtbImputed = app.MainTtb == 0;
+
                 app.ExtrasTtb = Imputer.GetRoundedValue(ttbs[1]);
+                app.ExtrasTtbImputed = app.ExtrasTtb == 0;
+
                 app.CompletionistTtb = Imputer.GetRoundedValue(ttbs[2]);
+                app.CompletionistTtbImputed = app.CompletionistTtb == 0;
 
                 return app;
             }).ToArray();
 
-            await Imputer.Impute(apps, apps).ConfigureAwait(false);
+            await Imputer.Impute(apps).ConfigureAwait(false);
 
             foreach (var app in apps)
             {

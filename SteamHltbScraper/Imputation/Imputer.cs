@@ -38,11 +38,9 @@ namespace SteamHltbScraper.Imputation
         private static readonly int AzureMlImputePollTimeoutMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollTimeoutMs", 120 * 1000);
         private static readonly string BlobContainerName = SiteUtil.GetOptionalValueFromConfig("BlobContainerName", "jobdata");
 
-        internal static async Task Impute(IReadOnlyList<AppEntity> allApps, IReadOnlyList<AppEntity> updates)
+        internal static async Task Impute(IReadOnlyList<AppEntity> allApps)
         {
             HltbScraperEventSource.Log.ImputeStart();
-
-            MarkImputed(updates);
 
             //first impute all together
             const string allGenre = "<ALL>";
@@ -159,6 +157,7 @@ namespace SteamHltbScraper.Imputation
 
             foreach (var app in allApps.Except(notCompletelyMissing)) //not not completely missing = completely missing
             {
+                //HltbScraperEventSource.Log.SettingCompletelyMissingApp(app.SteamName, app.SteamAppId, mainAvg, extrasAvg, completionistAvg);
                 app.MainTtb = mainAvg;
                 app.ExtrasTtb = extrasAvg;
                 app.CompletionistTtb = completionistAvg;
@@ -287,16 +286,6 @@ namespace SteamHltbScraper.Imputation
             return blob.Uri.LocalPath;
         }
 
-        private static void MarkImputed(IEnumerable<AppEntity> updates)
-        {
-            foreach (var app in updates)
-            {
-                app.MainTtbImputed = (app.MainTtb == 0);
-                app.ExtrasTtbImputed = (app.ExtrasTtb == 0);
-                app.CompletionistTtbImputed = (app.CompletionistTtb == 0);
-            }
-        }
-
         internal static void UpdateFromCsvRow(AppEntity appEntity, string row, TtbRatios ratios)
         {
             var ttbs = row.Split(',');
@@ -316,6 +305,49 @@ namespace SteamHltbScraper.Imputation
             HandleOverridenTtb(appEntity, "extras", appEntity.ExtrasTtb, appEntity.ExtrasTtbImputed, ref imputedExtras);
             HandleOverridenTtb(appEntity, "completionist", appEntity.CompletionistTtb, appEntity.CompletionistTtbImputed, ref imputedCompletionist);
 
+            if (imputedMain == 0 || imputedExtras == 0 || imputedCompletionist == 0)
+            {
+                FixImputationZero(appEntity, ratios, ref imputedMain, ref imputedExtras, ref imputedCompletionist);
+            }
+
+            if (imputedMain > imputedExtras || imputedExtras > imputedCompletionist)
+            {
+                FixImputationMiss(appEntity, ratios, ref imputedMain, ref imputedExtras, ref imputedCompletionist);
+            }
+
+            appEntity.MainTtb = imputedMain;
+            appEntity.ExtrasTtb = imputedExtras;
+            appEntity.CompletionistTtb = imputedCompletionist;
+        }
+
+        private static void FixImputationZero(AppEntity appEntity, TtbRatios ratios, ref int imputedMain, ref int imputedExtras, ref int imputedCompletionist)
+        {
+            HltbScraperEventSource.Log.ImputationProducedZeroTtb(
+                appEntity.SteamName, appEntity.SteamAppId, imputedMain, imputedExtras, imputedCompletionist,
+                appEntity.MainTtbImputed, appEntity.ExtrasTtbImputed, appEntity.CompletionistTtbImputed);
+
+            Trace.Assert(imputedMain > 0 || imputedExtras > 0 || imputedCompletionist > 0, "all TTBs of a not completely missing app are zeroes");
+
+            if (imputedMain == 0)
+            {
+                if (imputedExtras == 0)
+                {
+                    imputedExtras = (int) (imputedCompletionist*ratios.ExtrasCompletionist);
+                }
+                imputedMain = (int) (imputedExtras*ratios.MainExtras); //we know that imputedExtras is non-zero now
+            }
+            if (imputedExtras == 0)
+            {
+                imputedExtras = (int) (imputedMain/ratios.MainExtras); //we know imputedMain is non-zero now
+            }
+            if (imputedCompletionist == 0)
+            {
+                imputedCompletionist = (int) (imputedExtras/ratios.ExtrasCompletionist); //we know imputedExtras is non-zero now
+            }
+        }
+
+        private static void FixImputationMiss(AppEntity appEntity, TtbRatios ratios, ref int imputedMain, ref int imputedExtras, ref int imputedCompletionist)
+        {
             int originalImputedMain = imputedMain;
             int originalImputedExtras = imputedExtras;
             int originalImputedCompletionist = imputedCompletionist;
@@ -324,7 +356,6 @@ namespace SteamHltbScraper.Imputation
             if (imputedMain > imputedExtras)
             {
                 imputationMiss = true;
-
                 if (appEntity.MainTtbImputed) //main imputed (possibly extras as well)
                 {
                     imputedMain = (int) (imputedExtras*ratios.MainExtras);
@@ -334,32 +365,24 @@ namespace SteamHltbScraper.Imputation
                     imputedExtras = (int) (imputedMain/ratios.MainExtras);
                 }
             }
-
             if (imputedExtras > imputedCompletionist)
             {
                 imputationMiss = true;
-
                 if (appEntity.CompletionistTtbImputed) //completionist imputed (possibly extras as well)
                 {
                     imputedCompletionist = (int) (imputedExtras/ratios.ExtrasCompletionist);
                 }
-                else //extras imputed (completionist not imputed)
+                else //extras imputed (completionist not imputed) - we'll use the extras placement to avoid reducing extras below main
                 {
-                    //we'll use the extras placement to avoid reducing extras below main
-                    imputedExtras = (int) (imputedMain + ratios.ExtrasPlacement*(imputedCompletionist - imputedMain)); 
+                    imputedExtras = (int) (imputedMain + ratios.ExtrasPlacement*(imputedCompletionist - imputedMain));
                 }
             }
 
             if (imputationMiss)
             {
-                LogImputationMiss(
-                    appEntity, originalImputedMain, originalImputedExtras, originalImputedCompletionist,
+                LogImputationMiss(appEntity, originalImputedMain, originalImputedExtras, originalImputedCompletionist, 
                     imputedMain, imputedExtras, imputedCompletionist);
             }
-
-            appEntity.MainTtb = imputedMain;
-            appEntity.ExtrasTtb = imputedExtras;
-            appEntity.CompletionistTtb = imputedCompletionist;
         }
 
         private static void LogImputationMiss(

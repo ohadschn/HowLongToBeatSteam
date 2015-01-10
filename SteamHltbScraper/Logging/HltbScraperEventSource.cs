@@ -569,6 +569,17 @@ namespace SteamHltbScraper.Logging
         }
 
         [Event(
+            427,
+            Message = "Imputation produced zero TTB for game {0} ({1}) : {2}/{3}/{4} ({5}/{6}/{7})",
+            Keywords = Keywords.Imputation,
+            Level = EventLevel.Error)]
+        public void ImputationProducedZeroTtb(string steamName, int steamId, 
+            int mainTtb, int extrasTtb, int completionistTtb, bool mainImputed, bool extrasImputed, bool completionistImputed)
+        {
+            WriteEvent(427, steamName, steamId, mainTtb, extrasTtb, completionistTtb, mainImputed, extrasImputed, completionistImputed);
+        }
+
+        [Event(
             28,
             Message = "Start uploading TTB input to blob {0}",
             Keywords = Keywords.Imputation | Keywords.BlobStorage | Keywords.AzureML,
@@ -635,5 +646,15 @@ namespace SteamHltbScraper.Logging
         {
             WriteEvent(33, status, details);
         }
+
+        //[Event(
+        //    34,
+        //    Message = "Setting completely missing app {0} ({1}) to average: {2}/{3}/{4}",
+        //    Keywords = Keywords.Imputation,
+        //    Level = EventLevel.Verbose)]
+        //public void SettingCompletelyMissingApp(string steamName, int steamAppId, int mainAverage, int extrasAverage, int completionistAverage)
+        //{
+        //    WriteEvent(34, steamName, steamAppId, mainAverage, extrasAverage, completionistAverage);
+        //}
     }
 }
