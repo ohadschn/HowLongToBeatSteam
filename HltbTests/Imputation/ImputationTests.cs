@@ -29,14 +29,14 @@ namespace HltbTests.Imputation
                 var ttbs = row.Split(',');
                 Trace.Assert(ttbs.Length == 3, "Invalid CSV row, contains more than 3 values: " + row);
 
-                app.MainTtb = Imputer.GetRoundedValue(ttbs[0]);
-                app.MainTtbImputed = app.MainTtb == 0;
+                var mainTtb = Imputer.GetRoundedValue(ttbs[0]);
+                app.SetMainTtb(mainTtb, mainTtb == 0);
 
-                app.ExtrasTtb = Imputer.GetRoundedValue(ttbs[1]);
-                app.ExtrasTtbImputed = app.ExtrasTtb == 0;
+                var extrasTtb = Imputer.GetRoundedValue(ttbs[1]);
+                app.SetExtrasTtb(extrasTtb, extrasTtb == 0);
 
-                app.CompletionistTtb = Imputer.GetRoundedValue(ttbs[2]);
-                app.CompletionistTtbImputed = app.CompletionistTtb == 0;
+                var completionistTtb = Imputer.GetRoundedValue(ttbs[2]);
+                app.SetCompletionistTtb(completionistTtb, completionistTtb == 0);
 
                 return app;
             }).ToArray();

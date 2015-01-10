@@ -282,9 +282,25 @@ namespace SteamHltbScraper.Scraper
 
         private static void PopulateAppEntity(AppEntity app, HltbInfo hltbInfo)
         {
-            app.MainTtb = hltbInfo.MainTtb;
-            app.ExtrasTtb = hltbInfo.ExtrasTtb;
-            app.CompletionistTtb = hltbInfo.CompletionistTtb;
+            var mainTtb = GetTtb(app, "main", app.MainTtb, app.MainTtbImputed, hltbInfo.MainTtb);
+            app.SetMainTtb(mainTtb, mainTtb == 0);
+
+            var extrasTtb = GetTtb(app, "extras", app.ExtrasTtb, app.ExtrasTtbImputed, hltbInfo.ExtrasTtb);
+            app.SetExtrasTtb(extrasTtb, extrasTtb == 0);
+
+            var completionistTtb = GetTtb(app, "completionist", app.CompletionistTtb, app.CompletionistTtbImputed, hltbInfo.CompletionistTtb);
+            app.SetCompletionistTtb(completionistTtb, completionistTtb == 0);
+        }
+
+        private static int GetTtb(AppEntity app, string ttbType, int currentTtb, bool currentTtbImputed, int scrapedTtb)
+        {
+            if (!currentTtbImputed && scrapedTtb == 0)
+            {
+                HltbScraperEventSource.Log.PreviouslyRecordedTtbNotOnHltb(app.SteamName, app.SteamAppId, ttbType, currentTtb, app.HltbName, app.HltbId);
+                return currentTtb;
+            }
+            
+            return scrapedTtb;
         }
     }
 }

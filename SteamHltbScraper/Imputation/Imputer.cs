@@ -158,9 +158,9 @@ namespace SteamHltbScraper.Imputation
             foreach (var app in allApps.Except(notCompletelyMissing)) //not not completely missing = completely missing
             {
                 //HltbScraperEventSource.Log.SettingCompletelyMissingApp(app.SteamName, app.SteamAppId, mainAvg, extrasAvg, completionistAvg);
-                app.MainTtb = mainAvg;
-                app.ExtrasTtb = extrasAvg;
-                app.CompletionistTtb = completionistAvg;
+                app.SetMainTtb(mainAvg, true);
+                app.SetExtrasTtb(extrasAvg, true);
+                app.SetCompletionistTtb(completionistAvg, true);
             }
         }
 
@@ -317,9 +317,9 @@ namespace SteamHltbScraper.Imputation
                 FixImputationMiss(appEntity, ratios, ref imputedMain, ref imputedExtras, ref imputedCompletionist);
             }
 
-            appEntity.MainTtb = imputedMain;
-            appEntity.ExtrasTtb = imputedExtras;
-            appEntity.CompletionistTtb = imputedCompletionist;
+            appEntity.SetMainTtb(imputedMain, appEntity.MainTtbImputed);
+            appEntity.SetExtrasTtb(imputedExtras, appEntity.ExtrasTtbImputed);
+            appEntity.SetCompletionistTtb(imputedCompletionist, appEntity.CompletionistTtbImputed);
         }
 
         private static void FixImputationZero(AppEntity appEntity, TtbRatios ratios, ref int imputedMain, ref int imputedExtras, ref int imputedCompletionist)

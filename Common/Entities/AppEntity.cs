@@ -38,55 +38,27 @@ namespace Common.Entities
         public string SteamName { get; set; }
         public int HltbId { get; set; }
         public string HltbName { get; set; }
-
-        private int m_mainTtb;
-
-        public int MainTtb
-        {
-            get { return m_mainTtb; }
-            set
-            {
-                m_mainTtb = value;
-                if (value == 0)
-                {
-                    MainTtbImputed = true;
-                }
-            }
-        }
-
+        public int MainTtb { get; set; }
         public bool MainTtbImputed { get; set; }
-
-        private int m_extrasTtb;
-        public int ExtrasTtb
+        public void SetMainTtb(int ttb, bool imputed)
         {
-            get { return m_extrasTtb; }
-            set
-            {
-                m_extrasTtb = value;
-                if (value == 0)
-                {
-                    ExtrasTtbImputed = true;
-                }
-            }
+            MainTtb = ttb;
+            MainTtbImputed = imputed;
         }
-
+        public int ExtrasTtb { get; set; }
         public bool ExtrasTtbImputed { get; set; }
-
-        private int m_completionistTtb;
-        public int CompletionistTtb
+        public void SetExtrasTtb(int ttb, bool imputed)
         {
-            get { return m_completionistTtb; }
-            set
-            {
-                m_completionistTtb = value;
-                if (value == 0)
-                {
-                    CompletionistTtbImputed = true;
-                }
-            }
+            ExtrasTtb = ttb;
+            ExtrasTtbImputed = imputed;
         }
-
+        public int CompletionistTtb { get; set; }
         public bool CompletionistTtbImputed { get; set; }
+        public void SetCompletionistTtb(int ttb, bool imputed)
+        {
+            CompletionistTtb = ttb;
+            CompletionistTtbImputed = imputed;
+        }
         public string AppType { get; set; }
         public bool IsGame { get { return String.Equals(AppType, GameTypeName, StringComparison.OrdinalIgnoreCase); }}
         public bool IsDlc { get { return String.Equals(AppType, DlcTypeName, StringComparison.OrdinalIgnoreCase); } }
@@ -184,9 +156,9 @@ namespace Common.Entities
 
             HltbId = -1;
             HltbName = null;
-            MainTtb = 0;
-            ExtrasTtb = 0;
-            CompletionistTtb = 0;
+            SetMainTtb(0, true);
+            SetExtrasTtb(0, true);
+            SetCompletionistTtb(0, true);
 
             Platforms = Platforms.None;
             Categories = UnknownList;

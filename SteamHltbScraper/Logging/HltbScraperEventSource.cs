@@ -347,6 +347,16 @@ namespace SteamHltbScraper.Logging
             WriteEvent(17, hltbId, mainTtb, extrasTtb, completionistTtb);
         }
 
+        [Event(
+            117,
+            Message = "{0} ({1}) - previously recorded {2} TTB of {3} is no longer present in HLTB for matched {4} ({5}). Using previous value...",
+            Keywords = Keywords.Scraping,
+            Level = EventLevel.Error)]
+        public void PreviouslyRecordedTtbNotOnHltb(string steamName, int steamId, string ttbType, int ttbValue, string hltbName, int hltbId)
+        {
+            WriteEvent(117, steamName, steamId, ttbType, ttbValue, hltbName, hltbId);
+        }
+
         [NonEvent]
         public void GetGameOverviewPageStart(Uri uri)
         {
