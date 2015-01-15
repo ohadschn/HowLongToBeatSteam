@@ -262,7 +262,7 @@ function AppViewModel() {
             .fail(function(error) {
                 console.error(error); //TODO replace console print with user error display
                 self.gameTable.rows([]);
-                self.error('verify your Steam profile ID and make sure it is set to "public" in your Steam profile settings');
+                self.error('verify your Steam profile ID as it appears in your Steam profile page URL (<i>steamcommunity.com/id/<strong>ID</strong></i>) and make sure it is set to public in your Steam profile settings');
             })
             .always(function () {
                 self.processing(false);
