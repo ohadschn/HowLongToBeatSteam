@@ -441,26 +441,26 @@ namespace SteamHltbScraper.Logging
 
         [Event(
             21,
-            Message = "Start calculating imputed values",
+            Message = "Start calculating imputed values ({0} not completely missing games)",
             Keywords = Keywords.Imputation,
             Level = EventLevel.Informational,
             Task = Tasks.CalculateImputation,
             Opcode = EventOpcode.Start)]
-        public void CalculateImputationStart()
+        public void CalculateImputationStart(int notCompletelyMissingCount)
         {
-             WriteEvent(21);   
+            WriteEvent(21, notCompletelyMissingCount);   
         }
 
         [Event(
             22,
-            Message = "Finished calculating imputed values",
+            Message = "Finished calculating imputed values  ({0} not completely missing games)",
             Keywords = Keywords.Imputation,
             Level = EventLevel.Informational,
             Task = Tasks.CalculateImputation,
             Opcode = EventOpcode.Stop)]
-        public void CalculateImputationStop()
+        public void CalculateImputationStop(int notCompletelyMissingCount)
         {
-            WriteEvent(22);
+            WriteEvent(22, notCompletelyMissingCount);
         }
 
         [Event(

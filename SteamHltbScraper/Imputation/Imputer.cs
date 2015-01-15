@@ -166,7 +166,7 @@ namespace SteamHltbScraper.Imputation
 
         private static async Task ImputeCore(IReadOnlyList<AppEntity> notCompletelyMissing, TtbRatios ratios)
         {
-            HltbScraperEventSource.Log.CalculateImputationStart();
+            HltbScraperEventSource.Log.CalculateImputationStart(notCompletelyMissing.Count);
 
             string imputed = await InvokeImputationService(notCompletelyMissing).ConfigureAwait(false);
 
@@ -184,7 +184,7 @@ namespace SteamHltbScraper.Imputation
                 UpdateFromCsvRow(notCompletelyMissing[i], imputedRows[i], ratios);
             }
 
-            HltbScraperEventSource.Log.CalculateImputationStop();
+            HltbScraperEventSource.Log.CalculateImputationStop(notCompletelyMissing.Count);
         }
 
         private static async Task<string> InvokeImputationService(IReadOnlyList<AppEntity> notCompletelyMissing)

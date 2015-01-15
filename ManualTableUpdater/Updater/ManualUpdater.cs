@@ -1,5 +1,7 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
+using Common.Entities;
 using Common.Logging;
 using Common.Storage;
 
@@ -25,13 +27,26 @@ namespace ManualTableUpdater.Updater
                 //    Console.WriteLine("{0} ({1}): {2} | {3}", app.SteamName, app.AppType, app.GenresFlat, app.CategoriesFlat);
                 //}
 
-                foreach (var app in StorageHelper.GetAllApps(a => a).Result
-                    .Where(a => a.Genres.Contains("Massively Multiplayer", StringComparer.OrdinalIgnoreCase) && a.Measured && a.Categories.Contains("Single-player", StringComparer.OrdinalIgnoreCase)))
+                //foreach (var app in StorageHelper.GetAllApps(a => a).Result
+                //    .Where(a => a.Genres.Contains("Massively Multiplayer", StringComparer.OrdinalIgnoreCase) && a.Measured && a.Categories.Contains("Single-player", StringComparer.OrdinalIgnoreCase)))
+                //{
+                //    //Console.WriteLine("{10} / {0} ({9}): {1}/{2}/{3} ({4}/{5}/{6}) | {7} | {8}",
+                //    //    app.SteamName, app.MainTtb, app.ExtrasTtb, app.CompletionistTtb,
+                //    //    app.MainTtbImputed, app.ExtrasTtbImputed, app.CompletionistTtbImputed,
+                //    //    app.GenresFlat, app.CategoriesFlat, app.AppType, app.SteamAppId);
+                //    Console.WriteLine(DataContractSerializeObject(app));
+                //}
+                using (var writer = new StreamWriter("games.csv"))
                 {
-                    Console.WriteLine("{10} / {0} ({9}): {1}/{2}/{3} ({4}/{5}/{6}) | {7} | {8}",
-                        app.SteamName, app.MainTtb, app.ExtrasTtb, app.CompletionistTtb,
-                        app.MainTtbImputed, app.ExtrasTtbImputed, app.CompletionistTtbImputed,
-                        app.GenresFlat, app.CategoriesFlat, app.AppType, app.SteamAppId);
+                    foreach (var app in StorageHelper.GetAllApps(a => a, AppEntity.MeasuredFilter).Result)
+                    {
+                        writer.WriteLine("{0},{1},{2},{3},{4}", 
+                            app.IsGame,
+                            app.Genres.First().Replace(",","-"), 
+                            app.MainTtbImputed ? 0 : app.MainTtb,
+                            app.ExtrasTtbImputed ? 0 : app.ExtrasTtb,
+                            app.CompletionistTtbImputed ? 0 : app.CompletionistTtb);
+                    }   
                 }
 
                 //var measured = StorageHelper.GetAllApps(e => e, AppEntity.MeasuredFilter).Result;

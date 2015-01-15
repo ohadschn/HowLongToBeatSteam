@@ -19,24 +19,27 @@ namespace HltbTests.Imputation
         public async Task TestImputation()
         {
             int i = 1;
-            var apps = File.ReadLines("Imputation\\ttb.csv").Select(row =>
+            var apps = File.ReadLines("Imputation\\games.csv").Select(row =>
             {
-                var app = new AppEntity(++i, i.ToString(CultureInfo.InvariantCulture), GetRandomAppType())
+                var gameValues = row.Split(',');
+                Trace.Assert(gameValues.Length == 5, "Invalid CSV row (must contain exactly 5 values) " + row);
+
+                var app = new AppEntity(i, "Game" + i.ToString(CultureInfo.InvariantCulture),
+                    Boolean.Parse(gameValues[0]) ? AppEntity.GameTypeName : AppEntity.DlcTypeName)
                 {
-                    Genres = new[] { GetRandomGenre() }
+                    Genres = new[] { gameValues[1]}
                 };
 
-                var ttbs = row.Split(',');
-                Trace.Assert(ttbs.Length == 3, "Invalid CSV row, contains more than 3 values: " + row);
-
-                var mainTtb = Imputer.GetRoundedValue(ttbs[0]);
+                var mainTtb = Imputer.GetRoundedValue(gameValues[2]);
                 app.SetMainTtb(mainTtb, mainTtb == 0);
 
-                var extrasTtb = Imputer.GetRoundedValue(ttbs[1]);
+                var extrasTtb = Imputer.GetRoundedValue(gameValues[3]);
                 app.SetExtrasTtb(extrasTtb, extrasTtb == 0);
 
-                var completionistTtb = Imputer.GetRoundedValue(ttbs[2]);
+                var completionistTtb = Imputer.GetRoundedValue(gameValues[4]);
                 app.SetCompletionistTtb(completionistTtb, completionistTtb == 0);
+
+                i++;
 
                 return app;
             }).ToArray();
