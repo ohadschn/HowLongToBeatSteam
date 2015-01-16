@@ -14,6 +14,11 @@ var numberWithCommas = function (x) { // jshint ignore:line
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
+var hoursWithCommas = function (x) { // jshint ignore:line
+    var hours = getHours(x, 0);
+    return numberWithCommas(hours) + ((hours === 1.0) ? " hour" : " hours");
+}
+
 var GameUpdatePhase = {
     None: "None",
     InProgress: "InProgress",
@@ -150,7 +155,6 @@ function AppViewModel() {
     }).extend({ rateLimit: 0 });
 
     Chart.defaults.global.tooltipTemplate = "<%= value %> hours";
-    Chart.defaults.global.responsive = true;
 
     var dataset = {
         fillColor: "rgba(151,187,205,0.5)",
