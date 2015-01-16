@@ -20,8 +20,6 @@
     <!-- ReSharper restore All -->
 </head>
 <body data-bind="css: introPage() ? 'body-intro' : ''">
-    <img src="Resources/SteamClock.svg" class="hidden" alt="Steam clock preload" />
-    <img src="Resources/SteamClockWhite.svg" class="hidden" alt="Steam clock white preload" />
     <div class="header" data-bind="css: introPage() ? 'header-intro' : ''">
         <img data-bind="attr: {src: introPage() ? 'Resources/SteamClockWhite.svg' : 'Resources/SteamClock.svg'}" alt="How Long To Beat Steam" />
         <span class="h1 text-vertical-middle">How Long To Beat Steam</span>
@@ -33,13 +31,13 @@
                       data-container="body"
                       title="Your profile ID can be found in your Steam profile page URL: steamcommunity.com/id/[ID]. Make sure it is set to public in Steam's privacy settings."></span>
                 <label class="control-label sr-only" for="steamIdText">Input with success</label>
-                <input id="steamIdText" type="text" data-bind="value: steamVanityUrlName" placeholder="Profile ID (must be public)" class="form-control input-long">
+                <input id="steamIdText" type="text" data-bind="value: steamVanityUrlName" placeholder="Profile ID (must be public)" class="form-control">
                 <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: badSteamVanityUrlName"></span>
             </div>
             <button type="submit" data-bind="enable: !processing()" class="btn btn-primary">Tell me how long</button>
         </form>
     </div>
-    <div class="content" data-bind="visible: !introPage()">
+    <div class="content" data-bind="visible: !introPage()" style="display: none">
         <div class="loader" data-bind="visible: processing"></div>
         <div class="alert alert-danger alert-dismissible" role="alert" data-bind="visible: error() && !errorAlertHidden()">
             <button type="button" class="close" data-bind="click: function () { errorAlertHidden(true); }">
@@ -161,15 +159,21 @@
                 <tbody data-bind="foreach: { data: pagedRows, afterRender: $root.tableRendered }">
                     <tr data-bind="css: known ? '' : 'info'">
                         <td class="vcenter compressed"><input type="checkbox" data-bind="checked: included" /></td>
-                        <td data-bind="css: 'vcenter expanded' + (included() ? '' : ' strikeThrough')">
-                            <a data-bind="text:steamName, attr: {href: $data.steamUrl}" target="_blank"></a>
+                        <!-- ReSharper disable UnknownCssClass -->
+                        <td class="vcenter expanded">
+                        <!-- ReSharper restore UnknownCssClass -->
+                            <a data-bind="attr: {href: $data.steamUrl}" target="_blank">
+                                <span data-bind="text:steamName, css: (included() ? '' : 'text-muted')"></span>
+                            </a>
                         </td>
-                        <td data-bind="css: 'vcenter compressed' + (included() ? '' : ' strikeThrough'), text: getHours(steamPlaytime) + 'h'"></td>
-                        <td data-bind="css: 'vcenter compressed' + (included() ? '' : ' strikeThrough') + (hltbMainTtbImputed ? ' emphasized' : ''), text: getHours($data.hltbMainTtb) + 'h'"></td>
-                        <td data-bind="css: 'vcenter compressed' + (included() ? '' : ' strikeThrough') + (hltbExtrasTtbImputed ? ' emphasized' : ''), text: getHours($data.hltbExtrasTtb) + 'h'"></td>
-                        <td data-bind="css: 'vcenter compressed' + (included() ? '' : ' strikeThrough') + (hltbCompletionistTtbImputed ? ' emphasized' : ''), text: getHours($data.hltbCompletionistTtb) + 'h'">></td>
+                        <td data-bind="css: 'vcenter compressed' + (included() ? '' : ' text-muted'), text: getHours(steamPlaytime) + 'h'"></td>
+                        <td data-bind="css: 'vcenter compressed' + (included() ? '' : ' text-muted') + (hltbMainTtbImputed ? ' emphasized' : ''), text: getHours($data.hltbMainTtb) + 'h'"></td>
+                        <td data-bind="css: 'vcenter compressed' + (included() ? '' : ' text-muted') + (hltbExtrasTtbImputed ? ' emphasized' : ''), text: getHours($data.hltbExtrasTtb) + 'h'"></td>
+                        <td data-bind="css: 'vcenter compressed' + (included() ? '' : ' text-muted') + (hltbCompletionistTtbImputed ? ' emphasized' : ''), text: getHours($data.hltbCompletionistTtb) + 'h'">></td>
                         <td data-bind="css: 'vcenter expanded' + (known ? '' : ' emphasized'), attr: {colspan: $root.allowUpdate($data) ? 1 : 3}">
-                            <a data-bind="text: $data.hltbName, attr: {href: $data.hltbUrl}, visible: updatePhase() == GameUpdatePhase.None" target="_blank"></a>
+                            <a data-bind="attr: {href: $data.hltbUrl}, visible: updatePhase() == GameUpdatePhase.None" target="_blank">
+                                <span data-bind="text: $data.hltbName, css: (included() ? '' : 'text-muted')"></span>
+                            </a>
                             <span data-bind="text:$data.hltbName, visible: updatePhase() != GameUpdatePhase.None"></span>
                         </td>
                         <td class="vcenter compressed" data-bind="visible: $root.allowUpdate($data)" colspan="2">
@@ -199,7 +203,7 @@
             </ul>
         </div>
     </div>
-    <div class="footer" data-bind="visible: !introPage()">
+    <div class="footer" data-bind="visible: !introPage()" style="display: none">
         <a href="https://azure.microsoft.com/" target="_blank">Powered by Azure.</a>
         <a href="http://steampowered.com" target="_blank">Powered by Steam.</a>
         <br />
