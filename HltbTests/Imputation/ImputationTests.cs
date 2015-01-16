@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Common.Entities;
-using Common.Util;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SteamHltbScraper.Imputation;
 
@@ -56,21 +54,6 @@ namespace HltbTests.Imputation
 
                 Console.WriteLine("{0} {1} {2}", app.MainTtb, app.ExtrasTtb, app.CompletionistTtb);
             }
-        }
-
-        private static string GetRandomGenre()
-        {
-            return GetRandomValue(new[] { "Action", "Strategy", "RPG", "Adventure", "Casual", "Indie", "Sports", "Simulation", "Racing" });
-        }
-
-        private static string GetRandomAppType()
-        {
-            return GetRandomValue(new[] {AppEntity.ModTypeName, AppEntity.DlcTypeName, AppEntity.GameTypeName});
-        }
-
-        private static T GetRandomValue<T>(IReadOnlyList<T> values)
-        {
-            return values[RandomGenerator.Next(0, values.Count)];
         }
     }
 }

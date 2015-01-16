@@ -42,25 +42,31 @@ namespace SteamHltbScraper.Imputation
         {
             HltbScraperEventSource.Log.ImputeStart();
 
-            //first impute all together
-            const string allGenre = "<ALL>";
-            HltbScraperEventSource.Log.ImputeGenreStart(allGenre, allApps.Count);
-            var totalRatios = GetTtbRatios(allApps, null);
-            await Impute(allApps, allGenre, totalRatios, true).ConfigureAwait(false);
-            HltbScraperEventSource.Log.ImputeGenreStop(allGenre, allApps.Count);
-
-            //now impute separately - if any genre fails, fall back to the coarse-grained imputed values calculated above
-            foreach (var genreApps in allApps.GroupBy(a => String.Format("{0} ({1})", a.Genres.First(), a.IsGame ? "game" : "dlc/mod")))
-            {
-                string genre = genreApps.Key;
-                var genreAppsArr = genreApps.ToArray();
-
-                HltbScraperEventSource.Log.ImputeGenreStart(genre, genreAppsArr.Length);
-                await Impute(genreAppsArr, genre, GetTtbRatios(genreAppsArr, totalRatios), false).ConfigureAwait(false);
-                HltbScraperEventSource.Log.ImputeGenreStop(genre, genreAppsArr.Length);
-            }
+            await ImputeTypeGenres(allApps, a => a.IsGame, "games").ConfigureAwait(false);
+            await ImputeTypeGenres(allApps, a => !a.IsGame, "dlcs/mods").ConfigureAwait(false);
 
             HltbScraperEventSource.Log.ImputeStop();
+        }
+
+        private static async Task ImputeTypeGenres(IReadOnlyList<AppEntity> allApps, Predicate<AppEntity> predicate, string gameType)
+        {
+            var games = allApps.Where(a => predicate(a)).ToArray();
+            var ratios = await ImputeGenreAndGetRatios(games, String.Format("<all {0}>", gameType), null, true).ConfigureAwait(false);
+            foreach (var genreApps in games.GroupBy(a => a.Genres.First()))
+            {
+                await ImputeGenreAndGetRatios(genreApps.ToArray(), String.Format("{0} ({1})", genreApps.Key, gameType), ratios, false).ConfigureAwait(false);
+            }
+        }
+
+        private static async Task<TtbRatios> ImputeGenreAndGetRatios(IReadOnlyList<AppEntity> apps, string genre, TtbRatios fallbackRatios, bool initial)
+        {
+            HltbScraperEventSource.Log.ImputeGenreStart(genre, apps.Count);
+
+            var ratios = GetTtbRatios(apps, fallbackRatios);
+            await Impute(apps, genre, ratios, initial).ConfigureAwait(false);
+            
+            HltbScraperEventSource.Log.ImputeGenreStop(genre, apps.Count);
+            return ratios;
         }
 
         private static TtbRatios GetTtbRatios(IReadOnlyCollection<AppEntity> apps, TtbRatios fallback)
