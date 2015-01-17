@@ -42,7 +42,7 @@ function Game(steamGame) {
 
     self.hltbOriginalId= self.known ? steamGame.HltbInfo.Id : "";
     self.hltbId = ko.observable(self.known ? steamGame.HltbInfo.Id : "");
-    self.hltbName = ko.observable(self.known ? steamGame.HltbInfo.Name : "Unknown; please update"); //we'll abuse this for update status
+    self.hltbName = ko.observable(self.known ? steamGame.HltbInfo.Name : "Missing (click to update)"); //we'll abuse this for update status
     self.hltbMainTtb = steamGame.HltbInfo.MainTtb;
     self.hltbMainTtbImputed = steamGame.HltbInfo.MainTtbImputed;
     self.hltbExtrasTtb = steamGame.HltbInfo.ExtrasTtb;
@@ -90,7 +90,8 @@ function AppViewModel() {
     self.processing = ko.observable(false);
     self.error = ko.observable(null);
 
-    self.alertHidden = ko.observable(true);
+    self.alertHidden = ko.observable(false);
+    self.missingAlertHidden = ko.observable(false);
     self.errorAlertHidden = ko.observable(false);
 
     self.toggleAllChecked = ko.observable(true);
@@ -242,8 +243,6 @@ function AppViewModel() {
         self.partialCache(false);
         self.imputedTtbs(false);
         self.missingHltbIds(false);
-        self.alertHidden(true);
-        self.errorAlertHidden(false);
         self.gameTable.filter('');
 
         self.currentRequest = $.get("api/games/library/" + self.steamVanityUrlName())
@@ -270,6 +269,9 @@ function AppViewModel() {
             })
             .always(function () {
                 self.processing(false);
+                self.alertHidden(false);
+                self.missingAlertHidden(false);
+                self.errorAlertHidden(false);
                 $('.loader').spin(false);
             });
     };
