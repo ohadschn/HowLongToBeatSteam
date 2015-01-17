@@ -140,6 +140,7 @@
     <None Include="Intellisense\Chart.js" />
     <None Include="Intellisense\jquery.backstretch.js" />
     <None Include="Intellisense\jquery.spin.js" />
+    <None Include="Intellisense\font-awesome.css" />
     <Content Include="Intellisense\knockout-3.2.0-debug.js" />
     <None Include="Intellisense\spin.js" />
     <None Include="Intellisense\sammy.js" />

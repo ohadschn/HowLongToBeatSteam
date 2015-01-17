@@ -187,7 +187,7 @@ function AppViewModel() {
     var scrollDuration = 1000;
     var scrollToAlerts = function() {
         $('html, body').animate({
-            scrollTop: $("#alertContainer").offset().top - 10
+            scrollTop: $("#content").offset().top - 10
         }, scrollDuration);
     };
 
