@@ -61,12 +61,7 @@ Game.prototype.match = function(filter) { //define in prototype to prevent memor
 function AppViewModel() {
     var self = this;
 
-    self.steamVanityUrlName = ko.observable();
-    self.badSteamVanityUrlName = ko.observable(false);
-
-    $("#steamIdText").keydown(function() {
-        self.badSteamVanityUrlName(false);
-    });
+    self.steamVanityUrlName = ko.observable("");
 
     var tableOptions = {
         recordWord: 'game',
@@ -88,7 +83,7 @@ function AppViewModel() {
     self.missingHltbIds = ko.observable(false);
 
     self.processing = ko.observable(false);
-    self.error = ko.observable(null);
+    self.error = ko.observable(false);
 
     self.alertHidden = ko.observable(false);
     self.missingAlertHidden = ko.observable(false);
@@ -238,13 +233,7 @@ function AppViewModel() {
 
         $('.loader').spin({ lines: 12, length: 35, width: 8, radius: 50 });
 
-        if (self.steamVanityUrlName().length === 0) {
-            self.badSteamVanityUrlName(true);
-            self.error("Please specify your Steam Profile ID");
-            return;
-        } else {
-            self.error(null);
-        }
+        self.error(false);
 
         self.processing(true);
         self.partialCache(false);
@@ -272,7 +261,7 @@ function AppViewModel() {
             .fail(function(error) {
                 console.error(error); //TODO replace console print with user error display
                 self.gameTable.rows([]);
-                self.error('verify your Steam profile ID as it appears in your Steam profile page URL (<i>steamcommunity.com/id/<strong>ID</strong></i>) and make sure it is set to public in your Steam profile settings');
+                self.error(true);
             })
             .always(function () {
                 self.processing(false);

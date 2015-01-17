@@ -58,7 +58,7 @@ namespace SteamHltbScraper.Scraper
             await StorageHelper.ReplaceApps(allApps, 20).ConfigureAwait(false); 
         }
 
-        private static async Task ScrapeHltb(IEnumerable<AppEntity> allApps)
+        internal static async Task ScrapeHltb(IEnumerable<AppEntity> allApps)
         {
             HltbScraperEventSource.Log.ScrapeHltbStart();
 

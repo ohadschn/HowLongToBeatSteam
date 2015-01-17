@@ -25,17 +25,16 @@
             <img data-bind="attr: {src: introPage() ? 'Resources/SteamClockWhite.svg' : 'Resources/SteamClock.svg'}" alt="How Long To Beat Steam" />
             <span class="h1 text-vertical-middle">How Long To Beat Steam</span>
             <form data-bind="submit: vanityUrlSubmitted, attr: { action: '#/' + steamVanityUrlName() }" role="form" class="form-inline">
-                <div data-bind="css: (badSteamVanityUrlName() ? 'has-error ' : '') + 'has-feedback form-group'">
+                <div class="form-group">
                     <span class="glyphicon glyphicon glyphicon-question-sign"
                           data-placement="bottom"
                           data-toggle="tooltip"
                           data-container="body"
                           title="Your profile ID can be found in your Steam profile page URL: steamcommunity.com/id/[ID]. Make sure it is set to public in Steam's privacy settings."></span>
-                    <label class="control-label sr-only" for="steamIdText">Input with success</label>
-                    <input id="steamIdText" type="text" data-bind="value: steamVanityUrlName" placeholder="Profile ID (must be public)" class="form-control">
-                    <span class="glyphicon glyphicon-remove form-control-feedback" data-bind="visible: badSteamVanityUrlName"></span>
+                    <label class="control-label sr-only" for="steamIdText">Stem profile ID</label>
+                    <input id="steamIdText" type="text" data-bind="textInput : steamVanityUrlName" placeholder="Steam Profile ID" class="form-control">
                 </div>
-                <button type="submit" data-bind="enable: !processing()" class="btn btn-primary">Tell me how long</button>
+                <button type="submit" data-bind="enable: !processing() && steamVanityUrlName() !== ''" class="btn btn-primary">Tell me how long</button>
             </form>
         </div>
         <div id="content" class="content" data-bind="visible: !introPage()" style="display: none">
@@ -75,7 +74,7 @@
                     <span aria-hidden="true">&times;</span>
                     <span class="sr-only">Close</span>
                 </button>
-                <strong>Error</strong> <span data-bind="html: error"></span>
+                <strong>Error</strong> verify your Steam profile ID as it appears in your Steam profile page URL (<i>steamcommunity.com/id/<strong>ID</strong></i>) and make sure it is set to public in your Steam profile settings
             </div>
             <div class="alert alert-warning alert-dismissable" role="alert" data-bind="visible: missingHltbIds() && !missingAlertHidden()">
                 <button type="button" class="close" data-bind="click: function() {missingAlertHidden(true); }">

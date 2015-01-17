@@ -4,6 +4,7 @@ using System.Linq;
 using Common.Entities;
 using Common.Logging;
 using Common.Storage;
+using SteamHltbScraper.Scraper;
 
 namespace ManualTableUpdater.Updater
 {
@@ -13,6 +14,7 @@ namespace ManualTableUpdater.Updater
         {
             try
             {
+                HltbScraper.ScrapeHltb(new[] {new AppEntity(80, "Counter-Strike: Condition Zero", AppEntity.GameTypeName)}).Wait();
                 //var allApps = StorageHelper.GetAllApps(e => e, AppEntity.MeasuredFilter, 20).Result.ToArray();
                 //Imputer.Impute(allApps)
                 
