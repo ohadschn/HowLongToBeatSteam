@@ -14,10 +14,10 @@ var numberWithCommas = function (x) { // jshint ignore:line
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
-var hoursWithCommas = function (x) { // jshint ignore:line
+var hoursWithCommas = function(x) { // jshint ignore:line
     var hours = getHours(x, 0);
     return numberWithCommas(hours) + ((hours === 1.0) ? " hour" : " hours");
-}
+};
 
 var GameUpdatePhase = {
     None: "None",
@@ -42,7 +42,7 @@ function Game(steamGame) {
 
     self.hltbOriginalId= self.known ? steamGame.HltbInfo.Id : "";
     self.hltbId = ko.observable(self.known ? steamGame.HltbInfo.Id : "");
-    self.hltbName = ko.observable(self.known ? steamGame.HltbInfo.Name : "Missing (click to update)"); //we'll abuse this for update status
+    self.hltbName = self.known ? steamGame.HltbInfo.Name : "";
     self.hltbMainTtb = steamGame.HltbInfo.MainTtb;
     self.hltbMainTtbImputed = steamGame.HltbInfo.MainTtbImputed;
     self.hltbExtrasTtb = steamGame.HltbInfo.ExtrasTtb;
@@ -93,6 +93,13 @@ function AppViewModel() {
     self.alertHidden = ko.observable(false);
     self.missingAlertHidden = ko.observable(false);
     self.errorAlertHidden = ko.observable(false);
+
+    self.gameToUpdate = ko.observable({
+        steamAppId: 0,
+        steamName: "",
+        hltbId: ko.observable(""),
+    });
+    self.gameToUpdateSuggestedHltbId = ko.observable("");
 
     self.toggleAllChecked = ko.observable(true);
 
@@ -276,19 +283,28 @@ function AppViewModel() {
             });
     };
 
-    self.updateHltb = function (game) {
-        game.hltbName("Updating...");
-        game.updatePhase(GameUpdatePhase.InProgress);
-        $.post("api/games/update/" + game.steamAppId + "/" + game.hltbId())
+    self.displayUpdateDialog = function (game) {
+
+        self.gameToUpdate(game);
+        self.gameToUpdateSuggestedHltbId(game.hltbId());
+        $('#HltbUpdateModal').modal('show');
+    };
+
+    self.updateHltb = function(gameToUpdate) {
+
+        gameToUpdate.updatePhase(GameUpdatePhase.InProgress);
+        gameToUpdate.hltbId(self.gameToUpdateSuggestedHltbId());
+
+        $.post("api/games/update/" + gameToUpdate.steamAppId + "/" + gameToUpdate.hltbId())
             .done(function() {
-                game.hltbName("Update submitted for approval, please check back later");
-                game.updatePhase(GameUpdatePhase.Success);
+                gameToUpdate.updatePhase(GameUpdatePhase.Success);
             })
             .fail(function(error) {
                 console.error(error);
-                game.hltbName("Update failed, please verify the HLTB ID");
-                game.updatePhase(GameUpdatePhase.Failure);
+                gameToUpdate.updatePhase(GameUpdatePhase.Failure);
             });
+
+        $('#HltbUpdateModal').modal('hide');
     };
 
     self.allowUpdate = function(game) { //defined on view model to avoid multiple definitions (one for each game in array)
