@@ -322,15 +322,10 @@ $(document).ready(function () {
 
         this.get('#/', function () {
             viewModel.introPage(true);
-            $.backstretch("http://res2.windows.microsoft.com/resbox/en/windows%207/main/b1697ff2-4fef-4125-a4c4-f3dcaa68a0aa_12.jpg");
         });
 
         this.get('#/:vanityUrlName', function () {
             viewModel.introPage(false);
-            if ($(document.body).data('backstretch') !== undefined) {
-                $.backstretch("destroy", false);
-            }
-
             viewModel.steamVanityUrlName(this.params.vanityUrlName);
             viewModel.loadGames();
         });

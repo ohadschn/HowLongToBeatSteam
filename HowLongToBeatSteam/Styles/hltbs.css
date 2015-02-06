@@ -27,6 +27,16 @@
     backgroundColor : black; 
     /* ReSharper restore CssNotResolved */
     background-color: black;
+
+    background-image: url(../Resources/sk5_0.jpg);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  
+    /* ReSharper disable CssBrowserCompatibility */
+    background-size: cover;
+    /* ReSharper restore CssBrowserCompatibility */
+
 }
 .header-intro {
     color: white;
@@ -38,6 +48,16 @@
     /* ReSharper restore CssNotResolved */
     background-color: black;
     background-color: rgba(0, 0, 0, 0.2);
+}
+.attribution {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    color: #5F4E4C;
+}
+.attribution-link {
+    color: #5F4E4C;
+    text-decoration: underline;
 }
 .text-vertical-middle,
 table tbody tr td.vcenter {

@@ -144,6 +144,7 @@
     <Content Include="Intellisense\knockout-3.2.0-debug.js" />
     <None Include="Intellisense\spin.js" />
     <None Include="Intellisense\sammy.js" />
+    <Content Include="Resources\sk5_0.jpg" />
     <Content Include="Resources\SteamClock.ico" />
     <Content Include="Resources\SteamClock.svg" />
     <Content Include="Resources\SteamClockWhite.svg" />
