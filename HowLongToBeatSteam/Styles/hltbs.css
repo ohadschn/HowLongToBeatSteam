@@ -57,6 +57,15 @@ table tbody tr td.vcenter {
 .tableInfo {
     margin: 6px 6px 6px 6px;
 }
+.horizontal-alert-row {
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+.horizontal-alert {
+    margin-bottom: -99979px;
+    padding-bottom: 99999px;
+    border: none;
+}
 .sortable {
     cursor: pointer;
     /* ReSharper disable UnknownCssVendorExtension */
