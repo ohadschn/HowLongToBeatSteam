@@ -129,6 +129,7 @@
     <Content Include="ApplicationInsights.config" />
     <None Include="bower_components\knockout-datatable\knockout-datatable.js" />
     <Content Include="bower_components\knockout-datatable\knockout-datatable.min.js" />
+    <Content Include="CloseWindow.html" />
     <Content Include="Global.asax" />
     <Content Include="Index.html" />
     <Content Include="bower.json" />

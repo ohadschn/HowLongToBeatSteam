@@ -1,25 +1,25 @@
 ﻿<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <title>How Long To Beat Steam</title>
-    <meta name="description" content="Find out how long it would take you to complete your entire Steam library in different completion levels" />
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="Styles/hltbs.min.css">
-    <link rel="shortcut icon" href="Resources/SteamClock.ico">
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
-    <!-- ReSharper disable All -->
-    <script type="text/javascript">
-        (function (e, t, n, r, i, s, o) { e["GoogleAnalyticsObject"] = i; e[i] = e[i] || function () { (e[i].q = e[i].q || []).push(arguments) }, e[i].l = 1 * new Date; s = t.createElement(n), o = t.getElementsByTagName(n)[0]; s.async = 1; s.src = r; o.parentNode.insertBefore(s, o) })(window, document, "script", "//www.google-analytics.com/analytics.js", "ga"); ga("create", "UA-58442747-1", "auto"); ga("send", "pageview")
-    </script>
-    <script type="text/javascript">
-        var appInsights = window.appInsights || function (e) { function t(e) { n[e] = function () { var t = arguments; n.queue.push(function () { n[e].apply(n, t) }) } } var n = { config: e }, r = document, i = window, s = "script", o = r.createElement(s), u, a; for (o.src = e.url || "//az416426.vo.msecnd.net/scripts/a/ai.0.js", r.getElementsByTagName(s)[0].parentNode.appendChild(o), n.cookie = r.cookie, n.queue = [], u = ["Event", "Exception", "Metric", "PageView", "Trace"]; u.length;) t("track" + u.pop()); return e.disableExceptionTracking || (u = "onerror", t("_" + u), a = i[u], i[u] = function (e, t, r, i, s) { var o = a && a(e, t, r, i, s); return o !== !0 && n["_" + u](e, t, r, i, s), o }), n }({ instrumentationKey: "d0a63409-84bf-4f88-a8cf-8440ce670471" }); window.appInsights = appInsights; appInsights.trackPageView()
-    </script>
-    <!-- ReSharper restore All -->
-</head>
+<html>
+    <head>
+        <title>How Long To Beat Steam</title>
+        <meta name="description" content="Find out how long it would take you to complete your entire Steam library in different completion levels" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="Styles/hltbs.min.css">
+        <link rel="shortcut icon" href="Resources/SteamClock.ico">
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+            <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        <!-- ReSharper disable All -->
+        <script type="text/javascript">
+            (function (e, t, n, r, i, s, o) { e["GoogleAnalyticsObject"] = i; e[i] = e[i] || function () { (e[i].q = e[i].q || []).push(arguments) }, e[i].l = 1 * new Date; s = t.createElement(n), o = t.getElementsByTagName(n)[0]; s.async = 1; s.src = r; o.parentNode.insertBefore(s, o) })(window, document, "script", "//www.google-analytics.com/analytics.js", "ga"); ga("create", "UA-58442747-1", "auto"); ga("send", "pageview")
+        </script>
+        <script type="text/javascript">
+            var appInsights = window.appInsights || function (e) { function t(e) { n[e] = function () { var t = arguments; n.queue.push(function () { n[e].apply(n, t) }) } } var n = { config: e }, r = document, i = window, s = "script", o = r.createElement(s), u, a; for (o.src = e.url || "//az416426.vo.msecnd.net/scripts/a/ai.0.js", r.getElementsByTagName(s)[0].parentNode.appendChild(o), n.cookie = r.cookie, n.queue = [], u = ["Event", "Exception", "Metric", "PageView", "Trace"]; u.length;) t("track" + u.pop()); return e.disableExceptionTracking || (u = "onerror", t("_" + u), a = i[u], i[u] = function (e, t, r, i, s) { var o = a && a(e, t, r, i, s); return o !== !0 && n["_" + u](e, t, r, i, s), o }), n }({ instrumentationKey: "d0a63409-84bf-4f88-a8cf-8440ce670471" }); window.appInsights = appInsights; appInsights.trackPageView()
+        </script>
+        <!-- ReSharper restore All -->
+    </head>
     <body data-bind="css: introPage() ? 'body-intro' : ''">
         <div class="attribution" data-bind="visible: introPage">
             <i>Kujasa - The Beginning</i> by Sergei Churbanov (aka CatBlac) <br />
@@ -114,8 +114,14 @@
                             Your total amount of <abbr title="as measured by Steam"><strong>current</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().playTime)"></span><br />
                             Your total amount of <abbr title="you complete the main objectives, just enough to see the credits roll"><strong>main</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().mainTtb)"></span> (<span data-bind="text: hoursWithCommas($root.total().mainRemaining)"></span> remaining)<br />
                             Your total amount of <abbr title="you take your time, discover and complete additional tasks not required"><strong>extras</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().extrasTtb)"></span> (<span data-bind="text: hoursWithCommas($root.total().extrasRemaining)"></span> remaining)<br />
-                            Your total amount of <abbr title="you strive for every achievement, every medal and conquer all that the game has to offer"><strong>completionist</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().completionistTtb)"></span> (<span data-bind="text: hoursWithCommas($root.total().completionistRemaining)"></span> remaining)<br />
+                            Your total amount of <abbr title="you strive for every achievement, every medal and conquer all that the game has to offer"><strong>completionist</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().completionistTtb)"></span> (<span data-bind="text: hoursWithCommas($root.total().completionistRemaining)"></span> remaining)
                         </p>
+                        <ul class="list-inline lead">
+                            <li>Share</li>
+                            <li><a href="javascript:;" data-bind="click: $root.shareOnFacebook"><span class="fa fa-facebook"></span></a></li>
+                            <li><a href="javascript:;" data-bind="click: $root.shareOnTwitter"><span class="fa fa-twitter"></span></a></li>
+                            <li><a href="javascript:;" data-bind="click: $root.shareOnGooglePlus"><span class="fa fa-google-plus"></span></a></li>
+                        </ul>
                     </div>
                 </div>
                 <div class="container-fluid">
