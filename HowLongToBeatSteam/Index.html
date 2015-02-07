@@ -22,8 +22,8 @@
     </head>
     <body data-bind="css: introPage() ? 'body-intro' : ''">
         <div class="attribution" data-bind="visible: introPage">
-            <i>Kujasa - The Beginning</i> by Sergei Churbanov (aka CatBlac) <br />
-            Released under the Creative Commons 3.0 license by <a href="http://opengameart.org/content/kujasa-the-beginning" target="_blank" class="attribution-link">William Thompson</a>
+            <a href="http://opengameart.org/content/kujasa-the-beginning" target="_blank" class="attribution-link"><i>Kujasa - The Beginning</i></a> by Sergei "CatBlac" Churbanov<br />
+            Licensed by <a href="http://williamthompsonj.blogspot.de" target="_blank" class="attribution-link">William Thompson</a> under <a href="http://creativecommons.org/licenses/by/3.0/" target="_blank" class="attribution-link">CC BY 3.0</a>
         </div>
         <div class="header" data-bind="css: introPage() ? 'header-intro' : ''">
             <img data-bind="attr: {src: introPage() ? 'Resources/SteamClockWhite.svg' : 'Resources/SteamClock.svg'}" alt="How Long To Beat Steam" />
@@ -81,7 +81,7 @@
                 <strong>Error</strong> verify your Steam profile ID as it appears in your Steam profile page URL (<i>steamcommunity.com/id/<strong>ID</strong></i>) and make sure it is set to public in your Steam profile settings
             </div>
             <div class="row horizontal-alert-row">
-                <div role="alert" data-bind="visible: missingHltbIds() && !missingAlertHidden(), css: 'alert alert-warning alert-dismissable horizontal-alert ' + ((imputedTtbs() || partialCache()) ? 'col-md-6' : 'col-md-12')">
+                <div role="alert" data-bind="visible: missingHltbIds() && !missingAlertHidden(), css: 'alert alert-warning alert-dismissable horizontal-alert ' + ((imputedTtbs() || partialCache()) ? 'col-md-5' : 'col-md-12')">
                     <button type="button" class="close" data-bind="click: function() {missingAlertHidden(true); }">
                         <span aria-hidden="true">&times;</span>
                         <span class="sr-only">Close</span>
@@ -91,7 +91,7 @@
                         <span class="text-nowrap">Click the update link next to missing games in the table to help!</span>
                     </p>
                 </div>
-                <div role="alert" data-bind="visible: (imputedTtbs() || partialCache()) && !alertHidden(), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-6' : 'col-md-12')">
+                <div role="alert" data-bind="visible: (imputedTtbs() || partialCache()) && !alertHidden(), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-7' : 'col-md-12')">
                     <button type="button" class="close" data-bind="click: function() {alertHidden(true); }">
                         <span aria-hidden="true">&times;</span>
                         <span class="sr-only">Close</span>

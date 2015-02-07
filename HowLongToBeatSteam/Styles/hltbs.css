@@ -87,6 +87,8 @@ table tbody tr td.vcenter {
 .horizontal-alert-row {
     overflow: hidden;
     margin-bottom: 20px;
+    margin-left: 0;
+    margin-right: 0;
 }
 .horizontal-alert {
     margin-bottom: -99979px;
