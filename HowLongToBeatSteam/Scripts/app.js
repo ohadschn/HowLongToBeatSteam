@@ -157,36 +157,6 @@ function AppViewModel() {
         };
     }).extend({ rateLimit: 0 });
 
-    Chart.defaults.global.tooltipTemplate = "<%= value %> hours";
-
-    var dataset = {
-        fillColor: "rgba(151,187,205,0.5)",
-        strokeColor: "rgba(151,187,205,0.8)",
-        highlightFill: "rgba(151,187,205,0.75)",
-        highlightStroke: "rgba(151,187,205,1)",
-        data: [0, 0, 0, 0]
-    };
-
-    var playtimeChart = new Chart($("#playtimeChart").get(0).getContext("2d"))
-                        .Bar({ labels: ["Current", "Main", "Extras", "Complete"], datasets: [dataset] });
-
-    dataset.data = [0, 0, 0];
-    var remainingChart = new Chart($("#remainingChart").get(0).getContext("2d"))
-                        .Bar({ labels: ["Main", "Extras", "Complete"], datasets: [dataset] });
-
-    self.total.subscribe(function(total) {
-        playtimeChart.datasets[0].bars[0].value = getHours(total.playTime, 0);
-        playtimeChart.datasets[0].bars[1].value = getHours(total.mainTtb, 0);
-        playtimeChart.datasets[0].bars[2].value = getHours(total.extrasTtb, 0);
-        playtimeChart.datasets[0].bars[3].value = getHours(total.completionistTtb, 0);
-        playtimeChart.update();
-
-        remainingChart.datasets[0].bars[0].value = getHours(total.mainRemaining, 0);
-        remainingChart.datasets[0].bars[1].value = getHours(total.extrasRemaining, 0);
-        remainingChart.datasets[0].bars[2].value = getHours(total.completionistRemaining, 0);
-        remainingChart.update();
-    });
-
     var scrollDuration = 1000;
     var scrollToAlerts = function() {
         $('html, body').animate({
@@ -224,6 +194,48 @@ function AppViewModel() {
             self.loadGames(); //no submission will take place since it's the same URL, so just load again
         }
     };
+
+    var updateCharts = function(total) {
+        self.playtimeChart.datasets[0].bars[0].value = getHours(total.playTime, 0);
+        self.playtimeChart.datasets[0].bars[1].value = getHours(total.mainTtb, 0);
+        self.playtimeChart.datasets[0].bars[2].value = getHours(total.extrasTtb, 0);
+        self.playtimeChart.datasets[0].bars[3].value = getHours(total.completionistTtb, 0);
+        self.playtimeChart.update();
+
+        self.remainingChart.datasets[0].bars[0].value = getHours(total.mainRemaining, 0);
+        self.remainingChart.datasets[0].bars[1].value = getHours(total.extrasRemaining, 0);
+        self.remainingChart.datasets[0].bars[2].value = getHours(total.completionistRemaining, 0);
+        self.remainingChart.update();
+    };
+
+    Chart.defaults.global.tooltipTemplate = "<%= value %> hours";
+    Chart.defaults.global.responsive = true;
+
+    var firstInit = true;
+    var initCharts = function() {
+
+        if (!firstInit) {
+            return;
+        }
+        firstInit = false;
+
+        var dataset = {
+            fillColor: "rgba(151,187,205,0.5)",
+            strokeColor: "rgba(151,187,205,0.8)",
+            highlightFill: "rgba(151,187,205,0.75)",
+            highlightStroke: "rgba(151,187,205,1)",
+            data: [0,0,0,0]
+        };
+        self.playtimeChart = new Chart($("#playtimeChart").get(0).getContext("2d"))
+            .Bar({ labels: ["Current", "Main", "Extras", "Complete"], datasets: [dataset] });
+
+        dataset.data = [0,0,0];
+        self.remainingChart = new Chart($("#remainingChart").get(0).getContext("2d"))
+            .Bar({ labels: ["Main", "Extras", "Complete"], datasets: [dataset] });
+
+        self.total.subscribe(updateCharts);
+        updateCharts(self.total());
+    }
 
     self.loadGames = function () {
 
@@ -265,6 +277,7 @@ function AppViewModel() {
 
                 self.alertHidden(false);
                 scrollToAlerts();
+                setTimeout(initCharts, scrollDuration / 2);
             })
             .fail(function(error) {
                 console.error(error); //TODO replace console print with user error display

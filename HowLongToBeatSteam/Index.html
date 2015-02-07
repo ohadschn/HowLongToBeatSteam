@@ -41,6 +41,7 @@
                 <button type="submit" data-bind="enable: !processing() && steamVanityUrlName() !== ''" class="btn btn-primary">Tell me how long</button>
             </form>
         </div>
+        <div class="loader" data-bind="visible: processing"></div>
         <div id="content" class="content" data-bind="visible: !introPage()" style="display: none">
             <div id="HltbUpdateModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="HLTB update modal" aria-hidden="true">
                 <div class="modal-dialog">
@@ -72,86 +73,117 @@
                     </div>
                 </div>
             </div>
-            <div class="loader" data-bind="visible: processing"></div>
-            <div class="alert alert-danger alert-dismissible" role="alert" data-bind="visible: error() && !errorAlertHidden()">
-                <button type="button" class="close" data-bind="click: function () { errorAlertHidden(true); }">
-                    <span aria-hidden="true">&times;</span>
-                    <span class="sr-only">Close</span>
-                </button>
-                <strong>Error</strong> verify your Steam profile ID as it appears in your Steam profile page URL (<i>steamcommunity.com/id/<strong>ID</strong></i>) and make sure it is set to public in your Steam profile settings
-            </div>
-            <div class="row horizontal-alert-row">
-                <div role="alert" data-bind="visible: missingHltbIds() && !missingAlertHidden(), css: 'alert alert-warning alert-dismissable horizontal-alert ' + ((imputedTtbs() || partialCache()) ? 'col-md-5' : 'col-md-12')">
-                    <button type="button" class="close" data-bind="click: function() {missingAlertHidden(true); }">
+            <div data-bind="visible: !processing()">
+                <div class="alert alert-danger alert-dismissible" role="alert" data-bind="visible: error() && !errorAlertHidden()">
+                    <button type="button" class="close" data-bind="click: function () { errorAlertHidden(true); }">
                         <span aria-hidden="true">&times;</span>
                         <span class="sr-only">Close</span>
                     </button>
-                    <p class="lead">
-                        <span class="fa fa-puzzle-piece"></span> Some of your games could not be found on <abbr title="HowLongToBeat">HLTB</abbr>.
-                        <span class="text-nowrap">Click the update link next to missing games in the table to help!</span>
-                    </p>
+                    <strong>Error</strong> verify your Steam profile ID as it appears in your Steam profile page URL (<i>steamcommunity.com/id/<strong>ID</strong></i>) and make sure it is set to public in your Steam profile settings
                 </div>
-                <div role="alert" data-bind="visible: (imputedTtbs() || partialCache()) && !alertHidden(), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-7' : 'col-md-12')">
-                    <button type="button" class="close" data-bind="click: function() {alertHidden(true); }">
-                        <span aria-hidden="true">&times;</span>
-                        <span class="sr-only">Close</span>
-                    </button>
-                    <div data-bind="visible: imputedTtbs">
-                        <span class="fa fa-fw fa-bar-chart"></span> Some play times are missing from <abbr title="HowLongToBeat">HLTB</abbr> and were therefore <a href="http://en.wikipedia.org/wiki/Imputation_%28statistics%29" class="alert-link" target="_blank">statistically imputed</a>. Imputed values are <span class="emphasized">italicized</span>.
+                <div class="row horizontal-alert-row">
+                    <div role="alert" data-bind="visible: missingHltbIds() && !missingAlertHidden()" class="alert alert-warning alert-dismissable horizontal-alert col-md-5">
+                        <button type="button" class="close" data-bind="click: function() {missingAlertHidden(true); }">
+                            <span aria-hidden="true">&times;</span>
+                            <span class="sr-only">Close</span>
+                        </button>
+                        <p class="lead">
+                            <span class="fa fa-puzzle-piece"></span> Some of your games could not be found on <abbr title="HowLongToBeat">HLTB</abbr>.
+                            <span class="text-nowrap">Click the update link next to missing games in the table to help!</span>
+                        </p>
                     </div>
-                    <div data-bind="visible: partialCache">
-                        <span class="fa fa-fw fa-database"></span> Some games haven't been processed by the site's engine yet (or they have been removed from the Steam store).
+                    <div role="alert" data-bind="visible: !alertHidden(), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-7' : 'col-md-12')">
+                        <button type="button" class="close" data-bind="click: function() {alertHidden(true); }">
+                            <span aria-hidden="true">&times;</span>
+                            <span class="sr-only">Close</span>
+                        </button>
+                        <div>
+                            <span class="fa fa-fw fa-steam"></span> Library information courtesy of Steam. Game completion statistics courtesy of <a href="http://howlongtobeat.com" target="_blank">HowLongToBeat.com</a>.
+                        </div>
+                        <div data-bind="visible: imputedTtbs">
+                            <span class="fa fa-fw fa-bar-chart"></span> Some play times are missing from <abbr title="HowLongToBeat">HLTB</abbr> and were therefore <a href="http://en.wikipedia.org/wiki/Imputation_%28statistics%29" class="alert-link" target="_blank">statistically imputed</a>. Imputed values are <span class="emphasized">italicized</span>.
+                        </div>
+                        <div data-bind="visible: partialCache">
+                            <span class="fa fa-fw fa-database"></span> Some games haven't been processed by the site's engine yet (or they have been removed from the Steam store).
+                        </div>
                     </div>
                 </div>
             </div>
             <div data-bind="with: gameTable, visible: gameTable.rows().length>0 && !processing()">
-                <ul class="list-group lead">
-                    <li class="list-group-item">Your total amount of <abbr title="as measured by Steam"><strong>current</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().playTime)"></span></li>
-                    <li class="list-group-item">Your total amount of <abbr title="you complete the main objectives, just enough to see the credits roll"><strong>main</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().mainTtb)"></span> (<span data-bind="text: hoursWithCommas($root.total().mainRemaining)"></span> remaining)</li>
-                    <li class="list-group-item">Your total amount of <abbr title="you take your time, discover and complete additional tasks not required"><strong>extras</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().extrasTtb)"></span> (<span data-bind="text: hoursWithCommas($root.total().extrasRemaining)"></span> remaining)</li>
-                    <li class="list-group-item">Your total amount of <abbr title="you strive for every achievement, every medal and conquer all that the game has to offer"><strong>completionist</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().completionistTtb)"></span> (<span data-bind="text: hoursWithCommas($root.total().completionistRemaining)"></span> remaining)</li>
-                </ul>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3>Your stats</h3>
+                    </div>
+                    <div class="panel-body">
+                        <p class="lead">
+                            Your total amount of <abbr title="as measured by Steam"><strong>current</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().playTime)"></span><br />
+                            Your total amount of <abbr title="you complete the main objectives, just enough to see the credits roll"><strong>main</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().mainTtb)"></span> (<span data-bind="text: hoursWithCommas($root.total().mainRemaining)"></span> remaining)<br />
+                            Your total amount of <abbr title="you take your time, discover and complete additional tasks not required"><strong>extras</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().extrasTtb)"></span> (<span data-bind="text: hoursWithCommas($root.total().extrasRemaining)"></span> remaining)<br />
+                            Your total amount of <abbr title="you strive for every achievement, every medal and conquer all that the game has to offer"><strong>completionist</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().completionistTtb)"></span> (<span data-bind="text: hoursWithCommas($root.total().completionistRemaining)"></span> remaining)
+                        </p>
+                        <ul class="list-inline lead">
+                            <li>Share</li>
+                            <li><a href="javascript:;" data-bind="click: $root.shareOnFacebook"><span class="fa fa-facebook"></span></a></li>
+                            <li><a href="javascript:;" data-bind="click: $root.shareOnTwitter"><span class="fa fa-twitter"></span></a></li>
+                            <li><a href="javascript:;" data-bind="click: $root.shareOnGooglePlus"><span class="fa fa-google-plus"></span></a></li>
+                        </ul>
+                    </div>
+                </div>
+                <h2>Total playtime (hours)</h2>
                 <div class="container-fluid">
                     <div class="row">
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <h3 class="text-center">
-                                Total playtime
-                                <small class="text-info">
-                                    <span>
-                                        <span class="glyphicon glyphicon-info-sign"
-                                              data-placement="right"
-                                              data-toggle="tooltip"
-                                              data-container="body"
-                                              title="Total Steam playtime compared to the time it would take to beat the games at the different completion levels"></span>
-                                    </span>
-                                </small>
+                                By completion level
                             </h3>
                             <canvas id="playtimeChart"></canvas>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <h3 class="text-center">
-                                Playtime remaining
-                                <small class="text-info">
-                                    <span>
-                                        <span class="glyphicon glyphicon-info-sign"
-                                              data-placement="right"
-                                              data-toggle="tooltip"
-                                              data-container="body"
-                                              title="For each game, the expected time to beat is subtracted from the time played (to a minimum of zero)"></span>
-                                    </span>
-                                </small>
+                                By Genre
+                            </h3>
+                        </div>
+                        <div class="col-md-4">
+                            <h3 class="text-center">
+                                By Metacritic score
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+                <h2>
+                    Playtime remaining (hours)
+                    <small class="text-info">
+                        <span>
+                            <span class="glyphicon glyphicon-info-sign"
+                                  data-placement="right"
+                                  data-toggle="tooltip"
+                                  data-container="body"
+                                  title="For each game, the expected time to beat is subtracted from the time played (to a minimum of zero)"></span>
+                        </span>
+                    </small>
+                </h2>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h3 class="text-center">
+                                By completion level
                             </h3>
                             <canvas id="remainingChart"></canvas>
+                        </div>
+                        <div class="col-md-4">
+                            <h3 class="text-center">
+                                By Genre
+                            </h3>
+                        </div>
+                        <div class="col-md-4">
+                            <h3 class="text-center">
+                                By Metacritic score
+                            </h3>
                         </div>
                     </div>
                 </div>
                 <br/>
-                <ul class="list-inline lead">
-                    <li>Share</li>
-                    <li><a href="javascript:;" data-bind="click: $root.shareOnFacebook"><span class="fa fa-facebook"></span></a></li>
-                    <li><a href="javascript:;" data-bind="click: $root.shareOnTwitter"><span class="fa fa-twitter"></span></a></li>
-                    <li><a href="javascript:;" data-bind="click: $root.shareOnGooglePlus"><span class="fa fa-google-plus"></span></a></li>
-                </ul>
+                <h2>Playtime per game</h2>
                 <div class="pull-right tableInfo">
                     <strong>Games per page</strong>
                     <select data-bind="options: $root.pageSizeOptions, value: perPage"></select>
@@ -260,14 +292,14 @@
             Copyright Ohad Schneider &copy; 2014
             <a href="mailto:howlongtobeatsteam@outlook.com?subject=HowLongToBeatSteam">Contact</a>
         </div>
-        <script type="text/javascript" src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.1.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/sammy.js/0.7.6/sammy.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.2.0/knockout-min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/tooltip.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/modal.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.0.1/spin.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.0.1/jquery.spin.min.js"></script>
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/chart.js/1.0.1-beta.4/Chart.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.1/Chart.min.js"></script>
         <script type="text/javascript" src="bower_components/knockout-datatable/knockout-datatable.min.js"></script>
         <script type="text/javascript" src="Scripts/app.min.js"></script>
     </body>
