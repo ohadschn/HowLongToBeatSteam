@@ -12,7 +12,14 @@
 .loader {
     position: fixed;
     left: 50%;
-    top: 45%;
+    top: 50%;
+}
+@media (max-width: 767px) {
+    .loader {
+        position: fixed;
+        left: 50%;
+        top: 60%;
+    }
 }
 .footer {
   position: absolute;

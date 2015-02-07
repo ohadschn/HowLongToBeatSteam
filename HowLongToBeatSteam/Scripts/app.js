@@ -231,7 +231,13 @@ function AppViewModel() {
             self.currentRequest.abort(); //in case of hash tag navigation while we're loading
         }
 
-        $('.loader').spin({ lines: 12, length: 35, width: 8, radius: 50 });
+        var height = $(window).height();
+        $('.loader').spin({
+            lines: 14,
+            length: Math.ceil(height / 25),
+            width: Math.ceil(height / 90),
+            radius: Math.ceil(height / 15)
+        });
 
         self.error(false);
 
