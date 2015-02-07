@@ -105,25 +105,12 @@
                 </div>
             </div>
             <div data-bind="with: gameTable, visible: gameTable.rows().length>0 && !processing()">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3>Playtime and completion levels (per <a href="http://www.howlongtobeat.com" target="_blank">HowLongToBeat.com</a>)</h3>
-                    </div>
-                    <div class="panel-body">
-                        <p class="lead">
-                            Your total amount of <abbr title="as measured by Steam"><strong>current</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().playTime)"></span><br />
-                            Your total amount of <abbr title="you complete the main objectives, just enough to see the credits roll"><strong>main</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().mainTtb)"></span> (<span data-bind="text: hoursWithCommas($root.total().mainRemaining)"></span> remaining)<br />
-                            Your total amount of <abbr title="you take your time, discover and complete additional tasks not required"><strong>extras</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().extrasTtb)"></span> (<span data-bind="text: hoursWithCommas($root.total().extrasRemaining)"></span> remaining)<br />
-                            Your total amount of <abbr title="you strive for every achievement, every medal and conquer all that the game has to offer"><strong>completionist</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().completionistTtb)"></span> (<span data-bind="text: hoursWithCommas($root.total().completionistRemaining)"></span> remaining)
-                        </p>
-                        <ul class="list-inline lead">
-                            <li>Share</li>
-                            <li><a href="javascript:;" data-bind="click: $root.shareOnFacebook"><span class="fa fa-facebook"></span></a></li>
-                            <li><a href="javascript:;" data-bind="click: $root.shareOnTwitter"><span class="fa fa-twitter"></span></a></li>
-                            <li><a href="javascript:;" data-bind="click: $root.shareOnGooglePlus"><span class="fa fa-google-plus"></span></a></li>
-                        </ul>
-                    </div>
-                </div>
+                <ul class="list-group lead">
+                    <li class="list-group-item">Your total amount of <abbr title="as measured by Steam"><strong>current</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().playTime)"></span></li>
+                    <li class="list-group-item">Your total amount of <abbr title="you complete the main objectives, just enough to see the credits roll"><strong>main</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().mainTtb)"></span> (<span data-bind="text: hoursWithCommas($root.total().mainRemaining)"></span> remaining)</li>
+                    <li class="list-group-item">Your total amount of <abbr title="you take your time, discover and complete additional tasks not required"><strong>extras</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().extrasTtb)"></span> (<span data-bind="text: hoursWithCommas($root.total().extrasRemaining)"></span> remaining)</li>
+                    <li class="list-group-item">Your total amount of <abbr title="you strive for every achievement, every medal and conquer all that the game has to offer"><strong>completionist</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().completionistTtb)"></span> (<span data-bind="text: hoursWithCommas($root.total().completionistRemaining)"></span> remaining)</li>
+                </ul>
                 <div class="container-fluid">
                     <div class="row">
                         <div class="col-md-3">
@@ -158,7 +145,13 @@
                         </div>
                     </div>
                 </div>
-                <hr />
+                <br/>
+                <ul class="list-inline lead">
+                    <li>Share</li>
+                    <li><a href="javascript:;" data-bind="click: $root.shareOnFacebook"><span class="fa fa-facebook"></span></a></li>
+                    <li><a href="javascript:;" data-bind="click: $root.shareOnTwitter"><span class="fa fa-twitter"></span></a></li>
+                    <li><a href="javascript:;" data-bind="click: $root.shareOnGooglePlus"><span class="fa fa-google-plus"></span></a></li>
+                </ul>
                 <div class="pull-right tableInfo">
                     <strong>Games per page</strong>
                     <select data-bind="options: $root.pageSizeOptions, value: perPage"></select>
