@@ -41,8 +41,8 @@
                 <button type="submit" data-bind="enable: !processing() && steamVanityUrlName() !== ''" class="btn btn-primary">Tell me how long</button>
             </form>
         </div>
-        <div class="loader" data-bind="visible: processing"></div>
         <div id="content" class="content" data-bind="visible: !introPage()" style="display: none">
+            <div class="loader" data-bind="visible: processing"></div>
             <div id="HltbUpdateModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="HLTB update modal" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -115,12 +115,37 @@
                         <h3>Your stats</h3>
                     </div>
                     <div class="panel-body">
-                        <p class="lead">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <h3 class="text-center">
+                                        Total playtime
+                                    </h3>
+                                    <canvas id="playtimeChart"></canvas>
+                                </div>
+                                <div class="col-md-3">
+                                    <h3 class="text-center">
+                                        Playtime remaining
+                                        <small class="text-info">
+                                            <span>
+                                                <span class="glyphicon glyphicon-info-sign"
+                                                      data-placement="right"
+                                                      data-toggle="tooltip"
+                                                      data-container="body"
+                                                      title="For each game, the expected time to beat is subtracted from the time played (to a minimum of zero)"></span>
+                                            </span>
+                                        </small>
+                                    </h3>
+                                    <canvas id="remainingChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <h3 class="lead">
                             Your total amount of <abbr title="as measured by Steam"><strong>current</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().playTime)"></span><br />
                             Your total amount of <abbr title="you complete the main objectives, just enough to see the credits roll"><strong>main</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().mainTtb)"></span> (<span data-bind="text: hoursWithCommas($root.total().mainRemaining)"></span> remaining)<br />
                             Your total amount of <abbr title="you take your time, discover and complete additional tasks not required"><strong>extras</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().extrasTtb)"></span> (<span data-bind="text: hoursWithCommas($root.total().extrasRemaining)"></span> remaining)<br />
                             Your total amount of <abbr title="you strive for every achievement, every medal and conquer all that the game has to offer"><strong>completionist</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().completionistTtb)"></span> (<span data-bind="text: hoursWithCommas($root.total().completionistRemaining)"></span> remaining)
-                        </p>
+                        </h3>
                         <ul class="list-inline lead">
                             <li>Share</li>
                             <li><a href="javascript:;" data-bind="click: $root.shareOnFacebook"><span class="fa fa-facebook"></span></a></li>
@@ -129,16 +154,9 @@
                         </ul>
                     </div>
                 </div>
-                <h2>Total playtime (hours)</h2>
                 <div class="container-fluid">
                     <div class="row">
-                        <div class="col-md-4">
-                            <h3 class="text-center">
-                                By completion level
-                            </h3>
-                            <canvas id="playtimeChart"></canvas>
-                        </div>
-                        <div class="col-md-4 text-center">
+                        <div class="col-md-3 text-center">
                             <div class="h3">
                                 By Genre
                                 <div class="btn-group" role="group" aria-label="Completion">
@@ -148,9 +166,9 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4 text-center">
+                        <div class="col-md-3 text-center">
                             <div class="h3">
-                                By Metacritic score
+                                By Metacritic
                                 <div class="btn-group" role="group" aria-label="Completion">
                                     <button type="button" class="btn btn-default">Main</button>
                                     <button type="button" class="btn btn-default">Extras</button>
@@ -160,26 +178,8 @@
                         </div>
                     </div>
                 </div>
-                <h2>
-                    Playtime remaining (hours)
-                    <small class="text-info">
-                        <span>
-                            <span class="glyphicon glyphicon-info-sign"
-                                  data-placement="right"
-                                  data-toggle="tooltip"
-                                  data-container="body"
-                                  title="For each game, the expected time to beat is subtracted from the time played (to a minimum of zero)"></span>
-                        </span>
-                    </small>
-                </h2>
                 <div class="container-fluid">
                     <div class="row">
-                        <div class="col-md-4">
-                            <h3 class="text-center">
-                                By completion level
-                            </h3>
-                            <canvas id="remainingChart"></canvas>
-                        </div>
                         <div class="col-md-4">
                             <div class="h3">
                                 By Genre
@@ -202,7 +202,7 @@
                         </div>
                     </div>
                 </div>
-                <br/>
+                <br />
                 <h2>Playtime per game</h2>
                 <div class="pull-right tableInfo">
                     <strong>Games per page</strong>

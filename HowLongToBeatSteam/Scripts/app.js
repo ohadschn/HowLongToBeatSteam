@@ -161,7 +161,7 @@ function AppViewModel() {
     var scrollToAlerts = function() {
         $('html, body').animate({
             scrollTop: $("#content").offset().top - 10
-        }, scrollDuration);
+        }, scrollDuration/2);
     };
 
     var firstTableRender = true;
@@ -276,8 +276,10 @@ function AppViewModel() {
                 self.originalMainRemaining = self.total().mainRemaining;
 
                 self.alertHidden(false);
-                scrollToAlerts();
-                setTimeout(initCharts, scrollDuration / 2);
+                setTimeout(function () {
+                    initCharts();
+                    scrollToAlerts();
+                }, scrollDuration / 2);
             })
             .fail(function(error) {
                 console.error(error); //TODO replace console print with user error display
