@@ -161,7 +161,7 @@ function AppViewModel() {
     var scrollToAlerts = function() {
         $('html, body').animate({
             scrollTop: $("#content").offset().top - 10
-        }, scrollDuration/2);
+        }, 0.75 * scrollDuration);
     };
 
     var firstTableRender = true;
@@ -224,18 +224,18 @@ function AppViewModel() {
             strokeColor: "rgba(151,187,205,0.8)",
             highlightFill: "rgba(151,187,205,0.75)",
             highlightStroke: "rgba(151,187,205,1)",
-            data: [0,0,0,0]
+            data: [0, 0, 0, 0]
         };
         self.playtimeChart = new Chart($("#playtimeChart").get(0).getContext("2d"))
             .Bar({ labels: ["Current", "Main", "Extras", "Complete"], datasets: [dataset] });
 
-        dataset.data = [0,0,0];
+        dataset.data = [0, 0, 0];
         self.remainingChart = new Chart($("#remainingChart").get(0).getContext("2d"))
             .Bar({ labels: ["Main", "Extras", "Complete"], datasets: [dataset] });
 
         self.total.subscribe(updateCharts);
         updateCharts(self.total());
-    }
+    };
 
     self.loadGames = function () {
 
@@ -279,7 +279,7 @@ function AppViewModel() {
                 setTimeout(function () {
                     initCharts();
                     scrollToAlerts();
-                }, scrollDuration / 2);
+                }, 0.25 * scrollDuration);
             })
             .fail(function(error) {
                 console.error(error); //TODO replace console print with user error display
@@ -325,23 +325,23 @@ function AppViewModel() {
 
     self.getShortShareText = function() {
         return "I just found out I have over " + hoursWithCommas(self.originalMainRemaining) + " left to beat my entire Steam library!";
-    }
+    };
 
     self.getShareText = function() {
         return self.getShortShareText() + " Click to check it out and find out how long you have too...";
-    }
+    };
 
-    self.shareOnFacebook = function () {
+    self.shareOnFacebook = function() {
         self.openShareWindow("https://www.facebook.com/dialog/feed?app_id=445487558932250&display=popup&caption=HowLongToBeatSteam.com&description=" + encodeURIComponent(self.getShareText()) + "&link=" + encodeURIComponent(window.location.href) + "&redirect_uri=" + encodeURIComponent("http://howlongtobeatsteam.com/CloseWindow.html") + "&picture=" + encodeURIComponent("http://howlongtobeatsteam.com/Resources/sk5_0.jpg"));
-    }
+    };
 
     self.shareOnTwitter = function() {
         self.openShareWindow("https://twitter.com/share?url=" + encodeURIComponent(window.location.href) + "&text=" + self.getShortShareText() + "&hashtags=steam");
-    }
+    };
 
     self.shareOnGooglePlus = function() {
         self.openShareWindow("https://plus.google.com/share?url=" + encodeURIComponent(window.location.href));
-    }
+    };
 
     self.openShareWindow = function(url) {
         window.open(
@@ -349,7 +349,7 @@ function AppViewModel() {
             "share",
             "toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=600,height=600");
 
-    }
+    };
 }
 
 $(document).ready(function () {

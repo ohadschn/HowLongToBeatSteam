@@ -66,6 +66,13 @@
     color: #5F4E4C;
     text-decoration: underline;
 }
+.inline-button-group {
+    margin-bottom: 3px;
+}
+.fixed-page {
+    width: 50px;
+    text-align: center;
+}
 .text-vertical-middle,
 table tbody tr td.vcenter {
     vertical-align: middle;
