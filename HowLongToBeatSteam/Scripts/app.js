@@ -209,7 +209,16 @@ function AppViewModel() {
     };
 
     Chart.defaults.global.tooltipTemplate = "<%= value %> hours";
-    Chart.defaults.global.responsive = true;
+
+    var initChart = function(chartId)     {
+        var chart = $("#" + chartId);
+        var context = chart.get(0).getContext("2d");
+
+        chart.width(chart.parent().width());
+        context.canvas.width = chart.parent().width();
+
+        return context;
+    }
 
     var firstInit = true;
     var initCharts = function() {
@@ -226,11 +235,13 @@ function AppViewModel() {
             highlightStroke: "rgba(151,187,205,1)",
             data: [0, 0, 0, 0]
         };
-        self.playtimeChart = new Chart($("#playtimeChart").get(0).getContext("2d"))
+
+        self.playtimeChart = new Chart(initChart("playtimeChart"))
             .Bar({ labels: ["Current", "Main", "Extras", "Complete"], datasets: [dataset] });
 
         dataset.data = [0, 0, 0];
-        self.remainingChart = new Chart($("#remainingChart").get(0).getContext("2d"))
+
+        self.remainingChart = new Chart(initChart("remainingChart"))
             .Bar({ labels: ["Main", "Extras", "Complete"], datasets: [dataset] });
 
         self.total.subscribe(updateCharts);
