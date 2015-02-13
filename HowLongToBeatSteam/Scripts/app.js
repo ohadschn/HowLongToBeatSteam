@@ -336,7 +336,7 @@ function AppViewModel() {
     };
 
     self.shareOnTwitter = function() {
-        self.openShareWindow("https://twitter.com/share?url=" + encodeURIComponent(window.location.href) + "&text=" + self.getShortShareText() + "&hashtags=steam");
+        self.openShareWindow("https://twitter.com/share?url=" + encodeURIComponent(window.location.href) + "&text=" + self.getShortShareText() + "&hashtags=hltbs,steam");
     };
 
     self.shareOnGooglePlus = function() {
