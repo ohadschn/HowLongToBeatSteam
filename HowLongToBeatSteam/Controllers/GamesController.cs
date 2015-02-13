@@ -31,18 +31,7 @@ namespace HowLongToBeatSteam.Controllers
         
         private static readonly HttpRetryClient Client = new HttpRetryClient(0);
 
-        class CachedGameInfo
-        {
-            public string SteamName { get; private set; }
-            public HltbInfo HltbInfo { get; private set; }
-
-            public CachedGameInfo(string steamName, HltbInfo hltbInfo)
-            {
-                SteamName = steamName;
-                HltbInfo = hltbInfo;
-            }
-        }
-        private static readonly ConcurrentDictionary<int, CachedGameInfo> Cache = new ConcurrentDictionary<int, CachedGameInfo>();
+        private static readonly ConcurrentDictionary<int, SteamAppData> Cache = new ConcurrentDictionary<int, SteamAppData>();
 
         public static async void StartUpdatingCache() 
         {
@@ -55,7 +44,7 @@ namespace HowLongToBeatSteam.Controllers
                 {
                     foreach (var appEntity in segment)
                     {
-                        Cache[appEntity.SteamAppId] = new CachedGameInfo(appEntity.SteamName, appEntity.Measured ? new HltbInfo(appEntity) : null);
+                        Cache[appEntity.SteamAppId] = new SteamAppData(appEntity);
                     }
                 }, null, 100).ConfigureAwait(false); //we'll crash and get recycled after 100 failed attempts - something would have to be very wrong!
                 SiteEventSource.Log.UpdateCacheStop(Cache.Count);
@@ -91,12 +80,12 @@ namespace HowLongToBeatSteam.Controllers
                 SiteUtil.GetFirstResult(ct => GetOwnedGames(steamId, ct), s_ownedGamesRetrievalParallelization, e => { }).ConfigureAwait(true);
 
             SiteEventSource.Log.PrepareResponseStart();
-            var games = new List<SteamApp>();
+            var games = new List<SteamAppUserData>();
             bool partialCache = false; 
             foreach (var game in ownedGames)
             {
-                CachedGameInfo cachedGameInfo;
-                var inCache = Cache.TryGetValue(game.appid, out cachedGameInfo);
+                SteamAppData cachedGameData;
+                var inCache = Cache.TryGetValue(game.appid, out cachedGameData);
                 if (!inCache)
                 {
                     SiteEventSource.Log.SkipNonCachedApp(game.appid, game.name);
@@ -104,13 +93,13 @@ namespace HowLongToBeatSteam.Controllers
                     continue;
                 }
                 
-                if (cachedGameInfo.HltbInfo == null)
+                if (cachedGameData.HltbInfo == null)
                 {
                     SiteEventSource.Log.SkipNonGame(game.appid, game.name);
                     continue;
                 }
 
-                games.Add(new SteamApp(game.appid, game.name, game.playtime_forever, cachedGameInfo.HltbInfo));
+                games.Add(new SteamAppUserData(cachedGameData, game.playtime_forever));
             }
             SiteEventSource.Log.PrepareResponseStop();
 

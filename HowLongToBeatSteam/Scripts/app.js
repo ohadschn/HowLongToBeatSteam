@@ -23,34 +23,35 @@ var GameUpdatePhase = {
     None: "None",
     InProgress: "InProgress",
     Success: "Success",
-    Failure: "Failure",
+    Failure: "Failure"
 };
 
 function Game(steamGame) {
 
     var self = this;
-
-    self.known = steamGame.HltbInfo.Id !== -1;
     self.included = ko.observable(true);
     self.updatePhase = ko.observable(GameUpdatePhase.None);
 
-    self.steamAppId = steamGame.SteamAppId;
-    self.steamName = steamGame.SteamName;
-    
     self.steamPlaytime = steamGame.Playtime;
-    self.steamUrl = "http://store.steampowered.com/app/" + steamGame.SteamAppId;
 
-    self.hltbOriginalId= self.known ? steamGame.HltbInfo.Id : "";
-    self.hltbId = ko.observable(self.known ? steamGame.HltbInfo.Id : "");
-    self.hltbName = self.known ? steamGame.HltbInfo.Name : "";
-    self.hltbMainTtb = steamGame.HltbInfo.MainTtb;
-    self.hltbMainTtbImputed = steamGame.HltbInfo.MainTtbImputed;
-    self.hltbExtrasTtb = steamGame.HltbInfo.ExtrasTtb;
-    self.hltbExtrasTtbImputed = steamGame.HltbInfo.ExtrasTtbImputed;
-    self.hltbCompletionistTtb = steamGame.HltbInfo.CompletionistTtb;
-    self.hltbCompletionistTtbImputed = steamGame.HltbInfo.CompletionistTtbImputed;
+    var steamAppData = steamGame.SteamAppData;
+    self.steamAppId = steamAppData.SteamAppId;
+    self.steamName = steamAppData.SteamName;
+    self.steamUrl = "http://store.steampowered.com/app/" + self.SteamAppId;
+
+    var hltbInfo = steamAppData.HltbInfo;
+    self.known = hltbInfo.Id !== -1;
+    self.hltbOriginalId= self.known ? hltbInfo.Id : "";
+    self.hltbId = ko.observable(self.known ? hltbInfo.Id : "");
+    self.hltbName = self.known ? hltbInfo.Name : "";
+    self.hltbMainTtb = hltbInfo.MainTtb;
+    self.hltbMainTtbImputed = hltbInfo.MainTtbImputed;
+    self.hltbExtrasTtb = hltbInfo.ExtrasTtb;
+    self.hltbExtrasTtbImputed = hltbInfo.ExtrasTtbImputed;
+    self.hltbCompletionistTtb = hltbInfo.CompletionistTtb;
+    self.hltbCompletionistTtbImputed = hltbInfo.CompletionistTtbImputed;
     self.hltbUrl = self.known
-        ? "http://www.howlongtobeat.com/game.php?id=" + steamGame.HltbInfo.Id
+        ? "http://www.howlongtobeat.com/game.php?id=" + hltbInfo.Id
         : "http://www.howlongtobeat.com";
 }
 
@@ -92,7 +93,7 @@ function AppViewModel() {
     self.gameToUpdate = ko.observable({
         steamAppId: 0,
         steamName: "",
-        hltbId: ko.observable(""),
+        hltbId: ko.observable("")
     });
     self.gameToUpdateSuggestedHltbId = ko.observable("");
 
@@ -153,7 +154,7 @@ function AppViewModel() {
             completionistTtb: completionistTtb,
             mainRemaining: mainRemaining,
             extrasRemaining: extrasRemaining,
-            completionistRemaining: completionistRemaining,
+            completionistRemaining: completionistRemaining
         };
     }).extend({ rateLimit: 0 });
 
