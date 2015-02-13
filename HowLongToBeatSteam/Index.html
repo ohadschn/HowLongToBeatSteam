@@ -89,7 +89,8 @@
                         </button>
                         <p class="lead">
                             <span class="fa fa-puzzle-piece"></span> Some of your games could not be found on <abbr title="HowLongToBeat">HLTB</abbr>.
-                            <span class="text-nowrap">Click the update link next to missing games in the table to help!</span>
+                            <br />
+                            <span>Click the update link next to missing games in the table to help!</span>
                         </p>
                     </div>
                     <div role="alert" data-bind="visible: !alertHidden(), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-7' : 'col-md-12')">
@@ -126,22 +127,23 @@
                     <div class="panel-body">
                         <div class="container-fluid">
                             <div class="row">
-                                <div class="col-md-3">
+                                <div class="col-lg-3">
                                     <h3 class="text-center">
                                         Total playtime
                                     </h3>
                                     <canvas id="playtimeChart"></canvas>
                                 </div>
-                                <div class="col-md-3">
-                                    <h3 class="text-center">
+                                <div class="col-lg-3">
+                                    <h3 class="text-center text-nowrap">
                                         Playtime remaining
                                         <small class="text-info">
                                             <span>
-                                                <span class="glyphicon glyphicon-info-sign"
-                                                      data-placement="right"
-                                                      data-toggle="tooltip"
-                                                      data-container="body"
-                                                      title="For each game, the expected time to beat is subtracted from the time played (to a minimum of zero)"></span>
+                                                <span class=" glyphicon glyphicon-info-sign"
+                                               data-placement="right"
+                                               data-toggle="tooltip"
+                                               data-container="body"
+                                               title="For each game, the expected time to beat is subtracted from the time played (to a minimum of zero)">
+                                            </span>
                                             </span>
                                         </small>
                                     </h3>
@@ -185,7 +187,7 @@
                                 </div>
                                 <div class="col-md-3 text-center">
                                     <div class="h3">
-                                        Remainig/Genre
+                                        Remaining/Genre
                                     </div>
                                     <canvas id="remaininGenreChart"></canvas>
                                 </div>
@@ -197,7 +199,7 @@
                                 </div>
                                 <div class="col-md-3 text-center">
                                     <div class="h3">
-                                        Remainig/Metacritic
+                                        Remaining/Metacritic
                                     </div>
                                     <canvas id="remainingMetacriticChart"></canvas>
                                 </div>
