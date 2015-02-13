@@ -37,8 +37,6 @@ namespace HowLongToBeatSteam.Models
         [DataMember]
         public IReadOnlyList<string> Genres { get; private set; }
         [DataMember]
-        public HltbInfo HltbInfo { get; private set; }
-        [DataMember]
         public IReadOnlyList<string> Developers { get; private set; }
         [DataMember]
         public IReadOnlyList<string> Publishers { get; private set; }
@@ -46,6 +44,8 @@ namespace HowLongToBeatSteam.Models
         public DateTime ReleaseDate { get; private set; }
         [DataMember]
         public int MetacriticScore { get; private set; }
+        [DataMember]
+        public HltbInfo HltbInfo { get; private set; }
 
         public SteamAppData([NotNull] AppEntity appEntity)
         {

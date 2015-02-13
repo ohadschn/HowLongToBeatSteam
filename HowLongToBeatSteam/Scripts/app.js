@@ -26,6 +26,8 @@ var GameUpdatePhase = {
     Failure: "Failure"
 };
 
+var boyntonColors = ["#0000FF", "#FF0000", "#00FF00", "#FFFF00", "#FF00FF", "#FF8080", "#808080", "#800000", "#FF8000", "#000000"];
+
 function Game(steamGame) {
 
     var self = this;
@@ -38,6 +40,14 @@ function Game(steamGame) {
     self.steamAppId = steamAppData.SteamAppId;
     self.steamName = steamAppData.SteamName;
     self.steamUrl = "http://store.steampowered.com/app/" + self.SteamAppId;
+    self.appType = steamAppData.AppType;
+    self.platforms = steamAppData.Platforms;
+    self.categories = steamAppData.Categories;
+    self.genres = steamAppData.Genres;
+    self.developers = steamAppData.Developers;
+    self.publishers = steamAppData.Publishers;
+    self.releaseDate = steamAppData.ReleaseDate;
+    self.metaCriticScore = steamAppData.MetaCriticScore;
 
     var hltbInfo = steamAppData.HltbInfo;
     self.known = hltbInfo.Id !== -1;
@@ -110,6 +120,12 @@ function AppViewModel() {
         return true;
     };
 
+    self.previousIds = [];
+    self.prevTotal = {
+        count: 0, playTime: 0, mainTtb: 0, extrasTtb: 0, completionistTtb: 0,
+        mainRemaining: 0, extrasRemaining: 0, completionistRemaining: 0,
+        totalByGenre: {}
+    };
     self.total = ko.pureComputed(function () {
 
         var count = 0;
@@ -120,15 +136,19 @@ function AppViewModel() {
         var mainRemaining = 0;
         var extrasRemaining = 0;
         var completionistRemaining = 0;
-        var length = self.gameTable.filteredRows().length;
-        var arr = self.gameTable.filteredRows();
+        var totalByGenre = {};
 
-        for (var i = 0; i < length; ++i) {
+        var totalLength = self.gameTable.filteredRows().length;
+        var arr = ko.utils.arrayFilter(self.gameTable.filteredRows(), function (game) { return game.included(); });
+        var ids = ko.utils.arrayMap(arr, function(game) { return game.steamAppId; });
+
+        if ($(ids).not(self.previousIds).length === 0 && $(self.previousIds).not(ids).length === 0) {
+            self.prevTotal.orderChange = true;
+            return self.prevTotal;
+        }
+
+        for (var i = 0; i < arr.length; ++i) {
             var game = arr[i];
-
-            if (!game.included()) {
-                continue;
-            }
 
             count++;
             playTime += game.steamPlaytime;
@@ -138,15 +158,24 @@ function AppViewModel() {
             mainRemaining += Math.max(0, game.hltbMainTtb - game.steamPlaytime);
             extrasRemaining += Math.max(0, game.hltbExtrasTtb - game.steamPlaytime);
             completionistRemaining += Math.max(0, game.hltbCompletionistTtb - game.steamPlaytime);
+
+            var genre = game.genres[0];
+            if (!totalByGenre.hasOwnProperty(genre)) {
+                totalByGenre[genre] = [0,0,0,0];
+            }
+            totalByGenre[genre][0] += game.steamPlaytime;
+            totalByGenre[genre][1] += game.hltbMainTtb;
+            totalByGenre[genre][2] += game.hltbExtrasTtb;
+            totalByGenre[genre][3] += game.hltbCompletionistTtb;
         }
 
-        if (count === length) {
+        if (count === totalLength) {
             self.toggleAllChecked(true);
         } else if (count === 0) {
             self.toggleAllChecked(false);
         }
 
-        return {
+        var total = {
             count: count,
             playTime: playTime,
             mainTtb: mainTtb,
@@ -154,8 +183,14 @@ function AppViewModel() {
             completionistTtb: completionistTtb,
             mainRemaining: mainRemaining,
             extrasRemaining: extrasRemaining,
-            completionistRemaining: completionistRemaining
+            completionistRemaining: completionistRemaining,
+            totalByGenre: totalByGenre
         };
+
+        self.previousIds = ids;
+        self.prevTotal = total;
+
+        return total;
     }).extend({ rateLimit: 0 });
 
     var scrollDuration = 1000;
@@ -196,7 +231,7 @@ function AppViewModel() {
         }
     };
 
-    var updateCharts = function(total) {
+    var updateMainCharts = function(total) {
         self.playtimeChart.datasets[0].bars[0].value = getHours(total.playTime, 0);
         self.playtimeChart.datasets[0].bars[1].value = getHours(total.mainTtb, 0);
         self.playtimeChart.datasets[0].bars[2].value = getHours(total.extrasTtb, 0);
@@ -209,9 +244,42 @@ function AppViewModel() {
         self.remainingChart.update();
     };
 
-    Chart.defaults.global.tooltipTemplate = "<%= value %> hours";
+    var clearPieChart = function(chart) {
+        var segmentCount = chart.segments.length;
+        for (var i = 0; i < segmentCount; i++) {
+            chart.removeData();
+        }
+    };
 
-    var initChart = function(chartId)     {
+    var updateSliceCharts = function(total) {
+        clearPieChart(self.totalGenreChart);
+
+        var i = 0;
+        for (var genre in total.totalByGenre) {
+            if (total.totalByGenre.hasOwnProperty(genre)) {
+                self.totalGenreChart.addData({
+                    value: getHours(total.totalByGenre[genre][0], 0), //TODO switch according to selected slicer
+                    color: boyntonColors[i % boyntonColors.length],
+                    highlight: boyntonColors[i % boyntonColors.length],
+                    label: genre,
+                    labelColor: "#ffffff", //white
+                    labelFontSize: '16'
+                });
+                i++;
+            }
+        }
+    };
+
+    var updateCharts = function(total) {
+        if (total.orderChange === true) {
+            return;
+        }
+
+        updateMainCharts(total);
+        updateSliceCharts(total);
+    };
+
+    var initChart = function(chartId) {
         var chart = $("#" + chartId);
         var context = chart.get(0).getContext("2d");
 
@@ -219,7 +287,7 @@ function AppViewModel() {
         context.canvas.width = chart.parent().width();
 
         return context;
-    }
+    };
 
     var firstInit = true;
     var initCharts = function() {
@@ -236,14 +304,18 @@ function AppViewModel() {
             highlightStroke: "rgba(151,187,205,1)",
             data: [0, 0, 0, 0]
         };
+        var options = { tooltipTemplate: "<%= value %> hours" };
 
         self.playtimeChart = new Chart(initChart("playtimeChart"))
-            .Bar({ labels: ["Current", "Main", "Extras", "Complete"], datasets: [dataset] });
+            .Bar({ labels: ["Current", "Main", "Extras", "Complete"], datasets: [dataset] }, options);
 
         dataset.data = [0, 0, 0];
 
         self.remainingChart = new Chart(initChart("remainingChart"))
-            .Bar({ labels: ["Main", "Extras", "Complete"], datasets: [dataset] });
+            .Bar({ labels: ["Main", "Extras", "Complete"], datasets: [dataset] }, options);
+
+        self.totalGenreChart = new Chart(initChart("totalGenreChart"))
+            .Pie();
 
         self.total.subscribe(updateCharts);
         updateCharts(self.total());
@@ -294,7 +366,7 @@ function AppViewModel() {
                 }, 0.25 * scrollDuration);
             })
             .fail(function(error) {
-                console.error(error); //TODO replace console print with user error display
+                console.error(error);
                 self.gameTable.rows([]);
                 self.error(true);
             })
