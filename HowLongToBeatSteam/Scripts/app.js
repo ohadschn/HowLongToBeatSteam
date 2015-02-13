@@ -1,6 +1,6 @@
 ﻿/*global ko*/
 /*global DataTable*/
-/*global Chart*/
+/*global AmCharts*/
 
 var getHours = function (minutes, digits) { // jshint ignore:line
     if (digits === undefined) {
@@ -25,8 +25,6 @@ var GameUpdatePhase = {
     Success: "Success",
     Failure: "Failure"
 };
-
-var boyntonColors = ["#0000FF", "#FF0000", "#00FF00", "#FFFF00", "#FF00FF", "#FF8080", "#808080", "#800000", "#FF8000", "#000000"];
 
 function Game(steamGame) {
 
@@ -231,43 +229,30 @@ function AppViewModel() {
         }
     };
 
-    var updateMainCharts = function(total) {
-        self.playtimeChart.datasets[0].bars[0].value = getHours(total.playTime, 0);
-        self.playtimeChart.datasets[0].bars[1].value = getHours(total.mainTtb, 0);
-        self.playtimeChart.datasets[0].bars[2].value = getHours(total.extrasTtb, 0);
-        self.playtimeChart.datasets[0].bars[3].value = getHours(total.completionistTtb, 0);
-        self.playtimeChart.update();
+    var updateMainCharts = function (total) {
+        self.playtimeChart.dataProvider[0].hours = getHours(total.playTime, 0);
+        self.playtimeChart.dataProvider[1].hours = getHours(total.mainTtb, 0);
+        self.playtimeChart.dataProvider[2].hours = getHours(total.extrasTtb, 0);
+        self.playtimeChart.dataProvider[3].hours = getHours(total.completionistTtb, 0);
+        self.playtimeChart.validateData();
 
-        self.remainingChart.datasets[0].bars[0].value = getHours(total.mainRemaining, 0);
-        self.remainingChart.datasets[0].bars[1].value = getHours(total.extrasRemaining, 0);
-        self.remainingChart.datasets[0].bars[2].value = getHours(total.completionistRemaining, 0);
-        self.remainingChart.update();
-    };
-
-    var clearPieChart = function(chart) {
-        var segmentCount = chart.segments.length;
-        for (var i = 0; i < segmentCount; i++) {
-            chart.removeData();
-        }
+        self.remainingChart.dataProvider[0].hours = getHours(total.mainRemaining, 0);
+        self.remainingChart.dataProvider[1].hours = getHours(total.extrasRemaining, 0);
+        self.remainingChart.dataProvider[2].hours = getHours(total.completionistRemaining, 0);
+        self.remainingChart.validateData();
     };
 
     var updateSliceCharts = function(total) {
-        clearPieChart(self.totalGenreChart);
-
-        var i = 0;
+        self.totalGenreChart.dataProvider = [];
         for (var genre in total.totalByGenre) {
             if (total.totalByGenre.hasOwnProperty(genre)) {
-                self.totalGenreChart.addData({
-                    value: getHours(total.totalByGenre[genre][0], 0), //TODO switch according to selected slicer
-                    color: boyntonColors[i % boyntonColors.length],
-                    highlight: boyntonColors[i % boyntonColors.length],
-                    label: genre,
-                    labelColor: "#ffffff", //white
-                    labelFontSize: '16'
+                self.totalGenreChart.dataProvider.push({
+                    genre: genre,
+                    hours: getHours(total.totalByGenre[genre][0], 0) //TODO switch according to selected slicer
                 });
-                i++;
             }
         }
+        self.totalGenreChart.validateData();
     };
 
     var updateCharts = function(total) {
@@ -279,43 +264,74 @@ function AppViewModel() {
         updateSliceCharts(total);
     };
 
-    var initChart = function(chartId) {
+    var initChart = function (chartId) {
         var chart = $("#" + chartId);
-        var context = chart.get(0).getContext("2d");
-
-        chart.width(chart.parent().width());
-        context.canvas.width = chart.parent().width();
-
-        return context;
+        chart.height(chart.width() * 2 / 3);
     };
 
     var firstInit = true;
     var initCharts = function() {
 
         if (!firstInit) {
+            self.playtimeChart.animateAgain();
+            self.remainingChart.animateAgain();
+            self.totalGenreChart.animateAgain();
             return;
         }
         firstInit = false;
 
-        var dataset = {
-            fillColor: "rgba(151,187,205,0.5)",
-            strokeColor: "rgba(151,187,205,0.8)",
-            highlightFill: "rgba(151,187,205,0.75)",
-            highlightStroke: "rgba(151,187,205,1)",
-            data: [0, 0, 0, 0]
+        var hourAxis =
+        {
+            axisAlpha: 0,
+            position: "left",
+            title: "Hours"
         };
-        var options = { tooltipTemplate: "<%= value %> hours" };
+        var hourBalloon = {
+            type: "column",
+            valueField: "hours",
+            colorField: "color",
+            balloonText: "<b>[[value]] hours</b>",
+            fillAlphas: 0.9,
+            lineAlpha: 0.2
+        };
+        initChart("playtimeChart");
+        var barColor = "#97BBCD";
+        self.playtimeChart = AmCharts.makeChart("playtimeChart", {
+            type: "serial",
+            dataProvider: [
+                { playtime: "Current", hours: 0, color: barColor },
+                { playtime: "Main", hours: 0, color: barColor },
+                { playtime: "Extras", hours: 0, color: barColor },
+                { playtime: "Complete", hours: 0, color: barColor }
+            ],
+            categoryField: "playtime",
+            valueAxes: [hourAxis],
+            graphs: [hourBalloon],
+            startDuration: 1
+        });
 
-        self.playtimeChart = new Chart(initChart("playtimeChart"))
-            .Bar({ labels: ["Current", "Main", "Extras", "Complete"], datasets: [dataset] }, options);
+        initChart("remainingChart");
+        self.remainingChart = AmCharts.makeChart("remainingChart", {
+            type: "serial",
+            dataProvider: [
+                { playtime: "Main", hours: 0, color: barColor },
+                { playtime: "Extras", hours: 0, color: barColor },
+                { playtime: "Complete", hours: 0, color: barColor }
+            ],
+            categoryField: "playtime",
+            valueAxes: [hourAxis],
+            graphs: [hourBalloon],
+            startDuration: 1
+        });
 
-        dataset.data = [0, 0, 0];
-
-        self.remainingChart = new Chart(initChart("remainingChart"))
-            .Bar({ labels: ["Main", "Extras", "Complete"], datasets: [dataset] }, options);
-
-        self.totalGenreChart = new Chart(initChart("totalGenreChart"))
-            .Pie();
+        initChart("totalGenreChart");
+        self.totalGenreChart = AmCharts.makeChart("totalGenreChart", {
+            type: "pie",
+            valueField: "hours",
+            titleField: "genre",
+            labelRadius: 10,
+            labelText: "[[title]]"
+        });
 
         self.total.subscribe(updateCharts);
         updateCharts(self.total());
@@ -360,10 +376,8 @@ function AppViewModel() {
                 self.originalMainRemaining = self.total().mainRemaining;
 
                 self.alertHidden(false);
-                setTimeout(function () {
-                    initCharts();
-                    scrollToAlerts();
-                }, 0.25 * scrollDuration);
+                initCharts();
+                scrollToAlerts();
             })
             .fail(function(error) {
                 console.error(error);

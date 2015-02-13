@@ -138,13 +138,15 @@
     <None Include="Intellisense\bootstrap-3.2.0.css" />
     <None Include="Intellisense\bootstrap-3.2.0-tooltip.js" />
     <None Include="Intellisense\bootstrap-3.2.0-modal.js" />
-    <None Include="Intellisense\Chart.js" />
     <None Include="Intellisense\jquery.backstretch.js" />
     <None Include="Intellisense\jquery.spin.js" />
     <None Include="Intellisense\font-awesome.css" />
+    <None Include="Intellisense\amcharts.js" />
     <Content Include="Intellisense\knockout-3.2.0-debug.js" />
     <None Include="Intellisense\spin.js" />
     <None Include="Intellisense\sammy.js" />
+    <None Include="Intellisense\none.js" />
+    <None Include="Intellisense\serial.js" />
     <Content Include="Resources\sk5_0.jpg" />
     <Content Include="Resources\SteamClock.ico" />
     <Content Include="Resources\SteamClock.svg" />
