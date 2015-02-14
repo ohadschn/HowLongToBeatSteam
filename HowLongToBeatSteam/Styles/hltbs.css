@@ -69,8 +69,10 @@
     color: #5F4E4C;
     text-decoration: underline;
 }
-.inline-button-group {
-    margin-bottom: 3px;
+.inline-btn-toolbar {
+    display: inline-block;
+    vertical-align: middle;
+    padding-bottom: 3px;
 }
 .fixed-page {
     width: 50px;

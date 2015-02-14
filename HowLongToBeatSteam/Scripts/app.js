@@ -2,6 +2,17 @@
 /*global DataTable*/
 /*global AmCharts*/
 
+var getOrderedOwnProperties = function (object) {
+    var propArr = [];
+    for (var prop in object) {
+        if (object.hasOwnProperty(prop)) {
+            propArr.push(prop);
+        }
+    }
+    propArr.sort(); //we don't care that it's not alphabetical as long as it's consistent
+    return propArr;
+}
+
 var getHours = function (minutes, digits) { // jshint ignore:line
     if (digits === undefined) {
         digits = 2;
@@ -101,6 +112,14 @@ function AppViewModel() {
 
     self.gameTable = new DataTable([], tableOptions);
     self.pageSizeOptions =  [10, 25, 50];
+
+    self.sliceTotal = ko.observable(true);
+    self.sliceCompletionLevel = ko.observable('current');
+    self.sliceTotal.subscribe(function(slicetotal) {
+        if (!slicetotal && self.sliceCompletionLevel() === 'current') {
+            self.sliceCompletionLevel('main');
+        }
+    });
 
     self.partialCache = ko.observable(false);
     self.imputedTtbs = ko.observable(false);
@@ -257,17 +276,6 @@ function AppViewModel() {
         self.remainingChart.validateData();
     };
 
-    var getOrderedOwnProperties = function (object) {
-        var propArr = [];
-        for (var prop in object) {
-            if (object.hasOwnProperty(prop)) {
-                propArr.push(prop);
-            }
-        }
-        propArr.sort(); //we don't care that it's not alphabetical as long as it's consistent
-        return propArr;
-    }
-
     var updateSliceCharts = function (total) {
         var genres = getOrderedOwnProperties(total.totalByGenre);
         self.genreChart.dataProvider = [];
@@ -392,6 +400,8 @@ function AppViewModel() {
         self.partialCache(false);
         self.imputedTtbs(false);
         self.missingHltbIds(false);
+        self.sliceTotal(true);
+        self.sliceCompletionLevel('current');
         self.gameTable.filter('');
 
         self.currentRequest = $.get("api/games/library/" + self.steamVanityUrlName())

@@ -110,7 +110,7 @@
                 </div>
             </div>
         </div>
-        <div data-bind="with: gameTable, style: {visibility: gameTable.rows().length>0 && !processing() ? 'visible' : 'hidden'}">
+        <div data-bind="style: {visibility: gameTable.rows().length>0 && !processing() ? 'visible' : 'hidden'}">
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3>Playtime Summary</h3>
@@ -153,16 +153,16 @@
                         </div>
                     </div>
                     <h3 class="lead">
-                        Your total amount of consecutive <strong>current</strong> playtime is <span data-bind="text: getYears($root.total().playTime)"></span>.<br/>
-                        Your remaining amount of consecutive <abbr title="you complete the main objectives, just enough to see the credits roll"><strong>main</strong></abbr> playtime is <span data-bind="text: getYears($root.total().mainRemaining)"></span>.<br/>
-                        Your remaining amount of consecutive <abbr title="you take your time, discover and complete additional tasks not required"><strong>extras</strong></abbr> playtime is <span data-bind="text: getYears($root.total().extrasRemaining)"></span>.<br/>
-                        Your remaining amount of consecutive <abbr title="you strive for every achievement, every medal and conquer all that the game has to offer"><strong>complete</strong></abbr> playtime is <span data-bind="text: getYears($root.total().completionistRemaining)"></span>.
+                        Your total amount of consecutive <strong>current</strong> playtime is <span data-bind="text: getYears(total().playTime)"></span>.<br/>
+                        Your remaining amount of consecutive <abbr title="you complete the main objectives, just enough to see the credits roll"><strong>main</strong></abbr> playtime is <span data-bind="text: getYears(total().mainRemaining)"></span>.<br/>
+                        Your remaining amount of consecutive <abbr title="you take your time, discover and complete additional tasks not required"><strong>extras</strong></abbr> playtime is <span data-bind="text: getYears(total().extrasRemaining)"></span>.<br/>
+                        Your remaining amount of consecutive <abbr title="you strive for every achievement, every medal and conquer all that the game has to offer"><strong>complete</strong></abbr> playtime is <span data-bind="text: getYears(total().completionistRemaining)"></span>.
                     </h3>
                     <ul class="list-inline lead">
                         <li>Share</li>
-                        <li><a href="javascript:;" data-bind="click: $root.shareOnFacebook"><span class="fa fa-facebook"></span></a></li>
-                        <li><a href="javascript:;" data-bind="click: $root.shareOnTwitter"><span class="fa fa-twitter"></span></a></li>
-                        <li><a href="javascript:;" data-bind="click: $root.shareOnGooglePlus"><span class="fa fa-google-plus"></span></a></li>
+                        <li><a href="javascript:;" data-bind="click: shareOnFacebook"><span class="fa fa-facebook"></span></a></li>
+                        <li><a href="javascript:;" data-bind="click: shareOnTwitter"><span class="fa fa-twitter"></span></a></li>
+                        <li><a href="javascript:;" data-bind="click: shareOnGooglePlus"><span class="fa fa-google-plus"></span></a></li>
                     </ul>
                 </div>
             </div>
@@ -170,10 +170,41 @@
                 <div class="panel-heading">
                     <div class="h3">
                         Slice
-                        <div class="btn-group inline-button-group" role="group" aria-label="Completion">
-                            <button type="button" class="btn btn-default">Main</button>
-                            <button type="button" class="btn btn-default">Extras</button>
-                            <button type="button" class="btn btn-default">Complete</button>
+                        <div class="btn-toolbar inline-btn-toolbar" role="toolbar" aria-label="Slice Options">
+                            <div class="btn-group" role="group" aria-label="Playtime type">
+                                <button type="button"
+                                        class="btn btn-default"
+                                        data-bind="click: function() { sliceTotal(true); }, css: { active: sliceTotal() === true }">
+                                    Total
+                                </button>
+                                <button type="button"
+                                        class="btn btn-default"
+                                        data-bind="click: function() { sliceTotal(false); }, css: { active: sliceTotal() === false }">
+                                    Remaining
+                                </button>
+                            </div>
+                            <div class="btn-group" role="group" aria-label="Completion levels">
+                                <button type="button"
+                                        class="btn btn-default"
+                                        data-bind="enable: sliceTotal, click: function() { sliceCompletionLevel('current'); }, css: { active: sliceCompletionLevel() === 'current' }">
+                                    Current
+                                </button>
+                                <button type="button"
+                                        class="btn btn-default"
+                                        data-bind="click: function() { sliceCompletionLevel('main'); }, css: { active: sliceCompletionLevel() === 'main' }">
+                                    Main
+                                </button>
+                                <button type="button"
+                                        class="btn btn-default"
+                                        data-bind="click: function() { sliceCompletionLevel('extras'); }, css: { active: sliceCompletionLevel() === 'extras' }">
+                                    Extras
+                                </button>
+                                <button type="button"
+                                        class="btn btn-default"
+                                        data-bind="click: function() { sliceCompletionLevel('complete'); }, css: { active: sliceCompletionLevel() === 'complete' }">
+                                    Complete
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -202,7 +233,7 @@
                     </div>
                 </div>
             </div>
-            <div class="panel panel-default">
+            <div class="panel panel-default" data-bind="with: gameTable">
                 <div class="panel-heading">
                     <div class="h3">
                         Filter
