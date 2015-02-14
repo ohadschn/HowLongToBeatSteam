@@ -142,6 +142,7 @@
     <None Include="Intellisense\jquery.spin.js" />
     <None Include="Intellisense\font-awesome.css" />
     <None Include="Intellisense\amcharts.js" />
+    <None Include="Intellisense\countdown.js" />
     <Content Include="Intellisense\knockout-3.2.0-debug.js" />
     <None Include="Intellisense\spin.js" />
     <None Include="Intellisense\sammy.js" />
@@ -155,6 +156,7 @@
     <Content Include="Scripts\app.min.js">
       <DependentUpon>app.js</DependentUpon>
     </Content>
+    <Content Include="Scripts\countdown.min.js" />
     <Content Include="Styles\hltbs.css" />
     <Content Include="Styles\hltbs.min.css">
       <DependentUpon>hltbs.css</DependentUpon>

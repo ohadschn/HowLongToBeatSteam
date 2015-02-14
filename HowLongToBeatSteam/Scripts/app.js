@@ -14,10 +14,22 @@ var numberWithCommas = function (x) { // jshint ignore:line
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
+function addMinutes(date, minutes) {
+    return new Date(date.getTime() + minutes * 60000);
+}
+
+var timeWithCommas = function (x, unit) {
+    return numberWithCommas(x) + " " + ((x === 1.0) ? unit : (unit+"s"));
+}
+
 var hoursWithCommas = function(x) { // jshint ignore:line
     var hours = getHours(x, 0);
-    return numberWithCommas(hours) + ((hours === 1.0) ? " hour" : " hours");
+    return timeWithCommas(hours, "hour");
 };
+
+var getYears = function (minutes) {
+    return countdown(null, addMinutes(new Date(), minutes), countdown.YEARS | countdown.MONTHS | countdown.WEEKS | countdown.DAYS | countdown.HOURS).toString();
+}
 
 var GameUpdatePhase = {
     None: "None",
@@ -306,6 +318,7 @@ function AppViewModel() {
             type: "column",
             valueField: "hours",
             colorField: "color",
+            alphaField: "alpha",
             balloonText: "<b>[[value]] hours</b>",
             fillAlphas: 0.9,
             lineAlpha: 0.2
@@ -315,10 +328,10 @@ function AppViewModel() {
         self.playtimeChart = AmCharts.makeChart("playtimeChart", {
             type: "serial",
             dataProvider: [
-                { playtime: "Current", hours: 0, color: barColor },
-                { playtime: "Main", hours: 0, color: barColor },
-                { playtime: "Extras", hours: 0, color: barColor },
-                { playtime: "Complete", hours: 0, color: barColor }
+                { playtime: "Current", hours: 0, color: barColor, alpha: 0.7 },
+                { playtime: "Main", hours: 0, color: barColor, alpha: 0.7 },
+                { playtime: "Extras", hours: 0, color: barColor, alpha: 0.7 },
+                { playtime: "Complete", hours: 0, color: barColor, alpha: 0.7 }
             ],
             categoryField: "playtime",
             valueAxes: [hourAxis],
@@ -330,9 +343,9 @@ function AppViewModel() {
         self.remainingChart = AmCharts.makeChart("remainingChart", {
             type: "serial",
             dataProvider: [
-                { playtime: "Main", hours: 0, color: barColor },
-                { playtime: "Extras", hours: 0, color: barColor },
-                { playtime: "Complete", hours: 0, color: barColor }
+                { playtime: "Main", hours: 0, color: barColor, alpha: 0.7 },
+                { playtime: "Extras", hours: 0, color: barColor, alpha: 0.7 },
+                { playtime: "Complete", hours: 0, color: barColor, alpha: 0.7 }
             ],
             categoryField: "playtime",
             valueAxes: [hourAxis],
