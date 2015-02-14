@@ -244,20 +244,31 @@ function AppViewModel() {
         self.remainingChart.validateData();
     };
 
-    var updateSliceCharts = function(total) {
-        self.totalGenreChart.dataProvider = [];
-        var i = 0;
-        for (var genre in total.totalByGenre) {
-            if (total.totalByGenre.hasOwnProperty(genre)) {
-                self.totalGenreChart.dataProvider.push({
-                    genre: genre,
-                    hours: getHours(total.totalByGenre[genre][0], 0),
-                    color: palette[i % palette.length]
-                });
+    var getOrderedOwnProperties = function (object) {
+        var propArr = [];
+        for (var prop in object) {
+            if (object.hasOwnProperty(prop)) {
+                propArr.push(prop);
             }
-            i++;
         }
-        self.totalGenreChart.validateData();
+        propArr.sort(); //we don't care that it's not alphabetical as long as it's consistent
+        return propArr;
+    }
+
+    var updateSliceCharts = function (total) {
+        var genres = getOrderedOwnProperties(total.totalByGenre);
+        self.genreChart.dataProvider = [];
+        var paletteIndex = 0;
+        for (var i = 0; i < genres.length; i++) {
+            var genre = genres[i];
+            self.genreChart.dataProvider.push({
+                genre: genre,
+                hours: getHours(total.totalByGenre[genre][0], 0),
+                color: palette[paletteIndex % palette.length]
+            });
+            paletteIndex++;
+        }
+        self.genreChart.validateData();
     };
 
     var updateCharts = function(total) {
@@ -280,7 +291,7 @@ function AppViewModel() {
         if (!firstInit) {
             self.playtimeChart.animateAgain();
             self.remainingChart.animateAgain();
-            self.totalGenreChart.animateAgain();
+            self.genreChart.animateAgain();
             return;
         }
         firstInit = false;
@@ -329,8 +340,8 @@ function AppViewModel() {
             startDuration: 1
         });
 
-        initChart("totalGenreChart");
-        self.totalGenreChart = AmCharts.makeChart("totalGenreChart", {
+        initChart("genreChart");
+        self.genreChart = AmCharts.makeChart("genreChart", {
             type: "pie",
             valueField: "hours",
             titleField: "genre",

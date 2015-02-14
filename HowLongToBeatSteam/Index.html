@@ -152,7 +152,7 @@
                         Your total amount of <abbr title="as measured by Steam"><strong>current</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().playTime)"></span><br />
                         Your total amount of <abbr title="you complete the main objectives, just enough to see the credits roll"><strong>main</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().mainTtb)"></span> (<span data-bind="text: hoursWithCommas($root.total().mainRemaining)"></span> remaining)<br />
                         Your total amount of <abbr title="you take your time, discover and complete additional tasks not required"><strong>extras</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().extrasTtb)"></span> (<span data-bind="text: hoursWithCommas($root.total().extrasRemaining)"></span> remaining)<br />
-                        Your total amount of <abbr title="you strive for every achievement, every medal and conquer all that the game has to offer"><strong>completionist</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().completionistTtb)"></span> (<span data-bind="text: hoursWithCommas($root.total().completionistRemaining)"></span> remaining)
+                        Your total amount of <abbr title="you strive for every achievement, every medal and conquer all that the game has to offer"><strong>complete</strong></abbr> playtime is <span data-bind="text: hoursWithCommas($root.total().completionistTtb)"></span> (<span data-bind="text: hoursWithCommas($root.total().completionistRemaining)"></span> remaining)
                     </h3>
                     <ul class="list-inline lead">
                         <li>Share</li>
@@ -176,29 +176,23 @@
                 <div class="panel-body">
                     <div class="container-fluid">
                         <div class="row">
-                            <div class="col-md-3 text-center">
+                            <div class="col-md-4 text-center">
                                 <div class="h3">
-                                    Total/Genre
+                                    By Genre
                                 </div>
-                                <div id="totalGenreChart" class="amchart"></div>
+                                <div id="genreChart" class="amchart"></div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div class="h3">
+                                     By Metacritic Score
+                                </div>
+                                <div id="metacriticChart" class="amchart"></div>
                             </div>
                             <div class="col-md-3 text-center">
                                 <div class="h3">
-                                    Remaining/Genre
+                                    By Release Date
                                 </div>
-                                <div id="remaininGenreChart" class="amchart"></div>
-                            </div>
-                            <div class="col-md-3 text-center">
-                                <div class="h3">
-                                    Total/Metacritic
-                                </div>
-                                <div id="totalMetacriticChart" class="amchart"></div>
-                            </div>
-                            <div class="col-md-3 text-center">
-                                <div class="h3">
-                                    Remaining/Metacritic
-                                </div>
-                                <div id="remainingMetacriticChart" class="amchart"></div>
+                                <div id="releaseDateChart" class="amchart"></div>
                             </div>
                         </div>
                     </div>
