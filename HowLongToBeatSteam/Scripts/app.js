@@ -314,28 +314,30 @@ function AppViewModel() {
             position: "left",
             title: "Hours"
         };
-        var hourBalloon = {
+        var columnGraph = {
             type: "column",
             valueField: "hours",
             colorField: "color",
-            alphaField: "alpha",
+            lineColor: "#97BBCD",
+            lineThickness: 1.5,
             balloonText: "<b>[[value]] hours</b>",
-            fillAlphas: 0.9,
-            lineAlpha: 0.2
+            fillAlphas: 0.5,
+            lineAlpha: 0.8
         };
         initChart("playtimeChart");
         var barColor = "#97BBCD";
         self.playtimeChart = AmCharts.makeChart("playtimeChart", {
             type: "serial",
             dataProvider: [
-                { playtime: "Current", hours: 0, color: barColor, alpha: 0.7 },
-                { playtime: "Main", hours: 0, color: barColor, alpha: 0.7 },
-                { playtime: "Extras", hours: 0, color: barColor, alpha: 0.7 },
-                { playtime: "Complete", hours: 0, color: barColor, alpha: 0.7 }
+                { playtime: "Current", hours: 0, color: barColor},
+                { playtime: "Main", hours: 0, color: barColor},
+                { playtime: "Extras", hours: 0, color: barColor},
+                { playtime: "Complete", hours: 0, color: barColor}
             ],
             categoryField: "playtime",
             valueAxes: [hourAxis],
-            graphs: [hourBalloon],
+            categoryAxis: { gridPosition: "start" },
+            graphs: [columnGraph],
             startDuration: 1
         });
 
@@ -343,13 +345,14 @@ function AppViewModel() {
         self.remainingChart = AmCharts.makeChart("remainingChart", {
             type: "serial",
             dataProvider: [
-                { playtime: "Main", hours: 0, color: barColor, alpha: 0.7 },
-                { playtime: "Extras", hours: 0, color: barColor, alpha: 0.7 },
-                { playtime: "Complete", hours: 0, color: barColor, alpha: 0.7 }
+                { playtime: "Main", hours: 0, color: barColor},
+                { playtime: "Extras", hours: 0, color: barColor},
+                { playtime: "Complete", hours: 0, color: barColor}
             ],
             categoryField: "playtime",
             valueAxes: [hourAxis],
-            graphs: [hourBalloon],
+            categoryAxis: { gridPosition: "start" },
+            graphs: [columnGraph],
             startDuration: 1
         });
 
