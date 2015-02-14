@@ -336,6 +336,7 @@ function AppViewModel() {
             titleField: "genre",
             labelRadius: 10,
             labelText: "[[title]]",
+            balloonText: "[[title]]: [[percents]]% ([[value]] hours)\n[[description]]",
             colorField: "color"
         });
 

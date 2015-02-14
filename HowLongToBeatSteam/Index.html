@@ -82,7 +82,7 @@
                 <strong>Error</strong> verify your Steam profile ID as it appears in your Steam profile page URL (<i>steamcommunity.com/id/<strong>ID</strong></i>) and make sure it is set to public in your Steam profile settings
             </div>
             <div class="row horizontal-alert-row">
-                <div role="alert" data-bind="visible: missingHltbIds() && !missingAlertHidden()" class="alert alert-warning alert-dismissable horizontal-alert col-md-5">
+                <div role="alert" data-bind="visible: missingHltbIds() && !missingAlertHidden()" class="alert alert-warning alert-dismissable horizontal-alert col-md-6">
                     <button type="button" class="close" data-bind="click: function() {missingAlertHidden(true); }">
                         <span aria-hidden="true">&times;</span>
                         <span class="sr-only">Close</span>
@@ -90,16 +90,16 @@
                     <p class="lead">
                         <span class="fa fa-puzzle-piece"></span> Some of your games could not be found on <abbr title="HowLongToBeat">HLTB</abbr>.
                         <br />
-                        <span>Click the update link next to missing games in the table to help!</span>
+                        <span>Click the update link next to missing games in the table below to help!</span>
                     </p>
                 </div>
-                <div role="alert" data-bind="visible: !alertHidden(), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-7' : 'col-md-12')">
+                <div role="alert" data-bind="visible: !alertHidden(), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-6' : 'col-md-12')">
                     <button type="button" class="close" data-bind="click: function() {alertHidden(true); }">
                         <span aria-hidden="true">&times;</span>
                         <span class="sr-only">Close</span>
                     </button>
                     <div>
-                        <span class="fa fa-fw fa-steam"></span> Library information courtesy of Steam. Game completion definitions and statistics courtesy of <a href="http://howlongtobeat.com" target="_blank">HowLongToBeat.com</a>.
+                        <span class="fa fa-fw fa-steam"></span> Library information courtesy of Steam. Game completion definitions and statistics courtesy of <a href="http://howlongtobeat.com" target="_blank">HowLongToBeat</a>.
                     </div>
                     <div data-bind="visible: imputedTtbs">
                         <span class="fa fa-fw fa-bar-chart"></span> Some play times are missing from <abbr title="HowLongToBeat">HLTB</abbr> and were therefore <a href="http://en.wikipedia.org/wiki/Imputation_%28statistics%29" class="alert-link" target="_blank">statistically imputed</a>. Imputed values are <span class="emphasized">italicized</span>.
