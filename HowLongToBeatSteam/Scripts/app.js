@@ -28,7 +28,8 @@ var hoursWithCommas = function(x) { // jshint ignore:line
 };
 
 var getYears = function (minutes) {
-    return countdown(null, addMinutes(new Date(), minutes), countdown.YEARS | countdown.MONTHS | countdown.WEEKS | countdown.DAYS | countdown.HOURS).toString();
+    var ret = countdown(null, addMinutes(new Date(), minutes), countdown.YEARS | countdown.MONTHS | countdown.WEEKS | countdown.DAYS | countdown.HOURS).toString();
+    return (ret === "") ? "0 hours" : ret;
 }
 
 var GameUpdatePhase = {
