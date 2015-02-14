@@ -385,6 +385,8 @@ function AppViewModel() {
             self.currentRequest.abort(); //in case of hash tag navigation while we're loading
         }
 
+        $(".amchart").toggle(false);   //IE + FF fix
+
         var height = $(window).height();
         $('.loader').spin({
             lines: 14,
@@ -420,6 +422,7 @@ function AppViewModel() {
                 self.originalMainRemaining = self.total().mainRemaining;
 
                 self.alertHidden(false);
+                $(".amchart").toggle(true);   //IE + FF fix
                 initCharts();
                 scrollToAlerts();
             })
