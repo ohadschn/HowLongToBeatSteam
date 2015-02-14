@@ -25,10 +25,6 @@ var numberWithCommas = function (x) { // jshint ignore:line
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
-function addMinutes(date, minutes) {
-    return new Date(date.getTime() + minutes * 60000);
-}
-
 var timeWithCommas = function (x, unit) {
     return numberWithCommas(x) + " " + ((x === 1.0) ? unit : (unit+"s"));
 }
@@ -39,7 +35,7 @@ var hoursWithCommas = function(x) { // jshint ignore:line
 };
 
 var getYears = function (minutes) {
-    return countdown(null, addMinutes(new Date(), minutes), countdown.YEARS | countdown.MONTHS | countdown.WEEKS | countdown.DAYS | countdown.HOURS).toString("0 hours");
+    return countdown(null, {minutes: minutes}, countdown.YEARS | countdown.MONTHS | countdown.WEEKS | countdown.DAYS | countdown.HOURS).toString("0 hours");
 }
 
 var GameUpdatePhase = {
