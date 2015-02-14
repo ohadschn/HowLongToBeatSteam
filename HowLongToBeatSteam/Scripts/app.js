@@ -26,6 +26,8 @@ var GameUpdatePhase = {
     Failure: "Failure"
 };
 
+var palette = ["97BBCD", "85C2E0", "A3B8C2", "75C7F0", "ABB5BA", "6EC9F7", "7DC4E8", "9CBAC9", "8CBFD9", "66CCFF"];
+
 function Game(steamGame) {
 
     var self = this;
@@ -244,13 +246,16 @@ function AppViewModel() {
 
     var updateSliceCharts = function(total) {
         self.totalGenreChart.dataProvider = [];
+        var i = 0;
         for (var genre in total.totalByGenre) {
             if (total.totalByGenre.hasOwnProperty(genre)) {
                 self.totalGenreChart.dataProvider.push({
                     genre: genre,
-                    hours: getHours(total.totalByGenre[genre][0], 0) //TODO switch according to selected slicer
+                    hours: getHours(total.totalByGenre[genre][0], 0),
+                    color: palette[i % palette.length]
                 });
             }
+            i++;
         }
         self.totalGenreChart.validateData();
     };
@@ -330,7 +335,8 @@ function AppViewModel() {
             valueField: "hours",
             titleField: "genre",
             labelRadius: 10,
-            labelText: "[[title]]"
+            labelText: "[[title]]",
+            colorField: "color"
         });
 
         self.total.subscribe(updateCharts);
