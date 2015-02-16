@@ -58,7 +58,7 @@ function Game(steamGame) {
     var steamAppData = steamGame.SteamAppData;
     self.steamAppId = steamAppData.SteamAppId;
     self.steamName = steamAppData.SteamName;
-    self.steamUrl = "http://store.steampowered.com/app/" + self.SteamAppId;
+    self.steamUrl = "http://store.steampowered.com/app/" + steamAppData.SteamAppId;
     self.appType = steamAppData.AppType;
     self.platforms = steamAppData.Platforms;
     self.categories = steamAppData.Categories;
@@ -108,8 +108,9 @@ function AppViewModel() {
     self.gameTable = new DataTable([], tableOptions);
     self.pageSizeOptions =  [10, 25, 50];
 
-    self.sliceTotal = ko.observable(true);
-    self.sliceCompletionLevel = ko.observable('current');
+    self.sliceTotal = ko.observable();
+    self.sliceCompletionLevel = ko.observable();
+
     self.sliceTotal.subscribe(function(slicetotal) {
         if (!slicetotal && self.sliceCompletionLevel() === 'current') {
             self.sliceCompletionLevel('main');
@@ -398,7 +399,7 @@ function AppViewModel() {
         self.imputedTtbs(false);
         self.missingHltbIds(false);
         self.sliceTotal(true);
-        self.sliceCompletionLevel('current');
+        self.sliceCompletionLevel('main');
         self.gameTable.filter('');
 
         self.currentRequest = $.get("api/games/library/" + self.steamVanityUrlName())
