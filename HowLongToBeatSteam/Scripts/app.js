@@ -1,8 +1,9 @@
 ﻿/*global ko*/
 /*global DataTable*/
 /*global AmCharts*/
+/*global countdown*/
 
-var getOrderedOwnProperties = function (object) {
+var getOrderedOwnProperties = function(object) {
     var propArr = [];
     for (var prop in object) {
         if (object.hasOwnProperty(prop)) {
@@ -11,7 +12,7 @@ var getOrderedOwnProperties = function (object) {
     }
     propArr.sort(); //we don't care that it's not alphabetical as long as it's consistent
     return propArr;
-}
+};
 
 var getHours = function (minutes, digits) { // jshint ignore:line
     if (digits === undefined) {
@@ -25,18 +26,20 @@ var numberWithCommas = function (x) { // jshint ignore:line
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
-var timeWithCommas = function (x, unit) {
-    return numberWithCommas(x) + " " + ((x === 1.0) ? unit : (unit+"s"));
-}
+var timeWithCommas = function(x, unit) {
+    return numberWithCommas(x) + " " + ((x === 1.0) ? unit : (unit + "s"));
+};
 
 var hoursWithCommas = function(x) { // jshint ignore:line
     var hours = getHours(x, 0);
     return timeWithCommas(hours, "hour");
 };
 
-var getYears = function (minutes) {
-    return countdown(null, {minutes: minutes}, countdown.YEARS | countdown.MONTHS | countdown.WEEKS | countdown.DAYS | countdown.HOURS).toString("0 hours");
-}
+var getYears = function (minutes) { // jshint ignore:line
+    /*jshint bitwise: false*/
+    return countdown(null, { minutes: minutes }, countdown.YEARS | countdown.MONTHS | countdown.WEEKS | countdown.DAYS | countdown.HOURS).toString("0 hours");
+    /*jshint bitwise: true*/
+};
 
 var GameUpdatePhase = {
     None: "None",
@@ -383,7 +386,7 @@ function AppViewModel() {
             self.currentRequest.abort(); //in case of hash tag navigation while we're loading
         }
 
-        $(".amchart").toggle(false);   //IE + FF fix
+        $(".content").hide();   //IE + FF fix
 
         var height = $(window).height();
         $('.loader').spin({
@@ -419,8 +422,8 @@ function AppViewModel() {
 
                 self.originalMainRemaining = self.total().mainRemaining;
 
+                $(".content").show();   //IE + FF fix
                 self.alertHidden(false);
-                $(".amchart").toggle(true);   //IE + FF fix
                 initCharts();
                 scrollToAlerts();
             })

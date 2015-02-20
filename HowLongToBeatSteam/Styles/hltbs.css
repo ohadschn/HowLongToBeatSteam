@@ -3,11 +3,14 @@
   min-height: 100%;
 }
 .content {
-    margin: 0 20px;
+    margin: 0 20px 70px;
 }
 .header {
     margin: 30px 0 20px;
     text-align: center;
+}
+.alerts {
+    margin: 20px;
 }
 .amchart {
     width		: 100%;
@@ -25,7 +28,7 @@
     }
 }
 .footer {
-  position: relative;
+  position: absolute;
   bottom: 0;
   width: 100%;
   background-color: #f5f5f5;
