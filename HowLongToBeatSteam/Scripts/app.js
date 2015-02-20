@@ -72,6 +72,7 @@ function Game(steamGame) {
     self.known = hltbInfo.Id !== -1;
     self.hltbOriginalId= self.known ? hltbInfo.Id : "";
     self.hltbId = ko.observable(self.known ? hltbInfo.Id : "");
+    self.suggestedHltbId = ko.observable(self.hltbId());
     self.hltbName = self.known ? hltbInfo.Name : "";
     self.hltbMainTtb = hltbInfo.MainTtb;
     self.hltbMainTtbImputed = hltbInfo.MainTtbImputed;
@@ -131,9 +132,9 @@ function AppViewModel() {
     self.gameToUpdate = ko.observable({
         steamAppId: 0,
         steamName: "",
-        hltbId: ko.observable("")
+        hltbId: ko.observable(""),
+        suggestedHltbId: ko.observable("")
     });
-    self.gameToUpdateSuggestedHltbId = ko.observable("");
 
     self.toggleAllChecked = ko.observable(true);
 
@@ -440,16 +441,13 @@ function AppViewModel() {
     self.displayUpdateDialog = function (game) {
 
         self.gameToUpdate(game);
-        self.gameToUpdateSuggestedHltbId(game.hltbId());
         $('#HltbUpdateModal').modal('show');
     };
 
     self.updateHltb = function(gameToUpdate) {
 
         gameToUpdate.updatePhase(GameUpdatePhase.InProgress);
-        gameToUpdate.hltbId(self.gameToUpdateSuggestedHltbId());
-
-        $.post("api/games/update/" + gameToUpdate.steamAppId + "/" + gameToUpdate.hltbId())
+        $.post("api/games/update/" + gameToUpdate.steamAppId + "/" + gameToUpdate.suggestedHltbId())
             .done(function() {
                 gameToUpdate.updatePhase(GameUpdatePhase.Success);
             })
