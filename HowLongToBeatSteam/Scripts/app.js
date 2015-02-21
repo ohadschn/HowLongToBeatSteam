@@ -14,6 +14,14 @@ var getOrderedOwnProperties = function(object) {
     return propArr;
 };
 
+var duplicate = function(arr, times) {
+    var ret = arr;
+    for (var i = 0; i < times - 1; i++) {
+        ret = ret.concat(arr);
+    }
+    return ret;
+}
+
 var getHours = function (minutes, digits) { // jshint ignore:line
     if (digits === undefined) {
         digits = 2;
@@ -55,7 +63,8 @@ var PlaytimeType = {
     Completionist: "completionist"
 };
 
-var palette = ["97BBCD", "85C2E0", "A3B8C2", "75C7F0", "ABB5BA", "6EC9F7", "7DC4E8", "9CBAC9", "8CBFD9", "66CCFF"];
+var mainColor = "#97BBCD";
+var palette = [mainColor, "#75C7F0"];
 
 function Game(steamGame) {
 
@@ -72,7 +81,7 @@ function Game(steamGame) {
     self.appType = steamAppData.AppType;
     self.platforms = steamAppData.Platforms;
     self.categories = steamAppData.Categories;
-    self.genres = steamAppData.Genres;
+    self.genres = ko.utils.arrayMap(steamAppData.Genres, function (genre) { return genre.replace(new RegExp('/', 'g'), '-'); });
     self.developers = steamAppData.Developers;
     self.publishers = steamAppData.Publishers;
     self.releaseDate = steamAppData.ReleaseDate;
@@ -155,14 +164,14 @@ function AppViewModel() {
 
     self.previousIds = [];
     self.prevTotal = {
-        count: 0, playTime: 0, mainTtb: 0, extrasTtb: 0, completionistTtb: 0,
+        count: 0, playtime: 0, mainTtb: 0, extrasTtb: 0, completionistTtb: 0,
         mainRemaining: 0, extrasRemaining: 0, completionistRemaining: 0,
         playtimesByGenre: {}
     };
     self.total = ko.pureComputed(function () {
 
         var count = 0;
-        var playTime = 0;
+        var playtime = 0;
         var mainTtb = 0;
         var extrasTtb = 0;
         var completionistTtb = 0;
@@ -184,7 +193,7 @@ function AppViewModel() {
             var game = arr[i];
 
             count++;
-            playTime += game.steamPlaytime;
+            playtime += game.steamPlaytime;
             mainTtb += game.hltbMainTtb;
             extrasTtb += game.hltbExtrasTtb;
             completionistTtb += game.hltbCompletionistTtb;
@@ -197,7 +206,8 @@ function AppViewModel() {
             extrasRemaining += gameExtrasRemaining;
             completionistRemaining += gameCompletionistRemaining;
 
-            var genre = game.genres[0];
+            var realGenres = $(game.genres).not(['Indie', 'Casual']).get();
+            var genre = (realGenres.length === 0 ? game.genres : realGenres).join('/');
             if (!playtimesByGenre.hasOwnProperty(genre)) {
                 playtimesByGenre[genre] = [0, 0, 0, 0, 0, 0, 0];
             }
@@ -218,7 +228,7 @@ function AppViewModel() {
 
         var total = {
             count: count,
-            playTime: playTime,
+            playtime: playtime,
             mainTtb: mainTtb,
             extrasTtb: extrasTtb,
             completionistTtb: completionistTtb,
@@ -273,7 +283,7 @@ function AppViewModel() {
     };
 
     var updateMainCharts = function (total) {
-        self.playtimeChart.dataProvider[0].hours = getHours(total.playTime, 0);
+        self.playtimeChart.dataProvider[0].hours = getHours(total.playtime, 0);
         self.playtimeChart.dataProvider[1].hours = getHours(total.mainTtb, 0);
         self.playtimeChart.dataProvider[2].hours = getHours(total.extrasTtb, 0);
         self.playtimeChart.dataProvider[3].hours = getHours(total.completionistTtb, 0);
@@ -285,35 +295,60 @@ function AppViewModel() {
         self.remainingChart.validateData();
     };
 
-    var getPlaytimeIndex = function() {
+    var getPlaytimeInfo = function() {
+        var playtimeIndex;
+        var playtimeTotal;
         switch (self.sliceCompletionLevel()) {
         case PlaytimeType.Current:
-            return self.sliceTotal() ? 0 : 4;
+            playtimeIndex = self.sliceTotal() ? 0 : 4;
+            playtimeTotal = self.sliceTotal() ? self.total().playtime : self.total().mainRemaining;
+            break;
         case PlaytimeType.Main:
-            return self.sliceTotal() ? 1 : 4;
+            playtimeIndex = self.sliceTotal() ? 1 : 4;
+            playtimeTotal = self.sliceTotal() ? self.total().mainTtb : self.total().mainRemaining;
+            break;
         case PlaytimeType.Extras:
-            return self.sliceTotal() ? 2 : 5;
+            playtimeIndex = self.sliceTotal() ? 2 : 5;
+            playtimeTotal = self.sliceTotal() ? self.total().extrasTtb : self.total().extrasRemaining;
+            break;
         case PlaytimeType.Completionist:
-            return self.sliceTotal() ? 3 : 6;
+            playtimeIndex = self.sliceTotal() ? 3 : 6;
+            playtimeTotal = self.sliceTotal() ? self.total().completionistTtb : self.total().completionistRemaining;
+            break;
         default:
             console.error("Invalid playtime slice type: " + self.sliceCompletionLevel());
-            return self.sliceTotal() ? 1 : 4;
+            playtimeIndex = self.sliceTotal() ? 1 : 4;
+            playtimeTotal = self.sliceTotal() ? self.total().mainTtb : self.total().mainRemaining;
+            break;
         }
+
+        return { index: playtimeIndex, total: getHours(playtimeTotal, 0) };
     };
 
     var updateSliceChart = function (chart, slicedPlaytime) {
         var titles = getOrderedOwnProperties(slicedPlaytime);
-        var playtimeIndex = getPlaytimeIndex();
+        var playtimeInfo = getPlaytimeInfo();
         chart.dataProvider = [];
-        var paletteIndex = 0;
+        var others = [];
+        var othersTotal = 0;
         for (var i = 0; i < titles.length; i++) {
             var title = titles[i];
+            var hours = getHours(slicedPlaytime[title][playtimeInfo.index], 0);
+            if (title === 'Unknown' || hours / playtimeInfo.total < 0.01) {
+                others.push( title) ;
+                othersTotal += hours;
+                continue;
+            }
             chart.dataProvider.push({
                 title: title,
-                hours: getHours(slicedPlaytime[title][playtimeIndex], 0),
-                color: palette[paletteIndex % palette.length]
+                hours: hours
             });
-            paletteIndex++;
+        }
+        if (others.length >= 1) {
+            chart.dataProvider.push({
+                title: (others.length === 1 && others[0] !== 'Unknown') ? others[0] : "Other",
+                hours: othersTotal
+            });
         }
         chart.validateData();
     };
@@ -357,16 +392,17 @@ function AppViewModel() {
             type: "column",
             valueField: "hours",
             colorField: "color",
-            lineColor: "#97BBCD",
+            lineColor: mainColor,
             lineThickness: 1.5,
             balloonText: "<b>[[value]] hours</b>",
             fillAlphas: 0.5,
             lineAlpha: 0.8
         };
         initChart("playtimeChart");
-        var barColor = "#97BBCD";
+        var barColor = mainColor;
         self.playtimeChart = AmCharts.makeChart("playtimeChart", {
             type: "serial",
+            theme: "light",
             dataProvider: [
                 { playtime: "Current", hours: 0, color: barColor},
                 { playtime: "Main", hours: 0, color: barColor},
@@ -383,6 +419,7 @@ function AppViewModel() {
         initChart("remainingChart");
         self.remainingChart = AmCharts.makeChart("remainingChart", {
             type: "serial",
+            theme: "light",
             dataProvider: [
                 { playtime: "Main", hours: 0, color: barColor},
                 { playtime: "Extras", hours: 0, color: barColor},
@@ -398,12 +435,16 @@ function AppViewModel() {
         initChart("genreChart");
         self.genreChart = AmCharts.makeChart("genreChart", {
             type: "pie",
+            theme: "light",
+            colors: duplicate(palette, 50), //2*50=100 colors (won't need more due to grouping)
             valueField: "hours",
             titleField: "title",
             labelRadius: 10,
             labelText: "[[title]]",
             balloonText: "[[title]]: [[percents]]% ([[value]] hours)\n[[description]]",
-            colorField: "color"
+            balloon: {
+                maxWidth: $("#genreChart").width() * 2/3
+            }
         });
 
         self.total.subscribe(updateCharts);
