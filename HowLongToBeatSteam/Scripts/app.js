@@ -20,7 +20,7 @@ var duplicate = function(arr, times) {
         ret = ret.concat(arr);
     }
     return ret;
-}
+};
 
 var getHours = function (minutes, digits) { // jshint ignore:line
     if (digits === undefined) {

@@ -1,6 +1,6 @@
 {
   "name": "knockout-datatable",
-  "version": "0.5.0",
+  "version": "0.6.1",
   "private": false,
   "license": "MIT",
   "ignore": [
@@ -11,12 +11,16 @@
     "example",
     "node_modules"
   ],
+  "devDependencies": {},
+  "dependencies": {
+    "knockout": "~3.2.0"
+  },
   "homepage": "https://github.com/immense/knockout-datatable",
-  "_release": "0.5.0",
+  "_release": "0.6.1",
   "_resolution": {
     "type": "version",
-    "tag": "0.5.0",
-    "commit": "3e9912ff57a9e1a59938b199d5aff2b7abfad5e2"
+    "tag": "0.6.1",
+    "commit": "7ac0114c9302552e3e0273099da3c3271e9e9416"
   },
   "_source": "git://github.com/immense/knockout-datatable.git",
   "_target": ">=0.5.0",
