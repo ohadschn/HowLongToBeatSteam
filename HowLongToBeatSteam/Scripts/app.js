@@ -48,6 +48,13 @@ var GameUpdatePhase = {
     Failure: "Failure"
 };
 
+var PlaytimeType = {
+    Current: "current",
+    Main: "main",
+    Extras: "extras",
+    Completionist: "completionist"
+};
+
 var palette = ["97BBCD", "85C2E0", "A3B8C2", "75C7F0", "ABB5BA", "6EC9F7", "7DC4E8", "9CBAC9", "8CBFD9", "66CCFF"];
 
 function Game(steamGame) {
@@ -115,12 +122,6 @@ function AppViewModel() {
     self.sliceTotal = ko.observable();
     self.sliceCompletionLevel = ko.observable();
 
-    self.sliceTotal.subscribe(function(slicetotal) {
-        if (!slicetotal && self.sliceCompletionLevel() === 'current') {
-            self.sliceCompletionLevel('main');
-        }
-    });
-
     self.partialCache = ko.observable(false);
     self.imputedTtbs = ko.observable(false);
     self.missingHltbIds = ko.observable(false);
@@ -156,7 +157,7 @@ function AppViewModel() {
     self.prevTotal = {
         count: 0, playTime: 0, mainTtb: 0, extrasTtb: 0, completionistTtb: 0,
         mainRemaining: 0, extrasRemaining: 0, completionistRemaining: 0,
-        totalByGenre: {}
+        playtimesByGenre: {}
     };
     self.total = ko.pureComputed(function () {
 
@@ -168,7 +169,7 @@ function AppViewModel() {
         var mainRemaining = 0;
         var extrasRemaining = 0;
         var completionistRemaining = 0;
-        var totalByGenre = {};
+        var playtimesByGenre = {};
 
         var totalLength = self.gameTable.filteredRows().length;
         var arr = ko.utils.arrayFilter(self.gameTable.filteredRows(), function (game) { return game.included(); });
@@ -187,18 +188,26 @@ function AppViewModel() {
             mainTtb += game.hltbMainTtb;
             extrasTtb += game.hltbExtrasTtb;
             completionistTtb += game.hltbCompletionistTtb;
-            mainRemaining += Math.max(0, game.hltbMainTtb - game.steamPlaytime);
-            extrasRemaining += Math.max(0, game.hltbExtrasTtb - game.steamPlaytime);
-            completionistRemaining += Math.max(0, game.hltbCompletionistTtb - game.steamPlaytime);
+
+            var gameMainRemaining = Math.max(0, game.hltbMainTtb - game.steamPlaytime);
+            var gameExtrasRemaining = Math.max(0, game.hltbExtrasTtb - game.steamPlaytime);
+            var gameCompletionistRemaining = Math.max(0, game.hltbCompletionistTtb - game.steamPlaytime);
+
+            mainRemaining += gameMainRemaining;
+            extrasRemaining += gameExtrasRemaining;
+            completionistRemaining += gameCompletionistRemaining;
 
             var genre = game.genres[0];
-            if (!totalByGenre.hasOwnProperty(genre)) {
-                totalByGenre[genre] = [0,0,0,0];
+            if (!playtimesByGenre.hasOwnProperty(genre)) {
+                playtimesByGenre[genre] = [0, 0, 0, 0, 0, 0, 0];
             }
-            totalByGenre[genre][0] += game.steamPlaytime;
-            totalByGenre[genre][1] += game.hltbMainTtb;
-            totalByGenre[genre][2] += game.hltbExtrasTtb;
-            totalByGenre[genre][3] += game.hltbCompletionistTtb;
+            playtimesByGenre[genre][0] += game.steamPlaytime;
+            playtimesByGenre[genre][1] += game.hltbMainTtb;
+            playtimesByGenre[genre][2] += game.hltbExtrasTtb;
+            playtimesByGenre[genre][3] += game.hltbCompletionistTtb;
+            playtimesByGenre[genre][4] += gameMainRemaining;
+            playtimesByGenre[genre][5] += gameExtrasRemaining;
+            playtimesByGenre[genre][6] += gameCompletionistRemaining;
         }
 
         if (count === totalLength) {
@@ -216,7 +225,7 @@ function AppViewModel() {
             mainRemaining: mainRemaining,
             extrasRemaining: extrasRemaining,
             completionistRemaining: completionistRemaining,
-            totalByGenre: totalByGenre
+            playtimesByGenre: playtimesByGenre
         };
 
         self.previousIds = ids;
@@ -276,20 +285,41 @@ function AppViewModel() {
         self.remainingChart.validateData();
     };
 
-    var updateSliceCharts = function (total) {
-        var genres = getOrderedOwnProperties(total.totalByGenre);
-        self.genreChart.dataProvider = [];
+    var getPlaytimeIndex = function() {
+        switch (self.sliceCompletionLevel()) {
+        case PlaytimeType.Current:
+            return self.sliceTotal() ? 0 : 4;
+        case PlaytimeType.Main:
+            return self.sliceTotal() ? 1 : 4;
+        case PlaytimeType.Extras:
+            return self.sliceTotal() ? 2 : 5;
+        case PlaytimeType.Completionist:
+            return self.sliceTotal() ? 3 : 6;
+        default:
+            console.error("Invalid playtime slice type: " + self.sliceCompletionLevel());
+            return self.sliceTotal() ? 1 : 4;
+        }
+    };
+
+    var updateSliceChart = function (chart, slicedPlaytime) {
+        var titles = getOrderedOwnProperties(slicedPlaytime);
+        var playtimeIndex = getPlaytimeIndex();
+        chart.dataProvider = [];
         var paletteIndex = 0;
-        for (var i = 0; i < genres.length; i++) {
-            var genre = genres[i];
-            self.genreChart.dataProvider.push({
-                genre: genre,
-                hours: getHours(total.totalByGenre[genre][0], 0),
+        for (var i = 0; i < titles.length; i++) {
+            var title = titles[i];
+            chart.dataProvider.push({
+                title: title,
+                hours: getHours(slicedPlaytime[title][playtimeIndex], 0),
                 color: palette[paletteIndex % palette.length]
             });
             paletteIndex++;
         }
-        self.genreChart.validateData();
+        chart.validateData();
+    };
+
+    var updateSliceCharts = function (total) {
+        updateSliceChart(self.genreChart, total.playtimesByGenre);
     };
 
     var updateCharts = function(total) {
@@ -369,7 +399,7 @@ function AppViewModel() {
         self.genreChart = AmCharts.makeChart("genreChart", {
             type: "pie",
             valueField: "hours",
-            titleField: "genre",
+            titleField: "title",
             labelRadius: 10,
             labelText: "[[title]]",
             balloonText: "[[title]]: [[percents]]% ([[value]] hours)\n[[description]]",
@@ -377,6 +407,16 @@ function AppViewModel() {
         });
 
         self.total.subscribe(updateCharts);
+        self.sliceCompletionLevel.subscribe(function sliceCompletionLevel() {
+            updateSliceCharts(self.total());
+        });
+        self.sliceTotal.subscribe(function (slicetotal) {
+            if (!slicetotal && self.sliceCompletionLevel() === PlaytimeType.Current) {
+                self.sliceCompletionLevel(PlaytimeType.Main); //will trigger slice chart update per above
+            } else {
+                updateSliceCharts(self.total());
+            }
+        });
         updateCharts(self.total());
     };
 
@@ -403,7 +443,7 @@ function AppViewModel() {
         self.imputedTtbs(false);
         self.missingHltbIds(false);
         self.sliceTotal(true);
-        self.sliceCompletionLevel('main');
+        self.sliceCompletionLevel(PlaytimeType.Main);
         self.gameTable.filter('');
 
         self.currentRequest = $.get("api/games/library/" + self.steamVanityUrlName())

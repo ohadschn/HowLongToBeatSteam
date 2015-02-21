@@ -181,11 +181,11 @@
                 Your total amount of consecutive <strong>current</strong> playtime is <span data-bind="text: getYears(total().playTime)"></span>.<br/>
                 Your remaining amount of consecutive <abbr title="you complete the main objectives, just enough to see the credits roll"><strong>main</strong></abbr> playtime is <span data-bind="text: getYears(total().mainRemaining)"></span>.<br/>
                 Your remaining amount of consecutive <abbr title="you take your time, discover and complete additional tasks not required"><strong>extras</strong></abbr> playtime is <span data-bind="text: getYears(total().extrasRemaining)"></span>.<br/>
-                Your remaining amount of consecutive <abbr title="you strive for every achievement, every medal and conquer all that the game has to offer"><strong>complete</strong></abbr> playtime is <span data-bind="text: getYears(total().completionistRemaining)"></span>.
+                Your remaining amount of consecutive <abbr title="you strive for every achievement, every medal and conquer all that the game has to offer"><strong>completionist</strong></abbr> playtime is <span data-bind="text: getYears(total().completionistRemaining)"></span>.
             </p>
             <p class="lead" data-bind="visible: steamVanityUrlName() != 'b4a836df-4dba-4286-a3f4-ea2c652b7715-2147483647'">
                 <!-- ReSharper disable once Html.IdNotResolved -->
-                <span class="label label-default inline-label">Bonus</span> <a href="#/b4a836df-4dba-4286-a3f4-ea2c652b7715-2147483647" target="_blank">See how you compare to an imaginary profile with the entire steam library!</a>
+                <span class="label label-default inline-label">Bonus</span> <a href="#/b4a836df-4dba-4286-a3f4-ea2c652b7715-2147483647" target="_blank">See how you compare against an imaginary profile with the entire steam library!</a>
             </p>
             <ul class="list-inline lead">
                 <li>Share</li>
@@ -215,23 +215,23 @@
                     <div class="btn-group" role="group" aria-label="Completion levels">
                         <button type="button"
                                 class="btn btn-default"
-                                data-bind="enable: sliceTotal, click: function() { sliceCompletionLevel('current'); }, css: { active: sliceCompletionLevel() === 'current' }">
+                                data-bind="enable: sliceTotal, click: function() { sliceCompletionLevel(PlaytimeType.Current); }, css: { active: sliceCompletionLevel() === PlaytimeType.Current }">
                             Current
                         </button>
                         <button type="button"
                                 class="btn btn-default"
-                                data-bind="click: function() { sliceCompletionLevel('main'); }, css: { active: sliceCompletionLevel() === 'main' }">
+                                data-bind="click: function() { sliceCompletionLevel(PlaytimeType.Main); }, css: { active: sliceCompletionLevel() === PlaytimeType.Main }">
                             Main
                         </button>
                         <button type="button"
                                 class="btn btn-default"
-                                data-bind="click: function() { sliceCompletionLevel('extras'); }, css: { active: sliceCompletionLevel() === 'extras' }">
+                                data-bind="click: function() { sliceCompletionLevel(PlaytimeType.Extras); }, css: { active: sliceCompletionLevel() === PlaytimeType.Extras }">
                             Extras
                         </button>
                         <button type="button"
                                 class="btn btn-default"
-                                data-bind="click: function() { sliceCompletionLevel('complete'); }, css: { active: sliceCompletionLevel() === 'complete' }">
-                            Complete
+                                data-bind="click: function() { sliceCompletionLevel(PlaytimeType.Completionist); }, css: { active: sliceCompletionLevel() === PlaytimeType.Completionist }">
+                            Completionist
                         </button>
                     </div>
                 </div>
