@@ -92,7 +92,10 @@
                     <span aria-hidden="true">&times;</span>
                     <span class="sr-only">Close</span>
                 </button>
-                <div>
+                <div data-bind="visible: gameTable.rows().length===0">
+                    <span class="fa fa-fw fa-ban"></span> You have no games in your library. What kind of a sick person are you?
+                </div>
+                <div data-bind="visible: gameTable.rows().length>0">
                     <span class="fa fa-fw fa-steam"></span> Library information courtesy of Steam. Game completion definitions and statistics courtesy of <a href="http://howlongtobeat.com" target="_blank">HowLongToBeat</a>.
                 </div>
                 <div data-bind="visible: imputedTtbs">

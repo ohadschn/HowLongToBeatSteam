@@ -467,7 +467,7 @@ function AppViewModel() {
             self.currentRequest.abort(); //in case of hash tag navigation while we're loading
         }
 
-        $(".content").hide();   //IE + FF fix
+        $("#content").hide();   //IE + FF fix
 
         var height = $(window).height();
         $('.loader').spin({
@@ -503,10 +503,12 @@ function AppViewModel() {
 
                 self.originalMainRemaining = self.total().mainRemaining;
 
-                $(".content").show();   //IE + FF fix
                 self.alertHidden(false);
-                initCharts();
-                scrollToAlerts();
+                if (self.gameTable.rows().length > 0) {
+                    $("#content").show(); //IE + FF fix
+                    initCharts();
+                    scrollToAlerts();
+                }
             })
             .fail(function(error) {
                 console.error(error);

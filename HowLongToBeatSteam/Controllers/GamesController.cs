@@ -28,7 +28,8 @@ namespace HowLongToBeatSteam.Controllers
 
         private static readonly int s_ownedGamesRetrievalParallelization = SiteUtil.GetOptionalValueFromConfig("OwnedGamesRetrievalParallelization", 5);
         private const string GetOwnedSteamGamesFormat = @"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={0}&steamid={1}&format=json&include_appinfo=1";
-        
+        private const string CacheVanityUrlName = "b4a836df-4dba-4286-a3f4-ea2c652b7715";
+
         private static readonly HttpRetryClient Client = new HttpRetryClient(0);
 
         private static readonly ConcurrentDictionary<int, SteamAppData> Cache = new ConcurrentDictionary<int, SteamAppData>();
@@ -119,7 +120,7 @@ namespace HowLongToBeatSteam.Controllers
         {
             SiteEventSource.Log.ResolveVanityUrlStart(userVanityUrlName);
 
-            if (userVanityUrlName.Contains("b4a836df-4dba-4286-a3f4-ea2c652b7715"))
+            if (userVanityUrlName.Contains(CacheVanityUrlName))
             {
                 return Int32.Parse(userVanityUrlName.Substring(36)); //truncate GUID
             }
@@ -153,7 +154,7 @@ namespace HowLongToBeatSteam.Controllers
 
         private static async Task<OwnedGame[]> GetOwnedGames(long steamId, CancellationToken ct)
         {
-            if (steamId < 0)
+            if (steamId <= 0)
             {
                 return Cache
                     .Where(kvp => kvp.Value.HltbInfo != null)
