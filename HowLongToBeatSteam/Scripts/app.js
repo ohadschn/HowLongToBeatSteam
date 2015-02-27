@@ -63,8 +63,7 @@ var PlaytimeType = {
     Completionist: "completionist"
 };
 
-var mainColor = "#97BBCD";
-var palette = [mainColor, "#75C7F0"];
+var palette = duplicate(["#97BBCD", "#75C7F0"], 50); //2*50=100 colors (won't need more due to grouping)
 
 function Game(steamGame) {
 
@@ -371,6 +370,62 @@ function AppViewModel() {
         chart.height(chart.width() * 2 / 3);
     };
 
+    var initSerialChart = function(chartId, dataProvider) {
+        initChart(chartId);
+        return AmCharts.makeChart(chartId, {
+            type: "serial",
+            theme: "light",
+            colors: palette,
+            dataProvider: dataProvider,
+            categoryField: "playtime",
+            valueAxes: [
+                {
+                    axisAlpha: 0,
+                    position: "left",
+                    title: "Hours"
+                }
+            ],
+            categoryAxis: { gridPosition: "start" },
+            graphs: [
+                {
+                    type: "column",
+                    valueField: "hours",
+                    colorField: "color",
+                    lineThickness: 1.5,
+                    balloonText: "<b>[[value]] hours</b>",
+                    fillAlphas: 0.5,
+                    lineAlpha: 0.8
+                }
+            ],
+            startDuration: 1,
+            responsive: {
+                enabled: true
+            }
+        });
+    };
+
+var initPieChart = function(chartId) {
+    initChart(chartId);
+    return AmCharts.makeChart(chartId, {
+        type: "pie",
+        theme: "light",
+        colors: palette,
+        marginBottom: 0,
+        marginTop: 0,
+        valueField: "hours",
+        titleField: "title",
+        labelRadius: 10,
+        labelText: "[[title]]",
+        balloonText: "[[title]]: [[percents]]% ([[value]] hours)",
+        balloon: {
+            maxWidth: $("#genreChart").width() * 2 / 3
+        },
+        responsive: {
+            enabled: true
+        }
+    });
+}
+
     var firstInit = true;
     var initCharts = function() {
 
@@ -382,70 +437,21 @@ function AppViewModel() {
         }
         firstInit = false;
 
-        var hourAxis =
-        {
-            axisAlpha: 0,
-            position: "left",
-            title: "Hours"
-        };
-        var columnGraph = {
-            type: "column",
-            valueField: "hours",
-            colorField: "color",
-            lineColor: mainColor,
-            lineThickness: 1.5,
-            balloonText: "<b>[[value]] hours</b>",
-            fillAlphas: 0.5,
-            lineAlpha: 0.8
-        };
-        initChart("playtimeChart");
-        var barColor = mainColor;
-        self.playtimeChart = AmCharts.makeChart("playtimeChart", {
-            type: "serial",
-            theme: "light",
-            dataProvider: [
-                { playtime: "Current", hours: 0, color: barColor},
-                { playtime: "Main", hours: 0, color: barColor},
-                { playtime: "Extras", hours: 0, color: barColor},
-                { playtime: "Complete", hours: 0, color: barColor}
-            ],
-            categoryField: "playtime",
-            valueAxes: [hourAxis],
-            categoryAxis: { gridPosition: "start" },
-            graphs: [columnGraph],
-            startDuration: 1
-        });
+        self.playtimeChart = initSerialChart("playtimeChart",
+        [
+            { playtime: "Current", hours: 0 },
+            { playtime: "Main", hours: 0 },
+            { playtime: "Extras", hours: 0 },
+            { playtime: "Complete", hours: 0 }
+        ]);
 
-        initChart("remainingChart");
-        self.remainingChart = AmCharts.makeChart("remainingChart", {
-            type: "serial",
-            theme: "light",
-            dataProvider: [
-                { playtime: "Main", hours: 0, color: barColor},
-                { playtime: "Extras", hours: 0, color: barColor},
-                { playtime: "Complete", hours: 0, color: barColor}
-            ],
-            categoryField: "playtime",
-            valueAxes: [hourAxis],
-            categoryAxis: { gridPosition: "start" },
-            graphs: [columnGraph],
-            startDuration: 1
-        });
+        self.remainingChart = initSerialChart("remainingChart", [
+            { playtime: "Main", hours: 0 },
+            { playtime: "Extras", hours: 0 },
+            { playtime: "Complete", hours: 0 }
+        ]);
 
-        initChart("genreChart");
-        self.genreChart = AmCharts.makeChart("genreChart", {
-            type: "pie",
-            theme: "light",
-            colors: duplicate(palette, 50), //2*50=100 colors (won't need more due to grouping)
-            valueField: "hours",
-            titleField: "title",
-            labelRadius: 10,
-            labelText: "[[title]]",
-            balloonText: "[[title]]: [[percents]]% ([[value]] hours)\n[[description]]",
-            balloon: {
-                maxWidth: $("#genreChart").width() * 2/3
-            }
-        });
+        self.genreChart = initPieChart("genreChart");
 
         self.total.subscribe(updateCharts);
         self.sliceCompletionLevel.subscribe(function sliceCompletionLevel() {
@@ -508,6 +514,7 @@ function AppViewModel() {
                     $("#content").show(); //IE + FF fix
                     initCharts();
                     scrollToAlerts();
+                    self.gameTable.currentPage(1);
                 }
             })
             .fail(function(error) {
