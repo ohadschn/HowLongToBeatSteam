@@ -380,12 +380,16 @@ function AppViewModel() {
         };
     };
 
-    var updateContinuousSliceChart = function(chart, slicedPlaytime, categories) {
+    //var breakdownInterval = 5;
+    var updateContinuousSliceChart = function (chart, slicedPlaytime, categories, sliceBreakIndex) {
+
         var sliceKeys = getOrderedOwnProperties(slicedPlaytime);
         var playtimeInfo = getPlaytimeInfo();
 
         for (var j = 0; j < categories.length; j++) {
             categories[j].hours = 0;
+            categories[j].color = progressivePalette[j % progressivePalette.length];
+            categories[j].index = j; //needed for slice click handling
         }
         var slicesData = categories.concat([
             {
@@ -393,9 +397,36 @@ function AppViewModel() {
                 min: Number.NEGATIVE_INFINITY,
                 max: Number.POSITIVE_INFINITY,
                 hours: 0,
-                color: unknownColor
+                color: unknownColor,
+                index: categories.length
             }
         ]);
+
+        if (typeof sliceBreakIndex !== "undefined" && sliceBreakIndex !== categories.length) { //we can't break down the unknown slice
+            var sliceToBreak = slicesData[sliceBreakIndex];
+            var sliceShards = [];
+            var slicePercent = sliceToBreak.hours / playtimeInfo.total;
+            var breakdownCount = slicePercent < 0.05 ? 2 : (slicePercent < 0.2 ? 3 : 4);
+            var breakdownInterval = Math.round((sliceToBreak.max - sliceToBreak.min + 1) / breakdownCount);
+            for (var k = sliceToBreak.min; k <= sliceToBreak.max; k = k + breakdownInterval) {
+                var max = Math.min(sliceToBreak.max, k + breakdownInterval - 1);
+                sliceShards.push({ //we don't set the index so that we get it as undefined when the user clicks on one of the shards
+                    title: k + "-" + max,
+                    min: k,
+                    max: max,
+                    hours: 0,
+                    color: sliceToBreak.color,
+                    pulled: true
+                });
+            }
+            var lastShard = sliceShards[sliceShards.length - 1];
+            if (sliceShards.length > 1 && (lastShard.max - lastShard.min) < breakdownInterval / 2) {
+                var secondToLastShard = sliceShards[sliceShards.length - 2];
+                secondToLastShard.max = lastShard.max;
+                secondToLastShard.title = secondToLastShard.min + "-" + lastShard.max;
+            }
+            Array.prototype.splice.apply(slicesData, [sliceBreakIndex, 1].concat(sliceShards));
+        }
 
         for (var i = 0; i < sliceKeys.length; i++) {
             var sliceKey = sliceKeys[i];
@@ -407,15 +438,23 @@ function AppViewModel() {
         chart.validateData();
     };
 
-    var updateSliceCharts = function(total) {
-        updateDiscreteSliceChart(self.genreChart, total.playtimesByGenre);
+    var updateMetacriticChart = function(total, sliceBreakIndex) {
         updateContinuousSliceChart(self.metacriticChart, total.playtimesByMetacritic, [
             { title: "Overwhelming Dislike", min: 0, max: 19 },
             { title: "Generally Unfavorable", min: 20, max: 49 },
             { title: "Mixed or Average", min: 50, max: 74 },
             { title: "Generally Favorable", min: 75, max: 89 },
             { title: "Universal Acclaim", min: 90, max: 100 }
-        ]);
+        ], sliceBreakIndex);
+    };
+
+    var updateGenreChart = function(total) {
+        updateDiscreteSliceChart(self.genreChart, total.playtimesByGenre);
+    };
+
+    var updateSliceCharts = function (total) {
+        updateGenreChart(total);
+        updateMetacriticChart(total);
     };
 
     var updateCharts = function(total) {
@@ -467,18 +506,21 @@ function AppViewModel() {
         });
     };
 
-    var initPieChart = function(chartId, palette) {
+    var initPieChart = function(chartId, title) {
         initChart(chartId);
         return AmCharts.makeChart(chartId, {
+            titles: [{ text: title }],
             type: "pie",
             theme: "light",
-            colors: palette,
+            colors: alternatingPalette,
             marginLeft: 0,
             marginRight: 0,
             marginBottom: 0,
             marginTop: 0,
+            pullOutRadius: "10%",
             valueField: "hours",
             colorField: "color",
+            pulledField: "pulled",
             precision: 0,
             titleField: "title",
             labelRadius: 10,
@@ -491,14 +533,6 @@ function AppViewModel() {
                 enabled: true
             }
         });
-    };
-
-    var initDiscretePieChart = function(chartId) {
-        return initPieChart(chartId, alternatingPalette);
-    };
-
-    var initContinuousPieChart = function(chartId) {
-        return initPieChart(chartId, progressivePalette);
     };
 
     var firstInit = true;
@@ -526,8 +560,9 @@ function AppViewModel() {
             { playtime: "Complete", hours: 0 }
         ]);
 
-        self.genreChart = initDiscretePieChart("genreChart");
-        self.metacriticChart = initContinuousPieChart("metacriticChart");
+        self.genreChart = initPieChart("genreChart", "Playtime by Genre");
+        self.metacriticChart = initPieChart("metacriticChart", "Playtime by Metacritic score");
+        self.metacriticChart.addListener("clickSlice", function(event) { updateMetacriticChart(self.total(), event.dataItem.dataContext.index); });
 
         self.total.subscribe(updateCharts);
         self.sliceCompletionLevel.subscribe(function sliceCompletionLevel() {

@@ -147,6 +147,9 @@
     <None Include="Intellisense\knockout-debug.js" />
     <Content Include="Intellisense\bootstrap.css" />
     <Content Include="Intellisense\bootstrap.js" />
+    <None Include="Intellisense\light.js" />
+    <None Include="Intellisense\pie.js" />
+    <None Include="Intellisense\responsive.js" />
     <Content Include="Resources\sk5_0.jpg" />
     <Content Include="Resources\SteamClock.ico" />
     <Content Include="Resources\SteamClock.svg" />

@@ -84,7 +84,7 @@
                 <p class="lead">
                     <span class="fa fa-puzzle-piece"></span> Some of your games could not be found on HowLongToBeat!
                     <br />
-                    <span>Click the update links next to missing games in the table below to help :)</span>
+                    Click the update links next to missing games in the table below to help :)
                 </p>
             </div>
             <div role="alert" data-bind="visible: !error() && !alertHidden(), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-6' : 'col-md-12')">
@@ -201,7 +201,7 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <div class="h3">
-                        Sliced Playtime
+                        Slice
                         <div class="btn-toolbar inline-btn-toolbar" role="toolbar" aria-label="Slice Options">
                             <div class="btn-group" role="group" aria-label="Playtime type">
                                 <button type="button"
@@ -243,16 +243,10 @@
                 <div class="panel-body">
                     <div class="container-fluid">
                         <div class="row">
-                            <div class="col-lg-6 text-center">
-                                <div class="h3">
-                                    Genre
-                                </div>
+                            <div class="col-lg-6">
                                 <div id="genreChart" class="amchart"></div>
                             </div>
-                            <div class="col-lg-6 text-center">
-                                <div class="h3">
-                                    Metacritic Score
-                                </div>
+                            <div class="col-lg-6">
                                 <div id="metacriticChart" class="amchart"></div>
                             </div>
                         </div>
@@ -276,7 +270,7 @@
                                 </th>
                                 <!-- ReSharper disable UnknownCssClass -->
                                 <th class="sortable expanded" unselectable="on" data-bind="click: toggleSort('steamName')">
-                                    <!-- ReSharper restore UnknownCssClass -->
+                                <!-- ReSharper restore UnknownCssClass -->
                                     Game
                                     <span data-bind="css: sortClass('steamName')" aria-hidden="true"></span>
                                 </th>
