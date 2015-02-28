@@ -82,9 +82,9 @@
                     <span class="sr-only">Close</span>
                 </button>
                 <p class="lead">
-                    <span class="fa fa-puzzle-piece"></span> Some of your games could not be found on <abbr title="HowLongToBeat">HLTB</abbr>.
+                    <span class="fa fa-puzzle-piece"></span> Some of your games could not be found on HowLongToBeat!
                     <br />
-                    <span>Click the update links next to missing games in the table below to help!</span>
+                    <span>Click the update links next to missing games in the table below to help :)</span>
                 </p>
             </div>
             <div role="alert" data-bind="visible: !error() && !alertHidden(), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-6' : 'col-md-12')">
@@ -96,7 +96,7 @@
                     <span class="fa fa-fw fa-ban"></span> You have no games in your library. What kind of a sick person are you?
                 </div>
                 <div data-bind="visible: gameTable.rows().length>0">
-                    <span class="fa fa-fw fa-steam"></span> Library information courtesy of Steam. Game completion definitions and statistics courtesy of <a href="http://howlongtobeat.com" target="_blank">HowLongToBeat</a>.
+                    <span class="fa fa-fw fa-copyright"></span> Game completion definitions and statistics courtesy of <a href="http://howlongtobeat.com" target="_blank">HowLongToBeat</a>. Game Scores courtesy of <a href="http://www.metacritic.com" target="_blank">Metacritic</a>.
                 </div>
                 <div data-bind="visible: imputedTtbs">
                     <span class="fa fa-fw fa-bar-chart"></span> Some play times are missing from <abbr title="HowLongToBeat">HLTB</abbr> and were therefore <a href="http://en.wikipedia.org/wiki/Imputation_%28statistics%29" class="alert-link" target="_blank">statistically imputed</a>. Imputed values are <span class="emphasized">italicized</span>.
@@ -201,7 +201,7 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <div class="h3">
-                        Slice
+                        Sliced Playtime
                         <div class="btn-toolbar inline-btn-toolbar" role="toolbar" aria-label="Slice Options">
                             <div class="btn-group" role="group" aria-label="Playtime type">
                                 <button type="button"
@@ -245,21 +245,15 @@
                         <div class="row">
                             <div class="col-lg-6 text-center">
                                 <div class="h3">
-                                    Playtime by Genre
+                                    Genre
                                 </div>
                                 <div id="genreChart" class="amchart"></div>
                             </div>
                             <div class="col-lg-6 text-center">
                                 <div class="h3">
-                                    Playtime by Metacritic Score
+                                    Metacritic Score
                                 </div>
                                 <div id="metacriticChart" class="amchart"></div>
-                            </div>
-                            <div class="col-lg-4 text-center">
-                                <div class="h3">
-                                    Playtime by Release Date
-                                </div>
-                                <div id="releaseDateChart" class="amchart"></div>
                             </div>
                         </div>
                     </div>

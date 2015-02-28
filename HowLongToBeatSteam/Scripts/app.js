@@ -63,7 +63,14 @@ var PlaytimeType = {
     Completionist: "completionist"
 };
 
-var palette = duplicate(["#97BBCD", "#75C7F0"], 50); //2*50=100 colors (won't need more due to grouping)
+var alternatingPalette = duplicate(["#97BBCD", "#75C7F0"], 50); //2*50=100 colors (won't need more due to grouping)
+//var progressivePalette = ["#97BBCD", "#85C2E0", "#75C7F0", "#97BBCD", "#97BBCD", "#97BBCD"];
+var progressivePalette = ["#97BBCD", "#85C2E0", "#75C7F0", "#66CCFF", "#66d7ff"];
+var unknownColor = "#ABB5BA";
+
+var genreSeparatorReplacer = function(genre) { //avoid creating function objects
+    return genre.replace(new RegExp("/", "g"), "-");
+};
 
 function Game(steamGame) {
 
@@ -77,14 +84,14 @@ function Game(steamGame) {
     self.steamAppId = steamAppData.SteamAppId;
     self.steamName = steamAppData.SteamName;
     self.steamUrl = "http://store.steampowered.com/app/" + steamAppData.SteamAppId;
-    self.appType = steamAppData.AppType;
-    self.platforms = steamAppData.Platforms;
-    self.categories = steamAppData.Categories;
-    self.genres = ko.utils.arrayMap(steamAppData.Genres, function (genre) { return genre.replace(new RegExp('/', 'g'), '-'); });
-    self.developers = steamAppData.Developers;
-    self.publishers = steamAppData.Publishers;
-    self.releaseDate = steamAppData.ReleaseDate;
-    self.metaCriticScore = steamAppData.MetaCriticScore;
+    //self.appType = steamAppData.AppType;
+    //self.platforms = steamAppData.Platforms;
+    //self.categories = steamAppData.Categories;
+    self.genres = ko.utils.arrayMap(steamAppData.Genres, genreSeparatorReplacer);
+    //self.developers = steamAppData.Developers;
+    //self.publishers = steamAppData.Publishers;
+    //self.releaseDate = steamAppData.ReleaseDate;
+    self.metacriticScore = steamAppData.MetacriticScore;
 
     var hltbInfo = steamAppData.HltbInfo;
     self.known = hltbInfo.Id !== -1;
@@ -161,11 +168,27 @@ function AppViewModel() {
         return true;
     };
 
+    var updatePlaytimes = function (playtimes, key, game, gameMainRemaining, gameExtrasRemaining, gameCompletionistRemaining) {
+        if (!playtimes.hasOwnProperty(key)) {
+            playtimes[key] = [0, 0, 0, 0, 0, 0, 0];
+        }
+
+        var arr = playtimes[key];
+        arr[0] += game.steamPlaytime;
+        arr[1] += game.hltbMainTtb;
+        arr[2] += game.hltbExtrasTtb;
+        arr[3] += game.hltbCompletionistTtb;
+        arr[4] += gameMainRemaining;
+        arr[5] += gameExtrasRemaining;
+        arr[6] += gameCompletionistRemaining;
+    };
+
     self.previousIds = [];
     self.prevTotal = {
         count: 0, playtime: 0, mainTtb: 0, extrasTtb: 0, completionistTtb: 0,
         mainRemaining: 0, extrasRemaining: 0, completionistRemaining: 0,
-        playtimesByGenre: {}
+        playtimesByGenre: {},
+        playtimesByMetacritic: {}
     };
     self.total = ko.pureComputed(function () {
 
@@ -178,6 +201,7 @@ function AppViewModel() {
         var extrasRemaining = 0;
         var completionistRemaining = 0;
         var playtimesByGenre = {};
+        var playtimesByMetacritic = {};
 
         var totalLength = self.gameTable.filteredRows().length;
         var arr = ko.utils.arrayFilter(self.gameTable.filteredRows(), function (game) { return game.included(); });
@@ -207,16 +231,9 @@ function AppViewModel() {
 
             var realGenres = $(game.genres).not(['Indie', 'Casual']).get();
             var genre = (realGenres.length === 0 ? game.genres : realGenres).join('/');
-            if (!playtimesByGenre.hasOwnProperty(genre)) {
-                playtimesByGenre[genre] = [0, 0, 0, 0, 0, 0, 0];
-            }
-            playtimesByGenre[genre][0] += game.steamPlaytime;
-            playtimesByGenre[genre][1] += game.hltbMainTtb;
-            playtimesByGenre[genre][2] += game.hltbExtrasTtb;
-            playtimesByGenre[genre][3] += game.hltbCompletionistTtb;
-            playtimesByGenre[genre][4] += gameMainRemaining;
-            playtimesByGenre[genre][5] += gameExtrasRemaining;
-            playtimesByGenre[genre][6] += gameCompletionistRemaining;
+           
+            updatePlaytimes(playtimesByGenre, genre, game, gameMainRemaining, gameExtrasRemaining, gameCompletionistRemaining);
+            updatePlaytimes(playtimesByMetacritic, game.metacriticScore, game, gameMainRemaining, gameExtrasRemaining, gameCompletionistRemaining);
         }
 
         if (count === totalLength) {
@@ -234,7 +251,8 @@ function AppViewModel() {
             mainRemaining: mainRemaining,
             extrasRemaining: extrasRemaining,
             completionistRemaining: completionistRemaining,
-            playtimesByGenre: playtimesByGenre
+            playtimesByGenre: playtimesByGenre,
+            playtimesByMetacritic: playtimesByMetacritic
         };
 
         self.previousIds = ids;
@@ -282,15 +300,15 @@ function AppViewModel() {
     };
 
     var updateMainCharts = function (total) {
-        self.playtimeChart.dataProvider[0].hours = getHours(total.playtime, 0);
-        self.playtimeChart.dataProvider[1].hours = getHours(total.mainTtb, 0);
-        self.playtimeChart.dataProvider[2].hours = getHours(total.extrasTtb, 0);
-        self.playtimeChart.dataProvider[3].hours = getHours(total.completionistTtb, 0);
+        self.playtimeChart.dataProvider[0].hours = getHours(total.playtime);
+        self.playtimeChart.dataProvider[1].hours = getHours(total.mainTtb);
+        self.playtimeChart.dataProvider[2].hours = getHours(total.extrasTtb);
+        self.playtimeChart.dataProvider[3].hours = getHours(total.completionistTtb);
         self.playtimeChart.validateData();
 
-        self.remainingChart.dataProvider[0].hours = getHours(total.mainRemaining, 0);
-        self.remainingChart.dataProvider[1].hours = getHours(total.extrasRemaining, 0);
-        self.remainingChart.dataProvider[2].hours = getHours(total.completionistRemaining, 0);
+        self.remainingChart.dataProvider[0].hours = getHours(total.mainRemaining);
+        self.remainingChart.dataProvider[1].hours = getHours(total.extrasRemaining);
+        self.remainingChart.dataProvider[2].hours = getHours(total.completionistRemaining);
         self.remainingChart.validateData();
     };
 
@@ -321,10 +339,13 @@ function AppViewModel() {
             break;
         }
 
-        return { index: playtimeIndex, total: getHours(playtimeTotal, 0) };
+        return { index: playtimeIndex, total: getHours(playtimeTotal, 3) };
     };
 
-    var updateSliceChart = function (chart, slicedPlaytime) {
+    var unknownTitle = "Unknown";
+
+    var updateDiscreteSliceChart = function (chart, slicedPlaytime) {
+        var groupingThreshold = 0.01;
         var titles = getOrderedOwnProperties(slicedPlaytime);
         var playtimeInfo = getPlaytimeInfo();
         chart.dataProvider = [];
@@ -332,8 +353,8 @@ function AppViewModel() {
         var othersTotal = 0;
         for (var i = 0; i < titles.length; i++) {
             var title = titles[i];
-            var hours = getHours(slicedPlaytime[title][playtimeInfo.index], 0);
-            if (title === 'Unknown' || hours / playtimeInfo.total < 0.01) {
+            var hours = getHours(slicedPlaytime[title][playtimeInfo.index]);
+            if (title === unknownTitle || hours / playtimeInfo.total < groupingThreshold) {
                 others.push( title) ;
                 othersTotal += hours;
                 continue;
@@ -345,15 +366,56 @@ function AppViewModel() {
         }
         if (others.length >= 1) {
             chart.dataProvider.push({
-                title: (others.length === 1 && others[0] !== 'Unknown') ? others[0] : "Other",
-                hours: othersTotal
+                title: (others.length === 1 && others[0] !== unknownTitle) ? others[0] : "Other",
+                hours: othersTotal,
+                color: unknownColor
             });
         }
         chart.validateData();
     };
 
-    var updateSliceCharts = function (total) {
-        updateSliceChart(self.genreChart, total.playtimesByGenre);
+    var getCategoryRangePredicate = function(value) { //avoids creating functions in a loop
+        return function(category) {
+            return (value <= category.max) && (value >= category.min);
+        };
+    };
+
+    var updateContinuousSliceChart = function(chart, slicedPlaytime, categories) {
+        var sliceKeys = getOrderedOwnProperties(slicedPlaytime);
+        var playtimeInfo = getPlaytimeInfo();
+
+        for (var j = 0; j < categories.length; j++) {
+            categories[j].hours = 0;
+        }
+        var slicesData = categories.concat([
+            {
+                title: unknownTitle,
+                min: Number.NEGATIVE_INFINITY,
+                max: Number.POSITIVE_INFINITY,
+                hours: 0,
+                color: unknownColor
+            }
+        ]);
+
+        for (var i = 0; i < sliceKeys.length; i++) {
+            var sliceKey = sliceKeys[i];
+            var sliceData = ko.utils.arrayFirst(slicesData, getCategoryRangePredicate(Number(sliceKey)));
+            sliceData.hours += getHours(slicedPlaytime[sliceKey][playtimeInfo.index], 3);
+        }
+
+        chart.dataProvider = slicesData;
+        chart.validateData();
+    };
+
+    var updateSliceCharts = function(total) {
+        updateDiscreteSliceChart(self.genreChart, total.playtimesByGenre);
+        updateContinuousSliceChart(self.metacriticChart, total.playtimesByMetacritic, [
+            { title: "Overwhelming Dislike", min: 0, max: 19 },
+            { title: "Generally Unfavorable", min: 20, max: 49 },
+            { title: "Mixed or Average", min: 50, max: 74 },
+            { title: "Generally Favorable", min: 75, max: 89 },
+            { title: "Universal Acclaim", min: 90, max: 100 }
+        ]);
     };
 
     var updateCharts = function(total) {
@@ -375,7 +437,7 @@ function AppViewModel() {
         return AmCharts.makeChart(chartId, {
             type: "serial",
             theme: "light",
-            colors: palette,
+            colors: alternatingPalette,
             dataProvider: dataProvider,
             categoryField: "playtime",
             valueAxes: [
@@ -397,6 +459,7 @@ function AppViewModel() {
                     lineAlpha: 0.8
                 }
             ],
+            precision: 0,
             startDuration: 1,
             responsive: {
                 enabled: true
@@ -404,27 +467,39 @@ function AppViewModel() {
         });
     };
 
-var initPieChart = function(chartId) {
-    initChart(chartId);
-    return AmCharts.makeChart(chartId, {
-        type: "pie",
-        theme: "light",
-        colors: palette,
-        marginBottom: 0,
-        marginTop: 0,
-        valueField: "hours",
-        titleField: "title",
-        labelRadius: 10,
-        labelText: "[[title]]",
-        balloonText: "[[title]]: [[percents]]% ([[value]] hours)",
-        balloon: {
-            maxWidth: $("#genreChart").width() * 2 / 3
-        },
-        responsive: {
-            enabled: true
-        }
-    });
-}
+    var initPieChart = function(chartId, palette) {
+        initChart(chartId);
+        return AmCharts.makeChart(chartId, {
+            type: "pie",
+            theme: "light",
+            colors: palette,
+            marginLeft: 0,
+            marginRight: 0,
+            marginBottom: 0,
+            marginTop: 0,
+            valueField: "hours",
+            colorField: "color",
+            precision: 0,
+            titleField: "title",
+            labelRadius: 10,
+            labelText: "[[title]]",
+            balloonText: "[[title]]: [[percents]]% ([[value]] hours)",
+            balloon: {
+                maxWidth: $("#genreChart").width() * 2 / 3
+            },
+            responsive: {
+                enabled: true
+            }
+        });
+    };
+
+    var initDiscretePieChart = function(chartId) {
+        return initPieChart(chartId, alternatingPalette);
+    };
+
+    var initContinuousPieChart = function(chartId) {
+        return initPieChart(chartId, progressivePalette);
+    };
 
     var firstInit = true;
     var initCharts = function() {
@@ -451,7 +526,8 @@ var initPieChart = function(chartId) {
             { playtime: "Complete", hours: 0 }
         ]);
 
-        self.genreChart = initPieChart("genreChart");
+        self.genreChart = initDiscretePieChart("genreChart");
+        self.metacriticChart = initContinuousPieChart("metacriticChart");
 
         self.total.subscribe(updateCharts);
         self.sliceCompletionLevel.subscribe(function sliceCompletionLevel() {
@@ -489,7 +565,7 @@ var initPieChart = function(chartId) {
         self.partialCache(false);
         self.imputedTtbs(false);
         self.missingHltbIds(false);
-        self.sliceTotal(true);
+        self.sliceTotal(false);
         self.sliceCompletionLevel(PlaytimeType.Main);
         self.gameTable.filter('');
 
@@ -595,7 +671,7 @@ $(document).ready(function () {
 
     //Fix up layout
     $('[data-toggle="tooltip"]').tooltip();
-    $('#steamIdText').focus();
+    $("#steamIdText").focus();
 
     //Init knockout
     var viewModel = new AppViewModel();
@@ -604,11 +680,11 @@ $(document).ready(function () {
     //Init sammy
     var sammyApp = $.sammy(function () {
 
-        this.get('#/', function () {
+        this.get("#/", function () {
             viewModel.introPage(true);
         });
 
-        this.get('#/:vanityUrlName', function () {
+        this.get("#/:vanityUrlName", function () {
             viewModel.introPage(false);
             viewModel.steamVanityUrlName(this.params.vanityUrlName);
             viewModel.loadGames();
