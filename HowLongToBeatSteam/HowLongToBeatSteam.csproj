@@ -135,14 +135,12 @@
     <Content Include="bower.json" />
     <Content Include="bower_components\knockout-datatable\knockout-datatable.min.js.map" />
     <None Include="Intellisense\jquery-2.1.0-vsdoc.js" />
-    <None Include="Intellisense\jquery.backstretch.js" />
     <None Include="Intellisense\jquery.spin.js" />
     <None Include="Intellisense\font-awesome.css" />
     <None Include="Intellisense\amcharts.js" />
     <None Include="Intellisense\countdown.js" />
     <None Include="Intellisense\spin.js" />
     <None Include="Intellisense\sammy.js" />
-    <None Include="Intellisense\none.js" />
     <None Include="Intellisense\serial.js" />
     <None Include="Intellisense\knockout-debug.js" />
     <Content Include="Intellisense\bootstrap.css" />

@@ -374,23 +374,72 @@ function AppViewModel() {
         chart.validateData();
     };
 
-    var getCategoryRangePredicate = function(value) { //avoids creating functions in a loop
+    var getCategoryRangePredicate = function(sliceKey) { //avoids creating functions in a loop
         return function(category) {
-            return (value <= category.max) && (value >= category.min);
+            return (sliceKey <= category.max) && (sliceKey >= category.min);
         };
     };
 
-    //var breakdownInterval = 5;
-    var updateContinuousSliceChart = function (chart, slicedPlaytime, categories, sliceBreakIndex) {
+    var breakdown = function (min, max, breakdownCount) {
+        var sliceShards = [];
+        var breakdownInterval = Math.round((max - min + 1) / breakdownCount);
+        var i = 0;
+        for (var k = min; k <= max; k = k + breakdownInterval) {
+            var boundMax = Math.min(max, k + breakdownInterval - 1);
+            sliceShards.push({ //we don't set the index so that we get it as undefined when the user clicks on one of the shards
+                title: k + "-" + boundMax,
+                min: k,
+                max: boundMax,
+                hours: 0,
+                color: progressivePalette[i++ % progressivePalette.length],
+                pulled: true
+            });
+        }
+        var lastShard = sliceShards[sliceShards.length - 1];
+        if (sliceShards.length > 1 && (lastShard.max - lastShard.min) < breakdownInterval / 2) {
+            var secondToLastShard = sliceShards[sliceShards.length - 2];
+            secondToLastShard.max = lastShard.max;
+            secondToLastShard.title = secondToLastShard.min + "-" + lastShard.max;
+        }
+        return sliceShards;
+    };
+
+    var updateContinuousSliceChart = function (chart, slicedPlaytime, categories, sliceClicked) {
 
         var sliceKeys = getOrderedOwnProperties(slicedPlaytime);
         var playtimeInfo = getPlaytimeInfo();
-
-        for (var j = 0; j < categories.length; j++) {
-            categories[j].hours = 0;
-            categories[j].color = progressivePalette[j % progressivePalette.length];
-            categories[j].index = j; //needed for slice click handling
+        
+        // ReSharper disable once QualifiedExpressionMaybeNull
+        if (typeof sliceClicked === "undefined" || sliceClicked.pulled === true) {
+            //either this is the initial render with this dataset, or we clicked on a pulled slice so we want to revert
+            for (var j = 0; j < categories.length; j++) {
+                var category = categories[j];
+                category.hours = 0;
+                category.color = progressivePalette[j % progressivePalette.length];
+                category.pulled = false;
+                category.description = " (" + category.min + "-" + category.max + ")";
+            }
+        } else {
+            var unknownHours = 0;
+            var minKnownKey = Number.POSITIVE_INFINITY;
+            var maxKnownKey = Number.NEGATIVE_INFINITY;
+            for (var k = 0; k < sliceKeys.length; k++) {
+                var sliceKeyTyped = Number(sliceKeys[k]);
+                if (sliceKeyTyped < categories[0].min || sliceKeyTyped > categories[categories.length - 1].max) {
+                    unknownHours += getHours(slicedPlaytime[sliceKeys[k]][playtimeInfo.index]);
+                } else {
+                    minKnownKey = Math.min(minKnownKey, sliceKeyTyped);
+                    maxKnownKey = Math.max(maxKnownKey, sliceKeyTyped);
+                }
+            }
+            if (minKnownKey === Number.POSITIVE_INFINITY) {
+                categories = [];
+            } else {
+                var knownPercent = (playtimeInfo.total - unknownHours) / playtimeInfo.total;
+                categories = breakdown(minKnownKey, maxKnownKey, Math.round(knownPercent * 10));
+            }
         }
+
         var slicesData = categories.concat([
             {
                 title: unknownTitle,
@@ -398,40 +447,15 @@ function AppViewModel() {
                 max: Number.POSITIVE_INFINITY,
                 hours: 0,
                 color: unknownColor,
-                index: categories.length
+                index: categories.length,
+                pulled: categories[categories.length-1].pulled
             }
         ]);
-
-        if (typeof sliceBreakIndex !== "undefined" && sliceBreakIndex !== categories.length) { //we can't break down the unknown slice
-            var sliceToBreak = slicesData[sliceBreakIndex];
-            var sliceShards = [];
-            var slicePercent = sliceToBreak.hours / playtimeInfo.total;
-            var breakdownCount = slicePercent < 0.05 ? 2 : (slicePercent < 0.2 ? 3 : 4);
-            var breakdownInterval = Math.round((sliceToBreak.max - sliceToBreak.min + 1) / breakdownCount);
-            for (var k = sliceToBreak.min; k <= sliceToBreak.max; k = k + breakdownInterval) {
-                var max = Math.min(sliceToBreak.max, k + breakdownInterval - 1);
-                sliceShards.push({ //we don't set the index so that we get it as undefined when the user clicks on one of the shards
-                    title: k + "-" + max,
-                    min: k,
-                    max: max,
-                    hours: 0,
-                    color: sliceToBreak.color,
-                    pulled: true
-                });
-            }
-            var lastShard = sliceShards[sliceShards.length - 1];
-            if (sliceShards.length > 1 && (lastShard.max - lastShard.min) < breakdownInterval / 2) {
-                var secondToLastShard = sliceShards[sliceShards.length - 2];
-                secondToLastShard.max = lastShard.max;
-                secondToLastShard.title = secondToLastShard.min + "-" + lastShard.max;
-            }
-            Array.prototype.splice.apply(slicesData, [sliceBreakIndex, 1].concat(sliceShards));
-        }
 
         for (var i = 0; i < sliceKeys.length; i++) {
             var sliceKey = sliceKeys[i];
             var sliceData = ko.utils.arrayFirst(slicesData, getCategoryRangePredicate(Number(sliceKey)));
-            sliceData.hours += getHours(slicedPlaytime[sliceKey][playtimeInfo.index], 3);
+            sliceData.hours += getHours(slicedPlaytime[sliceKey][playtimeInfo.index]);
         }
 
         chart.dataProvider = slicesData;
@@ -516,16 +540,17 @@ function AppViewModel() {
             marginLeft: 0,
             marginRight: 0,
             marginBottom: 0,
-            marginTop: 0,
-            pullOutRadius: "10%",
+            marginTop: 25,
+            pullOutRadius: "5%",
             valueField: "hours",
             colorField: "color",
+            descriptionField: "description",
             pulledField: "pulled",
             precision: 0,
             titleField: "title",
             labelRadius: 10,
             labelText: "[[title]]",
-            balloonText: "[[title]]: [[percents]]% ([[value]] hours)",
+            balloonText: "[[title]][[description]]: [[percents]]% ([[value]] hours)",
             balloon: {
                 maxWidth: $("#genreChart").width() * 2 / 3
             },
@@ -562,7 +587,7 @@ function AppViewModel() {
 
         self.genreChart = initPieChart("genreChart", "Playtime by Genre");
         self.metacriticChart = initPieChart("metacriticChart", "Playtime by Metacritic score");
-        self.metacriticChart.addListener("clickSlice", function(event) { updateMetacriticChart(self.total(), event.dataItem.dataContext.index); });
+        self.metacriticChart.addListener("clickSlice", function(event) { updateMetacriticChart(self.total(), event.dataItem.dataContext); });
 
         self.total.subscribe(updateCharts);
         self.sliceCompletionLevel.subscribe(function sliceCompletionLevel() {
