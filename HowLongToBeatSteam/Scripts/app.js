@@ -267,13 +267,6 @@ function AppViewModel() {
         return games;
     });
 
-    var scrollDuration = 1000;
-    var scrollToAlerts = function() {
-        $('html, body').animate({
-            scrollTop: $("#content").offset().top - 10
-        }, 0.75 * scrollDuration);
-    };
-
     var firstTableRender = true;
     self.tableRendered = function() {
         if (!firstTableRender || $("#gameTable tbody").children().length !== self.gameTable.perPage()) {
@@ -281,22 +274,20 @@ function AppViewModel() {
         }
         firstTableRender = false;
 
-        setTimeout(function() {
-            var tableWidth = $("#gameTable").width();
+        var tableWidth = $("#gameTable").width();
 
-            var compressedColumnWidth = 0;
-            $.each($("table th.compressed"), function() {
-                var widthWithMargin = $(this).width() + 10;
-                compressedColumnWidth += widthWithMargin;
-                $(this).css("width", widthWithMargin + "px");
-            });
+        var compressedColumnWidth = 0;
+        $.each($("table th.compressed"), function() {
+            var widthWithMargin = $(this).width() + 10;
+            compressedColumnWidth += widthWithMargin;
+            $(this).css("width", widthWithMargin + "px");
+        });
 
-            var expandedCount = $("table th.expanded").size();
-            var expandedColumnWidth = (tableWidth - compressedColumnWidth) / expandedCount;
-            $("table th.expanded").css("width", expandedColumnWidth + "px");
+        var expandedCount = $("table th.expanded").size();
+        var expandedColumnWidth = (tableWidth - compressedColumnWidth) / expandedCount;
+        $("table th.expanded").css("width", expandedColumnWidth + "px");
 
-            $("#gameTable").css('table-layout', "fixed");
-        }, scrollDuration / 2);
+        $("#gameTable").css('table-layout', "fixed");
     };
 
     self.vanityUrlSubmitted = function() {
@@ -525,7 +516,7 @@ function AppViewModel() {
                 }
             ],
             precision: 0,
-            startDuration: 0,
+            startDuration: 1,
             responsive: {
                 enabled: true
             }
@@ -567,8 +558,8 @@ function AppViewModel() {
     var initCharts = function() {
 
         if (!firstInit) {
-            //self.playtimeChart.animateAgain();
-            //self.remainingChart.animateAgain();
+            self.playtimeChart.animateAgain();
+            self.remainingChart.animateAgain();
             return;
         }
         firstInit = false;
@@ -602,7 +593,41 @@ function AppViewModel() {
                 updateSliceCharts(self.total());
             }
         });
-        updateCharts(self.total());
+    };
+
+    var getGamesArray = function(gameData) {
+        var games = new Array(gameData.length);
+        var containsUnknown = false;
+        var containsImputed = false;
+        for (var i = 0; i < gameData.length; i++) {
+            var game = new Game(gameData[i]);
+            if (!containsUnknown && !game.known) {
+                self.missingHltbIds(true);
+                self.imputedTtbs(true);
+                containsUnknown = true;
+            } else if (!containsImputed && (game.hltbMainTtbImputed || game.hltbExtrasTtbImputed || game.hltbCompletionistTtbImputed)) {
+                self.imputedTtbs(true);
+                containsImputed = true;
+            }
+            games[i] = game;
+        }
+        return games;
+    };
+
+    var startProcessing = function () {
+        self.processing(true);
+        var height = $(window).height();
+        $('.loader').spin({
+            lines: 14,
+            length: Math.ceil(height / 25),
+            width: Math.ceil(height / 90),
+            radius: Math.ceil(height / 15)
+        });
+    };
+
+    var stopProcessing = function () {
+        self.processing(false);
+        $('.loader').spin(false);
     };
 
     self.loadGames = function () {
@@ -612,48 +637,27 @@ function AppViewModel() {
         }
 
         $("#content").hide();   //IE + FF fix
-
-        var height = $(window).height();
-        $('.loader').spin({
-            lines: 14,
-            length: Math.ceil(height / 25),
-            width: Math.ceil(height / 90),
-            radius: Math.ceil(height / 15)
-        });
+        startProcessing();
 
         self.error(false);
-
-        self.processing(true);
         self.partialCache(false);
         self.imputedTtbs(false);
         self.missingHltbIds(false);
         self.sliceTotal(false);
         self.sliceCompletionLevel(PlaytimeType.Main);
-        self.gameTable.filter('');
+        self.gameTable.filter("");
+        self.gameTable.toggleSort("");
 
         self.currentRequest = $.get("api/games/library/" + self.steamVanityUrlName())
             .done(function(data) {
-
                 self.partialCache(data.PartialCache);
-                self.gameTable.toggleSort("");
-                self.gameTable.rows(ko.utils.arrayMap(data.Games, function(steamGame) {
-                    var game = new Game(steamGame);
-                    if (!game.known) {
-                        self.missingHltbIds(true);
-                        self.imputedTtbs(true);
-                    } else if (game.hltbMainTtbImputed || game.hltbExtrasTtbImputed || game.hltbCompletionistTtbImputed) {
-                        self.imputedTtbs(true);
-                    }
-                    return game;
-                }));
+                self.gameTable.rows(getGamesArray(data.Games));
 
                 self.originalMainRemaining = self.total().mainRemaining;
 
-                self.alertHidden(false);
                 if (self.gameTable.rows().length > 0) {
                     $("#content").show(); //IE + FF fix
                     initCharts();
-                    scrollToAlerts();
                     self.gameTable.currentPage(1);
                 }
             })
@@ -663,11 +667,10 @@ function AppViewModel() {
                 self.error(true);
             })
             .always(function () {
-                self.processing(false);
                 self.alertHidden(false);
                 self.missingAlertHidden(false);
                 self.errorAlertHidden(false);
-                $('.loader').spin(false);
+                stopProcessing();
             });
     };
 
@@ -717,7 +720,6 @@ function AppViewModel() {
             url,
             "share",
             "toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=600,height=600");
-
     };
 }
 

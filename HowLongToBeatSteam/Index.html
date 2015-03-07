@@ -24,25 +24,6 @@
         ga("create", "UA-58442747-1", "auto");
         ga("send", "pageview")
     </script>
-    <script type="text/javascript">
-        var appInsights = window.appInsights || function(e) {
-            function t(e) {
-                n[e] = function() {
-                    var t = arguments;
-                    n.queue.push(function() { n[e].apply(n, t) })
-                }
-            }
-
-            var n = { config: e }, r = document, i = window, s = "script", o = r.createElement(s), u, a;
-            for (o.src = e.url || "//az416426.vo.msecnd.net/scripts/a/ai.0.js", r.getElementsByTagName(s)[0].parentNode.appendChild(o), n.cookie = r.cookie, n.queue = [], u = ["Event", "Exception", "Metric", "PageView", "Trace"]; u.length;) t("track" + u.pop());
-            return e.disableExceptionTracking || (u = "onerror", t("_" + u), a = i[u], i[u] = function(e, t, r, i, s) {
-                var o = a && a(e, t, r, i, s);
-                return o !== !0 && n["_" + u](e, t, r, i, s), o
-            }), n
-        }({ instrumentationKey: "d0a63409-84bf-4f88-a8cf-8440ce670471" });
-        window.appInsights = appInsights;
-        appInsights.trackPageView()
-    </script>
     <!-- ReSharper restore All -->
 </head>
 <body data-bind="css: introPage() ? 'body-intro' : ''">
@@ -67,7 +48,7 @@
         </form>
     </div>
     <div class="loader" data-bind="visible: processing"></div>
-    <div class="alerts" data-bind="visible: !introPage() && !processing()" style="display: none">
+    <div id="alerts" class="alerts" data-bind="visible: !introPage() && !processing()" style="display: none">
         <div class="alert alert-danger alert-dismissible" role="alert" data-bind="visible: error() && !errorAlertHidden()">
             <button type="button" class="close" data-bind="click: function () { errorAlertHidden(true); }">
                 <span aria-hidden="true">&times;</span>
