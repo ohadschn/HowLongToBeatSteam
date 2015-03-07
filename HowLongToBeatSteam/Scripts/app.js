@@ -128,7 +128,6 @@ function AppViewModel() {
     var tableOptions = {
         recordWord: 'game',
         sortDir: 'asc',
-        sortField: 'steamName',
         perPage: 10,
         unsortedClass: "glyphicon glyphicon-sort",
         ascSortClass: "glyphicon glyphicon-sort-by-attributes",
@@ -526,7 +525,7 @@ function AppViewModel() {
                 }
             ],
             precision: 0,
-            startDuration: 1,
+            startDuration: 0,
             responsive: {
                 enabled: true
             }
@@ -568,8 +567,8 @@ function AppViewModel() {
     var initCharts = function() {
 
         if (!firstInit) {
-            self.playtimeChart.animateAgain();
-            self.remainingChart.animateAgain();
+            //self.playtimeChart.animateAgain();
+            //self.remainingChart.animateAgain();
             return;
         }
         firstInit = false;
@@ -636,6 +635,7 @@ function AppViewModel() {
             .done(function(data) {
 
                 self.partialCache(data.PartialCache);
+                self.gameTable.toggleSort("");
                 self.gameTable.rows(ko.utils.arrayMap(data.Games, function(steamGame) {
                     var game = new Game(steamGame);
                     if (!game.known) {
