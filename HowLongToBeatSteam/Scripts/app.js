@@ -3,6 +3,8 @@
 /*global AmCharts*/
 /*global countdown*/
 
+"use strict"; //change to function scope in case of concatenation with non-strict scipts
+
 var getOrderedOwnProperties = function(object) {
     var propArr = [];
     for (var prop in object) {
@@ -184,12 +186,6 @@ function AppViewModel() {
     };
 
     self.previousIds = [];
-    self.prevTotal = {
-        count: 0, playtime: 0, mainTtb: 0, extrasTtb: 0, completionistTtb: 0,
-        mainRemaining: 0, extrasRemaining: 0, completionistRemaining: 0,
-        playtimesByGenre: {},
-        playtimesByMetacritic: {}
-    };
     self.total = ko.pureComputed(function () {
 
         var count = 0;
@@ -206,11 +202,6 @@ function AppViewModel() {
         var totalLength = self.gameTable.filteredRows().length;
         var arr = ko.utils.arrayFilter(self.gameTable.filteredRows(), function (game) { return game.included(); });
         var ids = ko.utils.arrayMap(arr, function(game) { return game.steamAppId; });
-
-        if ($(ids).not(self.previousIds).length === 0 && $(self.previousIds).not(ids).length === 0) {
-            self.prevTotal.orderChange = true;
-            return self.prevTotal;
-        }
 
         for (var i = 0; i < arr.length; ++i) {
             var game = arr[i];
@@ -256,7 +247,6 @@ function AppViewModel() {
         };
 
         self.previousIds = ids;
-        self.prevTotal = total;
 
         return total;
     }).extend({ rateLimit: 0 });
@@ -482,9 +472,6 @@ function AppViewModel() {
     };
 
     var updateCharts = function(total) {
-        if (total.orderChange === true) {
-            return;
-        }
 
         updateMainCharts(total);
         updateSliceCharts(total);
@@ -523,7 +510,6 @@ function AppViewModel() {
                 }
             ],
             precision: 0,
-            startDuration: 1,
             responsive: {
                 enabled: true
             }
@@ -554,6 +540,7 @@ function AppViewModel() {
             balloon: {
                 maxWidth: $("#genreChart").width() * 2 / 3
             },
+            startDuration: 0,
             responsive: {
                 enabled: true
             }
@@ -566,7 +553,6 @@ function AppViewModel() {
         if (!firstInit) {
             self.playtimeChart.animateAgain();
             self.remainingChart.animateAgain();
-            self.genreChart.animateAgain();
             return;
         }
         firstInit = false;

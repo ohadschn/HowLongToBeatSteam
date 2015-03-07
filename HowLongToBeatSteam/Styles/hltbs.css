@@ -75,6 +75,7 @@
     display: inline-block;
     vertical-align: middle;
     padding-bottom: 3px;
+    margin-left: 10px;
 }
 .inline-label {
     position: relative;
