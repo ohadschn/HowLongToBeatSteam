@@ -307,7 +307,7 @@
                                 <!-- ReSharper restore UnknownCssClass -->
                             </tr>
                         </thead>
-                        <tbody data-bind="foreach: { data: pagedRows, afterRender: $root.tableRendered }">
+                        <tbody data-bind="foreach: { data: $root.pagedGames, afterRender: $root.tableRendered }">
                             <tr data-bind="css: updatePhase() == GameUpdatePhase.Success ? 'success' : (updatePhase() == GameUpdatePhase.Failure ? 'danger' : (known ? '' : 'warning'))">
                                 <td class="vcenter compressed"><input type="checkbox" data-bind="checked: included" /></td>
                                 <!-- ReSharper disable UnknownCssClass -->

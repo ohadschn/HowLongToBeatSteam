@@ -74,11 +74,16 @@ var genreSeparatorReplacer = function(genre) { //avoid creating function objects
     return genre.replace(new RegExp("/", "g"), "-");
 };
 
+//static observables used in initialization for increased performance
+var trueObservable = ko.observable(true);
+var updatePhaseObservable = ko.observable(GameUpdatePhase.None);
+var zeroObservable = ko.observable(0);
+
 function Game(steamGame) {
 
     var self = this;
-    self.included = ko.observable(true);
-    self.updatePhase = ko.observable(GameUpdatePhase.None);
+    self.included = trueObservable;
+    self.updatePhase = updatePhaseObservable;
 
     self.steamPlaytime = steamGame.Playtime;
 
@@ -97,9 +102,8 @@ function Game(steamGame) {
 
     var hltbInfo = steamAppData.HltbInfo;
     self.known = hltbInfo.Id !== -1;
-    self.hltbOriginalId= self.known ? hltbInfo.Id : "";
-    self.hltbId = ko.observable(self.known ? hltbInfo.Id : "");
-    self.suggestedHltbId = ko.observable(self.hltbId());
+    self.hltbId = self.known ? hltbInfo.Id : "";
+    self.suggestedHltbId = zeroObservable;
     self.hltbName = self.known ? hltbInfo.Name : "";
     self.hltbMainTtb = hltbInfo.MainTtb;
     self.hltbMainTtbImputed = hltbInfo.MainTtbImputed;
@@ -134,7 +138,7 @@ function AppViewModel() {
     self.introPage = ko.observable(true);
 
     self.gameTable = new DataTable([], tableOptions);
-    self.pageSizeOptions =  [10, 25, 50];
+    self.pageSizeOptions = [10, 25, 50];
 
     self.sliceTotal = ko.observable();
     self.sliceCompletionLevel = ko.observable();
@@ -159,10 +163,11 @@ function AppViewModel() {
 
     self.toggleAllChecked = ko.observable(true);
 
-    self.toggleAllCore = function(include) {
-        ko.utils.arrayForEach(self.gameTable.rows(), function(game) {
-            game.included(include);
-        });
+    self.toggleAllCore = function (include) {
+        var games = self.gameTable.rows();
+        for (var i = 0; i < games.length; i++) {
+            games[i].included(include);
+        }
     };
 
     self.toggleAll = function () {
@@ -185,7 +190,6 @@ function AppViewModel() {
         arr[6] += gameCompletionistRemaining;
     };
 
-    self.previousIds = [];
     self.total = ko.pureComputed(function () {
 
         var count = 0;
@@ -198,11 +202,8 @@ function AppViewModel() {
         var completionistRemaining = 0;
         var playtimesByGenre = {};
         var playtimesByMetacritic = {};
-
         var totalLength = self.gameTable.filteredRows().length;
         var arr = ko.utils.arrayFilter(self.gameTable.filteredRows(), function (game) { return game.included(); });
-        var ids = ko.utils.arrayMap(arr, function(game) { return game.steamAppId; });
-
         for (var i = 0; i < arr.length; ++i) {
             var game = arr[i];
 
@@ -246,10 +247,26 @@ function AppViewModel() {
             playtimesByMetacritic: playtimesByMetacritic
         };
 
-        self.previousIds = ids;
-
         return total;
     }).extend({ rateLimit: 0 });
+
+    self.pagedGames = ko.pureComputed(function () {
+        var games = self.gameTable.pagedRows();
+        var replaced = false;
+        for (var i = 0; i < games.length; i++) {
+            var game = games[i];
+            if (game.included === trueObservable) {
+                game.included = ko.observable(trueObservable());
+                game.updatePhase = ko.observable(updatePhaseObservable());
+                game.suggestedHltbId = ko.observable(game.hltbId);
+                replaced = true;
+            }
+        }
+        if (replaced) {
+                trueObservable.valueHasMutated(); //will trigger re-evaluation of dependent computables
+        }
+        return games;
+    });
 
     var scrollDuration = 1000;
     var scrollToAlerts = function() {
@@ -472,7 +489,6 @@ function AppViewModel() {
     };
 
     var updateCharts = function(total) {
-
         updateMainCharts(total);
         updateSliceCharts(total);
     };
@@ -510,6 +526,7 @@ function AppViewModel() {
                 }
             ],
             precision: 0,
+            startDuration: 1,
             responsive: {
                 enabled: true
             }
@@ -617,6 +634,7 @@ function AppViewModel() {
 
         self.currentRequest = $.get("api/games/library/" + self.steamVanityUrlName())
             .done(function(data) {
+
                 self.partialCache(data.PartialCache);
                 self.gameTable.rows(ko.utils.arrayMap(data.Games, function(steamGame) {
                     var game = new Game(steamGame);
@@ -672,10 +690,6 @@ function AppViewModel() {
             });
 
         $('#HltbUpdateModal').modal('hide');
-    };
-
-    self.allowUpdate = function(game) { //defined on view model to avoid multiple definitions (one for each game in array)
-        return (game.updatePhase() === GameUpdatePhase.None) || (game.updatePhase() === GameUpdatePhase.Failure);
     };
 
     self.getShortShareText = function() {
