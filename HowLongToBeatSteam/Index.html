@@ -63,9 +63,9 @@
                     <span class="sr-only">Close</span>
                 </button>
                 <p class="lead">
-                    <span class="fa fa-puzzle-piece"></span> Some of your games could not be found on HowLongToBeat!
+                    <span class="fa fa-puzzle-piece"></span> Some of your games could not be found on HowLongToBeat
                     <br />
-                    Click the update links next to missing games in the table below to help :)
+                    Click the update links next to missing games in the table below to help
                 </p>
             </div>
             <div role="alert" data-bind="visible: !error() && !alertHidden(), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-6' : 'col-md-12')">
@@ -288,7 +288,8 @@
                                 <!-- ReSharper restore UnknownCssClass -->
                             </tr>
                         </thead>
-                        <tbody data-bind="foreach: { data: $root.pagedGames, afterRender: $root.tableRendered }">
+                        <tbody>
+                            <!-- ko foreach: { data: $root.pagedGames, afterRender: $root.tableRendered } -->
                             <tr data-bind="css: updatePhase() == GameUpdatePhase.Success ? 'success' : (updatePhase() == GameUpdatePhase.Failure ? 'danger' : (known ? '' : 'warning'))">
                                 <td class="vcenter compressed"><input type="checkbox" data-bind="checked: included" /></td>
                                 <!-- ReSharper disable UnknownCssClass -->
@@ -321,6 +322,18 @@
                                     </a>
                                 </td>
                             </tr>
+                            <!-- /ko -->
+                            <!-- ko foreach: {data: currentPage().blanks} -->
+                            <tr>
+                                <td><input type="checkbox" class="invisible"/></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <!-- /ko -->
                         </tbody>
                     </table>
                     <div class="pull-right tableInfo">
@@ -331,9 +344,9 @@
                         <li data-bind="css: leftPagerClass, click: prevPage">
                             <a href="#">&laquo;</a>
                         </li>
-                        <!-- ko foreach: {data: (new Array(pages()))} -->
-                        <li data-bind="visible:  Math.abs($index()+1-$parent.currentPage()) <= (4 + Math.max(0, 5-$parent.currentPage()) + Math.max(0, $parent.currentPage()+4-$parent.pages())), css: $parent.pageClass($index() + 1)">
-                            <a href="#" data-bind="css: 'fixed-page', text: $index() + 1, click: $parent.gotoPage($index() + 1)"></a>
+                        <!-- ko foreach: {data: limitedPages} -->
+                        <li data-bind="css: number === $parent.currentPageNumber() ? 'active' : ''">
+                            <a href="#" class="fixed-page" data-bind="text: number, click: $parent.gotoPage(number)"></a>
                         </li>
                         <!-- /ko -->
                         <li data-bind="css: rightPagerClass, click: nextPage">

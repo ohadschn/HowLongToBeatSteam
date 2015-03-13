@@ -658,7 +658,7 @@ function AppViewModel() {
                 if (self.gameTable.rows().length > 0) {
                     $("#content").show(); //IE + FF fix
                     initCharts();
-                    self.gameTable.currentPage(1);
+                    self.gameTable.currentPageNumber(1);
                 }
             })
             .fail(function(error) {
