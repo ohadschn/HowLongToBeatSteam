@@ -569,10 +569,12 @@ function AppViewModel() {
         updateCharts(self.total());
     };
 
-    var scrollToAlerts = function () {
-        $('html, body').animate({
-            scrollTop: $("#alerts").offset().top - 10
-        }, 700);
+    var scrollToAlerts = function() {
+        setTimeout(function() {
+            $('html, body').animate({
+                scrollTop: $("#alerts").offset().top - 10
+            }, 800);
+        }, 200);
     };
 
     var startProcessing = function () {
