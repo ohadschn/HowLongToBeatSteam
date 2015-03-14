@@ -65,7 +65,7 @@
                 <p class="lead">
                     <span class="fa fa-puzzle-piece"></span> Some of your games could not be found on HowLongToBeat
                     <br />
-                    Click the update links next to missing games in the table below to help
+                    Click the update links next to missing games in the table below to help <span class="fa fa-smile-o"></span>
                 </p>
             </div>
             <div role="alert" data-bind="visible: !error() && !alertHidden(), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-6' : 'col-md-12')">
@@ -110,7 +110,7 @@
                                 </span>
                                 <button type="submit"
                                         class="btn btn-primary col-sm-2"
-                                        data-bind="enable: (gameToUpdate().suggestedHltbId() != gameToUpdate().hltbId()) && (gameToUpdate().suggestedHltbId() !== ''), click: function () { $root.updateHltb(gameToUpdate()); }">
+                                        data-bind="enable: (gameToUpdate().suggestedHltbId() != gameToUpdate().hltbId) && (gameToUpdate().suggestedHltbId() !== ''), click: function () { $root.updateHltb(gameToUpdate()); }">
                                     Update
                                 </button>
                             </div>
@@ -119,7 +119,7 @@
                 </div>
             </div>
         </div>
-        <div data-bind="style: {visibility: gameTable.rows().length>0 && !processing() ? 'visible' : 'hidden'}">
+        <div data-bind="css: !processing() && gameTable.rows().length>0 ? '' : 'invisible'">
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3>Playtime Summary</h3>
@@ -251,7 +251,7 @@
                                 </th>
                                 <!-- ReSharper disable UnknownCssClass -->
                                 <th class="sortable expanded" unselectable="on" data-bind="click: toggleSort('steamName')">
-                                <!-- ReSharper restore UnknownCssClass -->
+                                    <!-- ReSharper restore UnknownCssClass -->
                                     Game
                                     <span data-bind="css: sortClass('steamName')" aria-hidden="true"></span>
                                 </th>
@@ -289,13 +289,13 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- ko foreach: { data: $root.pagedGames, afterRender: $root.tableRendered } -->
+                            <!-- ko foreach: { data: $root.pagedGames, afterRender: $root.rowRendered } -->
                             <tr data-bind="css: updatePhase() == GameUpdatePhase.Success ? 'success' : (updatePhase() == GameUpdatePhase.Failure ? 'danger' : (known ? '' : 'warning'))">
                                 <td class="vcenter compressed"><input type="checkbox" data-bind="checked: included" /></td>
                                 <!-- ReSharper disable UnknownCssClass -->
                                 <td class="vcenter expanded">
                                     <!-- ReSharper restore UnknownCssClass -->
-                                    <a data-bind="attr: {href: $data.steamUrl}" target="_blank">
+                                    <a data-bind="attr: {href: 'http://store.steampowered.com/app/' + steamAppId}" target="_blank">
                                         <span data-bind="text:steamName, css: (included() ? '' : 'text-muted')"></span>
                                     </a>
                                 </td>
@@ -308,7 +308,7 @@
                                         <span class="fa fa-puzzle-piece"></span> Missing (click to update)
                                     </a>
                                     <span data-bind="visible: known && (updatePhase() == GameUpdatePhase.None)">
-                                        <a data-bind="text: hltbName, attr: {href: hltbUrl}" target="_blank"></a>
+                                        <a data-bind="text: hltbName, attr: {href: 'http://www.howlongtobeat.com/game.php?id=' + hltbId}" target="_blank"></a>
                                         <a data-bind="click: $root.displayUpdateDialog" href="javascript:;">(wrong game?)</a>
                                     </span>
                                     <span data-bind="visible: updatePhase() == GameUpdatePhase.InProgress">
@@ -325,7 +325,7 @@
                             <!-- /ko -->
                             <!-- ko foreach: {data: currentPage().blanks} -->
                             <tr>
-                                <td><input type="checkbox" class="invisible"/></td>
+                                <td><input type="checkbox" class="invisible" /></td>
                                 <td>-</td>
                                 <td>-</td>
                                 <td>-</td>

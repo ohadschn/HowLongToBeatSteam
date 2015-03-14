@@ -3,7 +3,7 @@
 /*global AmCharts*/
 /*global countdown*/
 
-"use strict"; //change to function scope in case of concatenation with non-strict scipts
+"use strict"; // jshint ignore:line
 
 var getOrderedOwnProperties = function(object) {
     var propArr = [];
@@ -66,12 +66,12 @@ var PlaytimeType = {
 };
 
 var alternatingPalette = duplicate(["#97BBCD", "#75C7F0"], 50); //2*50=100 colors (won't need more due to grouping)
-//var progressivePalette = ["#97BBCD", "#85C2E0", "#75C7F0", "#97BBCD", "#97BBCD", "#97BBCD"];
 var progressivePalette = ["#97BBCD", "#85C2E0", "#75C7F0", "#66CCFF", "#66d7ff"];
 var unknownColor = "#ABB5BA";
 
+var slashRegex = new RegExp("/", "g");
 var genreSeparatorReplacer = function(genre) { //avoid creating function objects
-    return genre.replace(new RegExp("/", "g"), "-");
+    return genre.replace(slashRegex, "-");
 };
 
 //static observables used in initialization for increased performance
@@ -90,7 +90,6 @@ function Game(steamGame) {
     var steamAppData = steamGame.SteamAppData;
     self.steamAppId = steamAppData.SteamAppId;
     self.steamName = steamAppData.SteamName;
-    self.steamUrl = "http://store.steampowered.com/app/" + steamAppData.SteamAppId;
     //self.appType = steamAppData.AppType;
     //self.platforms = steamAppData.Platforms;
     //self.categories = steamAppData.Categories;
@@ -111,9 +110,6 @@ function Game(steamGame) {
     self.hltbExtrasTtbImputed = hltbInfo.ExtrasTtbImputed;
     self.hltbCompletionistTtb = hltbInfo.CompletionistTtb;
     self.hltbCompletionistTtbImputed = hltbInfo.CompletionistTtbImputed;
-    self.hltbUrl = self.known
-        ? "http://www.howlongtobeat.com/game.php?id=" + hltbInfo.Id
-        : "http://www.howlongtobeat.com";
 }
 
 Game.prototype.match = function(filter) { //define in prototype to prevent memory footprint on each instance
@@ -156,7 +152,7 @@ function AppViewModel() {
     self.gameToUpdate = ko.observable({
         steamAppId: 0,
         steamName: "",
-        hltbId: ko.observable(""),
+        hltbId: "",
         suggestedHltbId: ko.observable("")
     });
 
@@ -220,7 +216,7 @@ function AppViewModel() {
             extrasRemaining += gameExtrasRemaining;
             completionistRemaining += gameCompletionistRemaining;
 
-            var realGenres = $(game.genres).not(['Indie', 'Casual']).get();
+            var realGenres = ko.utils.arrayFilter(game.genres, function (subGenre) { return subGenre !== "Indie" && subGenre !== "Casual"; });
             var genre = (realGenres.length === 0 ? game.genres : realGenres).join('/');
            
             updatePlaytimes(playtimesByGenre, genre, game, gameMainRemaining, gameExtrasRemaining, gameCompletionistRemaining);
@@ -266,29 +262,6 @@ function AppViewModel() {
         }
         return games;
     });
-
-    var firstTableRender = true;
-    self.tableRendered = function() {
-        if (!firstTableRender || $("#gameTable tbody").children().length !== self.gameTable.perPage()) {
-            return;
-        }
-        firstTableRender = false;
-
-        var tableWidth = $("#gameTable").width();
-
-        var compressedColumnWidth = 0;
-        $.each($("table th.compressed"), function() {
-            var widthWithMargin = $(this).width() + 10;
-            compressedColumnWidth += widthWithMargin;
-            $(this).css("width", widthWithMargin + "px");
-        });
-
-        var expandedCount = $("table th.expanded").size();
-        var expandedColumnWidth = (tableWidth - compressedColumnWidth) / expandedCount;
-        $("table th.expanded").css("width", expandedColumnWidth + "px");
-
-        $("#gameTable").css('table-layout', "fixed");
-    };
 
     self.vanityUrlSubmitted = function() {
         if (window.location.hash === "#/" + self.steamVanityUrlName()) {
@@ -478,7 +451,7 @@ function AppViewModel() {
         updateMetacriticChart(total);
     };
 
-    var updateCharts = function(total) {
+    var updateCharts = function (total) {
         updateMainCharts(total);
         updateSliceCharts(total);
     };
@@ -593,6 +566,72 @@ function AppViewModel() {
                 updateSliceCharts(self.total());
             }
         });
+        updateCharts(self.total());
+    };
+
+    var scrollToAlerts = function () {
+        $('html, body').animate({
+            scrollTop: $("#alerts").offset().top - 10
+        }, 700);
+    };
+
+    var startProcessing = function () {
+        self.processing(true);
+        var height = $(window).height();
+        $('.loader').spin({
+            lines: 14,
+            length: Math.ceil(height / 25),
+            width: Math.ceil(height / 90),
+            radius: Math.ceil(height / 15)
+        });
+    };
+
+    var stopProcessing = function () {
+        self.processing(false);
+        $('.loader').spin(false);
+    };
+
+    var renderedRows = 0;
+    var afterRequest = false;
+    var firstTableRender = true;
+
+    self.rowRendered = function () {
+        if (!afterRequest) {
+            return;
+        }
+
+        renderedRows++;
+        if (renderedRows < Math.min(self.gameTable.perPage(), self.gameTable.filteredRows().length)) {
+            return;
+        }
+
+        afterRequest = false;
+
+        initCharts();
+
+        if (!firstTableRender) {
+            scrollToAlerts();
+            return;
+        }
+
+        var tableWidth = $("#gameTable").width();
+
+        var compressedColumnWidth = 0;
+        $.each($("table th.compressed"), function () {
+            var widthWithMargin = $(this).width() + 10;
+            compressedColumnWidth += widthWithMargin;
+            $(this).css("width", widthWithMargin + "px");
+        });
+
+        var expandedCount = $("table th.expanded").size();
+        var expandedColumnWidth = (tableWidth - compressedColumnWidth) / expandedCount;
+        $("table th.expanded").css("width", expandedColumnWidth + "px");
+
+        $("#gameTable").css('table-layout', "fixed");
+
+        firstTableRender = false;
+        stopProcessing();
+        scrollToAlerts();
     };
 
     var getGamesArray = function(gameData) {
@@ -614,29 +653,13 @@ function AppViewModel() {
         return games;
     };
 
-    var startProcessing = function () {
-        self.processing(true);
-        var height = $(window).height();
-        $('.loader').spin({
-            lines: 14,
-            length: Math.ceil(height / 25),
-            width: Math.ceil(height / 90),
-            radius: Math.ceil(height / 15)
-        });
-    };
-
-    var stopProcessing = function () {
-        self.processing(false);
-        $('.loader').spin(false);
-    };
-
-    self.loadGames = function () {
+    self.loadGames = function() {
 
         if (self.currentRequest !== undefined) {
             self.currentRequest.abort(); //in case of hash tag navigation while we're loading
         }
 
-        $("#content").hide();   //IE + FF fix
+        $("#content").hide(); //IE + FF fix
         startProcessing();
 
         self.error(false);
@@ -657,8 +680,9 @@ function AppViewModel() {
 
                 if (self.gameTable.rows().length > 0) {
                     $("#content").show(); //IE + FF fix
-                    initCharts();
                     self.gameTable.currentPageNumber(1);
+                    afterRequest = true;
+                    renderedRows = 0;
                 }
             })
             .fail(function(error) {
@@ -666,11 +690,14 @@ function AppViewModel() {
                 self.gameTable.rows([]);
                 self.error(true);
             })
-            .always(function () {
+            .always(function() {
                 self.alertHidden(false);
                 self.missingAlertHidden(false);
                 self.errorAlertHidden(false);
-                stopProcessing();
+
+                if (!firstTableRender) {
+                    stopProcessing();
+                }
             });
     };
 
