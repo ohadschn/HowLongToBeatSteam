@@ -170,20 +170,30 @@ function AppViewModel() {
         return true;
     };
 
-    var updatePlaytimes = function (playtimes, key, game, gameMainRemaining, gameExtrasRemaining, gameCompletionistRemaining) {
-        if (!playtimes.hasOwnProperty(key)) {
-            playtimes[key] = [0, 0, 0, 0, 0, 0, 0];
+    var getSlicedPlaytime = function (sliceCompletionLevel, sliceTotal, game, gameMainRemaining, gameExtrasRemaining, gameCompletionistRemaining) {
+        switch (sliceCompletionLevel) {
+            case PlaytimeType.Current:
+                return sliceTotal ? game.steamPlaytime : gameMainRemaining;
+            case PlaytimeType.Main:
+                return sliceTotal ? game.hltbMainTtb : gameMainRemaining;
+            case PlaytimeType.Extras:
+                return sliceTotal ? game.hltbExtrasTtb : gameExtrasRemaining;
+            case PlaytimeType.Completionist:
+                return sliceTotal ? game.hltbCompletionistTtb : gameCompletionistRemaining;
+            default:
+                console.error("Invalid playtime slice type: " + sliceCompletionLevel);
+                return 0;
         }
-
-        var arr = playtimes[key];
-        arr[0] += game.steamPlaytime;
-        arr[1] += game.hltbMainTtb;
-        arr[2] += game.hltbExtrasTtb;
-        arr[3] += game.hltbCompletionistTtb;
-        arr[4] += gameMainRemaining;
-        arr[5] += gameExtrasRemaining;
-        arr[6] += gameCompletionistRemaining;
     };
+
+    var updateSlicedPlaytime = function (playtimes, key, playtime) {
+        if (!playtimes.hasOwnProperty(key)) {
+            playtimes[key] = playtime;
+        }
+        else {
+            playtimes[key] += playtime;
+        }
+    }
 
     self.total = ko.pureComputed(function () {
 
@@ -199,6 +209,9 @@ function AppViewModel() {
         var playtimesByMetacritic = {};
         var totalLength = self.gameTable.filteredRows().length;
         var arr = ko.utils.arrayFilter(self.gameTable.filteredRows(), function (game) { return game.included(); });
+        var sliceCompletionLevel = self.sliceCompletionLevel();
+        var sliceTotal = self.sliceTotal();
+
         for (var i = 0; i < arr.length; ++i) {
             var game = arr[i];
 
@@ -218,9 +231,10 @@ function AppViewModel() {
 
             var realGenres = ko.utils.arrayFilter(game.genres, function (subGenre) { return subGenre !== "Indie" && subGenre !== "Casual"; });
             var genre = (realGenres.length === 0 ? game.genres : realGenres).join('/');
-           
-            updatePlaytimes(playtimesByGenre, genre, game, gameMainRemaining, gameExtrasRemaining, gameCompletionistRemaining);
-            updatePlaytimes(playtimesByMetacritic, game.metacriticScore, game, gameMainRemaining, gameExtrasRemaining, gameCompletionistRemaining);
+
+            var slicedPlaytime = getSlicedPlaytime(sliceCompletionLevel, sliceTotal, game, gameMainRemaining, gameExtrasRemaining, gameCompletionistRemaining);
+            updateSlicedPlaytime(playtimesByGenre, genre, slicedPlaytime);
+            updateSlicedPlaytime(playtimesByMetacritic, game.metacriticScore, slicedPlaytime);
         }
 
         if (count === totalLength) {
@@ -282,34 +296,20 @@ function AppViewModel() {
         self.remainingChart.validateData();
     };
 
-    var getPlaytimeInfo = function() {
-        var playtimeIndex;
-        var playtimeTotal;
+    var getPlaytimeTotalHours = function () {
         switch (self.sliceCompletionLevel()) {
-        case PlaytimeType.Current:
-            playtimeIndex = self.sliceTotal() ? 0 : 4;
-            playtimeTotal = self.sliceTotal() ? self.total().playtime : self.total().mainRemaining;
-            break;
-        case PlaytimeType.Main:
-            playtimeIndex = self.sliceTotal() ? 1 : 4;
-            playtimeTotal = self.sliceTotal() ? self.total().mainTtb : self.total().mainRemaining;
-            break;
-        case PlaytimeType.Extras:
-            playtimeIndex = self.sliceTotal() ? 2 : 5;
-            playtimeTotal = self.sliceTotal() ? self.total().extrasTtb : self.total().extrasRemaining;
-            break;
-        case PlaytimeType.Completionist:
-            playtimeIndex = self.sliceTotal() ? 3 : 6;
-            playtimeTotal = self.sliceTotal() ? self.total().completionistTtb : self.total().completionistRemaining;
-            break;
-        default:
-            console.error("Invalid playtime slice type: " + self.sliceCompletionLevel());
-            playtimeIndex = self.sliceTotal() ? 1 : 4;
-            playtimeTotal = self.sliceTotal() ? self.total().mainTtb : self.total().mainRemaining;
-            break;
+            case PlaytimeType.Current:
+                return getHours(self.sliceTotal() ? self.total().playtime : self.total().mainRemaining);
+            case PlaytimeType.Main:
+                return getHours(self.sliceTotal() ? self.total().mainTtb : self.total().mainRemaining);
+            case PlaytimeType.Extras:
+                return getHours(self.sliceTotal() ? self.total().extrasTtb : self.total().extrasRemaining);
+            case PlaytimeType.Completionist:
+                return getHours(self.sliceTotal() ? self.total().completionistTtb : self.total().completionistRemaining);
+            default:
+                console.error("Invalid playtime slice type: " + self.sliceCompletionLevel());
+                return 0;
         }
-
-        return { index: playtimeIndex, total: getHours(playtimeTotal, 3) };
     };
 
     var unknownTitle = "Unknown";
@@ -317,15 +317,15 @@ function AppViewModel() {
     var updateDiscreteSliceChart = function (chart, slicedPlaytime) {
         var groupingThreshold = 0.01;
         var titles = getOrderedOwnProperties(slicedPlaytime);
-        var playtimeInfo = getPlaytimeInfo();
+        var playtimeTotal = getPlaytimeTotalHours();
         chart.dataProvider = [];
         var others = [];
         var othersTotal = 0;
         for (var i = 0; i < titles.length; i++) {
             var title = titles[i];
-            var hours = getHours(slicedPlaytime[title][playtimeInfo.index]);
-            if (title === unknownTitle || hours / playtimeInfo.total < groupingThreshold) {
-                others.push( title) ;
+            var hours = getHours(slicedPlaytime[title]);
+            if (title === unknownTitle || (hours / playtimeTotal) < groupingThreshold) {
+                others.push(title) ;
                 othersTotal += hours;
                 continue;
             }
@@ -377,7 +377,6 @@ function AppViewModel() {
     var updateContinuousSliceChart = function (chart, slicedPlaytime, categories, sliceClicked) {
 
         var sliceKeys = getOrderedOwnProperties(slicedPlaytime);
-        var playtimeInfo = getPlaytimeInfo();
         
         // ReSharper disable once QualifiedExpressionMaybeNull
         if (typeof sliceClicked === "undefined" || sliceClicked.pulled === true) {
@@ -389,14 +388,15 @@ function AppViewModel() {
                 category.pulled = false;
                 category.description = " (" + category.min + "-" + category.max + ")";
             }
-        } else {
+        }
+        else {
             var unknownHours = 0;
             var minKnownKey = Number.POSITIVE_INFINITY;
             var maxKnownKey = Number.NEGATIVE_INFINITY;
             for (var k = 0; k < sliceKeys.length; k++) {
                 var sliceKeyTyped = Number(sliceKeys[k]);
                 if (sliceKeyTyped < categories[0].min || sliceKeyTyped > categories[categories.length - 1].max) {
-                    unknownHours += getHours(slicedPlaytime[sliceKeys[k]][playtimeInfo.index]);
+                    unknownHours += getHours(slicedPlaytime[sliceKeys[k]]);
                 } else {
                     minKnownKey = Math.min(minKnownKey, sliceKeyTyped);
                     maxKnownKey = Math.max(maxKnownKey, sliceKeyTyped);
@@ -405,7 +405,8 @@ function AppViewModel() {
             if (minKnownKey === Number.POSITIVE_INFINITY) {
                 categories = [];
             } else {
-                var knownPercent = (playtimeInfo.total - unknownHours) / playtimeInfo.total;
+                var playtimeTotal = getPlaytimeTotalHours();
+                var knownPercent = (playtimeTotal - unknownHours) / playtimeTotal;
                 categories = breakdown(minKnownKey, maxKnownKey, Math.round(knownPercent * 10));
             }
         }
@@ -425,7 +426,7 @@ function AppViewModel() {
         for (var i = 0; i < sliceKeys.length; i++) {
             var sliceKey = sliceKeys[i];
             var sliceData = ko.utils.arrayFirst(slicesData, getCategoryRangePredicate(Number(sliceKey)));
-            sliceData.hours += getHours(slicedPlaytime[sliceKey][playtimeInfo.index]);
+            sliceData.hours += getHours(slicedPlaytime[sliceKey]);
         }
 
         chart.dataProvider = slicesData;
@@ -556,14 +557,9 @@ function AppViewModel() {
         self.metacriticChart.addListener("clickSlice", function(event) { updateMetacriticChart(self.total(), event.dataItem.dataContext); });
 
         self.total.subscribe(updateCharts);
-        self.sliceCompletionLevel.subscribe(function sliceCompletionLevel() {
-            updateSliceCharts(self.total());
-        });
         self.sliceTotal.subscribe(function (slicetotal) {
             if (!slicetotal && self.sliceCompletionLevel() === PlaytimeType.Current) {
                 self.sliceCompletionLevel(PlaytimeType.Main); //will trigger slice chart update per above
-            } else {
-                updateSliceCharts(self.total());
             }
         });
         updateCharts(self.total());
