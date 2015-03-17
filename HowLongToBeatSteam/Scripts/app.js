@@ -91,7 +91,7 @@ function Game(steamGame) {
     self.steamAppId = steamAppData.SteamAppId;
     self.steamName = steamAppData.SteamName;
     self.appType = steamAppData.AppType;
-    //self.platforms = steamAppData.Platforms;
+    self.platforms = steamAppData.Platforms;
     //self.categories = steamAppData.Categories;
     self.genres = ko.utils.arrayMap(steamAppData.Genres, genreSeparatorReplacer);
     //self.developers = steamAppData.Developers;
@@ -195,6 +195,8 @@ function AppViewModel() {
         }
     }
 
+    var platformLookup = ["Unknown", "Windows", "Mac", "Windows / Mac", "Linux", "Windows / Linux", "Mac / Linux", "Windows / Mac / Linux"];
+
     self.total = ko.pureComputed(function () {
 
         var count = 0;
@@ -208,6 +210,7 @@ function AppViewModel() {
         var playtimesByGenre = {};
         var playtimesByMetacritic = {};
         var playtimesByAppType = {};
+        var playtimesByPlatform = {};
         var totalLength = self.gameTable.filteredRows().length;
         var arr = ko.utils.arrayFilter(self.gameTable.filteredRows(), function (game) { return game.included(); });
         var sliceCompletionLevel = self.sliceCompletionLevel();
@@ -237,6 +240,7 @@ function AppViewModel() {
             updateSlicedPlaytime(playtimesByGenre, genre, slicedPlaytime);
             updateSlicedPlaytime(playtimesByMetacritic, game.metacriticScore, slicedPlaytime);
             updateSlicedPlaytime(playtimesByAppType, game.appType, slicedPlaytime);
+            updateSlicedPlaytime(playtimesByPlatform, platformLookup[game.platforms], slicedPlaytime);
         }
 
         if (count === totalLength) {
@@ -256,7 +260,8 @@ function AppViewModel() {
             completionistRemaining: completionistRemaining,
             playtimesByGenre: playtimesByGenre,
             playtimesByMetacritic: playtimesByMetacritic,
-            playtimesByAppType: playtimesByAppType
+            playtimesByAppType: playtimesByAppType,
+            playtimesByPlatform: playtimesByPlatform
         };
 
         return total;
@@ -454,10 +459,15 @@ function AppViewModel() {
         updateDiscreteSliceChart(self.appTypeChart, total.playtimesByAppType)
     }
 
+    var updatePlatformChart = function (total) {
+        updateDiscreteSliceChart(self.platformChart, total.playtimesByPlatform);
+    }
+
     var updateSliceCharts = function (total) {
         updateGenreChart(total);
         updateMetacriticChart(total);
         updateAppTypeChart(total);
+        updatePlatformChart(total);
     };
 
     var updateCharts = function (total) {
@@ -568,7 +578,8 @@ function AppViewModel() {
 
         self.genreChart = initPieChart("genreChart", "Playtime by Genre");
         self.metacriticChart = initPieChart("metacriticChart", "Playtime by Metacritic score", updateMetacriticChart);
-        self.appTypeChart = initPieChart("appTypeChart", "Playtime by type");        
+        self.appTypeChart = initPieChart("appTypeChart", "Playtime by type");
+        self.platformChart = initPieChart("platformChart", "Playtime by platform");
 
         self.total.subscribe(updateCharts);
         self.sliceTotal.subscribe(function (slicetotal) {
