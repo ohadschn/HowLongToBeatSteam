@@ -33,15 +33,9 @@ namespace HowLongToBeatSteam.Models
         [DataMember]
         public Platforms Platforms { get; private set; }
         [DataMember]
-        public IReadOnlyList<string> Categories { get; private set; }
-        [DataMember]
         public IReadOnlyList<string> Genres { get; private set; }
         [DataMember]
-        public IReadOnlyList<string> Developers { get; private set; }
-        [DataMember]
-        public IReadOnlyList<string> Publishers { get; private set; }
-        [DataMember]
-        public DateTime ReleaseDate { get; private set; }
+        public int ReleaseYear { get; private set; }
         [DataMember]
         public int MetacriticScore { get; private set; }
         [DataMember]
@@ -58,11 +52,8 @@ namespace HowLongToBeatSteam.Models
             SteamName = appEntity.SteamName;
             AppType = appEntity.AppType;
             Platforms = appEntity.Platforms;
-            Categories = appEntity.Categories;
             Genres = appEntity.Genres;
-            Developers = appEntity.Developers;
-            Publishers = appEntity.Publishers;
-            ReleaseDate = appEntity.ReleaseDate;
+            ReleaseYear = appEntity.ReleaseDate.Year;
             MetacriticScore = appEntity.MetacriticScore;
             HltbInfo = appEntity.Measured ? new HltbInfo(appEntity) : null;
         }
