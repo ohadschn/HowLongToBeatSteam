@@ -66,7 +66,7 @@ var PlaytimeType = {
 };
 
 var alternatingPalette = duplicate(["#97BBCD", "#75C7F0"], 50); //2*50=100 colors (won't need more due to grouping)
-var progressivePalette = ["#97BBCD", "#85C2E0", "#75C7F0", "#66CCFF", "#66d7ff"];
+var progressivePalette = ["#75c7f0", "#6CC3EF", "#6CC3EF", "#5ABCED", "#47B4EB", "#35ADE9", "#23A5E7", "#189BDC", "#168ECA", "#1481B8"];
 var unknownColor = "#ABB5BA";
 
 var slashRegex = new RegExp("/", "g");
@@ -75,14 +75,14 @@ var genreSeparatorReplacer = function(genre) { //avoid creating function objects
 };
 
 //static observables used in initialization for increased performance
-var trueObservable = ko.observable(true);
+var includedObservable = ko.observable(true);
 var updatePhaseObservable = ko.observable(GameUpdatePhase.None);
 var zeroObservable = ko.observable(0);
 
 function Game(steamGame) {
 
     var self = this;
-    self.included = trueObservable;
+    self.included = includedObservable;
     self.updatePhase = updatePhaseObservable;
 
     self.steamPlaytime = steamGame.Playtime;
@@ -90,7 +90,7 @@ function Game(steamGame) {
     var steamAppData = steamGame.SteamAppData;
     self.steamAppId = steamAppData.SteamAppId;
     self.steamName = steamAppData.SteamName;
-    //self.appType = steamAppData.AppType;
+    self.appType = steamAppData.AppType;
     //self.platforms = steamAppData.Platforms;
     //self.categories = steamAppData.Categories;
     self.genres = ko.utils.arrayMap(steamAppData.Genres, genreSeparatorReplacer);
@@ -207,6 +207,7 @@ function AppViewModel() {
         var completionistRemaining = 0;
         var playtimesByGenre = {};
         var playtimesByMetacritic = {};
+        var playtimesByAppType = {};
         var totalLength = self.gameTable.filteredRows().length;
         var arr = ko.utils.arrayFilter(self.gameTable.filteredRows(), function (game) { return game.included(); });
         var sliceCompletionLevel = self.sliceCompletionLevel();
@@ -235,6 +236,7 @@ function AppViewModel() {
             var slicedPlaytime = getSlicedPlaytime(sliceCompletionLevel, sliceTotal, game, gameMainRemaining, gameExtrasRemaining, gameCompletionistRemaining);
             updateSlicedPlaytime(playtimesByGenre, genre, slicedPlaytime);
             updateSlicedPlaytime(playtimesByMetacritic, game.metacriticScore, slicedPlaytime);
+            updateSlicedPlaytime(playtimesByAppType, game.appType, slicedPlaytime);
         }
 
         if (count === totalLength) {
@@ -253,7 +255,8 @@ function AppViewModel() {
             extrasRemaining: extrasRemaining,
             completionistRemaining: completionistRemaining,
             playtimesByGenre: playtimesByGenre,
-            playtimesByMetacritic: playtimesByMetacritic
+            playtimesByMetacritic: playtimesByMetacritic,
+            playtimesByAppType: playtimesByAppType
         };
 
         return total;
@@ -264,15 +267,15 @@ function AppViewModel() {
         var replaced = false;
         for (var i = 0; i < games.length; i++) {
             var game = games[i];
-            if (game.included === trueObservable) {
-                game.included = ko.observable(trueObservable());
+            if (game.included === includedObservable) {
+                game.included = ko.observable(includedObservable());
                 game.updatePhase = ko.observable(updatePhaseObservable());
                 game.suggestedHltbId = ko.observable(game.hltbId);
                 replaced = true;
             }
         }
         if (replaced) {
-                trueObservable.valueHasMutated(); //will trigger re-evaluation of dependent computables
+                includedObservable.valueHasMutated(); //will trigger re-evaluation of dependent computables
         }
         return games;
     });
@@ -447,9 +450,14 @@ function AppViewModel() {
         updateDiscreteSliceChart(self.genreChart, total.playtimesByGenre);
     };
 
+    var updateAppTypeChart = function (total) {
+        updateDiscreteSliceChart(self.appTypeChart, total.playtimesByAppType)
+    }
+
     var updateSliceCharts = function (total) {
         updateGenreChart(total);
         updateMetacriticChart(total);
+        updateAppTypeChart(total);
     };
 
     var updateCharts = function (total) {
@@ -497,16 +505,16 @@ function AppViewModel() {
         });
     };
 
-    var initPieChart = function(chartId, title) {
+    var initPieChart = function(chartId, title, updater) {
         initChart(chartId);
-        return AmCharts.makeChart(chartId, {
+        var chart = AmCharts.makeChart(chartId, {
             titles: [{ text: title }],
             type: "pie",
             theme: "light",
             colors: alternatingPalette,
             marginLeft: 0,
             marginRight: 0,
-            marginBottom: 0,
+            marginBottom: 15,
             marginTop: 25,
             pullOutRadius: "5%",
             valueField: "hours",
@@ -519,13 +527,19 @@ function AppViewModel() {
             labelText: "[[title]]",
             balloonText: "[[title]][[description]]: [[percents]]% ([[value]] hours)",
             balloon: {
-                maxWidth: $("#genreChart").width() * 2 / 3
+                maxWidth: $("#" + chartId).width() * 2 / 3
             },
             startDuration: 0,
             responsive: {
                 enabled: true
             }
         });
+
+        if (typeof updater !== "undefined") {
+            chart.addListener("clickSlice", function (event) { updater(self.total(), event.dataItem.dataContext); });
+        }
+
+        return chart;
     };
 
     var firstInit = true;
@@ -553,8 +567,8 @@ function AppViewModel() {
         ]);
 
         self.genreChart = initPieChart("genreChart", "Playtime by Genre");
-        self.metacriticChart = initPieChart("metacriticChart", "Playtime by Metacritic score");
-        self.metacriticChart.addListener("clickSlice", function(event) { updateMetacriticChart(self.total(), event.dataItem.dataContext); });
+        self.metacriticChart = initPieChart("metacriticChart", "Playtime by Metacritic score", updateMetacriticChart);
+        self.appTypeChart = initPieChart("appTypeChart", "Playtime by type");        
 
         self.total.subscribe(updateCharts);
         self.sliceTotal.subscribe(function (slicetotal) {
@@ -672,6 +686,7 @@ function AppViewModel() {
         self.currentRequest = $.get("api/games/library/" + self.steamVanityUrlName())
             .done(function(data) {
                 self.partialCache(data.PartialCache);
+                includedObservable(true);
                 self.gameTable.rows(getGamesArray(data.Games));
 
                 self.originalMainRemaining = self.total().mainRemaining;
