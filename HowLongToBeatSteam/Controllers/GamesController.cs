@@ -30,8 +30,9 @@ namespace HowLongToBeatSteam.Controllers
         private const string GetOwnedSteamGamesFormat = @"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={0}&steamid={1}&format=json&include_appinfo=1";
 
         private static readonly HttpRetryClient Client = new HttpRetryClient(0);
-
         private static readonly ConcurrentDictionary<int, SteamAppData> Cache = new ConcurrentDictionary<int, SteamAppData>();
+
+        private static string[] NonGenres =  new[] { "Indie", "Casual" };
 
         public static async void StartUpdatingCache() 
         {
@@ -102,6 +103,20 @@ namespace HowLongToBeatSteam.Controllers
             SiteEventSource.Log.PrepareResponseStart();
             var games = new List<SteamAppUserData>();
             bool partialCache = false;
+
+            int playtime = 0;
+            int mainTtb = 0;
+            int extrasTtb = 0;
+            int completionistTtb = 0;
+            int mainRemaining = 0;
+            int extrasRemaining = 0;
+            int completionistRemaining = 0;
+            Dictionary<string, int> playtimesByGenre = new Dictionary<string, int>();
+            Dictionary<int, int> playtimesByMetacritic = new Dictionary<int, int>();
+            Dictionary<string, int> PlaytimesByAppType = new Dictionary<string, int>();
+            Dictionary<string, int> PlaytimesByPlatform = new Dictionary<string, int>();
+            Dictionary<int, int> PlaytimesByReleaseYear = new Dictionary<int, int>();
+
             foreach (var game in ownedGames)
             {
                 SteamAppData cachedGameData;
@@ -119,11 +134,38 @@ namespace HowLongToBeatSteam.Controllers
                     continue;
                 }
 
+                playtime += game.playtime_forever;
+                mainTtb += cachedGameData.HltbInfo.MainTtb;
+                extrasTtb += cachedGameData.HltbInfo.ExtrasTtb;
+                completionistTtb += cachedGameData.HltbInfo.CompletionistTtb;
+                var gameMainRemaining = Math.Max(0, cachedGameData.HltbInfo.MainTtb - game.playtime_forever);
+                mainRemaining += gameMainRemaining;
+                extrasRemaining += Math.Max(0, cachedGameData.HltbInfo.ExtrasTtb - game.playtime_forever);
+                completionistRemaining += Math.Max(0, cachedGameData.HltbInfo.CompletionistTtb - game.playtime_forever);
+
+                IReadOnlyList<string> genres = cachedGameData.Genres.Except(NonGenres).ToArray();
+                if (genres.Count == 0)
+                {
+                    genres = cachedGameData.Genres;
+                }
+                IncrementDictionaryEntryFromZero(playtimesByGenre, String.Join("/", genres), gameMainRemaining);
+                IncrementDictionaryEntryFromZero(playtimesByMetacritic, cachedGameData.MetacriticScore, gameMainRemaining);
+                IncrementDictionaryEntryFromZero(PlaytimesByAppType, cachedGameData.AppType, gameMainRemaining);
+                IncrementDictionaryEntryFromZero(PlaytimesByPlatform, cachedGameData.Platforms.ToString(), gameMainRemaining);
+                IncrementDictionaryEntryFromZero(PlaytimesByReleaseYear, cachedGameData.ReleaseYear, gameMainRemaining);
+
                 games.Add(new SteamAppUserData(cachedGameData, game.playtime_forever));
             }
             SiteEventSource.Log.PrepareResponseStop();
 
-            return new OwnedGamesInfo(partialCache, games);
+            return new OwnedGamesInfo(partialCache, games, new
+                Totals(playtime, mainTtb, extrasTtb, completionistTtb, mainRemaining, extrasRemaining, completionistRemaining,
+                playtimesByGenre, playtimesByMetacritic, PlaytimesByAppType, PlaytimesByPlatform, PlaytimesByReleaseYear));
+        }
+
+        private static void IncrementDictionaryEntryFromZero<TKey>(IDictionary<TKey, int> dict, TKey key, int value) 
+        {
+            dict[key] = dict.GetOrCreate(key) + value;
         }
 
         [Route("update/{steamAppId:int}/{hltbId:int}")]

@@ -16,14 +16,6 @@ var getOrderedOwnProperties = function(object) {
     return propArr;
 };
 
-var duplicate = function(arr, times) {
-    var ret = arr;
-    for (var i = 0; i < times - 1; i++) {
-        ret = ret.concat(arr);
-    }
-    return ret;
-};
-
 var getHours = function (minutes, digits) { // jshint ignore:line
     if (digits === undefined) {
         digits = 2;
@@ -65,7 +57,7 @@ var PlaytimeType = {
     Completionist: "completionist"
 };
 
-var alternatingPalette = duplicate(["#97BBCD", "#75C7F0"], 50); //2*50=100 colors (won't need more due to grouping)
+var alternatingPalette = [];
 var progressivePalette = ["#75c7f0", "#6CC3EF", "#6CC3EF", "#5ABCED", "#47B4EB", "#35ADE9", "#23A5E7", "#189BDC", "#168ECA", "#1481B8"];
 var unknownColor = "#ABB5BA";
 
@@ -141,6 +133,7 @@ function AppViewModel() {
 
     self.processing = ko.observable(false);
     self.error = ko.observable(false);
+    self.bonusLinkVisible = ko.observable(true);
 
     self.alertHidden = ko.observable(false);
     self.missingAlertHidden = ko.observable(false);
@@ -191,9 +184,29 @@ function AppViewModel() {
         }
     };
 
-    var platformLookup = ["Unknown", "Windows", "Mac", "Windows / Mac", "Linux", "Windows / Linux", "Mac / Linux", "Windows / Mac / Linux"];
+    var platformLookup = ["Unknown", "Windows", "Mac", "Windows, Mac", "Linux", "Windows, Linux", "Mac, Linux", "Windows, Mac, Linux"];
 
     self.total = ko.pureComputed(function () {
+
+        //visit dependencies first so that knockout subscribes to them regardless of initialTotal
+        var filteredRows = self.gameTable.filteredRows();
+        var sliceCompletionLevel = self.sliceCompletionLevel();
+        var sliceTotal = self.sliceTotal();
+
+        if (self.initialTotal !== undefined) {
+
+            //subscribe to initial included observables
+            includedObservable();
+            var perPage = Math.min(filteredRows.length, self.gameTable.perPage());
+            for (var j = 0; j < perPage; j++) {
+                filteredRows[j].included();
+            }
+
+            self.toggleAllChecked(true);
+            var ret = self.initialTotal;
+            self.initialTotal = undefined;
+            return ret;
+        }
 
         var count = 0;
         var playtime = 0;
@@ -208,11 +221,8 @@ function AppViewModel() {
         var playtimesByAppType = {};
         var playtimesByReleaseYear = {};
         var playtimesByPlatform = {};
-        var totalLength = self.gameTable.filteredRows().length;
-        var arr = ko.utils.arrayFilter(self.gameTable.filteredRows(), function (game) { return game.included(); });
-        var sliceCompletionLevel = self.sliceCompletionLevel();
-        var sliceTotal = self.sliceTotal();
 
+        var arr = ko.utils.arrayFilter(filteredRows, function (game) { return game.included(); });
         for (var i = 0; i < arr.length; ++i) {
             var game = arr[i];
 
@@ -241,13 +251,13 @@ function AppViewModel() {
             updateSlicedPlaytime(playtimesByReleaseYear, game.releaseYear, slicedPlaytime);
         }
 
-        if (count === totalLength) {
+        if (count === filteredRows.length) {
             self.toggleAllChecked(true);
         } else if (count === 0) {
             self.toggleAllChecked(false);
         }
 
-        var total = {
+        return {
             count: count,
             playtime: playtime,
             mainTtb: mainTtb,
@@ -262,8 +272,6 @@ function AppViewModel() {
             playtimesByPlatform: playtimesByPlatform,
             playtimesByReleaseYear: playtimesByReleaseYear
         };
-
-        return total;
     }).extend({ rateLimit: 0 });
 
     self.pagedGames = ko.pureComputed(function () {
@@ -272,14 +280,14 @@ function AppViewModel() {
         for (var i = 0; i < games.length; i++) {
             var game = games[i];
             if (game.included === includedObservable) {
-                game.included = ko.observable(includedObservable());
+                game.included = ko.observable(includedObservable.peek());
                 game.updatePhase = ko.observable(updatePhaseObservable());
                 game.suggestedHltbId = ko.observable(game.hltbId);
                 replaced = true;
             }
         }
         if (replaced) {
-                includedObservable.valueHasMutated(); //will trigger re-evaluation of dependent computables
+            includedObservable.valueHasMutated(); //will trigger re-evaluation of total
         }
         return games;
     });
@@ -702,19 +710,34 @@ function AppViewModel() {
         self.sliceCompletionLevel(PlaytimeType.Main);
         self.gameTable.filter("");
         self.gameTable.toggleSort("");
+        self.bonusLinkVisible(self.steamVanityUrlName().indexOf("cached/") === -1);
 
         self.currentRequest = $.get("api/games/library/" + self.steamVanityUrlName())
             .done(function(data) {
-                self.partialCache(data.PartialCache);
+                afterRequest = true;
                 includedObservable(true);
+                self.partialCache(data.PartialCache);
+                self.initialTotal = {
+                    count: data.Games.length,
+                    playtime: data.Totals.Playtime,
+                    mainTtb: data.Totals.MainTtb,
+                    extrasTtb: data.Totals.ExtrasTtb,
+                    completionistTtb: data.Totals.CompletionistTtb,
+                    mainRemaining: data.Totals.MainRemaining,
+                    extrasRemaining: data.Totals.ExtrasRemaining,
+                    completionistRemaining: data.Totals.CompletionistRemaining,
+                    playtimesByGenre: data.Totals.PlaytimesByGenre,
+                    playtimesByMetacritic: data.Totals.PlaytimesByMetacritic,
+                    playtimesByAppType: data.Totals.PlaytimesByAppType,
+                    playtimesByPlatform: data.Totals.PlaytimesByPlatform,
+                    playtimesByReleaseYear: data.Totals.PlaytimesByReleaseYear
+                };
                 self.gameTable.rows(getGamesArray(data.Games));
 
                 self.originalMainRemaining = self.total().mainRemaining;
-
                 if (self.gameTable.rows().length > 0) {
                     $("#content").show(); //IE + FF fix
                     self.gameTable.currentPageNumber(1);
-                    afterRequest = true;
                     renderedRows = 0;
                 }
 
@@ -790,6 +813,10 @@ $(document).ready(function () {
     if (!window.console) { 
         var noOp = function () { };
         window.console = { log: noOp, warn: noOp, error: noOp };
+    }
+
+    for (var i = 0; i < 50; i++) {
+        alternatingPalette.push("#97BBCD", "#75C7F0");
     }
 
     //Fix up layout

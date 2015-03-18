@@ -13,11 +13,61 @@ namespace HowLongToBeatSteam.Models
         public bool PartialCache { get; private set; }
         [DataMember]
         public IList<SteamAppUserData> Games { get; private set; }
+        [DataMember]
+        public Totals Totals { get; private set; }
 
-        public OwnedGamesInfo(bool partialCache, IList<SteamAppUserData> games)
+        public OwnedGamesInfo(bool partialCache, IList<SteamAppUserData> games, Totals totals)
         {
             Games = games;
             PartialCache = partialCache;
+            Totals = totals;
+        }
+    }
+
+    [DataContract]
+    public class Totals
+    {
+        [DataMember]
+        public int Playtime { get; private set; }
+        [DataMember]
+        public int MainTtb { get; private set; }
+        [DataMember]
+        public int ExtrasTtb { get; private set; }
+        [DataMember]
+        public int CompletionistTtb { get; private set; }
+        [DataMember]
+        public int MainRemaining { get; private set; }
+        [DataMember]
+        public int ExtrasRemaining { get; private set; }
+        [DataMember]
+        public int CompletionistRemaining { get; private set; }
+        [DataMember]
+        public Dictionary<string, int> PlaytimesByGenre { get; private set; }
+        [DataMember]
+        public Dictionary<int, int> PlaytimesByMetacritic { get; private set; }
+        [DataMember]
+        public Dictionary<string, int> PlaytimesByAppType { get; private set; }
+        [DataMember]
+        public Dictionary<string, int> PlaytimesByPlatform { get; private set; }
+        [DataMember]
+        public Dictionary<int, int> PlaytimesByReleaseYear { get; private set; }
+
+        public Totals(int playtime, int mainTtb, int extrasTtb, int completionistTtb, int mainRemaining, int extrasRemaining, int completionistRemaining,
+            Dictionary<string, int> playtimesByGenre, Dictionary<int, int> playtimesByMetacritic, Dictionary<string, int> playtimesByAppType,
+            Dictionary<string, int> playtimesByPlatform, Dictionary<int, int> playtimesByReleaseYear)
+        {
+            Playtime = playtime;
+            MainTtb = mainTtb;
+            ExtrasTtb = extrasTtb;
+            CompletionistTtb = completionistTtb;
+            MainRemaining = mainRemaining;
+            ExtrasRemaining = extrasRemaining;
+            CompletionistRemaining = completionistRemaining;
+            PlaytimesByGenre = playtimesByGenre;
+            PlaytimesByMetacritic = playtimesByMetacritic;
+            PlaytimesByAppType = playtimesByAppType;
+            PlaytimesByPlatform = playtimesByPlatform;
+            PlaytimesByReleaseYear = playtimesByReleaseYear;
         }
     }
 
