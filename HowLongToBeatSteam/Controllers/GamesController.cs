@@ -28,7 +28,6 @@ namespace HowLongToBeatSteam.Controllers
 
         private static readonly int s_ownedGamesRetrievalParallelization = SiteUtil.GetOptionalValueFromConfig("OwnedGamesRetrievalParallelization", 5);
         private const string GetOwnedSteamGamesFormat = @"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={0}&steamid={1}&format=json&include_appinfo=1";
-        private const string CacheVanityUrlName = "b4a836df-4dba-4286-a3f4-ea2c652b7715";
 
         private static readonly HttpRetryClient Client = new HttpRetryClient(0);
 
@@ -60,7 +59,6 @@ namespace HowLongToBeatSteam.Controllers
         public async Task<OwnedGamesInfo> GetGames(string userVanityUrlName)
         {
             EventSource.SetCurrentThreadActivityId(Guid.NewGuid());
-
             SiteEventSource.Log.HandleGetGamesRequestStart(userVanityUrlName);
 
             long steamId;
@@ -77,12 +75,33 @@ namespace HowLongToBeatSteam.Controllers
                 MemoryCache.Default[userVanityUrlName] = steamId;
             }
 
-            var ownedGames = await 
-                SiteUtil.GetFirstResult(ct => GetOwnedGames(steamId, ct), s_ownedGamesRetrievalParallelization, e => { }).ConfigureAwait(true);
+            var ownedGamesInfo = await GetGamesCore(steamId).ConfigureAwait(true);
+
+            SiteEventSource.Log.HandleGetGamesRequestStop(userVanityUrlName);
+            return ownedGamesInfo;
+        }
+
+        [Route("library/cached/{count:minlength(1)}")]
+        public async Task<OwnedGamesInfo> GetCachedGames(string count)
+        {
+            EventSource.SetCurrentThreadActivityId(Guid.NewGuid());
+            SiteEventSource.Log.HandleGetGamesRequestStart("cached/" + count);
+
+            int countTyped = String.Equals(count, "all", StringComparison.OrdinalIgnoreCase) ? Int32.MaxValue : Int32.Parse(count);
+            var ownedGamesInfo = await GetGamesCore(-countTyped).ConfigureAwait(true);
+
+            SiteEventSource.Log.HandleGetGamesRequestStop("cached/" + count);
+            return ownedGamesInfo;
+        }
+
+        private static async Task<OwnedGamesInfo> GetGamesCore(long steamId)
+        {
+            var ownedGames = await
+                SiteUtil.GetFirstResult(ct => GetOwnedGames(steamId, ct), s_ownedGamesRetrievalParallelization, e => { }).ConfigureAwait(false);
 
             SiteEventSource.Log.PrepareResponseStart();
             var games = new List<SteamAppUserData>();
-            bool partialCache = false; 
+            bool partialCache = false;
             foreach (var game in ownedGames)
             {
                 SteamAppData cachedGameData;
@@ -93,7 +112,7 @@ namespace HowLongToBeatSteam.Controllers
                     partialCache = true;
                     continue;
                 }
-                
+
                 if (cachedGameData.HltbInfo == null)
                 {
                     SiteEventSource.Log.SkipNonGame(game.appid, game.name);
@@ -104,7 +123,6 @@ namespace HowLongToBeatSteam.Controllers
             }
             SiteEventSource.Log.PrepareResponseStop();
 
-            SiteEventSource.Log.HandleGetGamesRequestStop(userVanityUrlName);
             return new OwnedGamesInfo(partialCache, games);
         }
 
@@ -119,11 +137,6 @@ namespace HowLongToBeatSteam.Controllers
         private static async Task<long> ResolveVanityUrl(string userVanityUrlName, CancellationToken ct)
         {
             SiteEventSource.Log.ResolveVanityUrlStart(userVanityUrlName);
-
-            if (userVanityUrlName.Contains(CacheVanityUrlName))
-            {
-                return Int32.Parse(userVanityUrlName.Substring(36)); //truncate GUID
-            }
 
             var vanityUrlResolutionResponse = await 
                 SiteUtil.GetAsync<VanityUrlResolutionResponse>(Client, string.Format(ResolveVanityUrlFormat, SteamApiKey, userVanityUrlName), ct)

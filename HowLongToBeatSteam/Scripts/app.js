@@ -717,20 +717,21 @@ function AppViewModel() {
                     afterRequest = true;
                     renderedRows = 0;
                 }
+
+                if(!firstTableRender || self.gameTable.rows().length === 0) {
+                    stopProcessing();
+                }
             })
             .fail(function(error) {
                 console.error(error);
                 self.gameTable.rows([]);
                 self.error(true);
+                stopProcessing();
             })
             .always(function() {
                 self.alertHidden(false);
                 self.missingAlertHidden(false);
                 self.errorAlertHidden(false);
-
-                if (!firstTableRender) {
-                    stopProcessing();
-                }
             });
     };
 
@@ -806,10 +807,18 @@ $(document).ready(function () {
             viewModel.introPage(true);
         });
 
-        this.get("#/:vanityUrlName", function () {
+        var loadGames = function (vanityUrl) {
             viewModel.introPage(false);
-            viewModel.steamVanityUrlName(this.params.vanityUrlName);
+            viewModel.steamVanityUrlName(vanityUrl);
             viewModel.loadGames();
+        };
+
+        this.get("#/:vanityUrlName", function () {
+            loadGames(this.params.vanityUrlName);
+        });
+
+        this.get("#/cached/:count", function () {
+            loadGames("cached/"+this.params.count);
         });
     });
 

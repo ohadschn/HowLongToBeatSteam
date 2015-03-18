@@ -41,8 +41,10 @@
         Licensed by <a href="http://williamthompsonj.blogspot.de" target="_blank" class="attribution-link">William Thompson</a> under <a href="http://creativecommons.org/licenses/by/3.0/" target="_blank" class="attribution-link">CC BY 3.0</a>
     </div>
     <div class="header" data-bind="css: introPage() ? 'header-intro' : ''">
-        <img data-bind="attr: {src: introPage() ? 'Resources/SteamClockWhite.svg' : 'Resources/SteamClock.svg'}" alt="How Long To Beat Steam" />
-        <span class="h1 text-vertical-middle">How Long To Beat Steam</span>
+        <a href="/#/" class="a-unstyled">
+            <img data-bind="attr: {src: introPage() ? 'Resources/SteamClockWhite.svg' : 'Resources/SteamClock.svg'}" alt="How Long To Beat Steam" />
+            <span class="h1 text-vertical-middle">How Long To Beat Steam</span>
+        </a>
         <form data-bind="submit: vanityUrlSubmitted, attr: { action: '#/' + steamVanityUrlName() }" role="form" class="form-inline">
             <div class="form-group">
                 <span class="glyphicon glyphicon glyphicon-question-sign"
@@ -176,9 +178,9 @@
                         Your remaining amount of consecutive <abbr title="you take your time, discover and complete additional tasks not required"><strong>extras</strong></abbr> playtime is <span data-bind="text: getYears(total().extrasRemaining)"></span>.<br />
                         Your remaining amount of consecutive <abbr title="you strive for every achievement, every medal and conquer all that the game has to offer"><strong>completionist</strong></abbr> playtime is <span data-bind="text: getYears(total().completionistRemaining)"></span>.
                     </p>
-                    <p class="lead" data-bind="visible: steamVanityUrlName() != 'b4a836df-4dba-4286-a3f4-ea2c652b7715-2147483647'">
+                    <p class="lead" data-bind="visible: steamVanityUrlName() != 'cached/all'">
                         <!-- ReSharper disable once Html.IdNotResolved -->
-                        <span class="label label-default inline-label">Bonus</span> <a href="#/b4a836df-4dba-4286-a3f4-ea2c652b7715-2147483647" target="_blank">See how you compare against an imaginary profile containing the entire steam library!</a>
+                        <span class="label label-default inline-label">Bonus</span> <a href="#/cached/all" target="_blank">See how you compare against an imaginary profile containing the entire steam library!</a>
                     </p>
                     <ul class="list-inline lead">
                         <li>Share</li>

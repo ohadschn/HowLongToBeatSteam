@@ -127,3 +127,8 @@ table tbody tr td.vcenter {
     user-select: none;
     /* ReSharper restore CssBrowserCompatibility */
 }
+.a-unstyled { color: inherit; text-decoration: none}
+.a-unstyled:link { color: inherit; text-decoration: none}
+.a-unstyled:visited { color: inherit; text-decoration: none}
+.a-unstyled:hover { color: inherit; text-decoration: none }
+.a-unstyled:active { color: inherit; text-decoration: none}
