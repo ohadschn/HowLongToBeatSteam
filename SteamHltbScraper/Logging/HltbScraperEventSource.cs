@@ -223,12 +223,6 @@ namespace SteamHltbScraper.Logging
             WriteEvent(11, hltbId);
         }
 
-        [NonEvent]
-        public void ScrapeHltbNameStop(int hltbId, string hltbName)
-        {
-            ScrapeHltbNameStop(hltbName, hltbId);
-        }
-
         [Event(
             12,
             Message = "Finished scraping HLTB name for id {0}: {1}",
@@ -236,9 +230,9 @@ namespace SteamHltbScraper.Logging
             Level = EventLevel.Informational,
             Task = Tasks.ScrapeHltbName,
             Opcode = EventOpcode.Stop)]
-        private void ScrapeHltbNameStop(string hltbName, int hltbId)
+        public void ScrapeHltbNameStop(int hltbId, string hltbName)
         {
-            WriteEvent(12, hltbName, hltbId);
+            WriteEvent(12, hltbId, hltbName);
         }
 
         [NonEvent]

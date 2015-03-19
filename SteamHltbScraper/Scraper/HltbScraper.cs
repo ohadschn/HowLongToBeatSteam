@@ -19,7 +19,8 @@ namespace SteamHltbScraper.Scraper
 {
     public static class HltbScraper
     {
-        private static readonly Uri SearchHltbUrl = new Uri(@"http://www.howlongtobeat.com/search_main.php?t=games&page=1&sorthead=&sortd=Normal&plat=&detail=0");
+        private static readonly Uri SearchHltbUrl = new Uri(@"http://howlongtobeat.com/search_main.php?t=games&page=1&sorthead=popular&sortd=Normal%20Order&plat=&detail=0
+");
         private const string SearchHltbPostDataFormat = @"queryString={0}";
 
         private const string HltbGamePageFormat = @"http://www.howlongtobeat.com/game.php?id={0}";
@@ -168,6 +169,10 @@ namespace SteamHltbScraper.Scraper
             }
 
             var hltbName = headerDiv.InnerText.Trim();
+            if (String.IsNullOrWhiteSpace(hltbName))
+            {
+                throw new FormatException("Empty name parsed for HLTB ID" + hltbId);
+            }
 
             HltbScraperEventSource.Log.ScrapeHltbNameStop(hltbId, hltbName);
             return hltbName;
