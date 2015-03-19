@@ -14,7 +14,7 @@ namespace ManualTableUpdater.Updater
         {
             try
             {
-                HltbScraper.ScrapeHltb(new[] {new AppEntity(80, "Counter-Strike: Condition Zero", AppEntity.GameTypeName)}).Wait();
+                //HltbScraper.ScrapeHltb(new[] {new AppEntity(80, "Counter-Strike: Condition Zero", AppEntity.GameTypeName)}).Wait();
                 //var allApps = StorageHelper.GetAllApps(e => e, AppEntity.MeasuredFilter, 20).Result.ToArray();
                 //Imputer.Impute(allApps)
                 
@@ -38,16 +38,30 @@ namespace ManualTableUpdater.Updater
                 //    //    app.GenresFlat, app.CategoriesFlat, app.AppType, app.SteamAppId);
                 //    Console.WriteLine(DataContractSerializeObject(app));
                 //}
-                using (var writer = new StreamWriter("games.csv"))
+                using (var writer = new StreamWriter("games.tsv"))
                 {
+                    writer.WriteLine("SteamID\tSteamName\tType\tGenres\tCategories\tHltbID\tHltbName\tMain\tMainImputed\tExtras\tExtrasImputed\tCompletionist\tCompletionistImputed\tDevelopers\tPublishers\tPlatforms\tMetacritic\tReleaseDate");
                     foreach (var app in StorageHelper.GetAllApps(a => a, AppEntity.MeasuredFilter).Result)
                     {
-                        writer.WriteLine("{0},{1},{2},{3},{4}", 
-                            app.IsGame,
-                            app.Genres.First().Replace(",","-"), 
-                            app.MainTtbImputed ? 0 : app.MainTtb,
-                            app.ExtrasTtbImputed ? 0 : app.ExtrasTtb,
-                            app.CompletionistTtbImputed ? 0 : app.CompletionistTtb);
+                        writer.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}",
+                            app.SteamAppId,
+                            app.SteamName,
+                            app.AppType,
+                            app.GenresFlat,
+                            app.CategoriesFlat,
+                            app.HltbId,
+                            app.HltbName,
+                            app.MainTtb,
+                            app.MainTtbImputed,
+                            app.ExtrasTtb,
+                            app.ExtrasTtbImputed,
+                            app.CompletionistTtb,
+                            app.CompletionistTtbImputed,
+                            app.DevelopersFlat,
+                            app.PublishersFlat,
+                            app.Platforms,
+                            app.MetacriticScore,
+                            app.ReleaseDate);
                     }   
                 }
 

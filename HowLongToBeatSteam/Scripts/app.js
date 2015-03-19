@@ -365,32 +365,77 @@ function AppViewModel() {
         };
     };
 
+    var getShardTitle = function (min, max) {
+        return min === max ? min : min + "-" + max;
+    };
+
     var populateCategories = function (slicedPlaytime, categories, groupHandler) {
+
+        for (var j = 0; j < categories.length; j++) {
+            categories[j].observedMin = Number.POSITIVE_INFINITY;
+            categories[j].observedMax = Number.NEGATIVE_INFINITY;
+        }
+
         var sliceGroups = getOrderedOwnProperties(slicedPlaytime);
         for (var i = 0; i < sliceGroups.length; i++) {
             var sliceGroupKey = sliceGroups[i];
             var sliceGroupMinutes = slicedPlaytime[sliceGroupKey];
 
-            var matchingCategory = ko.utils.arrayFirst(categories, getCategoryRangePredicate(Number(sliceGroupKey)));
+            var sliceGroupKeyTyped = Number(sliceGroupKey);
+            var matchingCategory = ko.utils.arrayFirst(categories, getCategoryRangePredicate(sliceGroupKeyTyped));
+
             matchingCategory.hours += getHours(sliceGroupMinutes);
+            matchingCategory.observedMin = Math.min(matchingCategory.observedMin, sliceGroupKeyTyped);
+            matchingCategory.observedMax = Math.max(matchingCategory.observedMax, sliceGroupKeyTyped);
 
             if (typeof groupHandler !== "undefined") {
                 groupHandler(matchingCategory, sliceGroupKey, sliceGroupMinutes);
             }
         }
+
+        for (var k = 0; k < categories.length; k++) {
+            if (categories[k].observedMin !== Number.POSITIVE_INFINITY) {
+                categories[k].min = categories[k].observedMin;
+                categories[k].max = categories[k].observedMax;
+
+                if (categories[k].index === -1) { //it's a shard, so update its title
+                    categories[k].title = getShardTitle(categories[k].min, categories[k].max);
+                }
+            }
+        }
     };
 
-    var breakdown = function (slicedPlaytime, min, max, shardCount, color) {
+    var mergeShards = function (firstShard, lastShard, hours) {
+        if (firstShard === lastShard) {
+            return firstShard;
+        }
+
+        return {
+            title: getShardTitle(firstShard.min, lastShard.max),
+            min: firstShard.min,
+            max: lastShard.max,
+            hours: hours,
+            color: lastShard.color,
+            pulled: true,
+            index: -1 //we treat all shard clicks the same
+        };
+    };
+
+    var unifySmallShards = function () {
+
+    }
+
+    var breakdown = function (slicedPlaytime, category, shardCount) {
         var shards = [];
-        var breakdownInterval = Math.ceil((max - min + 1) / shardCount);
-        for (var i = min; i <= max; i = i + breakdownInterval) {
-            var boundMax = Math.min(max, i + breakdownInterval - 1);
+        var breakdownInterval = Math.ceil((category.max - category.min + 1) / shardCount);
+        for (var i = category.min; i <= category.max; i = i + breakdownInterval) {
+            var boundMax = Math.min(category.max, i + breakdownInterval - 1);
             shards.push({
-                title: i === boundMax ? i : i + "-" + boundMax,
+                title: getShardTitle(i, boundMax),
                 min: i,
                 max: boundMax,
                 hours: 0,
-                color: color,
+                color: category.color,
                 pulled: true,
                 index: -1 //we treat all shard clicks the same
             });
@@ -398,13 +443,35 @@ function AppViewModel() {
         var lastShard = shards[shards.length - 1];
         if (shards.length > 1 && (lastShard.max - lastShard.min) < breakdownInterval / 2) {
             var secondToLastShard = shards[shards.length - 2];
-            secondToLastShard.max = lastShard.max;
-            secondToLastShard.title = secondToLastShard.min + "-" + lastShard.max;
-            shards.pop();
+            shards.splice(shards.length - 2, 2, mergeShards(secondToLastShard, lastShard, 0));
         }
 
         populateCategories(slicedPlaytime, shards);
-        return shards;
+
+        var mergedShards = [];
+        var minPercentage = 0.5 * (1 / shardCount);
+        var firstShardToMerge = 0;
+        var mergeHours = 0;
+        for (var j = 0; j < shards.length; j++) {
+
+            if ((shards[j].hours / category.hours) < minPercentage) {
+                mergeHours += shards[j].hours;
+                continue;
+            }
+
+            if (j > firstShardToMerge) {
+                mergedShards.push(mergeShards(shards[firstShardToMerge], shards[j - 1], mergeHours));
+            }
+            mergedShards.push(shards[j]);
+            firstShardToMerge = j + 1;
+            mergeHours = 0;
+        }
+        
+        if (firstShardToMerge < shards.length) {
+            mergedShards.push(mergeShards(shards[firstShardToMerge], shards[shards.length - 1], mergeHours));
+        }
+
+        return mergedShards;
     };
 
     var updateContinuousSliceChart = function (chart, slicedPlaytime, categories, clickedSlice) {
@@ -440,22 +507,18 @@ function AppViewModel() {
         });
 
         var slicedPlaytimeToBreakDown = {};
-        var minGroupKeyToBreakDown = Number.POSITIVE_INFINITY;
-        var maxGroupKeyToBreakDown = Number.NEGATIVE_INFINITY;
+
         var categoryClicked = sliceClicked && clickedCategory.index !== -1;
         populateCategories(slicedPlaytime, categories, !categoryClicked ? undefined : function (matchingCategory, sliceGroupKey, sliceGroupMinutes) {
             if (matchingCategory.index === clickedCategory.index) {
                 slicedPlaytimeToBreakDown[sliceGroupKey] = sliceGroupMinutes;
-                minGroupKeyToBreakDown = Math.min(minGroupKeyToBreakDown, sliceGroupKey);
-                maxGroupKeyToBreakDown = Math.max(maxGroupKeyToBreakDown, sliceGroupKey);
             }
         });
 
         if (categoryClicked) {
             var clickedCategory = categories[clickedCategory.index];
-            var shardCount = Math.round((clickedCategory.hours / getPlaytimeTotalHours()) * 10) + 1;
-            categories.splice.apply(categories, [clickedCategory.index, 1].concat(
-                                    breakdown(slicedPlaytimeToBreakDown, minGroupKeyToBreakDown, maxGroupKeyToBreakDown, shardCount, clickedCategory.color)));
+            var shardCount = Math.round((clickedCategory.hours / getPlaytimeTotalHours()) * 10) + 2;
+            categories.splice.apply(categories, [clickedCategory.index, 1].concat(breakdown(slicedPlaytimeToBreakDown, clickedCategory, shardCount)));
         }
 
         chart.dataProvider = categories;
