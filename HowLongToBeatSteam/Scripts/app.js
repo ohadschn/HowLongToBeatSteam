@@ -421,9 +421,32 @@ function AppViewModel() {
         };
     };
 
-    var unifySmallShards = function () {
+    var unifySmallShards = function (shards, categoryHours) {
+        var mergedShards = [];
+        var minPercentage = 0.5 * (1 / shards.length);
+        var firstShardToMerge = 0;
+        var mergeHours = 0;
+        for (var j = 0; j < shards.length; j++) {
 
-    }
+            if ((shards[j].hours / categoryHours) < minPercentage) {
+                mergeHours += shards[j].hours;
+                continue;
+            }
+
+            if (j > firstShardToMerge) {
+                mergedShards.push(mergeShards(shards[firstShardToMerge], shards[j - 1], mergeHours));
+            }
+            mergedShards.push(shards[j]);
+            firstShardToMerge = j + 1;
+            mergeHours = 0;
+        }
+
+        if (firstShardToMerge < shards.length) {
+            mergedShards.push(mergeShards(shards[firstShardToMerge], shards[shards.length - 1], mergeHours));
+        }
+
+        return mergedShards;
+    };
 
     var breakdown = function (slicedPlaytime, category, shardCount) {
         var shards = [];
@@ -447,31 +470,27 @@ function AppViewModel() {
         }
 
         populateCategories(slicedPlaytime, shards);
+        return unifySmallShards(shards, category.hours);
+    };
 
-        var mergedShards = [];
-        var minPercentage = 0.5 * (1 / shardCount);
-        var firstShardToMerge = 0;
-        var mergeHours = 0;
-        for (var j = 0; j < shards.length; j++) {
-
-            if ((shards[j].hours / category.hours) < minPercentage) {
-                mergeHours += shards[j].hours;
-                continue;
-            }
-
-            if (j > firstShardToMerge) {
-                mergedShards.push(mergeShards(shards[firstShardToMerge], shards[j - 1], mergeHours));
-            }
-            mergedShards.push(shards[j]);
-            firstShardToMerge = j + 1;
-            mergeHours = 0;
-        }
-        
-        if (firstShardToMerge < shards.length) {
-            mergedShards.push(mergeShards(shards[firstShardToMerge], shards[shards.length - 1], mergeHours));
+    var enrichCategoriesForChart = function (categories) {
+        for (var j = 0; j < categories.length; j++) {
+            categories[j].hours = 0;
+            categories[j].color = progressivePalette[j % progressivePalette.length]; //modulo just in case, progressivePalette should be big enough
+            categories[j].pulled = false;
+            categories[j].description = " (" + categories[j].min + "-" + categories[j].max + ")";
+            categories[j].index = j;
         }
 
-        return mergedShards;
+        categories.push({
+            title: unknownTitle,
+            min: Number.NEGATIVE_INFINITY,
+            max: Number.POSITIVE_INFINITY,
+            hours: 0,
+            color: unknownColor,
+            pulled: false,
+            index: categories.length
+        });
     };
 
     var updateContinuousSliceChart = function (chart, slicedPlaytime, categories, clickedSlice) {
@@ -487,24 +506,7 @@ function AppViewModel() {
             return;
         }
 
-        for (var j = 0; j < categories.length; j++) {
-            var category = categories[j];
-            category.hours = 0;
-            category.color = progressivePalette[j % progressivePalette.length]; //modulo just in case, progressivePalette should be big enough
-            category.pulled = false;
-            category.description = " (" + category.min + "-" + category.max + ")";
-            category.index = j;
-        }
-
-        categories.push({
-            title: unknownTitle,
-            min: Number.NEGATIVE_INFINITY,
-            max: Number.POSITIVE_INFINITY,
-            hours: 0,
-            color: unknownColor,
-            pulled: false,
-            index: categories.length
-        });
+        enrichCategoriesForChart(categories);
 
         var slicedPlaytimeToBreakDown = {};
 
