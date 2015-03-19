@@ -365,96 +365,111 @@ function AppViewModel() {
         };
     };
 
-    var breakdown = function (min, max, breakdownCount) {
-        var sliceShards = [];
-        var breakdownInterval = Math.round((max - min + 1) / breakdownCount);
-        var i = 0;
-        for (var k = min; k <= max; k = k + breakdownInterval) {
-            var boundMax = Math.min(max, k + breakdownInterval - 1);
-            sliceShards.push({ //we don't set the index so that we get it as undefined when the user clicks on one of the shards
-                title: k + "-" + boundMax,
-                min: k,
-                max: boundMax,
-                hours: 0,
-                color: progressivePalette[i++ % progressivePalette.length],
-                pulled: true
-            });
+    var populateCategories = function (slicedPlaytime, categories, groupHandler) {
+        var sliceGroups = getOrderedOwnProperties(slicedPlaytime);
+        for (var i = 0; i < sliceGroups.length; i++) {
+            var sliceGroupKey = sliceGroups[i];
+            var sliceGroupMinutes = slicedPlaytime[sliceGroupKey];
+
+            var matchingCategory = ko.utils.arrayFirst(categories, getCategoryRangePredicate(Number(sliceGroupKey)));
+            matchingCategory.hours += getHours(sliceGroupMinutes);
+
+            if (typeof groupHandler !== "undefined") {
+                groupHandler(matchingCategory, sliceGroupKey, sliceGroupMinutes);
+            }
         }
-        var lastShard = sliceShards[sliceShards.length - 1];
-        if (sliceShards.length > 1 && (lastShard.max - lastShard.min) < breakdownInterval / 2) {
-            var secondToLastShard = sliceShards[sliceShards.length - 2];
-            secondToLastShard.max = lastShard.max;
-            secondToLastShard.title = secondToLastShard.min + "-" + lastShard.max;
-        }
-        return sliceShards;
     };
 
-    var updateContinuousSliceChart = function (chart, slicedPlaytime, categories, sliceClicked) {
-
-        var sliceKeys = getOrderedOwnProperties(slicedPlaytime);
-        
-        // ReSharper disable once QualifiedExpressionMaybeNull
-        if (typeof sliceClicked === "undefined" || sliceClicked.pulled === true) {
-            //either this is the initial render with this dataset, or we clicked on a pulled slice so we want to revert
-            for (var j = 0; j < categories.length; j++) {
-                var category = categories[j];
-                category.hours = 0;
-                category.color = progressivePalette[j % progressivePalette.length];
-                category.pulled = false;
-                category.description = " (" + category.min + "-" + category.max + ")";
-            }
-        } else {
-            var unknownHours = 0;
-            var minKnownKey = Number.POSITIVE_INFINITY;
-            var maxKnownKey = Number.NEGATIVE_INFINITY;
-            for (var k = 0; k < sliceKeys.length; k++) {
-                var sliceKeyTyped = Number(sliceKeys[k]);
-                if (sliceKeyTyped < categories[0].min || sliceKeyTyped > categories[categories.length - 1].max) {
-                    unknownHours += getHours(slicedPlaytime[sliceKeys[k]]);
-                } else {
-                    minKnownKey = Math.min(minKnownKey, sliceKeyTyped);
-                    maxKnownKey = Math.max(maxKnownKey, sliceKeyTyped);
-                }
-            }
-            if (minKnownKey === Number.POSITIVE_INFINITY) {
-                categories = [];
-            } else {
-                var playtimeTotal = getPlaytimeTotalHours();
-                var knownPercent = (playtimeTotal - unknownHours) / playtimeTotal;
-                categories = breakdown(minKnownKey, maxKnownKey, Math.round(knownPercent * 10));
-            }
-        }
-
-        var slicesData = categories.concat([
-            {
-                title: unknownTitle,
-                min: Number.NEGATIVE_INFINITY,
-                max: Number.POSITIVE_INFINITY,
+    var breakdown = function (slicedPlaytime, min, max, shardCount, color) {
+        var shards = [];
+        var breakdownInterval = Math.ceil((max - min + 1) / shardCount);
+        for (var i = min; i <= max; i = i + breakdownInterval) {
+            var boundMax = Math.min(max, i + breakdownInterval - 1);
+            shards.push({
+                title: i === boundMax ? i : i + "-" + boundMax,
+                min: i,
+                max: boundMax,
                 hours: 0,
-                color: unknownColor,
-                index: categories.length,
-                pulled: categories[categories.length-1].pulled
-            }
-        ]);
-
-        for (var i = 0; i < sliceKeys.length; i++) {
-            var sliceKey = sliceKeys[i];
-            var sliceData = ko.utils.arrayFirst(slicesData, getCategoryRangePredicate(Number(sliceKey)));
-            sliceData.hours += getHours(slicedPlaytime[sliceKey]);
+                color: color,
+                pulled: true,
+                index: -1 //we treat all shard clicks the same
+            });
+        }
+        var lastShard = shards[shards.length - 1];
+        if (shards.length > 1 && (lastShard.max - lastShard.min) < breakdownInterval / 2) {
+            var secondToLastShard = shards[shards.length - 2];
+            secondToLastShard.max = lastShard.max;
+            secondToLastShard.title = secondToLastShard.min + "-" + lastShard.max;
+            shards.pop();
         }
 
-        chart.dataProvider = slicesData;
+        populateCategories(slicedPlaytime, shards);
+        return shards;
+    };
+
+    var updateContinuousSliceChart = function (chart, slicedPlaytime, categories, clickedSlice) {
+        var sliceClicked = typeof clickedSlice !== "undefined";
+        if (sliceClicked) {
+            clickedCategory = clickedSlice.dataContext;
+        }
+
+        if (sliceClicked && clickedCategory.title === unknownTitle) {
+            if (clickedSlice.pulled) {
+                chart.clickSlice(clickedSlice.index);
+            } 
+            return;
+        }
+
+        for (var j = 0; j < categories.length; j++) {
+            var category = categories[j];
+            category.hours = 0;
+            category.color = progressivePalette[j % progressivePalette.length]; //modulo just in case, progressivePalette should be big enough
+            category.pulled = false;
+            category.description = " (" + category.min + "-" + category.max + ")";
+            category.index = j;
+        }
+
+        categories.push({
+            title: unknownTitle,
+            min: Number.NEGATIVE_INFINITY,
+            max: Number.POSITIVE_INFINITY,
+            hours: 0,
+            color: unknownColor,
+            pulled: false,
+            index: categories.length
+        });
+
+        var slicedPlaytimeToBreakDown = {};
+        var minGroupKeyToBreakDown = Number.POSITIVE_INFINITY;
+        var maxGroupKeyToBreakDown = Number.NEGATIVE_INFINITY;
+        var categoryClicked = sliceClicked && clickedCategory.index !== -1;
+        populateCategories(slicedPlaytime, categories, !categoryClicked ? undefined : function (matchingCategory, sliceGroupKey, sliceGroupMinutes) {
+            if (matchingCategory.index === clickedCategory.index) {
+                slicedPlaytimeToBreakDown[sliceGroupKey] = sliceGroupMinutes;
+                minGroupKeyToBreakDown = Math.min(minGroupKeyToBreakDown, sliceGroupKey);
+                maxGroupKeyToBreakDown = Math.max(maxGroupKeyToBreakDown, sliceGroupKey);
+            }
+        });
+
+        if (categoryClicked) {
+            var clickedCategory = categories[clickedCategory.index];
+            var shardCount = Math.round((clickedCategory.hours / getPlaytimeTotalHours()) * 10) + 1;
+            categories.splice.apply(categories, [clickedCategory.index, 1].concat(
+                                    breakdown(slicedPlaytimeToBreakDown, minGroupKeyToBreakDown, maxGroupKeyToBreakDown, shardCount, clickedCategory.color)));
+        }
+
+        chart.dataProvider = categories;
         chart.validateData();
     };
 
-    var updateMetacriticChart = function(total, sliceBreakIndex) {
+    var updateMetacriticChart = function(total, clickedSlice) {
         updateContinuousSliceChart(self.metacriticChart, total.playtimesByMetacritic, [
             { title: "Overwhelming Dislike", min: 0, max: 19 },
             { title: "Generally Unfavorable", min: 20, max: 49 },
             { title: "Mixed or Average", min: 50, max: 74 },
             { title: "Generally Favorable", min: 75, max: 89 },
             { title: "Universal Acclaim", min: 90, max: 100 }
-        ], sliceBreakIndex);
+        ], clickedSlice);
     };
 
     var updateGenreChart = function(total) {
@@ -469,13 +484,13 @@ function AppViewModel() {
         updateDiscreteSliceChart(self.platformChart, total.playtimesByPlatform);
     };
 
-    var updateReleaseDateChart = function (total, sliceBreakIndex) {
+    var updateReleaseDateChart = function (total, clickedSlice) {
         var decades = [];
         var currentYear = new Date().getFullYear();
         for (var year = 1980; year <= currentYear; year+=10) {
             decades.push({ title: year.toString().substring(2) + "s", min: year, max: year + 9 });
         }
-        updateContinuousSliceChart(self.releaseDateChart, total.playtimesByReleaseYear, decades, sliceBreakIndex);
+        updateContinuousSliceChart(self.releaseDateChart, total.playtimesByReleaseYear, decades, clickedSlice);
     };
 
     var updateSliceCharts = function (total) {
@@ -562,7 +577,7 @@ function AppViewModel() {
         });
 
         if (typeof updater !== "undefined") {
-            chart.addListener("clickSlice", function (event) { updater(self.total(), event.dataItem.dataContext); });
+            chart.addListener("clickSlice", function (event) { updater(self.total(), event.dataItem); });
         }
 
         return chart;
@@ -593,10 +608,10 @@ function AppViewModel() {
         ]);
 
         self.genreChart = initPieChart("genreChart", "Playtime by Genre", 25);
-        self.metacriticChart = initPieChart("metacriticChart", "Playtime by Metacritic score", 25, updateMetacriticChart);
-        self.appTypeChart = initPieChart("appTypeChart", "Playtime by type", 45);
-        self.platformChart = initPieChart("platformChart", "Playtime by platform", 45);
-        self.releaseDateChart = initPieChart("releaseDateChart", "Playtime by release date", 45, updateReleaseDateChart);
+        self.metacriticChart = initPieChart("metacriticChart", "Playtime by Metacritic score (clickable slices)", 25, updateMetacriticChart);
+        self.appTypeChart = initPieChart("appTypeChart", "Playtime by Type", 45);
+        self.platformChart = initPieChart("platformChart", "Playtime by Platform", 45);
+        self.releaseDateChart = initPieChart("releaseDateChart", "Playtime by Release Date (clickable slices)", 45, updateReleaseDateChart);
 
         self.total.subscribe(updateCharts);
         self.sliceTotal.subscribe(function (slicetotal) {
@@ -845,7 +860,7 @@ $(document).ready(function () {
         });
 
         this.get("#/cached/:count", function () {
-            loadGames("cached/"+this.params.count);
+            loadGames("cached/" + this.params.count);
         });
     });
 
