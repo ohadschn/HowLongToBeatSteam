@@ -606,7 +606,19 @@ function AppViewModel() {
             precision: 0,
             startDuration: 1,
             responsive: {
-                enabled: true
+                enabled: true,
+                rules: [{
+                    minWidth: 1,
+                    overrides: {
+                        categoryAxis: {
+                            labelsEnabled: true,
+                            ignoreAxisWidth: false,
+                            inside: false,
+                            showFirstLabel: true,
+                            showLastLabel: true
+                        }
+                    }
+                }]
             }
         });
     };
