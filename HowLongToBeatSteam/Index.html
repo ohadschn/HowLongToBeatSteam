@@ -94,7 +94,7 @@
                     <span class="fa fa-fw fa-copyright"></span> Game completion definitions and statistics courtesy of <a href="http://howlongtobeat.com" target="_blank">HowLongToBeat</a>. Game Scores courtesy of <a href="http://www.metacritic.com" target="_blank">Metacritic</a>.
                 </div>
                 <div data-bind="visible: imputedTtbs">
-                    <span class="fa fa-fw fa-bar-chart"></span><span class="emphasized"> italicized</span> values were missing from <abbr title="HowLongToBeat">HLTB</abbr> and were therefore <a href="http://en.wikipedia.org/wiki/Imputation_%28statistics%29" class="alert-link" target="_blank">statistically imputed</a>.
+                    <span class="fa fa-fw fa-bar-chart"></span>Some values missing from <abbr title="HowLongToBeat">HLTB</abbr> were <a href="http://en.wikipedia.org/wiki/Imputation_%28statistics%29" class="alert-link" target="_blank">imputed</a>. Imputed values are <span class="emphasized"> italicized</span>.
                 </div>
                 <div data-bind="visible: partialCache">
                     <span class="fa fa-fw fa-database"></span> Some games haven't been processed by the site's engine yet (or they have been removed from the Steam store).
@@ -270,8 +270,8 @@
                 <div class="panel-heading">
                     <div class="h3">
                         Filter
-                        <input type="text" data-bind="textInput: filter" />
-                        <span data-bind="text: '(' + $root.total().count + ' games)'"></span>
+                        <input class="filter-input" type="text" data-bind="textInput: filter" />
+                        <span class="text-nowrap" data-bind="text: '(' + $root.total().count + ' games)'"></span>
                     </div>
                 </div>
                 <div class="panel-body">

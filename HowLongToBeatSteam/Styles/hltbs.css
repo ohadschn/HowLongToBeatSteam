@@ -78,7 +78,7 @@
 }
 @media (max-width: 767px) {
     .inline-btn-toolbar {
-        padding-bottom: 0px;
+        padding-bottom: 0;
         margin-left: -6px;
         margin-top: 5px;
     }
@@ -91,6 +91,9 @@
 .inline-form-input {
     width: 130px;
     display: inline-block;
+}
+.filter-input {
+    width: 180px;
 }
 .inline-form-group {
     margin-top: 10px;
