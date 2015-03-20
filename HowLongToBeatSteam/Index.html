@@ -75,9 +75,11 @@
                     <span class="sr-only">Close</span>
                 </button>
                 <p class="lead">
-                    <span class="fa fa-puzzle-piece"></span> Some of your games could not be found on HowLongToBeat
-                    <br />
-                    Click the update links next to missing games in the table below to help <span class="fa fa-smile-o"></span>
+                    <span class="fa fa-puzzle-piece"></span> Some of your games could not be found on <abbr class="visible-xs-inline" title="HowLongToBeat">HLTB</abbr> 
+                    <span class="hidden-xs">
+                        HowLongToBeat<br />
+                        Click the update links next to missing games in the table below to help <span class="fa fa-smile-o"></span>
+                    </span>
                 </p>
             </div>
             <div role="alert" data-bind="visible: !error() && !alertHidden(), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-6' : 'col-md-12')">
@@ -88,11 +90,11 @@
                 <div data-bind="visible: gameTable.rows().length===0">
                     <span class="fa fa-fw fa-ban"></span> You have no games in your library. What kind of a sick person are you?
                 </div>
-                <div data-bind="visible: gameTable.rows().length>0">
+                <div class="hidden-xs" data-bind="visible: gameTable.rows().length>0">
                     <span class="fa fa-fw fa-copyright"></span> Game completion definitions and statistics courtesy of <a href="http://howlongtobeat.com" target="_blank">HowLongToBeat</a>. Game Scores courtesy of <a href="http://www.metacritic.com" target="_blank">Metacritic</a>.
                 </div>
                 <div data-bind="visible: imputedTtbs">
-                    <span class="fa fa-fw fa-bar-chart"></span> Some play times are missing from <abbr title="HowLongToBeat">HLTB</abbr> and were therefore <a href="http://en.wikipedia.org/wiki/Imputation_%28statistics%29" class="alert-link" target="_blank">statistically imputed</a>. Imputed values are <span class="emphasized">italicized</span>.
+                    <span class="fa fa-fw fa-bar-chart"></span><span class="emphasized"> italicized</span> values were missing from <abbr title="HowLongToBeat">HLTB</abbr> and were therefore <a href="http://en.wikipedia.org/wiki/Imputation_%28statistics%29" class="alert-link" target="_blank">statistically imputed</a>.
                 </div>
                 <div data-bind="visible: partialCache">
                     <span class="fa fa-fw fa-database"></span> Some games haven't been processed by the site's engine yet (or they have been removed from the Steam store).
