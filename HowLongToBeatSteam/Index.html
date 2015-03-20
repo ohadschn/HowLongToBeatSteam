@@ -175,12 +175,12 @@
                             </div>
                         </div>
                     </div>
-                    <p class="lead">
-                        Your total amount of consecutive <strong>current</strong> playtime is <span data-bind="text: getYears(total().playtime)"></span>.<br />
-                        Your remaining amount of consecutive <abbr title="you complete the main objectives, just enough to see the credits roll"><strong>main</strong></abbr> playtime is <span data-bind="text: getYears(total().mainRemaining)"></span>.<br />
-                        Your remaining amount of consecutive <abbr title="you take your time, discover and complete additional tasks not required"><strong>extras</strong></abbr> playtime is <span data-bind="text: getYears(total().extrasRemaining)"></span>.<br />
-                        Your remaining amount of consecutive <abbr title="you strive for every achievement, every medal and conquer all that the game has to offer"><strong>completionist</strong></abbr> playtime is <span data-bind="text: getYears(total().completionistRemaining)"></span>.
-                    </p>
+                    <ul class="lead">
+                        <li>Your total amount of consecutive <strong>current</strong> playtime is <span data-bind="text: getYears(total().playtime)"></span></li>
+                        <li>Your remaining amount of consecutive <abbr title="you complete the main objectives, just enough to see the credits roll"><strong>main</strong></abbr> playtime is <span data-bind="text: getYears(total().mainRemaining)"></span></li>
+                        <li>Your remaining amount of consecutive <abbr title="you take your time, discover and complete additional tasks not required"><strong>extras</strong></abbr> playtime is <span data-bind="text: getYears(total().extrasRemaining)"></span></li>
+                        <li>Your remaining amount of consecutive <abbr title="you strive for every achievement, every medal and conquer all that the game has to offer"><strong>completionist</strong></abbr> playtime is <span data-bind="text: getYears(total().completionistRemaining)"></li>
+                    </ul>
                     <p class="lead" data-bind="visible: bonusLinkVisible">
                         <!-- ReSharper disable once Html.IdNotResolved -->
                         <span class="label label-default inline-label">Bonus</span> <a href="#/cached/all" target="_blank">See how you compare against an imaginary profile containing the entire steam library!</a>
@@ -210,7 +210,7 @@
                                     Remaining
                                 </button>
                             </div>
-                            <div class="btn-group" role="group" aria-label="Completion levels">
+                            <div data-bind="css: 'btn-group' + (width < 768 ? ' btn-group-xs' : '')" role="group" aria-label="Completion levels">
                                 <button type="button"
                                         class="btn btn-default"
                                         data-bind="enable: sliceTotal, click: function() { sliceCompletionLevel(PlaytimeType.Current); }, css: { active: sliceCompletionLevel() === PlaytimeType.Current }">
@@ -243,7 +243,7 @@
                                 <div id="genreChart" class="amchart"></div>
                             </div>
                             <div class="col-lg-6">
-                                <h4 class="text-center text-nowrap">Playtime by Metacritic score (clickable)</h4>
+                                <h4 class="text-center text-nowrap">Playtime by Metacritic score<span class="hidden-xs"> (clickable)</span></h4>
                                 <div id="metacriticChart" class="amchart"></div>
                             </div>
                         </div>
@@ -259,7 +259,7 @@
                                 <div id="releaseDateChart" class="amchart"></div>
                             </div>
                             <div class="col-lg-4">
-                                <h4 class="text-center text-nowrap">Playtime by Release Date (clickable)</h4>
+                                <h4 class="text-center text-nowrap">Playtime by Release Date<span class="hidden-xs"> (clickable)</span></h4>
                                 <div id="platformChart" class="amchart"></div>
                             </div>
                         </div>

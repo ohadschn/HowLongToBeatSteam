@@ -108,6 +108,8 @@ Game.prototype.match = function(filter) { //define in prototype to prevent memor
 function AppViewModel() {
     var self = this;
 
+    self.width = $(window).width();
+
     self.steamVanityUrlName = ko.observable("");
 
     var tableOptions = {
@@ -495,7 +497,11 @@ function AppViewModel() {
 
     var updateContinuousSliceChart = function (chart, slicedPlaytime, categories, clickedSlice) {
         var sliceClicked = typeof clickedSlice !== "undefined";
+
         if (sliceClicked) {
+            if (self.width < 768) { //don't break down on extra small devices
+                return;
+            }
             clickedCategory = clickedSlice.dataContext;
         }
 
