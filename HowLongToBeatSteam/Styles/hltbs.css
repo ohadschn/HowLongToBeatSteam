@@ -75,7 +75,13 @@
     display: inline-block;
     vertical-align: middle;
     padding-bottom: 3px;
-    margin-left: 10px;
+}
+@media (max-width: 767px) {
+    .inline-btn-toolbar {
+        padding-bottom: 0px;
+        margin-left: -6px;
+        margin-top: 5px;
+    }
 }
 .inline-label {
     position: relative;

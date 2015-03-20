@@ -179,7 +179,7 @@
                         <li>Your total amount of consecutive <strong>current</strong> playtime is <span data-bind="text: getYears(total().playtime)"></span></li>
                         <li>Your remaining amount of consecutive <abbr title="you complete the main objectives, just enough to see the credits roll"><strong>main</strong></abbr> playtime is <span data-bind="text: getYears(total().mainRemaining)"></span></li>
                         <li>Your remaining amount of consecutive <abbr title="you take your time, discover and complete additional tasks not required"><strong>extras</strong></abbr> playtime is <span data-bind="text: getYears(total().extrasRemaining)"></span></li>
-                        <li>Your remaining amount of consecutive <abbr title="you strive for every achievement, every medal and conquer all that the game has to offer"><strong>completionist</strong></abbr> playtime is <span data-bind="text: getYears(total().completionistRemaining)"></li>
+                        <li>Your remaining amount of consecutive <abbr title="you strive for every achievement, every medal and conquer all that the game has to offer"><strong>completionist</strong></abbr> playtime is <span data-bind="text: getYears(total().completionistRemaining)"></span></li>
                     </ul>
                     <p class="lead" data-bind="visible: bonusLinkVisible">
                         <!-- ReSharper disable once Html.IdNotResolved -->
@@ -210,7 +210,7 @@
                                     Remaining
                                 </button>
                             </div>
-                            <div data-bind="css: 'btn-group' + (width < 768 ? ' btn-group-xs' : '')" role="group" aria-label="Completion levels">
+                            <div data-bind="css: 'btn-group' + (width < 380 ? ' btn-group-xs' : '')" role="group" aria-label="Completion levels">
                                 <button type="button"
                                         class="btn btn-default"
                                         data-bind="enable: sliceTotal, click: function() { sliceCompletionLevel(PlaytimeType.Current); }, css: { active: sliceCompletionLevel() === PlaytimeType.Current }">
