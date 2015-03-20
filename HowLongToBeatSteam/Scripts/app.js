@@ -673,9 +673,9 @@ function AppViewModel() {
 
         self.genreChart = initPieChart("genreChart", 25);
         self.metacriticChart = initPieChart("metacriticChart", 25, updateMetacriticChart);
-        self.appTypeChart = initPieChart("appTypeChart", 45);
-        self.platformChart = initPieChart("platformChart", 45);
-        self.releaseDateChart = initPieChart("releaseDateChart", 45, updateReleaseDateChart);
+        self.appTypeChart = initPieChart("appTypeChart", 40);
+        self.platformChart = initPieChart("platformChart", 40);
+        self.releaseDateChart = initPieChart("releaseDateChart", 40, updateReleaseDateChart);
 
         self.total.subscribe(updateCharts);
         self.sliceTotal.subscribe(function (slicetotal) {

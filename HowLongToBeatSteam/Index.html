@@ -3,7 +3,7 @@
 <head>
     <title>How Long To Beat Steam</title>
     <meta name="description" content="Find out how long it would take you to complete your entire Steam library in different completion levels"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="Styles/hltbs.min.css">
@@ -44,19 +44,19 @@
     <div class="header" data-bind="css: introPage() ? 'header-intro' : ''">
         <a href="/#/" class="a-unstyled">
             <img data-bind="attr: {src: introPage() ? 'Resources/SteamClockWhite.svg' : 'Resources/SteamClock.svg'}" alt="How Long To Beat Steam" />
-            <span class="h1 text-vertical-middle">How Long To Beat Steam</span>
+            <span class="h1 text-vertical-middle">How Long <span class="text-nowrap">To Beat Steam</span></span>
         </a>
         <form data-bind="submit: vanityUrlSubmitted, attr: { action: '#/' + steamVanityUrlName() }" role="form" class="form-inline">
-            <div class="form-group">
+            <div class="form-group inline-form-group">
                 <span class="glyphicon glyphicon glyphicon-question-sign"
                       data-placement="bottom"
                       data-toggle="tooltip"
                       data-container="body"
                       title="Your profile ID can be found in your Steam profile page URL: steamcommunity.com/id/[ID]. Make sure it is set to public in Steam's privacy settings."></span>
                 <label class="control-label sr-only" for="steamIdText">Stem profile ID</label>
-                <input id="steamIdText" type="text" data-bind="textInput : steamVanityUrlName" placeholder="Steam Profile ID" class="form-control">
+                <input id="steamIdText" type="text" data-bind="textInput : steamVanityUrlName" placeholder="Steam Profile ID" class="form-control inline-form-input">
+                <button type="submit" data-bind="enable: !processing() && steamVanityUrlName() !== ''" class="btn btn-primary">Tell me how long</button>
             </div>
-            <button type="submit" data-bind="enable: !processing() && steamVanityUrlName() !== ''" class="btn btn-primary">Tell me how long</button>
         </form>
     </div>
     <div class="loader" data-bind="visible: processing"></div>

@@ -82,6 +82,13 @@
     bottom: 1px;
     padding-top: 5px;
 }
+.inline-form-input {
+    width: 130px;
+    display: inline-block;
+}
+.inline-form-group {
+    margin-top: 10px;
+}
 .fixed-page {
     width: 50px;
     text-align: center;
