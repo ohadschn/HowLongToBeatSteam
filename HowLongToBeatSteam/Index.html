@@ -1,8 +1,9 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>How Long To Beat Steam</title>
     <meta name="description" content="Find out how long it would take you to complete your entire Steam library in different completion levels"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="Styles/hltbs.min.css">
@@ -25,19 +26,19 @@
         ga("send", "pageview")
     </script>
     <script type="text/javascript">
-    var appInsights = window.appInsights || function (config) {
-        function s(config) { t[config] = function () { var i = arguments; t.queue.push(function () { t[config].apply(t, i) }) } } var t = { config: config }, r = document, f = window, e = "script", o = r.createElement(e), i, u; for (o.src = config.url || "//az416426.vo.msecnd.net/scripts/a/ai.0.js", r.getElementsByTagName(e)[0].parentNode.appendChild(o), t.cookie = r.cookie, t.queue = [], i = ["Event", "Exception", "Metric", "PageView", "Trace"]; i.length;) s("track" + i.pop()); return config.disableExceptionTracking || (i = "onerror", s("_" + i), u = f[i], f[i] = function (config, r, f, e, o) { var s = u && u(config, r, f, e, o); return s !== !0 && t["_" + i](config, r, f, e, o), s }), t
-    }({
-        instrumentationKey: "d0a63409-84bf-4f88-a8cf-8440ce670471"
-    });
-    window.appInsights = appInsights;
-    appInsights.trackPageView();
+        var appInsights = window.appInsights || function (config) {
+            function s(config) { t[config] = function () { var i = arguments; t.queue.push(function () { t[config].apply(t, i) }) } } var t = { config: config }, r = document, f = window, e = "script", o = r.createElement(e), i, u; for (o.src = config.url || "//az416426.vo.msecnd.net/scripts/a/ai.0.js", r.getElementsByTagName(e)[0].parentNode.appendChild(o), t.cookie = r.cookie, t.queue = [], i = ["Event", "Exception", "Metric", "PageView", "Trace"]; i.length;) s("track" + i.pop()); return config.disableExceptionTracking || (i = "onerror", s("_" + i), u = f[i], f[i] = function (config, r, f, e, o) { var s = u && u(config, r, f, e, o); return s !== !0 && t["_" + i](config, r, f, e, o), s }), t
+        }({
+            instrumentationKey: "d0a63409-84bf-4f88-a8cf-8440ce670471"
+        });
+        window.appInsights = appInsights;
+        appInsights.trackPageView();
     </script>
     <!-- ReSharper restore All -->
 </head>
 <body data-bind="css: introPage() ? 'body-intro' : ''">
     <div class="attribution" data-bind="visible: introPage">
-        <a href="http://opengameart.org/content/kujasa-the-beginning" target="_blank" class="attribution-link"><i>Kujasa - The Beginning</i></a> by Sergei "CatBlac" Churbanov<br />
+        <a href="http://opengameart.org/content/kujasa-the-beginning" target="_blank" class="attribution-link"><i>Kujasa - The Beginning</i></a> by Sergei Churbanov<br />
         Licensed by <a href="http://williamthompsonj.blogspot.de" target="_blank" class="attribution-link">William Thompson</a> under <a href="http://creativecommons.org/licenses/by/3.0/" target="_blank" class="attribution-link">CC BY 3.0</a>
     </div>
     <div class="header" data-bind="css: introPage() ? 'header-intro' : ''">
@@ -236,9 +237,11 @@
                     <div class="container-fluid">
                         <div class="row">
                             <div class="col-lg-6">
+                                <h4 class="text-center text-nowrap">Playtime by Genre</h4>
                                 <div id="genreChart" class="amchart"></div>
                             </div>
                             <div class="col-lg-6">
+                                <h4 class="text-center text-nowrap">Playtime by Metacritic score (clickable)</h4>
                                 <div id="metacriticChart" class="amchart"></div>
                             </div>
                         </div>
@@ -246,12 +249,15 @@
                     <div class="container-fluid">
                         <div class="row">
                             <div class="col-lg-4">
+                                <h4 class="text-center text-nowrap">Playtime by Type</h4>
                                 <div id="appTypeChart" class="amchart"></div>
                             </div>
                             <div class="col-lg-4">
+                                <h4 class="text-center text-nowrap">Playtime by Platform</h4>
                                 <div id="releaseDateChart" class="amchart"></div>
                             </div>
                             <div class="col-lg-4">
+                                <h4 class="text-center text-nowrap">Playtime by Release Date (clickable)</h4>
                                 <div id="platformChart" class="amchart"></div>
                             </div>
                         </div>

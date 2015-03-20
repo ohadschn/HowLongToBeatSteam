@@ -611,10 +611,9 @@ function AppViewModel() {
         });
     };
 
-    var initPieChart = function(chartId, title, marginTop, updater) {
+    var initPieChart = function(chartId, marginTop, updater) {
         initChart(chartId);
         var chart = AmCharts.makeChart(chartId, {
-            titles: [{ text: title }],
             type: "pie",
             theme: "light",
             colors: alternatingPalette,
@@ -672,11 +671,11 @@ function AppViewModel() {
             { playtime: "Complete", hours: 0 }
         ]);
 
-        self.genreChart = initPieChart("genreChart", "Playtime by Genre", 25);
-        self.metacriticChart = initPieChart("metacriticChart", "Playtime by Metacritic score (clickable slices)", 25, updateMetacriticChart);
-        self.appTypeChart = initPieChart("appTypeChart", "Playtime by Type", 45);
-        self.platformChart = initPieChart("platformChart", "Playtime by Platform", 45);
-        self.releaseDateChart = initPieChart("releaseDateChart", "Playtime by Release Date (clickable slices)", 45, updateReleaseDateChart);
+        self.genreChart = initPieChart("genreChart", 25);
+        self.metacriticChart = initPieChart("metacriticChart", 25, updateMetacriticChart);
+        self.appTypeChart = initPieChart("appTypeChart", 45);
+        self.platformChart = initPieChart("platformChart", 45);
+        self.releaseDateChart = initPieChart("releaseDateChart", 45, updateReleaseDateChart);
 
         self.total.subscribe(updateCharts);
         self.sliceTotal.subscribe(function (slicetotal) {
