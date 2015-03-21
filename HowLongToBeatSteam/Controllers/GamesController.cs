@@ -170,10 +170,11 @@ namespace HowLongToBeatSteam.Controllers
 
         [Route("update/{steamAppId:int}/{hltbId:int}")]
         [HttpPost]
-        public Task UpdateGameMapping(int steamAppId, int hltbId)
+        public async Task<string> UpdateGameMapping(int steamAppId, int hltbId)
         {
             EventSource.SetCurrentThreadActivityId(Guid.NewGuid());
-            return StorageHelper.InsertSuggestion(new SuggestionEntity(steamAppId, hltbId));
+            await StorageHelper.InsertSuggestion(new SuggestionEntity(steamAppId, hltbId)).ConfigureAwait(true);
+            return "success";
         }
 
         private static async Task<long> ResolveVanityUrl(string userVanityUrlName, CancellationToken ct)

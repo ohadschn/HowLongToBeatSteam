@@ -760,18 +760,9 @@ function AppViewModel() {
             return;
         }
 
-        var tableWidth = $("#gameTable").width();
-
-        var compressedColumnWidth = 0;
         $.each($("table th.compressed"), function () {
-            var widthWithMargin = $(this).width() + 10;
-            compressedColumnWidth += widthWithMargin;
-            $(this).css("width", widthWithMargin + "px");
+            $(this).css("width", $(this).width() + 10 + "px");
         });
-
-        var expandedCount = $("table th.expanded").size();
-        var expandedColumnWidth = (tableWidth - compressedColumnWidth) / expandedCount;
-        $("table th.expanded").css("width", expandedColumnWidth + "px");
 
         $("#gameTable").css('table-layout', "fixed");
 
