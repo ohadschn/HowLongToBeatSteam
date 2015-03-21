@@ -109,13 +109,20 @@ function AppViewModel() {
     var self = this;
 
     self.width = $(window).width();
+    self.height = $(window).height();
+
     self.superSmall = self.width < 380;
     self.extraSmall = self.width < 768;
     self.small = self.width < 992;
     self.medium = self.width < 1200;
 
     $(window).on("orientationchange", function () {
-        location.reload();
+        setTimeout(function () { location.reload(); }, 0); //can't reload inside event handler in FireFox
+    });
+    $(window).resize(function () {
+        if ($(window).height() === self.width && $(window).width() === self.height) {
+            setTimeout(function () { location.reload(); }, 0); //can't reload inside event handler in FireFox
+        }
     });
 
     self.steamVanityUrlName = ko.observable("");
@@ -713,7 +720,10 @@ function AppViewModel() {
         updateCharts(self.total());
     };
 
-    var scrollToAlerts = function() {
+    var scrollToAlerts = function () {
+        if (window.pageYOffset > 0) {
+            return; //don't override user position
+        }
         setTimeout(function() {
             $('html, body').animate({
                 scrollTop: $("#alerts").offset().top - 10

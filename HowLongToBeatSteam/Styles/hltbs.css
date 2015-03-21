@@ -102,6 +102,9 @@
     width: 50px;
     text-align: center;
 }
+.cursor-default {
+    cursor: default !important;
+}
 .text-vertical-middle,
 table tbody tr td.vcenter {
     vertical-align: middle;

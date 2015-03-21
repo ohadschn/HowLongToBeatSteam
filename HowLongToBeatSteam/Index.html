@@ -372,10 +372,10 @@
                     </div>
                     <ul class="pagination gamePagination">
                         <li data-bind="css: leftPagerClass() + ' hidden-xs', click: gotoPage(1)">
-                            <a href="#" title="First page"><span class="fa fa-fw fa-angle-double-left"></span></a>
+                            <a href="#" title="First page" data-bind="css: currentPageNumber() === 1 ? 'cursor-default' : ''"><span class="fa fa-fw fa-angle-double-left"></span></a>
                         </li>
                         <li data-bind="css: leftPagerClass, click: prevPage">
-                            <a href="#" title="Previous page"><span class="fa fa-fw fa-angle-left"></span></a>
+                            <a href="#" title="Previous page" data-bind="css: currentPageNumber() === 1 ? 'cursor-default' : ''"><span class="fa fa-fw fa-angle-left"></span></a>
                         </li>
                         <!-- ko foreach: {data: limitedPages} -->
                         <li data-bind="css: number === $parent.currentPageNumber() ? 'active' : ''">
@@ -383,10 +383,10 @@
                         </li>
                         <!-- /ko -->
                         <li data-bind="css: rightPagerClass, click: nextPage">
-                            <a href="#" title="Next page"><span class="fa fa-fw fa-angle-right"></span></a>
+                            <a href="#" title="Next page" data-bind="css: currentPageNumber() === pages().length ? 'cursor-default' : ''"><span class=" fa fa-fw fa-angle-right"></span></a>
                         </li>
                         <li data-bind="css: rightPagerClass() + ' hidden-xs', click: gotoPage(pages().length)">
-                            <a href="#" title="Last page"><span class="fa fa-fw fa-angle-double-right"></span></a>
+                            <a href="#" title="Last page" data-bind="css: currentPageNumber() === pages().length ? 'cursor-default' : ''"><span class="fa fa-fw fa-angle-double-right"></span></a>
                         </li>
                     </ul>
                 </div>
