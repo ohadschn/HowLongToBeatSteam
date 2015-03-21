@@ -731,22 +731,6 @@ function AppViewModel() {
         }, 200);
     };
 
-    var startProcessing = function () {
-        self.processing(true);
-        var height = $(window).height();
-        $('.loader').spin({
-            lines: 14,
-            length: Math.ceil(height / 25),
-            width: Math.ceil(height / 90),
-            radius: Math.ceil(height / 15)
-        });
-    };
-
-    var stopProcessing = function () {
-        self.processing(false);
-        $('.loader').spin(false);
-    };
-
     var renderedRows = 0;
     var afterRequest = false;
     var firstTableRender = true;
@@ -777,7 +761,7 @@ function AppViewModel() {
         $("#gameTable").css('table-layout', "fixed");
 
         firstTableRender = false;
-        stopProcessing();
+        self.processing(false);
         scrollToAlerts();
     };
 
@@ -807,7 +791,8 @@ function AppViewModel() {
         }
 
         $("#content").hide(); //IE + FF fix
-        startProcessing();
+
+        self.processing(true);
 
         self.error(false);
         self.partialCache(false);
@@ -849,14 +834,14 @@ function AppViewModel() {
                 }
 
                 if(!firstTableRender || self.gameTable.rows().length === 0) {
-                    stopProcessing();
+                    self.processing(false);
                 }
             })
             .fail(function(error) {
                 console.error(error);
                 self.gameTable.rows([]);
                 self.error(true);
-                stopProcessing();
+                self.processing(false);
             })
             .always(function() {
                 self.alertHidden(false);
