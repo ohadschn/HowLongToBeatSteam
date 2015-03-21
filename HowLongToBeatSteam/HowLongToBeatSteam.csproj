@@ -157,7 +157,6 @@
       <DependentUpon>app.js</DependentUpon>
     </Content>
     <Content Include="Scripts\countdown.min.js" />
-    <Content Include="Scripts\responsive.min.js" />
     <Content Include="Styles\hltbs.css" />
     <Content Include="Styles\hltbs.min.css">
       <DependentUpon>hltbs.css</DependentUpon>

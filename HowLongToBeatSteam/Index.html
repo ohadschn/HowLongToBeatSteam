@@ -47,7 +47,7 @@
             <span class="h1 text-vertical-middle">How Long <span class="text-nowrap">To Beat Steam</span></span>
         </a>
         <form data-bind="submit: vanityUrlSubmitted, attr: { action: '#/' + steamVanityUrlName() }" role="form" class="form-inline">
-            <div class="form-group inline-form-group">
+            <div class="form-group lowered">
                 <span class="glyphicon glyphicon glyphicon-question-sign"
                       data-placement="bottom"
                       data-toggle="tooltip"
@@ -76,9 +76,7 @@
                 </button>
                 <p class="lead">
                     <span class="fa fa-puzzle-piece"></span> Some of your games could not be found on <abbr class="visible-xs-inline" title="HowLongToBeat">HLTB</abbr> 
-                    <span class="hidden-xs">
-                        HowLongToBeat<br />
-                        Click the update links next to missing games in the table below to help <span class="fa fa-smile-o"></span>
+                    <span class="hidden-xs"> HowLongToBeat. Click the update links next to missing games in the table below to help <span class="fa fa-smile-o"></span>
                     </span>
                 </p>
             </div>
@@ -91,10 +89,10 @@
                     <span class="fa fa-fw fa-ban"></span> You have no games in your library. What kind of a sick person are you?
                 </div>
                 <div class="hidden-xs" data-bind="visible: gameTable.rows().length>0">
-                    <span class="fa fa-fw fa-copyright"></span> Game completion definitions and statistics courtesy of <a href="http://howlongtobeat.com" target="_blank">HowLongToBeat</a>. Game Scores courtesy of <a href="http://www.metacritic.com" target="_blank">Metacritic</a>.
+                    <span class="fa fa-fw fa-copyright"></span> Completion definitions and statistics by <a href="http://howlongtobeat.com" target="_blank">HowLongToBeat</a>. Scores by <a href="http://www.metacritic.com" target="_blank">Metacritic</a>.
                 </div>
                 <div data-bind="visible: imputedTtbs">
-                    <span class="fa fa-fw fa-bar-chart"></span>Some values missing from <abbr title="HowLongToBeat">HLTB</abbr> were <a href="http://en.wikipedia.org/wiki/Imputation_%28statistics%29" class="alert-link" target="_blank">imputed</a>. Imputed values are <span class="emphasized"> italicized</span>.
+                    <span class="fa fa-fw fa-bar-chart"></span> Some values missing from <abbr title="HowLongToBeat">HLTB</abbr> were <a href="http://en.wikipedia.org/wiki/Imputation_%28statistics%29" class="alert-link" target="_blank">imputed</a>. Such values are <span class="emphasized"> italicized</span>.
                 </div>
                 <div data-bind="visible: partialCache">
                     <span class="fa fa-fw fa-database"></span> Some games haven't been processed by the site's engine yet (or they have been removed from the Steam store).
@@ -147,7 +145,7 @@
                                     <small class="text-info">
                                         <span>
                                             <span class=" glyphicon glyphicon-info-sign"
-                                                  data-placement="right"
+                                                  data-placement="top"
                                                   data-toggle="tooltip"
                                                   data-container="body"
                                                   title="As recorded by Steam">
@@ -163,7 +161,7 @@
                                     <small class="text-info">
                                         <span>
                                             <span class=" glyphicon glyphicon-info-sign"
-                                                  data-placement="right"
+                                                  data-placement="top"
                                                   data-toggle="tooltip"
                                                   data-container="body"
                                                   title="For each game, the expected time to beat is subtracted from the time played (to a minimum of zero)">
@@ -175,15 +173,15 @@
                             </div>
                         </div>
                     </div>
-                    <ul class="lead">
-                        <li>Your total amount of consecutive <strong>current</strong> playtime is <span data-bind="text: getYears(total().playtime)"></span></li>
-                        <li>Your remaining amount of consecutive <abbr title="you complete the main objectives, just enough to see the credits roll"><strong>main</strong></abbr> playtime is <span data-bind="text: getYears(total().mainRemaining)"></span></li>
-                        <li>Your remaining amount of consecutive <abbr title="you take your time, discover and complete additional tasks not required"><strong>extras</strong></abbr> playtime is <span data-bind="text: getYears(total().extrasRemaining)"></span></li>
-                        <li>Your remaining amount of consecutive <abbr title="you strive for every achievement, every medal and conquer all that the game has to offer"><strong>completionist</strong></abbr> playtime is <span data-bind="text: getYears(total().completionistRemaining)"></span></li>
+                    <ul class="lead lowered">
+                        <li>Your total amount of consecutive <strong>current</strong> playtime is <span data-bind="text: getYears(total().playtime)"></span>.</li>
+                        <li>Your remaining amount of consecutive <abbr title="you complete the main objectives, just enough to see the credits roll"><strong>main</strong></abbr> playtime is <span data-bind="text: getYears(total().mainRemaining)"></span>.</li>
+                        <li>Your remaining amount of consecutive <abbr title="you take your time, discover and complete additional tasks not required"><strong>extras</strong></abbr> playtime is <span data-bind="text: getYears(total().extrasRemaining)"></span>.</li>
+                        <li>Your remaining amount of consecutive <abbr title="you strive for every achievement, every medal and conquer all that the game has to offer"><strong>completionist</strong></abbr> playtime is <span data-bind="text: getYears(total().completionistRemaining)"></span>.</li>
                     </ul>
                     <p class="lead" data-bind="visible: bonusLinkVisible">
                         <!-- ReSharper disable once Html.IdNotResolved -->
-                        <span class="label label-default inline-label">Bonus</span> <a href="#/cached/all" target="_blank">See how you compare against an imaginary profile containing the entire steam library!</a>
+                        <span class="label label-default inline-label">Bonus</span> <a href="#/cached/all" target="_blank">See how you compare against an imaginary profile containing the entire Steam library!</a>
                     </p>
                     <ul class="list-inline lead">
                         <li>Share</li>
@@ -210,7 +208,7 @@
                                     Remaining
                                 </button>
                             </div>
-                            <div data-bind="css: 'btn-group' + (width < 380 ? ' btn-group-xs' : '')" role="group" aria-label="Completion levels">
+                            <div data-bind="css: 'btn-group' + (superSmall ? ' btn-group-xs' : '')" role="group" aria-label="Completion levels">
                                 <button type="button"
                                         class="btn btn-default"
                                         data-bind="enable: sliceTotal, click: function() { sliceCompletionLevel(PlaytimeType.Current); }, css: { active: sliceCompletionLevel() === PlaytimeType.Current }">
@@ -283,32 +281,32 @@
                                 </th>
                                 <!-- ReSharper disable UnknownCssClass -->
                                 <th class="sortable expanded" unselectable="on" data-bind="click: toggleSort('steamName')">
-                                    <!-- ReSharper restore UnknownCssClass -->
+                                <!-- ReSharper restore UnknownCssClass -->
                                     Game
                                     <span data-bind="css: sortClass('steamName')" aria-hidden="true"></span>
                                 </th>
-                                <th class="sortable compressed" unselectable="on" data-bind="click: toggleSort('steamPlaytime')">
+                                <th class="sortable compressed hidden-xs" unselectable="on" data-bind="click: toggleSort('steamPlaytime')">
                                     <span data-placement="top"
                                           data-toggle="tooltip"
                                           data-container="body"
                                           title="Current Steam playtime (in hours)">Playtime</span>
                                     <span data-bind="css: sortClass('steamPlaytime')" aria-hidden="true"></span>
                                 </th>
-                                <th class="sortable compressed" unselectable="on" data-bind="click: toggleSort('hltbMainTtb')">
+                                <th class="sortable compressed hidden-xs" unselectable="on" data-bind="click: toggleSort('hltbMainTtb')">
                                     <span data-placement="top"
                                           data-toggle="tooltip"
                                           data-container="body"
                                           title="Time to beat main objectives (hours)">Main</span>
                                     <span data-bind="css: sortClass('hltbMainTtb')" aria-hidden="true"></span>
                                 </th>
-                                <th class="sortable compressed" unselectable="on" data-bind="click: toggleSort('hltbExtrasTtb')">
+                                <th class="sortable compressed hidden-xs" unselectable="on" data-bind="click: toggleSort('hltbExtrasTtb')">
                                     <span data-placement="top"
                                           data-toggle="tooltip"
                                           data-container="body"
                                           title="Time to beat main+extra objectives (hours)">Extras</span>
                                     <span data-bind="css: sortClass('hltbExtrasTtb')" aria-hidden="true"></span>
                                 </th>
-                                <th class="sortable compressed" unselectable="on" data-bind="click: toggleSort('hltbCompletionistTtb')">
+                                <th class="sortable compressed hidden-xs" unselectable="on" data-bind="click: toggleSort('hltbCompletionistTtb')">
                                     <span data-placement="top"
                                           data-toggle="tooltip"
                                           data-container="body"
@@ -316,7 +314,7 @@
                                     <span data-bind="css: sortClass('hltbCompletionistTtb')" aria-hidden="true"></span>
                                 </th>
                                 <!-- ReSharper disable UnknownCssClass -->
-                                <th class="expanded">HLTB Name</th>
+                                <th class="expanded hidden-xs">HLTB Name</th>
                                 <!-- ReSharper restore UnknownCssClass -->
                             </tr>
                         </thead>
@@ -331,11 +329,11 @@
                                         <span data-bind="text:steamName, css: (included() ? '' : 'text-muted')"></span>
                                     </a>
                                 </td>
-                                <td data-bind="css: 'vcenter compressed' + (included() ? '' : ' text-muted'), text: getHours(steamPlaytime) + 'h'"></td>
-                                <td data-bind="css: 'vcenter compressed' + (included() ? '' : ' text-muted') + (hltbMainTtbImputed ? ' emphasized' : ''), text: getHours($data.hltbMainTtb) + 'h'"></td>
-                                <td data-bind="css: 'vcenter compressed' + (included() ? '' : ' text-muted') + (hltbExtrasTtbImputed ? ' emphasized' : ''), text: getHours($data.hltbExtrasTtb) + 'h'"></td>
-                                <td data-bind="css: 'vcenter compressed' + (included() ? '' : ' text-muted') + (hltbCompletionistTtbImputed ? ' emphasized' : ''), text: getHours($data.hltbCompletionistTtb) + 'h'">></td>
-                                <td data-bind="css: 'vcenter expanded' + (known ? '' : ' emphasized')">
+                                <td data-bind="css: 'vcenter compressed hidden-xs' + (included() ? '' : ' text-muted'), text: getHours(steamPlaytime) + 'h'"></td>
+                                <td data-bind="css: 'vcenter compressed hidden-xs' + (included() ? '' : ' text-muted') + (hltbMainTtbImputed ? ' emphasized' : ''), text: getHours($data.hltbMainTtb) + 'h'"></td>
+                                <td data-bind="css: 'vcenter compressed hidden-xs' + (included() ? '' : ' text-muted') + (hltbExtrasTtbImputed ? ' emphasized' : ''), text: getHours($data.hltbExtrasTtb) + 'h'"></td>
+                                <td data-bind="css: 'vcenter compressed hidden-xs' + (included() ? '' : ' text-muted') + (hltbCompletionistTtbImputed ? ' emphasized' : ''), text: getHours($data.hltbCompletionistTtb) + 'h'">></td>
+                                <td data-bind="css: 'vcenter expanded hidden-xs' + (known ? '' : ' emphasized')">
                                     <a data-bind="visible: !known && (updatePhase() == GameUpdatePhase.None), click: $root.displayUpdateDialog" href="javascript:;">
                                         <span class="fa fa-puzzle-piece"></span> Missing (click to update)
                                     </a>
@@ -359,21 +357,21 @@
                             <tr>
                                 <td><input type="checkbox" class="invisible" /></td>
                                 <td>-</td>
-                                <td>-</td>
-                                <td>-</td>
-                                <td>-</td>
-                                <td>-</td>
-                                <td>-</td>
+                                <td class="hidden-xs">-</td>
+                                <td class="hidden-xs">-</td>
+                                <td class="hidden-xs">-</td>
+                                <td class="hidden-xs">-</td>
+                                <td class="hidden-xs">-</td>
                             </tr>
                             <!-- /ko -->
                         </tbody>
                     </table>
-                    <div class="pull-right tableInfo">
+                    <div class="pull-right tableInfo hidden-xs">
                         <strong>Games per page</strong>
                         <select data-bind="options: $root.pageSizeOptions, value: perPage"></select>
                     </div>
                     <ul class="pagination gamePagination">
-                        <li data-bind="css: leftPagerClass, click: gotoPage(1)">
+                        <li data-bind="css: leftPagerClass() + ' hidden-xs', click: gotoPage(1)">
                             <a href="#" title="First page"><span class="fa fa-fw fa-angle-double-left"></span></a>
                         </li>
                         <li data-bind="css: leftPagerClass, click: prevPage">
@@ -387,7 +385,7 @@
                         <li data-bind="css: rightPagerClass, click: nextPage">
                             <a href="#" title="Next page"><span class="fa fa-fw fa-angle-right"></span></a>
                         </li>
-                        <li data-bind="css: rightPagerClass, click: gotoPage(pages().length)">
+                        <li data-bind="css: rightPagerClass() + ' hidden-xs', click: gotoPage(pages().length)">
                             <a href="#" title="Last page"><span class="fa fa-fw fa-angle-double-right"></span></a>
                         </li>
                     </ul>
@@ -412,7 +410,7 @@
     <script type="text/javascript" src="http://www.amcharts.com/lib/3/themes/light.js"></script>
     <script type="text/javascript" src="http://www.amcharts.com/lib/3/serial.js"></script>
     <script type="text/javascript" src="http://www.amcharts.com/lib/3/pie.js"></script>
-    <script type="text/javascript" src="Scripts/responsive.min.js"></script>
+    <script type="text/javascript" src="http://www.amcharts.com/lib/3/plugins/responsive/responsive.min.js"></script>
     <script type="text/javascript" src="bower_components/knockout-datatable/knockout-datatable.min.js"></script>
     <script type="text/javascript" src="Scripts/countdown.min.js"></script>
     <script type="text/javascript" src="Scripts/app.min.js"></script>

@@ -109,6 +109,14 @@ function AppViewModel() {
     var self = this;
 
     self.width = $(window).width();
+    self.superSmall = self.width < 380;
+    self.extraSmall = self.width < 768;
+    self.small = self.width < 992;
+    self.medium = self.width < 1200;
+
+    $(window).on("orientationchange", function () {
+        location.reload();
+    });
 
     self.steamVanityUrlName = ko.observable("");
 
@@ -116,6 +124,7 @@ function AppViewModel() {
         recordWord: 'game',
         sortDir: 'asc',
         perPage: 10,
+        paginationLimit: self.superSmall ? 3 : (self.small ? 6 : 10),
         unsortedClass: "glyphicon glyphicon-sort",
         ascSortClass: "glyphicon glyphicon-sort-by-attributes",
         descSortClass: "glyphicon glyphicon-sort-by-attributes-alt"
@@ -499,7 +508,7 @@ function AppViewModel() {
         var sliceClicked = typeof clickedSlice !== "undefined";
 
         if (sliceClicked) {
-            if (self.width < 768) { //don't break down on extra small devices
+            if (self.extraSmall) { //don't break down on extra small devices
                 return;
             }
             clickedCategory = clickedSlice.dataContext;
@@ -579,7 +588,7 @@ function AppViewModel() {
 
     var initChart = function (chartId) {
         var chart = $("#" + chartId);
-        chart.height(chart.width() * 2 / 3);
+        chart.height(chart.width() * (self.superSmall ? 1 : 2 / 3));
     };
 
     var initSerialChart = function(chartId, dataProvider) {
