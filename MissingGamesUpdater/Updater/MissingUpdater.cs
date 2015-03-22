@@ -37,7 +37,7 @@ namespace MissingGamesUpdater.Updater
         {
             MissingUpdaterEventSource.Log.UpdateMissingGamesStart();
 
-            var steamTask = GetAllSteamApps();
+            var steamTask = GetAllSteamApps(s_client);
             var tableTask = StorageHelper.GetAllApps(ae => ae.SteamAppId);
             
             await Task.WhenAll(steamTask, tableTask).ConfigureAwait(false);
@@ -55,11 +55,11 @@ namespace MissingGamesUpdater.Updater
             MissingUpdaterEventSource.Log.UpdateMissingGamesStop();                 //(even if two jobs overlap the next one will fix it)
         }
 
-        private static async Task<IList<App>> GetAllSteamApps()
+        internal static async Task<IList<App>> GetAllSteamApps(HttpRetryClient client)
         {
             MissingUpdaterEventSource.Log.RetrieveAllSteamAppsStart(GetSteamAppListUrl);
 
-            var allGamesRoot = await SiteUtil.GetAsync<AllGamesRoot>(s_client, GetSteamAppListUrl).ConfigureAwait(false);
+            var allGamesRoot = await SiteUtil.GetAsync<AllGamesRoot>(client, GetSteamAppListUrl).ConfigureAwait(false);
 
             MissingUpdaterEventSource.Log.RetrieveAllSteamAppsStop(GetSteamAppListUrl);
 

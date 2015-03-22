@@ -19,8 +19,7 @@ namespace SteamHltbScraper.Scraper
 {
     public static class HltbScraper
     {
-        private static readonly Uri SearchHltbUrl = new Uri(@"http://howlongtobeat.com/search_main.php?t=games&page=1&sorthead=popular&sortd=Normal%20Order&plat=&detail=0
-");
+        private static readonly Uri SearchHltbUrl = new Uri(@"http://howlongtobeat.com/search_main.php?t=games&page=1&sorthead=popular&sortd=Normal%20Order&plat=&detail=0");
         private const string SearchHltbPostDataFormat = @"queryString={0}";
 
         private const string HltbGamePageFormat = @"http://www.howlongtobeat.com/game.php?id={0}";

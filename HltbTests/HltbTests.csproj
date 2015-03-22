@@ -95,6 +95,7 @@
     <Compile Include="Logging\EventSourceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scraping\ScrapingTests.cs" />
+    <Compile Include="Steam\SteamTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\PrepareWebJobFolder.bat">
