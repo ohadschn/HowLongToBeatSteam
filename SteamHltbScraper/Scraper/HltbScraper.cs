@@ -28,7 +28,7 @@ namespace SteamHltbScraper.Scraper
         private const string HltbGameOverviewPageFormat = @"http://www.howlongtobeat.com/game_overview.php?id={0}";
 
         private static readonly int ScrapingLimit = SiteUtil.GetOptionalValueFromConfig("ScrapingLimit", int.MaxValue);
-        private const int Retries = 10;
+        private const int Retries = 5;
         private static readonly HttpRetryClient Client = new HttpRetryClient(Retries);
 
         private static void Main()
@@ -92,12 +92,7 @@ namespace SteamHltbScraper.Scraper
 
                 try
                 {
-                    app.HltbName = await ExponentialBackoff.ExecuteAsyncWithExponentialRetries(
-                        () => ScrapeHltbName(app.HltbId),
-                        (le, retryCount, delay) => HltbScraperEventSource.Log.EmptyGameNameParsed(app.HltbId, retryCount, Retries, (int)delay.TotalSeconds),
-                        ex => ex is EmptyNameException,
-                        Retries, HttpRetryClient.MinBackoff, HttpRetryClient.MaxBackoff, HttpRetryClient.DefaultClientBackoff, 
-                        CancellationToken.None).ConfigureAwait(false);
+                    app.HltbName = await ScrapeWithExponentialRetries(ScrapeHltbName, app.HltbId).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
@@ -108,7 +103,7 @@ namespace SteamHltbScraper.Scraper
                 HltbInfo hltbInfo;
                 try
                 {
-                    hltbInfo = await ScrapeHltbInfo(app.HltbId).ConfigureAwait(false);
+                    hltbInfo = await ScrapeWithExponentialRetries(ScrapeHltbInfo, app.HltbId).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
@@ -124,6 +119,16 @@ namespace SteamHltbScraper.Scraper
             HltbScraperEventSource.Log.ScrapeHltbStop();
         }
 
+        private static Task<T> ScrapeWithExponentialRetries<T>(Func<int, Task<T>> scraper, int hltbId)
+        {
+            return ExponentialBackoff.ExecuteAsyncWithExponentialRetries(
+                        () => scraper(hltbId),
+                        (le, retryCount, delay) => HltbScraperEventSource.Log.FlaggedGameEncountered(hltbId, retryCount, Retries, (int)delay.TotalSeconds),
+                        ex => ex is FlaggedGameException,
+                        Retries, HttpRetryClient.MinBackoff, HttpRetryClient.MaxBackoff, HttpRetryClient.DefaultClientBackoff,
+                        CancellationToken.None);
+        }
+
         private static FormatException GetFormatException(string message, string steamName, HtmlDocument doc)
         {
             return GetFormatExceptionCore(message, "Steam name: " + steamName, doc);
@@ -137,6 +142,15 @@ namespace SteamHltbScraper.Scraper
             return new FormatException(String.Format(CultureInfo.InvariantCulture, "{0}. {1}. Document: {2}", message, id, doc.DocumentNode.OuterHtml));
         }
 
+        private static void VerifyGame(HtmlDocument doc, int hltbId)
+        {
+            if (String.IsNullOrWhiteSpace(doc.DocumentNode.OuterHtml) 
+                || doc.DocumentNode.OuterHtml.Contains("This game has been flagged", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new FlaggedGameException(GetFormatException("Flagged game encountered", hltbId, doc));
+            }
+        }
+
         private static async Task<HltbInfo> ScrapeHltbInfo(int hltbId)
         {
             HltbScraperEventSource.Log.ScrapeHltbInfoStart(hltbId);
@@ -146,6 +160,8 @@ namespace SteamHltbScraper.Scraper
             HltbScraperEventSource.Log.GetGameOverviewPageStart(gameOverviewUrl);
             var doc = await LoadDocument(() => Client.GetAsync(gameOverviewUrl)).ConfigureAwait(false);
             HltbScraperEventSource.Log.GetGameOverviewPageStop(gameOverviewUrl);
+
+            VerifyGame(doc, hltbId);
 
             var list = doc.DocumentNode.Descendants("div").FirstOrDefault(n => n.GetAttributeValue("class", null) == "gprofile_times");
             if (list == null)
@@ -182,6 +198,8 @@ namespace SteamHltbScraper.Scraper
             var doc = await LoadDocument(() => Client.GetAsync(gamePageUrl)).ConfigureAwait(false);
             HltbScraperEventSource.Log.GetHltbGamePageStop(gamePageUrl);
 
+            VerifyGame(doc, hltbId);
+
             var headerDiv = doc.DocumentNode.Descendants().FirstOrDefault(n => n.GetAttributeValue("class", null) == "gprofile_header");
             if (headerDiv == null)
             {
@@ -191,7 +209,7 @@ namespace SteamHltbScraper.Scraper
             var hltbName = headerDiv.InnerText.Trim();
             if (String.IsNullOrWhiteSpace(hltbName))
             {
-                throw new EmptyNameException(GetFormatException("Empty name parsed", hltbId, doc));
+                throw GetFormatException("Empty name parsed", hltbId, doc);
             }
 
             HltbScraperEventSource.Log.ScrapeHltbNameStop(hltbId, hltbName);
@@ -330,25 +348,25 @@ namespace SteamHltbScraper.Scraper
     }
 
     [Serializable]
-    public class EmptyNameException : Exception
+    public class FlaggedGameException : Exception
     {
-        public EmptyNameException() : this((string)null)
+        public FlaggedGameException() : this((string)null)
         {
 
         }
-        public EmptyNameException(Exception exception) : this(exception == null ? String.Empty : exception.Message, exception)
+        public FlaggedGameException(Exception exception) : this(exception == null ? String.Empty : exception.Message, exception)
         {
         }
 
-        public EmptyNameException(string message) : this(message, null)
+        public FlaggedGameException(string message) : this(message, null)
         {
         }
 
-        public EmptyNameException(string message, Exception inner) : base(message, inner)
+        public FlaggedGameException(string message, Exception inner) : base(message, inner)
         {
         }
 
-        protected EmptyNameException(SerializationInfo serializationInfo, StreamingContext streamingContext) : base(serializationInfo, streamingContext)
+        protected FlaggedGameException(SerializationInfo serializationInfo, StreamingContext streamingContext) : base(serializationInfo, streamingContext)
         {
         }
     }

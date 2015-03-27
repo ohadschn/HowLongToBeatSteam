@@ -293,10 +293,10 @@ namespace SteamHltbScraper.Logging
 
         [Event(
             140,
-            Message = "Empty game name parsed for HLTB ID {0} - retrying attempt #{1} / {2} will take place in {3} seconds",
+            Message = "Flagged game encountered for HLTB ID {0} - retrying attempt #{1} / {2} will take place in {3} seconds",
             Keywords=Keywords.Scraping,
             Level=EventLevel.Warning)]
-        public void EmptyGameNameParsed(int hltbId, int retryCount, int totalRetries, int delaySeconds)
+        public void FlaggedGameEncountered(int hltbId, int retryCount, int totalRetries, int delaySeconds)
         {
             WriteEvent(140, hltbId, retryCount, totalRetries, delaySeconds);
         }
