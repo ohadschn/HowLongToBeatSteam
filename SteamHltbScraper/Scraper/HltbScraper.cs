@@ -96,6 +96,7 @@ namespace SteamHltbScraper.Scraper
                 }
                 catch (Exception e)
                 {
+                    MakeVerbose(e);
                     HltbScraperEventSource.Log.ErrorScrapingHltbName(current, app.SteamAppId, app.SteamName, app.HltbId, e);
                     return;
                 }
@@ -107,6 +108,7 @@ namespace SteamHltbScraper.Scraper
                 }
                 catch (Exception e)
                 {
+                    MakeVerbose(e);
                     HltbScraperEventSource.Log.ErrorScrapingHltbInfo(current, app.SteamAppId, app.SteamName, e);
                     return;
                 }
@@ -123,10 +125,20 @@ namespace SteamHltbScraper.Scraper
         {
             return ExponentialBackoff.ExecuteAsyncWithExponentialRetries(
                         () => scraper(hltbId),
-                        (le, retryCount, delay) => HltbScraperEventSource.Log.FlaggedGameEncountered(hltbId, retryCount, Retries, (int)delay.TotalSeconds),
-                        ex => ex is FlaggedGameException,
+                        (lastException, retryCount, delay) => 
+                            HltbScraperEventSource.Log.TransientHltbFault(hltbId, lastException.Message, retryCount, Retries, (int)delay.TotalSeconds),
+                        ex => ex is TransientHltbFaultException,
                         Retries, HttpRetryClient.MinBackoff, HttpRetryClient.MaxBackoff, HttpRetryClient.DefaultClientBackoff,
                         CancellationToken.None);
+        }
+
+        private static void MakeVerbose(Exception e)
+        {
+            var transientFaultException = e as TransientHltbFaultException;
+            if (transientFaultException != null)
+            {
+                transientFaultException.PrintDocument = true;
+            }
         }
 
         private static FormatException GetFormatException(string message, string steamName, HtmlDocument doc)
@@ -142,15 +154,6 @@ namespace SteamHltbScraper.Scraper
             return new FormatException(String.Format(CultureInfo.InvariantCulture, "{0}. {1}. Document: {2}", message, id, doc.DocumentNode.OuterHtml));
         }
 
-        private static void VerifyGame(HtmlDocument doc, int hltbId)
-        {
-            if (String.IsNullOrWhiteSpace(doc.DocumentNode.OuterHtml) 
-                || doc.DocumentNode.OuterHtml.Contains("This game has been flagged", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new FlaggedGameException(GetFormatException("Flagged game encountered", hltbId, doc));
-            }
-        }
-
         private static async Task<HltbInfo> ScrapeHltbInfo(int hltbId)
         {
             HltbScraperEventSource.Log.ScrapeHltbInfoStart(hltbId);
@@ -160,8 +163,6 @@ namespace SteamHltbScraper.Scraper
             HltbScraperEventSource.Log.GetGameOverviewPageStart(gameOverviewUrl);
             var doc = await LoadDocument(() => Client.GetAsync(gameOverviewUrl)).ConfigureAwait(false);
             HltbScraperEventSource.Log.GetGameOverviewPageStop(gameOverviewUrl);
-
-            VerifyGame(doc, hltbId);
 
             var list = doc.DocumentNode.Descendants("div").FirstOrDefault(n => n.GetAttributeValue("class", null) == "gprofile_times");
             if (list == null)
@@ -181,7 +182,7 @@ namespace SteamHltbScraper.Scraper
 
             if (!gotMain && !gotExtras && !gotCompletionist && !gotSolo && !gotCoOp && !gotVs)
             {
-                throw GetFormatException("Could not find any TTB list item", hltbId, doc);
+                throw new TransientHltbFaultException("Could not find any TTB list item for HLTB ID " + hltbId, doc);
             }
 
             HltbScraperEventSource.Log.ScrapeHltbInfoStop(hltbId, Math.Max(mainTtb, soloTtb), extrasTtb, completionistTtb);
@@ -198,8 +199,6 @@ namespace SteamHltbScraper.Scraper
             var doc = await LoadDocument(() => Client.GetAsync(gamePageUrl)).ConfigureAwait(false);
             HltbScraperEventSource.Log.GetHltbGamePageStop(gamePageUrl);
 
-            VerifyGame(doc, hltbId);
-
             var headerDiv = doc.DocumentNode.Descendants().FirstOrDefault(n => n.GetAttributeValue("class", null) == "gprofile_header");
             if (headerDiv == null)
             {
@@ -209,7 +208,7 @@ namespace SteamHltbScraper.Scraper
             var hltbName = headerDiv.InnerText.Trim();
             if (String.IsNullOrWhiteSpace(hltbName))
             {
-                throw GetFormatException("Empty name parsed", hltbId, doc);
+                throw new TransientHltbFaultException("Empty name parsed for HLTB ID " + hltbId, doc);
             }
 
             HltbScraperEventSource.Log.ScrapeHltbNameStop(hltbId, hltbName);
@@ -347,27 +346,20 @@ namespace SteamHltbScraper.Scraper
         }
     }
 
-    [Serializable]
-    public class FlaggedGameException : Exception
+    public class TransientHltbFaultException : Exception
     {
-        public FlaggedGameException() : this((string)null)
-        {
+        public HtmlDocument Document { get; private set; }
+        public bool PrintDocument { get; set; }
 
-        }
-        public FlaggedGameException(Exception exception) : this(exception == null ? String.Empty : exception.Message, exception)
+        public TransientHltbFaultException(string message, HtmlDocument doc) : base(message)
         {
-        }
-
-        public FlaggedGameException(string message) : this(message, null)
-        {
+            Document = doc;
+            PrintDocument = false;
         }
 
-        public FlaggedGameException(string message, Exception inner) : base(message, inner)
+        public override string ToString()
         {
-        }
-
-        protected FlaggedGameException(SerializationInfo serializationInfo, StreamingContext streamingContext) : base(serializationInfo, streamingContext)
-        {
+            return base.ToString() + (PrintDocument ? (Environment.NewLine + Document.DocumentNode.OuterHtml) : String.Empty);
         }
     }
 }

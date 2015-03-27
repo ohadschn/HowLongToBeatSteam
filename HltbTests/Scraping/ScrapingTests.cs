@@ -11,27 +11,51 @@ namespace HltbTests.Scraping
         [TestMethod]
         public void TestPortal()
         {
-            TestScraping(400, "Portal", "Portal");
+            TestScrapingSinglePlayer(400, "Portal", "Portal");
         }
 
         [TestMethod]
         public void TestLegoStarWarsTheCompleteSaga()
         {
-            TestScraping(32440, "LEGO Star Wars: The Complete Saga", "Lego Star Wars: The Complete Saga");
+            TestScrapingSinglePlayer(32440, "LEGO Star Wars: The Complete Saga", "Lego Star Wars: The Complete Saga");
         }
 
-        private void TestScraping(int steamId, string steamName, string hltbName)
+        [TestMethod]
+        public void TestSpiralKnights()
+        {
+            TestScrapingMultiPlayer(99900, "Spiral Knights", "Spiral Knights");
+        }
+
+        private void TestScrapingSinglePlayer(int steamId, string steamName, string hltbName)
+        {
+            var app = GetApp(steamId, steamName, hltbName);
+            Assert.IsTrue(app.MainTtb > 0, "non-positive main TTB for single player game with stats");
+            Assert.IsTrue(app.ExtrasTtb > 0, "non-positive extras TTB for single player game with stats");
+            Assert.IsTrue(app.CompletionistTtb > 0, "non-positive completionist TTB for single player game with stats");
+
+            Assert.IsFalse(app.MainTtbImputed, "imputed main TTB for single player game with stats");
+            Assert.IsFalse(app.ExtrasTtbImputed, "imputed extras TTB for single player game with stats");
+            Assert.IsFalse(app.CompletionistTtbImputed, "imputed completionist TTB for single player game with stats");
+        }
+
+        private void TestScrapingMultiPlayer(int steamId, string steamName, string hltbName)
+        {
+            var app = GetApp(steamId, steamName, hltbName);
+            Assert.IsTrue(app.MainTtb == 0, "non-zero main TTB for multiplayer game");
+            Assert.IsTrue(app.ExtrasTtb == 0, "non-zero extras TTB for multiplayer game");
+            Assert.IsTrue(app.CompletionistTtb == 0, "non-zero completionist TTB for multiplayer game");
+
+            Assert.IsTrue(app.MainTtbImputed, "non-imputed main TTB for multiplayer game");
+            Assert.IsTrue(app.ExtrasTtbImputed, "non-imputed extras TTB for multiplayer game");
+            Assert.IsTrue(app.CompletionistTtbImputed, "non-imputed completionist TTB for multiplayer game");
+        }
+
+        private static AppEntity GetApp(int steamId, string steamName, string hltbName)
         {
             var app = new AppEntity(steamId, steamName, AppEntity.GameTypeName);
             HltbScraper.ScrapeHltb(new[] { app }).Wait();
             Assert.AreEqual(hltbName, app.HltbName, "Incorrect HLTB game name");
-            Assert.IsTrue(app.MainTtb > 0, "Expected positive main TTB");
-            Assert.IsTrue(app.ExtrasTtb > 0, "Expected positive extras TTB");
-            Assert.IsTrue(app.CompletionistTtb > 0, "Expected positive completionist TTB");
-
-            Assert.IsFalse(app.MainTtbImputed, "Expected non-imputed main TTB");
-            Assert.IsFalse(app.ExtrasTtbImputed, "Expected non-imputed extras TTB");
-            Assert.IsFalse(app.CompletionistTtbImputed, "Expected non-imputed completionist TTB");
+            return app;
         }
     }
 }

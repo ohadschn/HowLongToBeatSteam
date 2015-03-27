@@ -5,6 +5,7 @@ using Common.Entities;
 using Common.Logging;
 using Common.Storage;
 using SteamHltbScraper.Scraper;
+using Microsoft.WindowsAzure.Storage;
 
 namespace ManualTableUpdater.Updater
 {
@@ -14,7 +15,8 @@ namespace ManualTableUpdater.Updater
         {
             try
             {
-                HltbScraper.ScrapeHltb(new[] { new AppEntity(80, "Baron Wittard", AppEntity.GameTypeName) }).Wait();
+
+                //HltbScraper.ScrapeHltb(new[] { new AppEntity(80, "Baron Wittard", AppEntity.GameTypeName) }).Wait();
                 //var allApps = StorageHelper.GetAllApps(e => e, AppEntity.MeasuredFilter, 20).Result.ToArray();
                 //Imputer.Impute(allApps)
                 
