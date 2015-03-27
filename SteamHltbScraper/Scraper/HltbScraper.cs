@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Globalization;
 using Common.Entities;
 using Common.Logging;
 using Common.Storage;
@@ -116,6 +117,19 @@ namespace SteamHltbScraper.Scraper
             HltbScraperEventSource.Log.ScrapeHltbStop();
         }
 
+        private static FormatException GetFormatException(string message, string steamName, HtmlDocument doc)
+        {
+            return GetFormatExceptionCore(message, "Steam name: " + steamName, doc);
+        }
+        private static FormatException GetFormatException(string message, int hltbId, HtmlDocument doc)
+        {
+            return GetFormatExceptionCore(message, "HLTB ID: " + hltbId, doc);
+        }
+        private static FormatException GetFormatExceptionCore(string message, string id, HtmlDocument doc)
+        {
+            return new FormatException(String.Format(CultureInfo.InvariantCulture, "{0}. {1}. Document: {2}", message, id, doc.DocumentNode.OuterHtml));
+        }
+
         private static async Task<HltbInfo> ScrapeHltbInfo(int hltbId)
         {
             HltbScraperEventSource.Log.ScrapeHltbInfoStart(hltbId);
@@ -129,22 +143,22 @@ namespace SteamHltbScraper.Scraper
             var list = doc.DocumentNode.Descendants("div").FirstOrDefault(n => n.GetAttributeValue("class", null) == "gprofile_times");
             if (list == null)
             {
-                throw new FormatException("Can't find list element - HLTB ID " + hltbId);
+                throw GetFormatException("Can't find list element", hltbId, doc);
             }
 
             var listItems = list.Descendants("li").Take(4).ToArray();
             
             int mainTtb, extrasTtb, completionistTtb, soloTtb, coOp, vs;
-            bool gotMain = TryGetMinutes(listItems, "main", out mainTtb);
-            bool gotExtras = TryGetMinutes(listItems, "extras", out extrasTtb);
-            bool gotCompletionist = TryGetMinutes(listItems, "completionist", out completionistTtb);
-            bool gotSolo = TryGetMinutes(listItems, "solo", out soloTtb);
-            bool gotCoOp = TryGetMinutes(listItems, "co-op", out coOp);
-            bool gotVs = TryGetMinutes(listItems, "vs", out vs);
+            bool gotMain = TryGetMinutes(listItems, "main", hltbId, doc, out mainTtb);
+            bool gotExtras = TryGetMinutes(listItems, "extras", hltbId, doc, out extrasTtb);
+            bool gotCompletionist = TryGetMinutes(listItems, "completionist", hltbId, doc, out completionistTtb);
+            bool gotSolo = TryGetMinutes(listItems, "solo", hltbId, doc, out soloTtb);
+            bool gotCoOp = TryGetMinutes(listItems, "co-op", hltbId, doc, out coOp);
+            bool gotVs = TryGetMinutes(listItems, "vs", hltbId, doc, out vs);
 
             if (!gotMain && !gotExtras && !gotCompletionist && !gotSolo && !gotCoOp && !gotVs)
             {
-                throw new FormatException("Could not find any TTB list item for HLTB ID " + hltbId);
+                throw GetFormatException("Could not find any TTB list item", hltbId, doc);
             }
 
             HltbScraperEventSource.Log.ScrapeHltbInfoStop(hltbId, Math.Max(mainTtb, soloTtb), extrasTtb, completionistTtb);
@@ -164,20 +178,20 @@ namespace SteamHltbScraper.Scraper
             var headerDiv = doc.DocumentNode.Descendants().FirstOrDefault(n => n.GetAttributeValue("class", null) == "gprofile_header");
             if (headerDiv == null)
             {
-                throw new FormatException("Can't parse name for HLTB ID " + hltbId);
+                throw GetFormatException("Can't parse name", hltbId, doc);
             }
 
             var hltbName = headerDiv.InnerText.Trim();
             if (String.IsNullOrWhiteSpace(hltbName))
             {
-                throw new FormatException("Empty name parsed for HLTB ID" + hltbId);
+                throw GetFormatException("Empty name parsed", hltbId, doc);
             }
 
             HltbScraperEventSource.Log.ScrapeHltbNameStop(hltbId, hltbName);
             return hltbName;
         }
 
-        private static bool TryGetMinutes(IEnumerable<HtmlNode> listItems, string type, out int minutes)
+        private static bool TryGetMinutes(IEnumerable<HtmlNode> listItems, string type, int hltbId, HtmlDocument doc, out int minutes)
         {
             var listItem = listItems.FirstOrDefault(hn => hn.InnerText != null && hn.InnerText.Contains(type, StringComparison.OrdinalIgnoreCase));
             if (listItem == null)
@@ -189,13 +203,13 @@ namespace SteamHltbScraper.Scraper
             var hoursDiv = listItem.Descendants("div").FirstOrDefault();
             if (hoursDiv == null)
             {
-                throw new FormatException("TTB div not found inside list item");
+                throw GetFormatException("TTB div not found inside list item", hltbId, doc);
             }
 
             var hoursStr = hoursDiv.InnerText;
             if (hoursStr == null)
             {
-                throw new FormatException("Hours div inner text is null");
+                throw GetFormatException("Hours div inner text is null", hltbId, doc);
             }
 
             var match = Regex.Match(hoursStr, @"\s*(.+) Hour");
@@ -204,7 +218,7 @@ namespace SteamHltbScraper.Scraper
                 double hours;
                 if (!Double.TryParse(match.Groups[1].Value.Replace("&#189;", ".5"), out hours))
                 {
-                    throw new FormatException("Cannot parse duration from list item with text " + listItem.InnerText);                                        
+                    throw GetFormatException("Cannot parse duration from list item with text " + listItem.InnerText, hltbId, doc);                                        
                 }
                 minutes = (int) TimeSpan.FromHours(hours).TotalMinutes;
                 return true;
@@ -215,7 +229,7 @@ namespace SteamHltbScraper.Scraper
             {
                 if (!Int32.TryParse(match.Groups[1].Value, out minutes))
                 {
-                    throw new FormatException("Cannot parse duration from list item with text " + listItem.InnerText);                                        
+                    throw GetFormatException("Cannot parse duration from list item with text " + listItem.InnerText, hltbId, doc);                                        
                 }
                 return true;
             }
@@ -226,7 +240,7 @@ namespace SteamHltbScraper.Scraper
                 return true;
             }
 
-            throw new FormatException("Cannot parse duration from list item with text " + listItem.InnerText);                    
+            throw GetFormatException("Cannot parse duration from list item with text " + listItem.InnerText, hltbId, doc);                    
         }
 
         private static async Task<int> ScrapeHltbId(string appName)
@@ -253,20 +267,20 @@ namespace SteamHltbScraper.Scraper
             var anchor = first.Descendants("a").FirstOrDefault();
             if (anchor == null)
             {
-                throw new FormatException("App anchor not found");
+                throw GetFormatException("App anchor not found", appName, doc);
             }
 
             var link = anchor.GetAttributeValue("href", null);
             if (link == null)
             {
-                throw new FormatException("App anchor does not include href attribute");
+                throw GetFormatException("App anchor does not include href attribute", appName, doc);
             }
 
             var idStr = link.Substring(12);
             int hltbId;
             if (!int.TryParse(idStr, out hltbId))
             {
-                throw new FormatException("App link does not contain HLTB integer ID in expected location (expecting char12..end): " + idStr);
+                throw GetFormatException("App link does not contain HLTB integer ID in expected location (expecting char12..end): " + idStr, appName, doc);
             }
 
             HltbScraperEventSource.Log.ScrapeHltbIdStop(appName, hltbId);

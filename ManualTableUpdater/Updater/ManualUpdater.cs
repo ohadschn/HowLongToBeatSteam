@@ -107,10 +107,10 @@ namespace ManualTableUpdater.Updater
             }
         }
 
-        public static string RemoveTabs(object obj)
-        {
-            return obj == null ? String.Empty : obj.ToString().Replace('\t', ';');
-        }
+        //public static string RemoveTabs(object obj)
+        //{
+        //    return obj == null ? String.Empty : obj.ToString().Replace('\t', ';');
+        //}
 
         //public static void GetAppsFromCsv()
         //{
