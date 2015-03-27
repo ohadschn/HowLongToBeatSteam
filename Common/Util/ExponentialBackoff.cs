@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Globalization;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 namespace Common.Util
 {
+    public delegate void AttemptFailureHandler(Exception lastException, int currentRetryCount, TimeSpan delay);
+
     public class ExponentialBackoff : RetryStrategy
     {
         private readonly int m_retryCount;
@@ -110,6 +114,25 @@ namespace Common.Util
                 retryInterval = TimeSpan.Zero;
                 return false;
             };
+        }
+
+        public static Task<T> ExecuteAsyncWithExponentialRetries<T>(
+            Func<Task<T>> executor,
+            AttemptFailureHandler attemptFailureHandler,
+            Predicate<Exception> transientErrorDetector,
+            int retries,
+            TimeSpan minBackoff,
+            TimeSpan maxBackoff,
+            TimeSpan deltaBackoff,
+            CancellationToken ct)
+        {
+            var retryPolicy = new RetryPolicy(
+                new GenericTransientErrorDetectionStrategy(transientErrorDetector),
+                new ExponentialBackoff(retries, minBackoff, maxBackoff, deltaBackoff));
+
+            retryPolicy.Retrying += (sender, args) => attemptFailureHandler(args.LastException, args.CurrentRetryCount, args.Delay);
+
+            return retryPolicy.ExecuteAsync(executor, ct);
         }
     }
 }

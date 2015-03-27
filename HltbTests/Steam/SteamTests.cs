@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Collections.Concurrent;
 using System.Globalization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Common.Store;
@@ -26,8 +27,8 @@ namespace HltbTests.Steam
 
                 updates = SteamStoreHelper.GetStoreInformationUpdates(new[] { new BasicStoreInfo(portalApp.appid, portalApp.name, null) }, client).Result;
             }
-            Assert.AreEqual(1, updates.Count, "Expected exactly one update for requested app (Portal)");
 
+            Assert.AreEqual(1, updates.Count, "Expected exactly one update for requested app (Portal)");
             var portal = updates.First();
 
             Assert.IsTrue(portal.IsGame, "Portal is not classified as a game");

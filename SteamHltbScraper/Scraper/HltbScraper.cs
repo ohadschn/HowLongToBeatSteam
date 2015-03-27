@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Globalization;
+using System.Runtime.Serialization;
 using Common.Entities;
 using Common.Logging;
 using Common.Storage;
@@ -27,7 +28,8 @@ namespace SteamHltbScraper.Scraper
         private const string HltbGameOverviewPageFormat = @"http://www.howlongtobeat.com/game_overview.php?id={0}";
 
         private static readonly int ScrapingLimit = SiteUtil.GetOptionalValueFromConfig("ScrapingLimit", int.MaxValue);
-        private static readonly HttpRetryClient Client = new HttpRetryClient(4);
+        private const int Retries = 10;
+        private static readonly HttpRetryClient Client = new HttpRetryClient(Retries);
 
         private static void Main()
         {
@@ -90,7 +92,12 @@ namespace SteamHltbScraper.Scraper
 
                 try
                 {
-                    app.HltbName = await ScrapeHltbName(app.HltbId).ConfigureAwait(false);
+                    app.HltbName = await ExponentialBackoff.ExecuteAsyncWithExponentialRetries(
+                        () => ScrapeHltbName(app.HltbId),
+                        (le, retryCount, delay) => HltbScraperEventSource.Log.EmptyGameNameParsed(app.HltbId, retryCount, Retries, (int)delay.TotalSeconds),
+                        ex => ex is EmptyNameException,
+                        Retries, HttpRetryClient.MinBackoff, HttpRetryClient.MaxBackoff, HttpRetryClient.DefaultClientBackoff, 
+                        CancellationToken.None).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
@@ -184,7 +191,7 @@ namespace SteamHltbScraper.Scraper
             var hltbName = headerDiv.InnerText.Trim();
             if (String.IsNullOrWhiteSpace(hltbName))
             {
-                throw GetFormatException("Empty name parsed", hltbId, doc);
+                throw new EmptyNameException(GetFormatException("Empty name parsed", hltbId, doc));
             }
 
             HltbScraperEventSource.Log.ScrapeHltbNameStop(hltbId, hltbName);
@@ -319,6 +326,30 @@ namespace SteamHltbScraper.Scraper
             }
             
             return scrapedTtb;
+        }
+    }
+
+    [Serializable]
+    public class EmptyNameException : Exception
+    {
+        public EmptyNameException() : this((string)null)
+        {
+
+        }
+        public EmptyNameException(Exception exception) : this(exception == null ? String.Empty : exception.Message, exception)
+        {
+        }
+
+        public EmptyNameException(string message) : this(message, null)
+        {
+        }
+
+        public EmptyNameException(string message, Exception inner) : base(message, inner)
+        {
+        }
+
+        protected EmptyNameException(SerializationInfo serializationInfo, StreamingContext streamingContext) : base(serializationInfo, streamingContext)
+        {
         }
     }
 }

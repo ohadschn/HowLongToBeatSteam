@@ -14,8 +14,6 @@ namespace Common.Util
         public static readonly TimeSpan MaxBackoff = TimeSpan.FromSeconds(120.0);
         public static readonly TimeSpan DefaultClientBackoff = TimeSpan.FromSeconds(4.0);
 
-        private static readonly TransientErrorCatchAllStrategy CatchAllStrategy = new TransientErrorCatchAllStrategy();
-
         private readonly int m_retries;
         private readonly HttpClient m_client;
 
@@ -110,12 +108,7 @@ namespace Common.Util
 
         private Task<HttpResponseMessage> RequestAsync(Uri uri, Func<Task<HttpResponseMessage>> requester, CancellationToken ct)
         {
-            var retryPolicy = new RetryPolicy(CatchAllStrategy, new ExponentialBackoff(m_retries, MinBackoff, MaxBackoff, DefaultClientBackoff));
-
-            retryPolicy.Retrying += (sender, args) => 
-                CommonEventSource.Log.HttpRequestFailed(uri, args.LastException, args.CurrentRetryCount, m_retries, args.Delay);
-
-            return retryPolicy.ExecuteAsync(async () =>
+            return ExponentialBackoff.ExecuteAsyncWithExponentialRetries(async () =>
             {
                 HttpResponseMessage response;
                 try
@@ -127,15 +120,9 @@ namespace Common.Util
                     throw new HttpRequestException("Request timed out", e);
                 }
                 return response.EnsureSuccessStatusCode();
-            }, ct);
-        }
-
-        private sealed class TransientErrorCatchAllStrategy : ITransientErrorDetectionStrategy
-        {
-            public bool IsTransient(Exception ex)
-            {
-                return true;
-            }
+            },
+            (lastException, retryCount, delay) => CommonEventSource.Log.HttpRequestFailed(uri, lastException, retryCount, m_retries, delay),
+            null, m_retries, MinBackoff, MaxBackoff, DefaultClientBackoff, ct);
         }
 
         public void Dispose()
