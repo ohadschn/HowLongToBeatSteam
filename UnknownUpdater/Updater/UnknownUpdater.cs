@@ -14,7 +14,10 @@ namespace UnknownUpdater.Updater
 {
     class UnknownUpdater
     {
-        private static readonly HttpRetryClient Client = new HttpRetryClient(100);
+        private static int StoreApiRetries = SiteUtil.GetOptionalValueFromConfig("UnknownUpdaterStoreApiRetries", 100);
+        private static int StorageRetries = SiteUtil.GetOptionalValueFromConfig("UnknownUpdaterStorageRetries", 10);
+
+        private static readonly HttpRetryClient Client = new HttpRetryClient(StoreApiRetries);
         static void Main()
         {
             EventSource.SetCurrentThreadActivityId(Guid.NewGuid());
@@ -35,8 +38,8 @@ namespace UnknownUpdater.Updater
         private async static Task UpdateUnknownApps()
         {
             UnknownUpdaterEventSource.Log.UpdateUnknownAppsStart();
-            
-            var apps = await StorageHelper.GetAllApps(ae => ae, AppEntity.UnknownFilter, 5).ConfigureAwait(false);
+
+            var apps = await StorageHelper.GetAllApps(ae => ae, AppEntity.UnknownFilter, StorageRetries).ConfigureAwait(false);
             var updates = await SteamStoreHelper.GetStoreInformationUpdates(
                         apps.Select(ae => new BasicStoreInfo(ae.SteamAppId, ae.SteamName, ae.AppType)), Client).ConfigureAwait(false);
 
@@ -44,7 +47,7 @@ namespace UnknownUpdater.Updater
 
             var appsDict = apps.ToDictionary(ae => ae.SteamAppId);
             await StorageHelper.ExecuteAppOperations(updates,
-                    ae => new[] {TableOperation.Delete(appsDict[ae.SteamAppId]), TableOperation.Insert(ae)}, 10).ConfigureAwait(false);
+                    ae => new[] { TableOperation.Delete(appsDict[ae.SteamAppId]), TableOperation.Insert(ae) }, StorageRetries).ConfigureAwait(false);
 
             UnknownUpdaterEventSource.Log.UpdateUnknownAppsStop();
         }

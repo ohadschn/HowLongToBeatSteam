@@ -13,6 +13,8 @@ namespace MissingGamesUpdater.Updater
 {
     class MissingUpdater
     {
+        private static int SteamApiRetries = SiteUtil.GetOptionalValueFromConfig("MissingUpdaterSteamApiRetries", 200);
+        private static int StorageRetries = SiteUtil.GetOptionalValueFromConfig("MissingUpdaterStorageRetries", 5);
         private static readonly Uri GetSteamAppListUrl = new Uri("http://api.steampowered.com/ISteamApps/GetAppList/v0001/");
         private static HttpRetryClient s_client;
 
@@ -22,7 +24,7 @@ namespace MissingGamesUpdater.Updater
             try
             {
                 SiteUtil.SetDefaultConnectionLimit();
-                using (s_client = new HttpRetryClient(200))
+                using (s_client = new HttpRetryClient(SteamApiRetries))
                 {
                     UpdateMissingGames().Wait();                
                 }
@@ -38,7 +40,7 @@ namespace MissingGamesUpdater.Updater
             MissingUpdaterEventSource.Log.UpdateMissingGamesStart();
 
             var steamTask = GetAllSteamApps(s_client);
-            var tableTask = StorageHelper.GetAllApps(ae => ae.SteamAppId);
+            var tableTask = StorageHelper.GetAllApps(ae => ae.SteamAppId, null, StorageRetries);
             
             await Task.WhenAll(steamTask, tableTask).ConfigureAwait(false);
 
@@ -51,7 +53,7 @@ namespace MissingGamesUpdater.Updater
             var updates = await SteamStoreHelper.GetStoreInformationUpdates(missingApps.Select(a => new BasicStoreInfo(a.appid, a.name, null)), s_client)
                 .ConfigureAwait(false);
 
-            await StorageHelper.InsertApps(updates, 5).ConfigureAwait(false);       //we're inserting new entries, no fear of collisions 
+            await StorageHelper.InsertApps(updates, StorageRetries).ConfigureAwait(false);       //we're inserting new entries, no fear of collisions 
             MissingUpdaterEventSource.Log.UpdateMissingGamesStop();                 //(even if two jobs overlap the next one will fix it)
         }
 
