@@ -826,7 +826,8 @@ function AppViewModel() {
                 };
                 self.gameTable.rows(getGamesArray(data.Games));
 
-                self.originalMainRemaining = self.total().mainRemaining;
+                self.originalMainRemaining = data.Totals.MainRemaining;
+
                 if (self.gameTable.rows().length > 0) {
                     $("#content").show(); //IE + FF fix
                     self.gameTable.currentPageNumber(1);
@@ -871,24 +872,28 @@ function AppViewModel() {
         $('#HltbUpdateModal').modal('hide');
     };
 
-    self.getShortShareText = function() {
-        return "I just found out I have over " + hoursWithCommas(self.originalMainRemaining) + " left to beat my entire Steam library!";
+    var getCanonicalAddress = function () {
+        return "http://howlongtobeatsteam.com" + window.location.pathname + window.location.hash;
+    };
+
+    self.getShortShareText = function (hours) {
+        return "I just found out I have over " + (hours ? hoursWithCommas(self.originalMainRemaining) : (getYears(self.originalMainRemaining) + " of consecutive gameplay")) + " left to beat my entire Steam library!";
     };
 
     self.getShareText = function() {
-        return self.getShortShareText() + " Click to check it out and find out how long you have too...";
+        return self.getShortShareText(false) + " Click to check it out and find out how long you have too...";
     };
 
     self.shareOnFacebook = function() {
-        self.openShareWindow("https://www.facebook.com/dialog/feed?app_id=445487558932250&display=popup&caption=HowLongToBeatSteam.com&description=" + encodeURIComponent(self.getShareText()) + "&link=" + encodeURIComponent(window.location.href) + "&redirect_uri=" + encodeURIComponent("http://howlongtobeatsteam.com/CloseWindow.html") + "&picture=" + encodeURIComponent("http://howlongtobeatsteam.com/Resources/sk5_0.jpg"));
+        self.openShareWindow("https://www.facebook.com/dialog/feed?app_id=445487558932250&display=popup&caption=HowLongToBeatSteam.com&description=" + encodeURIComponent(self.getShareText()) + "&link=" + encodeURIComponent(getCanonicalAddress()) + "&redirect_uri=" + encodeURIComponent("http://howlongtobeatsteam.com/CloseWindow.html") + "&picture=" + encodeURIComponent("http://howlongtobeatsteam.com/Resources/sk5_0.jpg"));
     };
 
-    self.shareOnTwitter = function() {
-        self.openShareWindow("https://twitter.com/share?url=" + encodeURIComponent(window.location.href) + "&text=" + self.getShortShareText() + "&hashtags=hltbs,steam");
+    self.shareOnTwitter = function () {
+        self.openShareWindow("https://twitter.com/share?url=" + encodeURIComponent(getCanonicalAddress()) + "&text=" + self.getShortShareText(true) + "&hashtags=hltbs,steam");
     };
 
     self.shareOnGooglePlus = function() {
-        self.openShareWindow("https://plus.google.com/share?url=" + encodeURIComponent(window.location.href));
+        self.openShareWindow("https://plus.google.com/share?url=" + encodeURIComponent(getCanonicalAddress()));
     };
 
     self.openShareWindow = function(url) {
