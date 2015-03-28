@@ -90,6 +90,9 @@
 .lowered {
     margin-top: 10px;
 }
+.lead-lowered {
+    margin-top: 15px;
+}
 .fixed-page {
     width: 50px;
     text-align: center;
