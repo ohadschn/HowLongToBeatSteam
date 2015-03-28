@@ -150,9 +150,6 @@ namespace HowLongToBeatSteam.Controllers
                 }
                 IncrementDictionaryEntryFromZero(playtimesByGenre, String.Join("/", genres), gameMainRemaining);
                 IncrementDictionaryEntryFromZero(playtimesByMetacritic, cachedGameData.MetacriticScore, gameMainRemaining);
-                IncrementDictionaryEntryFromZero(PlaytimesByAppType, cachedGameData.AppType, gameMainRemaining);
-                IncrementDictionaryEntryFromZero(PlaytimesByPlatform, cachedGameData.Platforms.ToString(), gameMainRemaining);
-                IncrementDictionaryEntryFromZero(PlaytimesByReleaseYear, cachedGameData.ReleaseYear, gameMainRemaining);
 
                 games.Add(new SteamAppUserData(cachedGameData, game.playtime_forever));
             }

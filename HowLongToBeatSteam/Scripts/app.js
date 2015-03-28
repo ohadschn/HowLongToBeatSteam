@@ -82,10 +82,7 @@ function Game(steamGame) {
     var steamAppData = steamGame.SteamAppData;
     self.steamAppId = steamAppData.SteamAppId;
     self.steamName = steamAppData.SteamName;
-    self.appType = steamAppData.AppType;
-    self.platforms = steamAppData.Platforms;
     self.genres = ko.utils.arrayMap(steamAppData.Genres, genreSeparatorReplacer);
-    self.releaseYear = steamAppData.ReleaseYear;
     self.metacriticScore = steamAppData.MetacriticScore;
 
     var hltbInfo = steamAppData.HltbInfo;
@@ -202,8 +199,6 @@ function AppViewModel() {
         }
     };
 
-    var platformLookup = ["Unknown", "Windows", "Mac", "Windows, Mac", "Linux", "Windows, Linux", "Mac, Linux", "Windows, Mac, Linux"];
-
     self.total = ko.pureComputed(function () {
 
         //visit dependencies first so that knockout subscribes to them regardless of initialTotal
@@ -236,9 +231,6 @@ function AppViewModel() {
         var completionistRemaining = 0;
         var playtimesByGenre = {};
         var playtimesByMetacritic = {};
-        var playtimesByAppType = {};
-        var playtimesByReleaseYear = {};
-        var playtimesByPlatform = {};
 
         var arr = ko.utils.arrayFilter(filteredRows, function (game) { return game.included(); });
         for (var i = 0; i < arr.length; ++i) {
@@ -264,9 +256,6 @@ function AppViewModel() {
             var slicedPlaytime = getSlicedPlaytime(sliceCompletionLevel, sliceTotal, game, gameMainRemaining, gameExtrasRemaining, gameCompletionistRemaining);
             updateSlicedPlaytime(playtimesByGenre, genre, slicedPlaytime);
             updateSlicedPlaytime(playtimesByMetacritic, game.metacriticScore, slicedPlaytime);
-            updateSlicedPlaytime(playtimesByAppType, game.appType, slicedPlaytime);
-            updateSlicedPlaytime(playtimesByPlatform, platformLookup[game.platforms], slicedPlaytime);
-            updateSlicedPlaytime(playtimesByReleaseYear, game.releaseYear, slicedPlaytime);
         }
 
         if (count === filteredRows.length) {
@@ -285,10 +274,7 @@ function AppViewModel() {
             extrasRemaining: extrasRemaining,
             completionistRemaining: completionistRemaining,
             playtimesByGenre: playtimesByGenre,
-            playtimesByMetacritic: playtimesByMetacritic,
-            playtimesByAppType: playtimesByAppType,
-            playtimesByPlatform: playtimesByPlatform,
-            playtimesByReleaseYear: playtimesByReleaseYear
+            playtimesByMetacritic: playtimesByMetacritic
         };
     }).extend({ rateLimit: 0 });
 
@@ -563,29 +549,9 @@ function AppViewModel() {
         updateDiscreteSliceChart(self.genreChart, total.playtimesByGenre);
     };
 
-    var updateAppTypeChart = function (total) {
-        updateDiscreteSliceChart(self.appTypeChart, total.playtimesByAppType);
-    };
-
-    var updatePlatformChart = function (total) {
-        updateDiscreteSliceChart(self.platformChart, total.playtimesByPlatform);
-    };
-
-    var updateReleaseDateChart = function (total, clickedSlice) {
-        var decades = [];
-        var currentYear = new Date().getFullYear();
-        for (var year = 1980; year <= currentYear; year+=10) {
-            decades.push({ title: year.toString().substring(2) + "s", min: year, max: year + 9 });
-        }
-        updateContinuousSliceChart(self.releaseDateChart, total.playtimesByReleaseYear, decades, clickedSlice);
-    };
-
     var updateSliceCharts = function (total) {
         updateGenreChart(total);
         updateMetacriticChart(total);
-        updateAppTypeChart(total);
-        updatePlatformChart(total);
-        updateReleaseDateChart(total);
     };
 
     var updateCharts = function (total) {
@@ -707,9 +673,6 @@ function AppViewModel() {
 
         self.genreChart = initPieChart("genreChart", 25);
         self.metacriticChart = initPieChart("metacriticChart", 25, updateMetacriticChart);
-        self.appTypeChart = initPieChart("appTypeChart", 40);
-        self.platformChart = initPieChart("platformChart", 40);
-        self.releaseDateChart = initPieChart("releaseDateChart", 40, updateReleaseDateChart);
 
         self.total.subscribe(updateCharts);
         self.sliceTotal.subscribe(function (slicetotal) {
@@ -819,10 +782,7 @@ function AppViewModel() {
                     extrasRemaining: data.Totals.ExtrasRemaining,
                     completionistRemaining: data.Totals.CompletionistRemaining,
                     playtimesByGenre: data.Totals.PlaytimesByGenre,
-                    playtimesByMetacritic: data.Totals.PlaytimesByMetacritic,
-                    playtimesByAppType: data.Totals.PlaytimesByAppType,
-                    playtimesByPlatform: data.Totals.PlaytimesByPlatform,
-                    playtimesByReleaseYear: data.Totals.PlaytimesByReleaseYear
+                    playtimesByMetacritic: data.Totals.PlaytimesByMetacritic
                 };
                 self.gameTable.rows(getGamesArray(data.Games));
 
