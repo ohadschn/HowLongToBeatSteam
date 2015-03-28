@@ -52,7 +52,7 @@
                       data-placement="bottom"
                       data-toggle="tooltip"
                       data-container="body"
-                      title="Your profile ID can be found in your Steam profile page URL: steamcommunity.com/id/[ID]. Make sure it is set to public in Steam's privacy settings."></span>
+                      title="Your profile ID can be found in your Steam profile page URL: steamcommunity.com/id/[ID]. Make sure it is set as public in Steam's privacy settings."></span>
                 <label class="control-label sr-only" for="steamIdText">Stem profile ID</label>
                 <input id="steamIdText" type="text" data-bind="textInput : steamVanityUrlName" placeholder="Steam Profile ID" class="form-control inline-form-input">
                 <button type="submit" data-bind="enable: !processing() && steamVanityUrlName() !== ''" class="btn btn-primary">Tell me how long</button>
@@ -253,7 +253,7 @@
                                                   data-placement="top"
                                                   data-toggle="tooltip"
                                                   data-container="body"
-                                                  title="Click a slice to drill down to the underlying scores">
+                                                  title="Click a slice to drill down to its underlying scores">
                                             </span>
                                         </span>
                                     </small>
@@ -269,7 +269,7 @@
                     <div class="h3">
                         Filter
                         <input class="filter-input" type="text" data-bind="textInput: filter" />
-                        <span class="text-nowrap" data-bind="text: '(' + $root.total().count + ' games)'"></span>
+                        <span class="text-nowrap" data-bind="text: '(' + numberWithCommas($root.total().count) + ' games)'"></span>
                     </div>
                 </div>
                 <div class="panel-body">
