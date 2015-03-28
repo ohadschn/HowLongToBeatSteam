@@ -592,7 +592,7 @@ function AppViewModel() {
                 }
             ],
             precision: 0,
-            startDuration: 1,
+            startDuration: (typeof window.orientation === 'undefined') ? 1 : 0,
             responsive: {
                 enabled: true,
                 rules: [{
@@ -841,7 +841,7 @@ function AppViewModel() {
     };
 
     self.getShareText = function() {
-        return self.getShortShareText(false) + " Click to check it out and find out how long you have too...";
+        return self.getShortShareText(false) + " Click to check it out and find out how long you have too :)";
     };
 
     self.shareOnFacebook = function() {
