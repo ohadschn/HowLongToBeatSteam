@@ -40,32 +40,32 @@ namespace ManualTableUpdater.Updater
                 //    //    app.GenresFlat, app.CategoriesFlat, app.AppType, app.SteamAppId);
                 //    Console.WriteLine(DataContractSerializeObject(app));
                 //}
-                //using (var writer = new StreamWriter("games.tsv"))
-                //{
-                //    writer.WriteLine("SteamID\tSteamName\tType\tGenres\tCategories\tHltbID\tHltbName\tMain\tMainImputed\tExtras\tExtrasImputed\tCompletionist\tCompletionistImputed\tDevelopers\tPublishers\tPlatforms\tMetacritic\tReleaseDate");
-                //    foreach (var app in StorageHelper.GetAllApps(a => a, AppEntity.MeasuredFilter).Result)
-                //    {
-                //        writer.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}",
-                //            RemoveTabs(app.SteamAppId),
-                //            RemoveTabs(app.SteamName),
-                //            RemoveTabs(app.AppType),
-                //            RemoveTabs(app.GenresFlat),
-                //            RemoveTabs(app.CategoriesFlat),
-                //            RemoveTabs(app.HltbId),
-                //            RemoveTabs(app.HltbName),
-                //            RemoveTabs(app.MainTtb),
-                //            RemoveTabs(app.MainTtbImputed),
-                //            RemoveTabs(app.ExtrasTtb),
-                //            RemoveTabs(app.ExtrasTtbImputed),
-                //            RemoveTabs(app.CompletionistTtb),
-                //            RemoveTabs(app.CompletionistTtbImputed),
-                //            RemoveTabs(app.DevelopersFlat),
-                //            RemoveTabs(app.PublishersFlat),
-                //            RemoveTabs(app.Platforms),
-                //            RemoveTabs(app.MetacriticScore),
-                //            RemoveTabs(app.ReleaseDate));
-                //    }   
-                //}
+                using (var writer = new StreamWriter("games.tsv"))
+                {
+                    writer.WriteLine("SteamID\tSteamName\tType\tGenres\tCategories\tHltbID\tHltbName\tMain\tMainImputed\tExtras\tExtrasImputed\tCompletionist\tCompletionistImputed\tDevelopers\tPublishers\tPlatforms\tMetacritic\tReleaseDate");
+                    foreach (var app in StorageHelper.GetAllApps(a => a, AppEntity.MeasuredFilter).Result)
+                    {
+                        writer.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}",
+                            RemoveTabs(app.SteamAppId),
+                            RemoveTabs(app.SteamName),
+                            RemoveTabs(app.AppType),
+                            RemoveTabs(app.GenresFlat),
+                            RemoveTabs(app.CategoriesFlat),
+                            RemoveTabs(app.HltbId),
+                            RemoveTabs(app.HltbName),
+                            RemoveTabs(app.MainTtb),
+                            RemoveTabs(app.MainTtbImputed),
+                            RemoveTabs(app.ExtrasTtb),
+                            RemoveTabs(app.ExtrasTtbImputed),
+                            RemoveTabs(app.CompletionistTtb),
+                            RemoveTabs(app.CompletionistTtbImputed),
+                            RemoveTabs(app.DevelopersFlat),
+                            RemoveTabs(app.PublishersFlat),
+                            RemoveTabs(app.Platforms),
+                            RemoveTabs(app.MetacriticScore),
+                            RemoveTabs(app.ReleaseDate));
+                    }
+                }
 
                 //var measured = StorageHelper.GetAllApps(e => e, AppEntity.MeasuredFilter).Result;
                 //StorageHelper.GetAllApps(e => e, AppEntity.MeasuredFilter).Result;
@@ -109,10 +109,10 @@ namespace ManualTableUpdater.Updater
             }
         }
 
-        //public static string RemoveTabs(object obj)
-        //{
-        //    return obj == null ? String.Empty : obj.ToString().Replace('\t', ';');
-        //}
+        public static string RemoveTabs(object obj)
+        {
+            return obj == null ? String.Empty : obj.ToString().Replace('\t', ';');
+        }
 
         //public static void GetAppsFromCsv()
         //{

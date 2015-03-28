@@ -59,7 +59,7 @@
             </div>
         </form>
     </div>
-    <div data-bind="visible: processing">
+    <div data-bind="visible: processing" style="display: none">
         <img class="loader" src="https://cdnjs.cloudflare.com/ajax/libs/owl-carousel/1.3.2/AjaxLoader.gif" alt="Loading..." />
     </div>
     <div id="alerts" class="alerts" data-bind="visible: !introPage() && !processing()" style="display: none">
@@ -255,11 +255,11 @@
                                 <div id="appTypeChart" class="amchart"></div>
                             </div>
                             <div class="col-lg-4">
-                                <h4 class="text-center text-nowrap">Playtime by Platform</h4>
+                                <h4 class="text-center text-nowrap">Playtime by Release Date<span class="hidden-xs"> (clickable)</span></h4>
                                 <div id="releaseDateChart" class="amchart"></div>
                             </div>
                             <div class="col-lg-4">
-                                <h4 class="text-center text-nowrap">Playtime by Release Date<span class="hidden-xs"> (clickable)</span></h4>
+                                <h4 class="text-center text-nowrap">Playtime by Platform</h4>
                                 <div id="platformChart" class="amchart"></div>
                             </div>
                         </div>

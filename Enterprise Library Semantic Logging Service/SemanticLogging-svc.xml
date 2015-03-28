@@ -26,21 +26,6 @@
         <eventSource name="OS-HowLongToBeatSteam-Scraper" level="Verbose"/>
       </sources>
     </flatFileSink>
-    
-    <!--<windowsAzureTableSink 
-      name="AzureTable" 
-      instanceName="AzureTable" 
-      connectionString="UseDevelopmentStorage=true" 
-      maxBufferSize="100000" 
-      bufferingFlushAllTimeoutInSeconds="-1">
-      <sources>
-        <eventSource name="OS-HowLongToBeatSteam-Common" level="Verbose"/>
-        <eventSource name="OS-HowLongToBeatSteam-Site" level="Verbose"/>
-        <eventSource name="OS-HowLongToBeatSteam-MissingGamesUpdater" level="Verbose"/>
-        <eventSource name="OS-HowLongToBeatSteam-UnknownGamesUpdater" level="Verbose"/>
-        <eventSource name="OS-HowLongToBeatSteam-Scraper" level="Verbose"/>
-      </sources>
-    </windowsAzureTableSink>-->
-    
+
   </sinks>
 </configuration>

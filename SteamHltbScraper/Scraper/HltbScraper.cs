@@ -145,11 +145,11 @@ namespace SteamHltbScraper.Scraper
 
         private static FormatException GetFormatException(string message, string steamName, HtmlDocument doc, Exception inner = null)
         {
-            return GetFormatExceptionCore(message, "Steam name: " + steamName, doc);
+            return GetFormatExceptionCore(message, "Steam name: " + steamName, doc, inner);
         }
         private static FormatException GetFormatException(string message, int hltbId, HtmlDocument doc, Exception inner = null)
         {
-            return GetFormatExceptionCore(message, "HLTB ID: " + hltbId, doc);
+            return GetFormatExceptionCore(message, "HLTB ID: " + hltbId, doc, inner);
         }
         private static FormatException GetFormatExceptionCore(string message, string id, HtmlDocument doc, Exception inner = null)
         {
@@ -273,19 +273,32 @@ namespace SteamHltbScraper.Scraper
                 return 0;
             }
 
-            var match = Regex.Match(durationText, @"\s*(.+) Hour");
-            if (match.Success && match.Groups.Count == 2)
+            double hours;
+            if (TryGetDuration(durationText, @"\s*(.+) Hour", out hours))
             {
-                return (int) TimeSpan.FromHours(Double.Parse(match.Groups[1].Value.Replace("&#189;", ".5"))).TotalMinutes;
+                return (int)TimeSpan.FromHours(hours).TotalMinutes;
             }
-            
-            match = Regex.Match(durationText, @"\s*(.+) Min");
-            if (match.Success && match.Groups.Count == 2)
+
+            double minutes;
+            if (TryGetDuration(durationText, @"\s*(.+) Min", out minutes))
             {
-                return (int) Double.Parse(match.Groups[1].Value.Replace("&#189;", ".5"));
+                return (int)minutes;
             }
 
             throw new FormatException("Could not find duration specifier");
+        }
+
+        private static bool TryGetDuration(string durationText, string pattern, out double duration)
+        {
+            var match = Regex.Match(durationText, pattern);
+            if (match.Success && match.Groups.Count == 2)
+            {
+                duration = Double.Parse(match.Groups[1].Value.Replace("&#189;", ".5"), CultureInfo.InvariantCulture);
+                return true;
+            }
+
+            duration = 0;
+            return false;
         }
 
         private static async Task<int> ScrapeHltbId(string appName)
