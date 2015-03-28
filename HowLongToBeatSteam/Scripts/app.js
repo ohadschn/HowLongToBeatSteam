@@ -128,7 +128,7 @@ function AppViewModel() {
         recordWord: 'game',
         sortDir: 'asc',
         perPage: 10,
-        paginationLimit: self.superSmall ? 3 : (self.small ? 6 : 10),
+        paginationLimit: self.superSmall ? 3 : (self.small ? 4 : 8),
         unsortedClass: "glyphicon glyphicon-sort",
         ascSortClass: "glyphicon glyphicon-sort-by-attributes",
         descSortClass: "glyphicon glyphicon-sort-by-attributes-alt"
@@ -592,7 +592,7 @@ function AppViewModel() {
                 }
             ],
             precision: 0,
-            startDuration: (typeof window.orientation === 'undefined') ? 1 : 0,
+            startDuration: 1,
             responsive: {
                 enabled: true,
                 rules: [{
