@@ -79,7 +79,6 @@
                 <p class="lead">
                     <span class="fa fa-puzzle-piece"></span> Some of your games could not be found on <abbr class="visible-xs-inline" title="HowLongToBeat">HLTB</abbr> 
                     <span class="hidden-xs"> HowLongToBeat. Click the update links next to missing games in the table below to help!</span>
-                    </span>
                 </p>
             </div>
             <div role="alert" data-bind="visible: !error() && !alertHidden(), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-6' : 'col-md-12')">
@@ -176,7 +175,7 @@
                         </div>
                     </div>
                     <p class="lead lead-lowered">
-                        <strong data-bind="text: total().count + ' single-player games found'"></strong>
+                        <strong data-bind="text: numberWithCommas(total().count) + ' single-player games found'"></strong>
                     </p>
                     <ul class="lead">
                         <li>Your total amount of consecutive <strong>current</strong> playtime is <span data-bind="text: getYears(total().playtime)"></span>.</li>

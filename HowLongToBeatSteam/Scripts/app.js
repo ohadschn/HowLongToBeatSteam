@@ -888,6 +888,7 @@ $(document).ready(function () {
     var sammyApp = $.sammy(function () {
 
         this.get("#/", function () {
+            viewModel.steamVanityUrlName("");
             viewModel.introPage(true);
         });
 
