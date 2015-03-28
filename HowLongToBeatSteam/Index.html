@@ -78,7 +78,7 @@
                 </button>
                 <p class="lead">
                     <span class="fa fa-puzzle-piece"></span> Some of your games could not be found on <abbr class="visible-xs-inline" title="HowLongToBeat">HLTB</abbr> 
-                    <span class="hidden-xs"> HowLongToBeat. Click the update links next to missing games in the table below to help <span class="fa fa-smile-o"></span>
+                    <span class="hidden-xs"> HowLongToBeat. Click the update links next to missing games in the table below to help!</span>
                     </span>
                 </p>
             </div>
@@ -175,6 +175,9 @@
                             </div>
                         </div>
                     </div>
+                    <p class="lead">
+                        <strong data-bind="text: total().count + ' single-player games found'"></strong> 
+                    </p>
                     <ul class="lead lowered">
                         <li>Your total amount of consecutive <strong>current</strong> playtime is <span data-bind="text: getYears(total().playtime)"></span>.</li>
                         <li>Your remaining amount of consecutive <abbr title="you complete the main objectives, just enough to see the credits roll"><strong>main</strong></abbr> playtime is <span data-bind="text: getYears(total().mainRemaining)"></span>.</li>
