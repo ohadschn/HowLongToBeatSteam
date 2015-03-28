@@ -9,52 +9,83 @@ namespace HltbTests.Scraping
     public class ScrapingTests
     {
         [TestMethod]
-        public void TestPortal()
+        public void TestFullStats()
         {
-            TestScrapingSinglePlayer(400, "Portal", "Portal");
+            TestScraping("Portal", true, true, true);
         }
 
         [TestMethod]
-        public void TestLegoStarWarsTheCompleteSaga()
+        public void TestMultiplayerOnly()
         {
-            TestScrapingSinglePlayer(32440, "LEGO Star Wars: The Complete Saga", "Lego Star Wars: The Complete Saga");
+            TestScraping("Spiral Knights", false, false, false);
         }
 
         [TestMethod]
-        public void TestSpiralKnights()
+        public void TestEndlessTitle()
         {
-            TestScrapingMultiPlayer(99900, "Spiral Knights", "Spiral Knights");
+            TestScraping("World of Guns: Gun Disassembly", false, false, false);
         }
 
-        private void TestScrapingSinglePlayer(int steamId, string steamName, string hltbName)
+        [TestMethod]
+        public void TestSinglePlayerUnifiedStat()
         {
-            var app = GetApp(steamId, steamName, hltbName);
-            Assert.IsTrue(app.MainTtb > 0, "non-positive main TTB for single player game with stats");
-            Assert.IsTrue(app.ExtrasTtb > 0, "non-positive extras TTB for single player game with stats");
-            Assert.IsTrue(app.CompletionistTtb > 0, "non-positive completionist TTB for single player game with stats");
-
-            Assert.IsFalse(app.MainTtbImputed, "imputed main TTB for single player game with stats");
-            Assert.IsFalse(app.ExtrasTtbImputed, "imputed extras TTB for single player game with stats");
-            Assert.IsFalse(app.CompletionistTtbImputed, "imputed completionist TTB for single player game with stats");
+            TestScraping("A Bird Story", true, false, false);
+            TestScraping("The Secret of Hildegards", true, false, false);
+            TestScraping("Cognition: An Erica Reed Thriller", true, false, false);
+            TestScraping("Gearcrack Arena", true, false, false);
+            TestScraping("The Plan (2013)", true, false, false);
+            TestScraping("Crystals of Time", true, true, false);
+            TestScraping("The Wolf Among Us", true, true, false);
         }
 
-        private void TestScrapingMultiPlayer(int steamId, string steamName, string hltbName)
+        [TestMethod]
+        public void TestSinglePlayerUnifiedStatRange()
         {
-            var app = GetApp(steamId, steamName, hltbName);
-            Assert.IsTrue(app.MainTtb == 0, "non-zero main TTB for multiplayer game");
-            Assert.IsTrue(app.ExtrasTtb == 0, "non-zero extras TTB for multiplayer game");
-            Assert.IsTrue(app.CompletionistTtb == 0, "non-zero completionist TTB for multiplayer game");
-
-            Assert.IsTrue(app.MainTtbImputed, "non-imputed main TTB for multiplayer game");
-            Assert.IsTrue(app.ExtrasTtbImputed, "non-imputed extras TTB for multiplayer game");
-            Assert.IsTrue(app.CompletionistTtbImputed, "non-imputed completionist TTB for multiplayer game");
+            TestScraping("The Walking Dead: Season 2", true, true, false);
         }
 
-        private static AppEntity GetApp(int steamId, string steamName, string hltbName)
+        private void TestScraping(string name, bool hasMain, bool hasExtras, bool hasCompletionist)
         {
-            var app = new AppEntity(steamId, steamName, AppEntity.GameTypeName);
+            var app = GetApp(name);
+            if (hasMain)
+            {
+                Assert.IsTrue(app.MainTtb > 0, "expected positive main TTB");
+                Assert.IsFalse(app.MainTtbImputed, "expected non-imputed main TTB");
+            }
+            else
+            {
+                Assert.AreEqual(0, app.MainTtb, "expected zero main TTB");
+                Assert.IsTrue(app.MainTtbImputed, "expected imputed main TTB");
+            }
+
+            if (hasExtras)
+            {
+                Assert.IsTrue(app.ExtrasTtb > 0, "expected positive extras TTB");
+                Assert.IsFalse(app.ExtrasTtbImputed, "expected non-imputed extras TTB");
+            }
+            else
+            {
+                Assert.AreEqual(0, app.ExtrasTtb, "expected zero extras TTB");
+                Assert.IsTrue(app.ExtrasTtbImputed, "expected imputed extras TTB");
+            }
+
+            if (hasCompletionist)
+            {
+                Assert.IsTrue(app.CompletionistTtb > 0, "expected positive completionist TTB");
+                Assert.IsFalse(app.CompletionistTtbImputed, "expected non-imputed completionist TTB");
+            }
+            else
+            {
+                Assert.AreEqual(0, app.CompletionistTtb, "expected zero completionist TTB");
+                Assert.IsTrue(app.CompletionistTtbImputed, "expected imputed completionist TTB");
+            }
+        }
+
+        private static AppEntity GetApp(string name)
+        {
+            var app = new AppEntity(0, name, AppEntity.GameTypeName);
             HltbScraper.ScrapeHltb(new[] { app }).Wait();
-            Assert.AreEqual(hltbName, app.HltbName, "Incorrect HLTB game name");
+            Assert.AreEqual(name, app.HltbName, "Incorrect HLTB game name");
             return app;
         }
     }

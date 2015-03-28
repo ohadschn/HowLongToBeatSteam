@@ -28,8 +28,9 @@ namespace SteamHltbScraper.Scraper
         private const string HltbGameOverviewPageFormat = @"http://www.howlongtobeat.com/game_overview.php?id={0}";
 
         private static readonly int ScrapingLimit = SiteUtil.GetOptionalValueFromConfig("ScrapingLimit", int.MaxValue);
-        private const int Retries = 5;
-        private static readonly HttpRetryClient Client = new HttpRetryClient(Retries);
+        private static int ScrapingRetries = SiteUtil.GetOptionalValueFromConfig("HltbScraperScrapingRetries", 5);
+        private static int StorageRetries = SiteUtil.GetOptionalValueFromConfig("HltbScraperStorageRetries", 20);
+        private static readonly HttpRetryClient Client = new HttpRetryClient(ScrapingRetries);
 
         private static void Main()
         {
@@ -48,7 +49,8 @@ namespace SteamHltbScraper.Scraper
         {
             SiteUtil.SetDefaultConnectionLimit();
 
-            var allApps = (await StorageHelper.GetAllApps(e => e, AppEntity.MeasuredFilter, 20).ConfigureAwait(false)).Take(ScrapingLimit).ToArray();
+            var allApps = (await StorageHelper.GetAllApps(e => e, AppEntity.MeasuredFilter, StorageRetries).ConfigureAwait(false))
+                .Take(ScrapingLimit).ToArray();
 
             using (Client)
             {
@@ -58,7 +60,7 @@ namespace SteamHltbScraper.Scraper
             await Imputer.Impute(allApps).ConfigureAwait(false);
 
             //we're using Replace since the only other update to an existing game-typed entity would have to be manual which should take precedence
-            await StorageHelper.ReplaceApps(allApps, 20).ConfigureAwait(false); 
+            await StorageHelper.ReplaceApps(allApps, StorageRetries).ConfigureAwait(false); 
         }
 
         internal static async Task ScrapeHltb(IEnumerable<AppEntity> allApps)
@@ -126,9 +128,9 @@ namespace SteamHltbScraper.Scraper
             return ExponentialBackoff.ExecuteAsyncWithExponentialRetries(
                         () => scraper(hltbId),
                         (lastException, retryCount, delay) => 
-                            HltbScraperEventSource.Log.TransientHltbFault(hltbId, lastException.Message, retryCount, Retries, (int)delay.TotalSeconds),
+                            HltbScraperEventSource.Log.TransientHltbFault(hltbId, lastException.Message, retryCount, ScrapingRetries, (int)delay.TotalSeconds),
                         ex => ex is TransientHltbFaultException,
-                        Retries, HttpRetryClient.MinBackoff, HttpRetryClient.MaxBackoff, HttpRetryClient.DefaultClientBackoff,
+                        ScrapingRetries, HttpRetryClient.MinBackoff, HttpRetryClient.MaxBackoff, HttpRetryClient.DefaultClientBackoff,
                         CancellationToken.None);
         }
 
@@ -141,17 +143,17 @@ namespace SteamHltbScraper.Scraper
             }
         }
 
-        private static FormatException GetFormatException(string message, string steamName, HtmlDocument doc)
+        private static FormatException GetFormatException(string message, string steamName, HtmlDocument doc, Exception inner = null)
         {
             return GetFormatExceptionCore(message, "Steam name: " + steamName, doc);
         }
-        private static FormatException GetFormatException(string message, int hltbId, HtmlDocument doc)
+        private static FormatException GetFormatException(string message, int hltbId, HtmlDocument doc, Exception inner = null)
         {
             return GetFormatExceptionCore(message, "HLTB ID: " + hltbId, doc);
         }
-        private static FormatException GetFormatExceptionCore(string message, string id, HtmlDocument doc)
+        private static FormatException GetFormatExceptionCore(string message, string id, HtmlDocument doc, Exception inner = null)
         {
-            return new FormatException(String.Format(CultureInfo.InvariantCulture, "{0}. {1}. Document: {2}", message, id, doc.DocumentNode.OuterHtml));
+            return new FormatException(String.Format(CultureInfo.InvariantCulture, "{0}. {1}. Document: {2}", message, id, doc.DocumentNode.OuterHtml), inner);
         }
 
         private static async Task<HltbInfo> ScrapeHltbInfo(int hltbId)
@@ -172,21 +174,26 @@ namespace SteamHltbScraper.Scraper
 
             var listItems = list.Descendants("li").Take(4).ToArray();
             
-            int mainTtb, extrasTtb, completionistTtb, soloTtb, coOp, vs;
-            bool gotMain = TryGetMinutes(listItems, "main", hltbId, doc, out mainTtb);
-            bool gotExtras = TryGetMinutes(listItems, "extras", hltbId, doc, out extrasTtb);
-            bool gotCompletionist = TryGetMinutes(listItems, "completionist", hltbId, doc, out completionistTtb);
-            bool gotSolo = TryGetMinutes(listItems, "solo", hltbId, doc, out soloTtb);
-            bool gotCoOp = TryGetMinutes(listItems, "co-op", hltbId, doc, out coOp);
-            bool gotVs = TryGetMinutes(listItems, "vs", hltbId, doc, out vs);
+            int mainTtb, extrasTtb, completionistTtb, soloTtb, coOp, vs, singlePlayerMain, singlePlayerExtras, dummy;
 
-            if (!gotMain && !gotExtras && !gotCompletionist && !gotSolo && !gotCoOp && !gotVs)
+            bool gotMain = TryGetMinutes(listItems, "main", hltbId, doc, out mainTtb, out dummy);
+            bool gotExtras = TryGetMinutes(listItems, "extras", hltbId, doc, out extrasTtb, out dummy);
+            bool gotCompletionist = TryGetMinutes(listItems, "completionist", hltbId, doc, out completionistTtb, out dummy);
+            bool gotSolo = TryGetMinutes(listItems, "solo", hltbId, doc, out soloTtb, out dummy);
+            bool gotCoOp = TryGetMinutes(listItems, "co-op", hltbId, doc, out coOp, out dummy);
+            bool gotVs = TryGetMinutes(listItems, "vs", hltbId, doc, out vs, out dummy);
+            bool gotSinglePlayer = TryGetMinutes(listItems, "single", hltbId, doc, out singlePlayerMain, out singlePlayerExtras);
+
+            if (!gotMain && !gotExtras && !gotCompletionist && !gotSolo && !gotCoOp && !gotVs && !gotSinglePlayer)
             {
                 throw new TransientHltbFaultException("Could not find any TTB list item for HLTB ID " + hltbId, doc);
             }
 
-            HltbScraperEventSource.Log.ScrapeHltbInfoStop(hltbId, Math.Max(mainTtb, soloTtb), extrasTtb, completionistTtb);
-            return new HltbInfo(mainTtb, extrasTtb, completionistTtb);
+            var unifiedMain = Math.Max(mainTtb, Math.Max(singlePlayerMain, soloTtb));
+            var unifiedExtras = (singlePlayerExtras > singlePlayerMain) ? singlePlayerExtras : extrasTtb;
+
+            HltbScraperEventSource.Log.ScrapeHltbInfoStop(hltbId, unifiedMain, unifiedExtras, completionistTtb);
+            return new HltbInfo(unifiedMain, unifiedExtras, completionistTtb);
         }
 
         private static async Task<string> ScrapeHltbName(int hltbId)
@@ -215,56 +222,70 @@ namespace SteamHltbScraper.Scraper
             return hltbName;
         }
 
-        private static bool TryGetMinutes(IEnumerable<HtmlNode> listItems, string type, int hltbId, HtmlDocument doc, out int minutes)
+        private static bool TryGetMinutes(IEnumerable<HtmlNode> listItems, string type, int hltbId, HtmlDocument doc, out int minutesFrom, out int minutesTo)
         {
-            var listItem = listItems.FirstOrDefault(hn => hn.InnerText != null && hn.InnerText.Contains(type, StringComparison.OrdinalIgnoreCase));
-            if (listItem == null)
+            var durationListItem = listItems.FirstOrDefault(hn => hn.InnerText != null && hn.InnerText.Contains(type, StringComparison.OrdinalIgnoreCase));
+            if (durationListItem == null)
             {
-                minutes = 0;
+                minutesFrom = minutesTo = 0;
                 return false;
             }
 
-            var hoursDiv = listItem.Descendants("div").FirstOrDefault();
-            if (hoursDiv == null)
+            var durationDiv = durationListItem.Descendants("div").FirstOrDefault();
+            if (durationDiv == null)
             {
                 throw GetFormatException("TTB div not found inside list item", hltbId, doc);
             }
 
-            var hoursStr = hoursDiv.InnerText;
-            if (hoursStr == null)
+            var durationText = durationDiv.InnerText;
+            if (durationText == null)
             {
                 throw GetFormatException("Hours div inner text is null", hltbId, doc);
             }
 
-            var match = Regex.Match(hoursStr, @"\s*(.+) Hour");
-            if (match.Success && match.Groups.Count == 2)
+            var durationTexts = durationText.Split('-');
+            if (durationTexts.Length > 2)
             {
-                double hours;
-                if (!Double.TryParse(match.Groups[1].Value.Replace("&#189;", ".5"), out hours))
-                {
-                    throw GetFormatException("Cannot parse duration from list item with text " + listItem.InnerText, hltbId, doc);                                        
-                }
-                minutes = (int) TimeSpan.FromHours(hours).TotalMinutes;
-                return true;
-            }
-            
-            match = Regex.Match(hoursStr, @"\s*(.+) Min");
-            if (match.Success && match.Groups.Count == 2)
-            {
-                if (!Int32.TryParse(match.Groups[1].Value, out minutes))
-                {
-                    throw GetFormatException("Cannot parse duration from list item with text " + listItem.InnerText, hltbId, doc);                                        
-                }
-                return true;
-            }
-            
-            if (hoursStr.Contains("N/A", StringComparison.OrdinalIgnoreCase))
-            {
-                minutes = 0;
-                return true;
+                throw GetFormatException("Cannot parse duration (invalid range) from list item with text: " + durationListItem.InnerText, hltbId, doc);                                        
             }
 
-            throw GetFormatException("Cannot parse duration from list item with text " + listItem.InnerText, hltbId, doc);                    
+            try 
+	        {
+                minutesFrom = GetMinutes(durationTexts[0]);
+                minutesTo = durationTexts.Length == 1 ? minutesFrom : GetMinutes(durationTexts[1]);    
+	        }
+	        catch (FormatException e)
+	        {
+                throw GetFormatException("Cannot parse duration from list item with text: " + durationListItem.InnerText, hltbId, doc, e);                                        
+	        }
+            catch (OverflowException e)
+            {
+                throw GetFormatException("Cannot parse duration (overflow) from list item with text: " + durationListItem.InnerText, hltbId, doc, e);                                        
+            }
+
+            return true;
+        }
+
+        private static int GetMinutes(string durationText)
+        {
+            if (durationText.Contains("N/A", StringComparison.OrdinalIgnoreCase))
+            {
+                return 0;
+            }
+
+            var match = Regex.Match(durationText, @"\s*(.+) Hour");
+            if (match.Success && match.Groups.Count == 2)
+            {
+                return (int) TimeSpan.FromHours(Double.Parse(match.Groups[1].Value.Replace("&#189;", ".5"))).TotalMinutes;
+            }
+            
+            match = Regex.Match(durationText, @"\s*(.+) Min");
+            if (match.Success && match.Groups.Count == 2)
+            {
+                return (int) Double.Parse(match.Groups[1].Value.Replace("&#189;", ".5"));
+            }
+
+            throw new FormatException("Could not find duration specifier");
         }
 
         private static async Task<int> ScrapeHltbId(string appName)
