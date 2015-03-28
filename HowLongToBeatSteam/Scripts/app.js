@@ -128,7 +128,7 @@ function AppViewModel() {
         recordWord: 'game',
         sortDir: 'asc',
         perPage: 10,
-        paginationLimit: self.superSmall ? 3 : (self.small ? 4 : 8),
+        paginationLimit: self.superSmall ? 3 : (self.small ? 4 : (self.medium ? 6 : 10)),
         unsortedClass: "glyphicon glyphicon-sort",
         ascSortClass: "glyphicon glyphicon-sort-by-attributes",
         descSortClass: "glyphicon glyphicon-sort-by-attributes-alt"
