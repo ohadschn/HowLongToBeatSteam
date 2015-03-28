@@ -592,7 +592,7 @@ function AppViewModel() {
                 }
             ],
             precision: 0,
-            startDuration: 1,
+            startDuration: (typeof window.orientation === 'undefined') ? 1 : 0,
             responsive: {
                 enabled: true,
                 rules: [{
