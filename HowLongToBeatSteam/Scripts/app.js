@@ -477,7 +477,7 @@ function AppViewModel() {
         return unifySmallShards(shards, category.hours);
     };
 
-    var enrichCategoriesForChart = function (categories) {
+    var enrichCategoriesForChart = function (categories, pullUnknown) {
         for (var j = 0; j < categories.length; j++) {
             categories[j].hours = 0;
             categories[j].color = progressivePalette[j % progressivePalette.length]; //modulo just in case, progressivePalette should be big enough
@@ -492,7 +492,7 @@ function AppViewModel() {
             max: Number.POSITIVE_INFINITY,
             hours: 0,
             color: unknownColor,
-            pulled: false,
+            pulled: pullUnknown,
             index: categories.length
         });
     };
@@ -507,18 +507,11 @@ function AppViewModel() {
             clickedCategory = clickedSlice.dataContext;
         }
 
-        if (sliceClicked && clickedCategory.title === unknownTitle) {
-            if (clickedSlice.pulled) {
-                chart.clickSlice(clickedSlice.index);
-            } 
-            return;
-        }
-
-        enrichCategoriesForChart(categories);
+        enrichCategoriesForChart(categories, sliceClicked && clickedCategory.title === unknownTitle && clickedSlice.pulled);
 
         var slicedPlaytimeToBreakDown = {};
 
-        var categoryClicked = sliceClicked && clickedCategory.index !== -1;
+        var categoryClicked = sliceClicked && clickedCategory.index !== -1 && clickedCategory.title !== unknownTitle;
         populateCategories(slicedPlaytime, categories, !categoryClicked ? undefined : function (matchingCategory, sliceGroupKey, sliceGroupMinutes) {
             if (matchingCategory.index === clickedCategory.index) {
                 slicedPlaytimeToBreakDown[sliceGroupKey] = sliceGroupMinutes;
@@ -567,6 +560,7 @@ function AppViewModel() {
     var initSerialChart = function(chartId, dataProvider) {
         initChart(chartId);
         return AmCharts.makeChart(chartId, {
+            panEventsEnabled: false,
             type: "serial",
             theme: "light",
             colors: alternatingPalette,
@@ -592,7 +586,7 @@ function AppViewModel() {
                 }
             ],
             precision: 0,
-            startDuration: (typeof window.orientation === 'undefined') ? 1 : 0,
+            startDuration: (typeof window.orientation === 'undefined') ? 2 : 0,
             responsive: {
                 enabled: true,
                 rules: [{
@@ -614,6 +608,7 @@ function AppViewModel() {
     var initPieChart = function(chartId, marginTop, updater) {
         initChart(chartId);
         var chart = AmCharts.makeChart(chartId, {
+            panEventsEnabled: false,
             type: "pie",
             theme: "light",
             colors: alternatingPalette,
@@ -621,7 +616,7 @@ function AppViewModel() {
             marginRight: 0,
             marginBottom: 15,
             marginTop: marginTop,
-            pullOutRadius: "5%",
+            pullOutRadius: (typeof updater === "undefined") ? 0 : "5%",
             valueField: "hours",
             colorField: "color",
             descriptionField: "description",

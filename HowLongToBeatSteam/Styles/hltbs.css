@@ -84,8 +84,14 @@
     width: 130px;
     display: inline-block;
 }
+.inline {
+    display: inline;
+}
 .filter-input {
-    width: 180px;
+    width: 170px;
+}
+.push-right {
+    margin-left: 10px;
 }
 .lowered {
     margin-top: 10px;
