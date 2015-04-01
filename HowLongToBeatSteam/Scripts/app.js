@@ -586,7 +586,7 @@ function AppViewModel() {
                 }
             ],
             precision: 0,
-            startDuration: (typeof window.orientation === 'undefined') ? 2 : 0,
+            startDuration: (typeof window.orientation === 'undefined') ? 1.8 : 0,
             responsive: {
                 enabled: true,
                 rules: [{
@@ -616,7 +616,9 @@ function AppViewModel() {
             marginRight: 0,
             marginBottom: 15,
             marginTop: marginTop,
-            pullOutRadius: (typeof updater === "undefined") ? 0 : "5%",
+            pullOutRadius: "5%",
+            pullOutDuration: 0,
+            pullOutOnlyOne: (typeof updater === "undefined"), //for non-breakdown charts allow only one for consistent experience
             valueField: "hours",
             colorField: "color",
             descriptionField: "description",
