@@ -14,8 +14,8 @@ namespace UnknownUpdater.Updater
 {
     class UnknownUpdater
     {
-        private static int StoreApiRetries = SiteUtil.GetOptionalValueFromConfig("UnknownUpdaterStoreApiRetries", 100);
-        private static int StorageRetries = SiteUtil.GetOptionalValueFromConfig("UnknownUpdaterStorageRetries", 10);
+        private static readonly int StoreApiRetries = SiteUtil.GetOptionalValueFromConfig("UnknownUpdaterStoreApiRetries", 100);
+        private static readonly int StorageRetries = SiteUtil.GetOptionalValueFromConfig("UnknownUpdaterStorageRetries", 10);
 
         private static readonly HttpRetryClient Client = new HttpRetryClient(StoreApiRetries);
         static void Main()

@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Globalization;
-using System.Runtime.Serialization;
 using Common.Entities;
 using Common.Logging;
 using Common.Storage;
@@ -28,8 +27,8 @@ namespace SteamHltbScraper.Scraper
         private const string HltbGameOverviewPageFormat = @"http://www.howlongtobeat.com/game_overview.php?id={0}";
 
         private static readonly int ScrapingLimit = SiteUtil.GetOptionalValueFromConfig("ScrapingLimit", int.MaxValue);
-        private static int ScrapingRetries = SiteUtil.GetOptionalValueFromConfig("HltbScraperScrapingRetries", 5);
-        private static int StorageRetries = SiteUtil.GetOptionalValueFromConfig("HltbScraperStorageRetries", 20);
+        private static readonly int ScrapingRetries = SiteUtil.GetOptionalValueFromConfig("HltbScraperScrapingRetries", 5);
+        private static readonly int StorageRetries = SiteUtil.GetOptionalValueFromConfig("HltbScraperStorageRetries", 20);
         private static readonly HttpRetryClient Client = new HttpRetryClient(ScrapingRetries);
 
         private static void Main()

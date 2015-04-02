@@ -500,17 +500,22 @@ function AppViewModel() {
     var updateContinuousSliceChart = function (chart, slicedPlaytime, categories, clickedSlice) {
         var sliceClicked = typeof clickedSlice !== "undefined";
 
+        var clickedCategory = null;
         if (sliceClicked) {
             if (self.extraSmall) { //don't break down on extra small devices
                 return;
             }
+            // ReSharper disable once QualifiedExpressionMaybeNull
             clickedCategory = clickedSlice.dataContext;
         }
 
+        // ReSharper disable QualifiedExpressionMaybeNull
         enrichCategoriesForChart(categories, sliceClicked && clickedCategory.title === unknownTitle && clickedSlice.pulled);
+        // ReSharper restore QualifiedExpressionMaybeNull
 
         var slicedPlaytimeToBreakDown = {};
 
+        // ReSharper disable once QualifiedExpressionMaybeNull
         var categoryClicked = sliceClicked && clickedCategory.index !== -1 && clickedCategory.title !== unknownTitle;
         populateCategories(slicedPlaytime, categories, !categoryClicked ? undefined : function (matchingCategory, sliceGroupKey, sliceGroupMinutes) {
             if (matchingCategory.index === clickedCategory.index) {
@@ -519,7 +524,7 @@ function AppViewModel() {
         });
 
         if (categoryClicked) {
-            var clickedCategory = categories[clickedCategory.index];
+            // ReSharper disable once QualifiedExpressionMaybeNull
             var shardCount = Math.round((clickedCategory.hours / getPlaytimeTotalHours()) * 10) + 2;
             categories.splice.apply(categories, [clickedCategory.index, 1].concat(breakdown(slicedPlaytimeToBreakDown, clickedCategory, shardCount)));
         }

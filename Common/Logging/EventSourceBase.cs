@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.Tracing;
 using Common.Storage;
-using Common.Util;
 using Microsoft.Practices.EnterpriseLibrary.SemanticLogging;
 
 namespace Common.Logging

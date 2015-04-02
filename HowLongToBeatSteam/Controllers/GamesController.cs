@@ -32,7 +32,7 @@ namespace HowLongToBeatSteam.Controllers
         private static readonly HttpRetryClient Client = new HttpRetryClient(0);
         private static readonly ConcurrentDictionary<int, SteamAppData> Cache = new ConcurrentDictionary<int, SteamAppData>();
 
-        private static string[] NonGenres =  new[] { "Indie", "Casual" };
+        private static readonly string[] NonGenres =  { "Indie", "Casual" };
 
         public static async void StartUpdatingCache() 
         {
@@ -113,9 +113,9 @@ namespace HowLongToBeatSteam.Controllers
             int completionistRemaining = 0;
             Dictionary<string, int> playtimesByGenre = new Dictionary<string, int>();
             Dictionary<int, int> playtimesByMetacritic = new Dictionary<int, int>();
-            Dictionary<string, int> PlaytimesByAppType = new Dictionary<string, int>();
-            Dictionary<string, int> PlaytimesByPlatform = new Dictionary<string, int>();
-            Dictionary<int, int> PlaytimesByReleaseYear = new Dictionary<int, int>();
+            Dictionary<string, int> playtimesByAppType = new Dictionary<string, int>();
+            Dictionary<string, int> playtimesByPlatform = new Dictionary<string, int>();
+            Dictionary<int, int> playtimesByReleaseYear = new Dictionary<int, int>();
 
             foreach (var game in ownedGames)
             {
@@ -157,7 +157,7 @@ namespace HowLongToBeatSteam.Controllers
 
             return new OwnedGamesInfo(partialCache, games, new
                 Totals(playtime, mainTtb, extrasTtb, completionistTtb, mainRemaining, extrasRemaining, completionistRemaining,
-                playtimesByGenre, playtimesByMetacritic, PlaytimesByAppType, PlaytimesByPlatform, PlaytimesByReleaseYear));
+                playtimesByGenre, playtimesByMetacritic, playtimesByAppType, playtimesByPlatform, playtimesByReleaseYear));
         }
 
         private static void IncrementDictionaryEntryFromZero<TKey>(IDictionary<TKey, int> dict, TKey key, int value) 

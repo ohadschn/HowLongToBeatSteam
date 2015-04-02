@@ -1,11 +1,8 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using Common.Entities;
 using Common.Logging;
 using Common.Storage;
-using SteamHltbScraper.Scraper;
-using Microsoft.WindowsAzure.Storage;
 
 namespace ManualTableUpdater.Updater
 {

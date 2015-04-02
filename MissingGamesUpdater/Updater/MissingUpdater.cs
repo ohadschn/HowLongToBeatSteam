@@ -13,8 +13,8 @@ namespace MissingGamesUpdater.Updater
 {
     class MissingUpdater
     {
-        private static int SteamApiRetries = SiteUtil.GetOptionalValueFromConfig("MissingUpdaterSteamApiRetries", 200);
-        private static int StorageRetries = SiteUtil.GetOptionalValueFromConfig("MissingUpdaterStorageRetries", 5);
+        private static readonly int SteamApiRetries = SiteUtil.GetOptionalValueFromConfig("MissingUpdaterSteamApiRetries", 200);
+        private static readonly int StorageRetries = SiteUtil.GetOptionalValueFromConfig("MissingUpdaterStorageRetries", 5);
         private static readonly Uri GetSteamAppListUrl = new Uri("http://api.steampowered.com/ISteamApps/GetAppList/v0001/");
         private static HttpRetryClient s_client;
 
