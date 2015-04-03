@@ -161,7 +161,7 @@
                                         </span>
                                     </small>
                                 </h3>
-                                <div id="playtimeChart" class="amchart"></div>
+                                <div id="playtimeChart" class="full-width"></div>
                             </div>
                             <div class="col-lg-4">
                                 <h3 class="text-center text-nowrap">
@@ -177,7 +177,7 @@
                                         </span>
                                     </small>
                                 </h3>
-                                <div id="remainingChart" class="amchart"></div>
+                                <div id="remainingChart" class="full-width"></div>
                             </div>
                         </div>
                     </div>
@@ -254,12 +254,15 @@
                 </div>
             </div>
             <div class="panel panel-default" data-bind="with: gameTable">
-                <div class="panel-heading">
-                    <div class="h3">
+                <div class="panel-heading overflow-hidden">
+                    <h3 class="pull-left">
                         Filter
-                        <input class="filter-input push-right" type="text" data-bind="textInput: filter" />
+                        <input type="text" class="invisible no-width"/>
+                    </h3>
+                    <h3 class="overflow-hidden">
+                        <input type="text" data-bind="textInput: filter, css: $root.extraSmall ? 'full-width' : 'filter-input'" />
                         <span class="text-nowrap hidden-xs push-right" data-bind="text: '(' + numberWithCommas($root.total().count) + '  games)'"></span>
-                    </div>
+                    </h3>
                 </div>
                 <div class="panel-body">
                     <table id="gameTable" class="table table-striped table-hover table-responsive">

@@ -12,7 +12,7 @@
 .alerts {
     margin: 20px;
 }
-.amchart {
+.full-width {
     width: 100%;
 }
 .loader {
@@ -88,7 +88,7 @@
     display: inline;
 }
 .filter-input {
-    width: 170px;
+    width: 400px;
 }
 .push-right {
     margin-left: 10px;
@@ -98,6 +98,7 @@
 }
 .lead-lowered {
     margin-top: 15px;
+    margin-bottom: 10px;
 }
 .fixed-page {
     width: 50px;
@@ -129,6 +130,12 @@ table tbody tr td.vcenter {
     margin-bottom: 20px;
     margin-left: 0;
     margin-right: 0;
+}
+.overflow-hidden {
+    overflow: hidden;
+}
+.no-width {
+    width: 0;
 }
 .horizontal-alert {
     margin-bottom: -99979px;
