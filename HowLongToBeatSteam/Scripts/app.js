@@ -548,6 +548,19 @@ function AppViewModel() {
     };
 
     var updateSliceCharts = function (total) {
+        //we need to use jQuery as knockout is not immediate and thus the chart rendering will fail
+        var sliceCharts = $("#genreChart, #metacriticChart");
+        var noDataIndicators = $("#genreChartNoData, #metacriticChartNoData");
+
+        if (getPlaytimeTotalHours() === 0) {
+            sliceCharts.hide();
+            noDataIndicators.show();
+            return;
+        }
+
+        sliceCharts.show();
+        noDataIndicators.hide();
+
         updateGenreChart(total);
         updateMetacriticChart(total);
     };
@@ -559,7 +572,12 @@ function AppViewModel() {
 
     var initChart = function (chartId) {
         var chart = $("#" + chartId);
-        chart.height(chart.width() * (self.superSmall ? 1 : 2 / 3));
+        var chartHeight = chart.width() * (self.superSmall ? 1 : 2/3);
+        chart.height(chartHeight);
+
+        var noDataIndicator = $("#" + chartId + "NoData");
+        noDataIndicator.height(chartHeight); //prevent jumps
+        noDataIndicator.css("line-height", chartHeight + "px"); //needed for vertical centering
     };
 
     var initSerialChart = function(chartId, dataProvider) {
