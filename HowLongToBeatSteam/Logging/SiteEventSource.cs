@@ -37,6 +37,7 @@ namespace HowLongToBeatSteam.Logging
             public const EventTask RetrievePlayerSummary = (EventTask) 4;
             public const EventTask HandleGetGamesRequest = (EventTask) 5;
             public const EventTask ResolveVanityUrl = (EventTask) 6;
+            public const EventTask RetrievePersonaInfo = (EventTask) 7;
         }
 // ReSharper restore ConvertToStaticClass
 
@@ -230,6 +231,40 @@ namespace HowLongToBeatSteam.Logging
         public void ErrorResolvingVanityUrl(string userVanityUrlName, string errorMessage)
         {
             WriteEvent(20, userVanityUrlName, errorMessage);
+        }
+
+        [Event(
+            21,
+            Message = "Start retrieving persona info for Steam ID {0}",
+            Keywords = Keywords.SteamApi,
+            Level = EventLevel.Informational,
+            Task = Tasks.RetrievePersonaInfo,
+            Opcode = EventOpcode.Start)]
+        public void RetrievePersonaInfoStart(long steamId)
+        {
+            WriteEvent(21, steamId);
+        }
+
+        [Event(
+            22,
+            Message = "Finished retrieving persona info for Steam ID {0} - Name: {1} / Avatar: {2}",
+            Keywords = Keywords.SteamApi,
+            Level = EventLevel.Informational,
+            Task = Tasks.RetrievePersonaInfo,
+            Opcode = EventOpcode.Stop)]
+        public void RetrievePersonaInfoStop(long steamId, string personaName, string avatar)
+        {
+            WriteEvent(22, steamId, personaName, avatar);
+        }
+
+        [Event(
+            23,
+            Message = "Error resolving persona info for Steam ID {0}",
+            Keywords = Keywords.SteamApi,
+            Level = EventLevel.Error)]
+        public void ErrorRetrievingPersonaInfo(long steamId)
+        {
+            WriteEvent(23, steamId);
         }
     }
 }

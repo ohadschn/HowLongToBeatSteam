@@ -146,6 +146,9 @@ function AppViewModel() {
     self.imputedTtbs = ko.observable(false);
     self.missingHltbIds = ko.observable(false);
 
+    self.personaName = ko.observable("");
+    self.avatarUrl = ko.observable("");
+
     self.processing = ko.observable(false);
     self.error = ko.observable(false);
     self.bonusLinkVisible = ko.observable(true);
@@ -798,6 +801,8 @@ function AppViewModel() {
                 afterRequest = true;
                 includedObservable(true);
                 self.partialCache(data.PartialCache);
+                self.personaName(data.PersonaInfo.PersonaName);
+                self.avatarUrl(data.PersonaInfo.Avatar);
                 self.initialTotal = {
                     count: data.Games.length,
                     playtime: data.Totals.Playtime,

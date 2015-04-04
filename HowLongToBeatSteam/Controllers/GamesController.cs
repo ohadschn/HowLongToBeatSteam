@@ -29,6 +29,11 @@ namespace HowLongToBeatSteam.Controllers
         private static readonly int s_ownedGamesRetrievalParallelization = SiteUtil.GetOptionalValueFromConfig("OwnedGamesRetrievalParallelization", 3);
         private const string GetOwnedSteamGamesFormat = @"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={0}&steamid={1}&format=json&include_appinfo=1";
 
+        private static readonly int s_playerSummaryRetrievalParallelization = SiteUtil.GetOptionalValueFromConfig("PlayerSummaryRetrievalParallelization", 3);
+        private const string GetPlayerSummariesUrlFormat = @"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={0}&steamids={1}";
+
+        private const string CacheAvatar = @"https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/ce/ce8f7969f8c79019ab3c7c88ccfbf3185e8ec7da_medium.jpg";
+
         private static readonly HttpRetryClient Client = new HttpRetryClient(0);
         private static readonly ConcurrentDictionary<int, SteamAppData> Cache = new ConcurrentDictionary<int, SteamAppData>();
 
@@ -57,7 +62,7 @@ namespace HowLongToBeatSteam.Controllers
 // ReSharper restore FunctionNeverReturns
 
         [Route("library/{userVanityUrlName:minlength(1)}")]
-        public async Task<OwnedGamesInfo> GetGames(string userVanityUrlName)
+        public async Task<PlayerInfo> GetGames(string userVanityUrlName)
         {
             EventSource.SetCurrentThreadActivityId(Guid.NewGuid());
             SiteEventSource.Log.HandleGetGamesRequestStart(userVanityUrlName);
@@ -94,7 +99,7 @@ namespace HowLongToBeatSteam.Controllers
         }
 
         [Route("library/cached/{count:minlength(1)}")]
-        public async Task<OwnedGamesInfo> GetCachedGames(string count)
+        public async Task<PlayerInfo> GetCachedGames(string count)
         {
             EventSource.SetCurrentThreadActivityId(Guid.NewGuid());
             SiteEventSource.Log.HandleGetGamesRequestStart("cached/" + count);
@@ -106,10 +111,13 @@ namespace HowLongToBeatSteam.Controllers
             return ownedGamesInfo;
         }
 
-        private static async Task<OwnedGamesInfo> GetGamesCore(long steamId)
+        private static async Task<PlayerInfo> GetGamesCore(long steamId)
         {
-            var ownedGames = await
-                SiteUtil.GetFirstResult(ct => GetOwnedGames(steamId, ct), s_ownedGamesRetrievalParallelization, e => { }).ConfigureAwait(false);
+            var ownedGamesTask = SiteUtil.GetFirstResult(ct => GetOwnedGames(steamId, ct), s_ownedGamesRetrievalParallelization, e => { }).ConfigureAwait(false);
+            var personaInfoTask = SiteUtil.GetFirstResult(ct => GetPersonaInfo(steamId, ct), s_playerSummaryRetrievalParallelization, e => { }).ConfigureAwait(false);
+
+            var ownedGames = await ownedGamesTask;
+            var personaInfo = await personaInfoTask;
 
             SiteEventSource.Log.PrepareResponseStart();
             var games = new List<SteamAppUserData>();
@@ -166,9 +174,9 @@ namespace HowLongToBeatSteam.Controllers
             }
             SiteEventSource.Log.PrepareResponseStop();
 
-            return new OwnedGamesInfo(partialCache, games, new
+            return new PlayerInfo(partialCache, games, new
                 Totals(playtime, mainTtb, extrasTtb, completionistTtb, mainRemaining, extrasRemaining, completionistRemaining,
-                playtimesByGenre, playtimesByMetacritic, playtimesByAppType, playtimesByPlatform, playtimesByReleaseYear));
+                playtimesByGenre, playtimesByMetacritic, playtimesByAppType, playtimesByPlatform, playtimesByReleaseYear), personaInfo);
         }
 
         private static void IncrementDictionaryEntryFromZero<TKey>(IDictionary<TKey, int> dict, TKey key, int value) 
@@ -190,7 +198,7 @@ namespace HowLongToBeatSteam.Controllers
             SiteEventSource.Log.ResolveVanityUrlStart(userVanityUrlName);
 
             var vanityUrlResolutionResponse = await 
-                SiteUtil.GetAsync<VanityUrlResolutionResponse>(Client, string.Format(ResolveVanityUrlFormat, SteamApiKey, userVanityUrlName), ct)
+                SiteUtil.GetAsync<VanityUrlResolutionResponse>(Client, String.Format(ResolveVanityUrlFormat, SteamApiKey, userVanityUrlName), ct)
                 .ConfigureAwait(false);
 
             if (vanityUrlResolutionResponse.response == null)
@@ -234,7 +242,7 @@ namespace HowLongToBeatSteam.Controllers
             SiteEventSource.Log.RetrieveOwnedGamesStart(steamId);
             
             var ownedGamesResponse = await
-                SiteUtil.GetAsync<OwnedGamesResponse>(Client, string.Format(GetOwnedSteamGamesFormat, SteamApiKey, steamId), ct).ConfigureAwait(false);
+                SiteUtil.GetAsync<OwnedGamesResponse>(Client, String.Format(GetOwnedSteamGamesFormat, SteamApiKey, steamId), ct).ConfigureAwait(false);
             
             SiteEventSource.Log.RetrieveOwnedGamesStop(steamId);
 
@@ -247,6 +255,35 @@ namespace HowLongToBeatSteam.Controllers
             var games = ownedGamesResponse.response.games;
             SiteEventSource.Log.RetrievedOwnedGames(steamId, games.Length);
             return games;
+        }
+
+        private static async Task<PersonaInfo> GetPersonaInfo(long steamId, CancellationToken ct)
+        {
+            if (steamId <= 0)
+            {
+                return new PersonaInfo(String.Empty, CacheAvatar);
+            }
+
+            SiteEventSource.Log.RetrievePersonaInfoStart(steamId);
+
+            var playerSummariesResponse = await
+                SiteUtil.GetAsync<PlayerSummariesResponse>(Client, String.Format(GetPlayerSummariesUrlFormat, SteamApiKey, steamId), ct).ConfigureAwait(false);
+
+            if (playerSummariesResponse == null || 
+                playerSummariesResponse.response == null ||
+                playerSummariesResponse.response.players == null || 
+                playerSummariesResponse.response.players.Length != 1 ||
+                String.IsNullOrWhiteSpace(playerSummariesResponse.response.players[0].avatarmedium) ||
+                String.IsNullOrWhiteSpace(playerSummariesResponse.response.players[0].personaname))
+            {
+                SiteEventSource.Log.ErrorRetrievingPersonaInfo(steamId);
+                return new PersonaInfo(String.Empty, CacheAvatar);
+            }
+
+            var playerSummary = playerSummariesResponse.response.players[0];
+            SiteEventSource.Log.RetrievePersonaInfoStop(steamId, playerSummary.personaname, playerSummary.avatarmedium);
+
+            return new PersonaInfo(playerSummary.personaname, playerSummary.avatarmedium);
         }
     }
 }

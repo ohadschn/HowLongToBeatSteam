@@ -7,7 +7,7 @@ using JetBrains.Annotations;
 namespace HowLongToBeatSteam.Models
 {
     [DataContract]
-    public class OwnedGamesInfo
+    public class PlayerInfo
     {
         [DataMember]
         public bool PartialCache { get; private set; }
@@ -15,12 +15,30 @@ namespace HowLongToBeatSteam.Models
         public IList<SteamAppUserData> Games { get; private set; }
         [DataMember]
         public Totals Totals { get; private set; }
+        [DataMember]
+        public PersonaInfo PersonaInfo { get; private set; }
 
-        public OwnedGamesInfo(bool partialCache, IList<SteamAppUserData> games, Totals totals)
+        public PlayerInfo(bool partialCache, IList<SteamAppUserData> games, Totals totals, PersonaInfo personaInfo)
         {
             Games = games;
             PartialCache = partialCache;
             Totals = totals;
+            PersonaInfo = personaInfo;
+        }
+    }
+
+    public class PersonaInfo
+    {
+        [DataMember]
+        public string PersonaName { get; private set; }
+
+        [DataMember]
+        public string Avatar { get; private set; } //URL to medium avatar
+
+        public PersonaInfo(string personaName, string avatar)
+        {
+            PersonaName = personaName;
+            Avatar = avatar;
         }
     }
 
