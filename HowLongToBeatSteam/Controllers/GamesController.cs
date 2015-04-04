@@ -22,11 +22,11 @@ namespace HowLongToBeatSteam.Controllers
     {
         private static readonly string SteamApiKey = SiteUtil.GetMandatoryValueFromConfig("SteamApiKey");
 
-        private static readonly int s_vanitUrlResolutionParallelization = SiteUtil.GetOptionalValueFromConfig("VanitUrlResolutionParallelization", 5);
+        private static readonly int s_vanitUrlResolutionParallelization = SiteUtil.GetOptionalValueFromConfig("VanitUrlResolutionParallelization", 3);
         private const string ResolveVanityUrlFormat = @"http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key={0}&vanityurl={1}";
         private const int VanityUrlResolutionSuccess = 1;
 
-        private static readonly int s_ownedGamesRetrievalParallelization = SiteUtil.GetOptionalValueFromConfig("OwnedGamesRetrievalParallelization", 5);
+        private static readonly int s_ownedGamesRetrievalParallelization = SiteUtil.GetOptionalValueFromConfig("OwnedGamesRetrievalParallelization", 3);
         private const string GetOwnedSteamGamesFormat = @"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={0}&steamid={1}&format=json&include_appinfo=1";
 
         private static readonly HttpRetryClient Client = new HttpRetryClient(0);
@@ -71,8 +71,19 @@ namespace HowLongToBeatSteam.Controllers
             }
             else
             {
-                steamId = await SiteUtil.GetFirstResult(
-                    ct => ResolveVanityUrl(userVanityUrlName, ct), s_vanitUrlResolutionParallelization, e => { }).ConfigureAwait(true);
+                try
+                {
+                    steamId = await SiteUtil.GetFirstResult(
+                        ct => ResolveVanityUrl(userVanityUrlName, ct), s_vanitUrlResolutionParallelization, e => { }).ConfigureAwait(true);
+                }
+                catch (HttpResponseException) //Steam API rejected vanity URL name
+                {
+                    //if the userVanityUrlName is numerical, we'll try assuming it's actually the Steam64 ID
+                    if (!Int64.TryParse(userVanityUrlName, out steamId))
+                    {
+                        throw;
+                    }
+                }
                 MemoryCache.Default[userVanityUrlName] = steamId;
             }
 

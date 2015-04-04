@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -75,80 +74,23 @@ namespace Common.Util
 
         public static async Task<T> GetFirstResult<T>(this IEnumerable<Func<CancellationToken, Task<T>>> taskFactories, Action<Exception> exceptionHandler)
         {
-            T ret = default(T);
             var cts = new CancellationTokenSource();
 
-            var proxified = taskFactories.Select(tf => tf(cts.Token)).ProxifyByCompletion();
-
-            int i;
-            for (i = 0; i < proxified.Length; i++)
+            var tasks = taskFactories.Select(tf => tf(cts.Token)).ToArray();
+            foreach (var task in tasks)
             {
-                try
-                {
-                    ret = await proxified[i].ConfigureAwait(false);
-                    break;
-                }
-                catch (Exception e)
-                {
-                    exceptionHandler(e);
-                    if (i == proxified.Length - 1)
-                    {
-                        throw new InvalidOperationException("All tasks failed. See inner exception for last failure.", e);
-                    }
-                }
+                task.ContinueWith(t => exceptionHandler(t.Exception), TaskContinuationOptions.OnlyOnFaulted).Forget();
             }
 
+            var first = await Task.WhenAny(tasks).ConfigureAwait(false);
             cts.Cancel();
 
-            for (int j = i+1; j < proxified.Length; j++)
-            {
-                proxified[j].ContinueWith(t => exceptionHandler(t.Exception), TaskContinuationOptions.OnlyOnFaulted).Forget();
-            }
-
-            return ret;
+            return first.GetAwaiter().GetResult(); //will throw the original exception if first failed (we want to fail fast)
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "task")]
         public static void Forget(this Task task) //suppress CS4014
         {
-        }
-
-        //http://blogs.msdn.com/b/pfxteam/archive/2012/08/02/processing-tasks-as-they-complete.aspx
-        public static Task<T>[] ProxifyByCompletion<T>(this IEnumerable<Task<T>> tasks)
-        {
-            var inputTasks = tasks.ToArray();
-            var buckets = new TaskCompletionSource<T>[inputTasks.Length];
-            var results = new Task<T>[inputTasks.Length];
-
-            for (int i = 0; i < buckets.Length; i++)
-            {
-                buckets[i] = new TaskCompletionSource<T>();
-                results[i] = buckets[i].Task;
-            }
-
-            int nextTaskIndex = -1;
-            foreach (var inputTask in inputTasks)
-            {
-                inputTask.ContinueWith(completed =>
-                {
-                    var bucket = buckets[Interlocked.Increment(ref nextTaskIndex)];
-                    if (completed.IsFaulted)
-                    {
-                        Trace.Assert(completed.Exception != null, "faulted exception has null Exception field");
-                        bucket.TrySetException(completed.Exception.InnerExceptions);
-                    }
-                    else if (completed.IsCanceled)
-                    {
-                        bucket.TrySetCanceled();
-                    }
-                    else
-                    {
-                        bucket.TrySetResult(completed.Result);
-                    }
-                }, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
-            }
-
-            return results;
         }
 
         //http://stackoverflow.com/a/26276284/67824
