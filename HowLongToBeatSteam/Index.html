@@ -182,7 +182,7 @@
                         </div>
                     </div>
                     <p class="lead lead-lowered">
-                        <strong data-bind="text: numberWithCommas(total().count) + ' single-player games found'"></strong>
+                        <strong data-bind="text: numberWithCommas(total().count) + ' single-player ' + (total().count === 1 ? 'game' : 'games') + ' found'"></strong>
                     </p>
                     <ul class="lead">
                         <li>Your total amount of consecutive <strong>current</strong> playtime is <span data-bind="text: getYears(total().playtime)"></span>.</li>
@@ -261,7 +261,7 @@
                     </h3>
                     <h3 class="overflow-hidden">
                         <input type="text" data-bind="textInput: filter, css: $root.extraSmall ? 'full-width' : 'filter-input'" />
-                        <span class="text-nowrap hidden-xs push-right" data-bind="text: '(' + numberWithCommas($root.total().count) + '  games)'"></span>
+                        <span class="text-nowrap hidden-xs push-right" data-bind="text: '(' + numberWithCommas($root.total().count) + ($root.total().count === 1 ? ' game)' : ' games)')"></span>
                     </h3>
                 </div>
                 <div class="panel-body">
@@ -320,6 +320,11 @@
                                     <a data-bind="attr: {href: 'http://store.steampowered.com/app/' + steamAppId}" target="_blank">
                                         <span data-bind="text:steamName, css: (included() ? '' : 'text-muted')"></span>
                                     </a>
+                                    <span class="glyphicon glyphicon-time visible-xs-inline"
+                                          data-placement="top"
+                                          data-toggle="tooltip"
+                                          data-container="body"
+                                          data-bind="attr: { title: 'Current: ' + getHours(steamPlaytime) + 'h / Main: ' + getHours($data.hltbMainTtb) + 'h / Extras: ' + getHours($data.hltbExtrasTtb) + 'h / Completionist: ' + getHours($data.hltbCompletionistTtb) + 'h'}"></span>
                                 </td>
                                 <td data-bind="css: 'vcenter compressed hidden-xs' + (included() ? '' : ' text-muted'), text: getHours(steamPlaytime) + 'h'"></td>
                                 <td data-bind="css: 'vcenter compressed hidden-xs' + (included() ? '' : ' text-muted') + (hltbMainTtbImputed ? ' emphasized' : ''), text: getHours($data.hltbMainTtb) + 'h'"></td>

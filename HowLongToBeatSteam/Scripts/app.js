@@ -700,7 +700,13 @@ function AppViewModel() {
     var afterRequest = false;
     var firstTableRender = true;
 
-    self.rowRendered = function () {
+    self.rowRendered = function (elements) {
+        
+        if (self.extraSmall) {
+            var row = ko.utils.arrayFirst(elements, function (elem) { return elem.tagName === "TR"; });
+            $(row).find("span[data-toggle='tooltip']:first").tooltip();
+        }
+
         if (!afterRequest) {
             return;
         }
@@ -879,8 +885,7 @@ $(document).ready(function () {
     }
 
     //Fix up layout
-    $('[data-toggle="tooltip"]').tooltip();
-    $("#steamIdText").focus();
+    $('span[data-toggle="tooltip"]').tooltip();
 
     //Init knockout
     var viewModel = new AppViewModel();
@@ -892,6 +897,9 @@ $(document).ready(function () {
         this.get("#/", function () {
             viewModel.steamVanityUrlName("");
             viewModel.introPage(true);
+            setTimeout(function () {
+                $("#steamIdText").focus(); //workaround for FF
+            }, 0);
         });
 
         var loadGames = function (vanityUrl) {
