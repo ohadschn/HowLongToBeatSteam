@@ -97,10 +97,24 @@
     display: inline;
 }
 .filter-input {
-    width: 400px;
+        width: 400px;
+    }
+@media (max-width: 767px) {
+    .filter-input {
+        width: 100%;
+    }
 }
 .push-right {
     margin-left: 10px;
+}
+.summary-heading {
+    line-height: 2;
+}
+@media (max-width: 379px) {
+    .summary-heading {
+        text-align: center;
+        margin-bottom: 0;
+    }
 }
 .lowered {
     margin-top: 10px;

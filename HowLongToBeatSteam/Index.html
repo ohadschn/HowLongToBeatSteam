@@ -135,10 +135,10 @@
         <div data-bind="css: !processing() && gameTable.rows().length>0 ? '' : 'invisible'">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <div class="h3">
-                        <img data-bind="attr: {src: avatarUrl}" alt="User Avatar" />
+                    <div class="h3 summary-heading">
+                        <img data-bind="attr: {src: avatarUrl}" alt="User Avatar"/>
                         <span data-bind="text: personaName"></span>
-                        <ul class="inline list-inline push-right">
+                        <ul class="inline list-inline text-nowrap push-right">
                             <li><a href="javascript:;" data-bind="click: shareOnFacebook"><span class="fa fa-facebook"></span></a></li>
                             <li><a href="javascript:;" data-bind="click: shareOnTwitter"><span class="fa fa-twitter"></span></a></li>
                             <li><a href="javascript:;" data-bind="click: shareOnGooglePlus"><span class="fa fa-google-plus"></span></a></li>
@@ -267,7 +267,7 @@
                         <input type="text" class="invisible no-width"/>
                     </h3>
                     <h3 class="overflow-hidden">
-                        <input type="text" data-bind="textInput: filter, css: $root.extraSmall ? 'full-width' : 'filter-input'" />
+                        <input type="text" class="filter-input" data-bind="textInput: filter" />
                         <span class="text-nowrap hidden-xs push-right" data-bind="text: '(' + numberWithCommas($root.total().count) + ($root.total().count === 1 ? ' game)' : ' games)')"></span>
                     </h3>
                 </div>
