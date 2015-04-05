@@ -63,7 +63,7 @@
       this.sortField = ko.observable(this.options.sortField);
       this.perPage = ko.observable(this.options.perPage);
       this.currentPageNumber = ko.observable(1);
-      this.filter = ko.observable('');
+      this.filter = ko.observable('').extend({ rateLimit: { timeout: 400, method: "notifyWhenChangesStop" } });
       this.loading = ko.observable(false);
       return this.rows = ko.observableArray([]);
     };

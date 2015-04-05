@@ -2,6 +2,7 @@
 /*global DataTable*/
 /*global AmCharts*/
 /*global countdown*/
+/*global appInsights*/
 
 "use strict"; // jshint ignore:line
 
@@ -138,6 +139,9 @@ function AppViewModel() {
 
     self.gameTable = new DataTable([], tableOptions);
     self.pageSizeOptions = [10, 25, 50];
+    self.gameTable.perPage.subscribe(function(perPage) {
+        appInsights.trackEvent("PerPageChanged", {}, { perPage: perPage });
+    });
 
     self.sliceTotal = ko.observable();
     self.sliceCompletionLevel = ko.observable();
@@ -164,6 +168,10 @@ function AppViewModel() {
         suggestedHltbId: ko.observable("")
     });
 
+    self.gameTable.filter.subscribe(function (val) {
+        appInsights.trackEvent("FilterApplied", {}, { length: val.length });
+    });
+
     self.toggleAllChecked = ko.observable(true);
 
     self.toggleAllCore = function (include) {
@@ -173,9 +181,107 @@ function AppViewModel() {
         }
     };
 
+    var togglingAll = false;
     self.toggleAll = function () {
+        appInsights.trackEvent("ToggleAll");
+        togglingAll = true;
         self.toggleAllCore(!self.toggleAllChecked()); //binding is one way (workaround KO issue) so toggleAllChecked still has its old value
+        togglingAll = false;
         return true;
+    };
+
+    var gotoPage = function(eventName, page) {
+        self.gameTable.gotoPage(page)();
+        appInsights.trackEvent(eventName, {}, { page: self.gameTable.currentPageNumber(), totalPages: self.gameTable.pages().length });
+    };
+
+    self.gotoPage = function (page) {
+        if (self.gameTable.currentPageNumber() !== page.number) {
+            gotoPage("NavigatedToPage", page.number);
+        }
+    };
+
+    self.gotoFirstPage = function () {
+        if (self.gameTable.currentPageNumber() > 1) {
+            gotoPage("NavigatedToFirstPage", 1);
+        }
+    };
+
+    self.gotoLastPage = function () {
+        if (self.gameTable.currentPageNumber() < self.gameTable.pages().length) {
+            gotoPage("NavigatedToLastPage", self.gameTable.pages().length);
+        }
+    };
+
+    self.gotoPrevPage = function() {
+        if (self.gameTable.currentPageNumber() > 1) {
+            gotoPage("NavigatedToPreviousPage", self.gameTable.currentPageNumber() - 1);
+        }
+    };
+
+    self.gotoNextPage = function() {
+        if (self.gameTable.currentPageNumber() < self.gameTable.pages().length) {
+            gotoPage("NavigatedToNextPage", self.gameTable.currentPageNumber() + 1);
+        }
+    };
+
+    var toggleSort = function(field) {
+        self.gameTable.toggleSort(field)();
+        appInsights.trackEvent("Sort", { field: field, direction: self.gameTable.sortDir() });
+    };
+
+    self.toggleNameSort = function() {
+        toggleSort("steamName")();
+    };
+
+    self.togglePlaytimeSort = function() {
+        toggleSort("steamPlaytime");
+    };
+
+    self.toggleMainTtbSort = function () {
+        toggleSort("hltbMainTtb");
+    };
+
+    self.toggleExtrasTtbSort = function() {
+        toggleSort("hltbExtrasTtb");
+    };
+
+    self.toggleCompletionistTtbSort = function() {
+        toggleSort("hltbCompletionistTtb");
+    };
+
+    var sliceByTotal = function(total) {
+        self.sliceTotal(total);
+        appInsights.trackEvent("Slice", { by: total ? "Total" : "Remaining" });
+    };
+
+    self.sliceTotalClicked = function() {
+        sliceByTotal(true);
+    };
+
+    self.sliceRemainingClicked = function() {
+        sliceByTotal(false);
+    };
+
+    var sliceByCompletionLevel = function(playtimeType) {
+        self.sliceCompletionLevel(playtimeType);
+        appInsights.trackEvent("Slice", { by: playtimeType });
+    };
+
+    self.sliceCurrentClicked = function () {
+        sliceByCompletionLevel(PlaytimeType.Current);
+    };
+
+    self.sliceMainClicked = function() {
+        sliceByCompletionLevel(PlaytimeType.Main);
+    };
+
+    self.sliceExtrasClicked = function() {
+        sliceByCompletionLevel(PlaytimeType.Extras);
+    };
+
+    self.sliceCompletionistClicked = function() {
+        sliceByCompletionLevel(PlaytimeType.Completionist);
     };
 
     var getSlicedPlaytime = function (sliceCompletionLevel, sliceTotal, game, gameMainRemaining, gameExtrasRemaining, gameCompletionistRemaining) {
@@ -189,7 +295,7 @@ function AppViewModel() {
             case PlaytimeType.Completionist:
                 return sliceTotal ? game.hltbCompletionistTtb : gameCompletionistRemaining;
             default:
-                console.error("Invalid playtime slice type: " + sliceCompletionLevel);
+                appInsights.trackException("Invalid playtime slice type: " + sliceCompletionLevel);
                 return 0;
         }
     };
@@ -281,6 +387,12 @@ function AppViewModel() {
         };
     }).extend({ rateLimit: 0 });
 
+    var trackGameIncluded = function (included) {
+        if (!togglingAll) {
+            appInsights.trackEvent("GameIncludeToggled", { included: included });
+        }
+    };
+
     self.pagedGames = ko.pureComputed(function () {
         var games = self.gameTable.pagedRows();
         var replaced = false;
@@ -288,6 +400,7 @@ function AppViewModel() {
             var game = games[i];
             if (game.included === includedObservable) {
                 game.included = ko.observable(includedObservable.peek());
+                game.included.subscribe(trackGameIncluded);
                 game.updatePhase = ko.observable(updatePhaseObservable());
                 game.suggestedHltbId = ko.observable(game.hltbId);
                 replaced = true;
@@ -301,6 +414,12 @@ function AppViewModel() {
 
     self.vanityUrlSubmitted = function() {
         if (window.location.hash === "#/" + self.steamVanityUrlName()) {
+            var split = self.steamVanityUrlName().split('/');
+            if (split.length === 2) {
+                appInsights.trackEvent("LoadCachedGames", {}, { count: parseInt(split[1]) });
+            } else {
+                appInsights.trackEvent("LoadGames");   
+            }
             self.loadGames(); //no submission will take place since it's the same URL, so just load again
         }
     };
@@ -329,7 +448,7 @@ function AppViewModel() {
             case PlaytimeType.Completionist:
                 return getHours(self.sliceTotal() ? self.total().completionistTtb : self.total().completionistRemaining);
             default:
-                console.error("Invalid playtime slice type: " + self.sliceCompletionLevel());
+                appInsights.trackException("Invalid playtime slice type: " + self.sliceCompletionLevel());
                 return 0;
         }
     };
@@ -663,6 +782,8 @@ function AppViewModel() {
             }
         });
 
+        chart.addListener("clickSlice", function () { appInsights.trackEvent("SliceClicked", { chart: chartId }); });
+
         if (typeof updater !== "undefined") {
             chart.addListener("clickSlice", function (event) { updater(self.total(), event.dataItem); });
         }
@@ -830,7 +951,7 @@ function AppViewModel() {
                 }
             })
             .fail(function(error) {
-                console.error(error);
+                appInsights.trackException(error);
                 self.gameTable.rows([]);
                 self.error(true);
                 self.processing(false);
@@ -843,24 +964,26 @@ function AppViewModel() {
     };
 
     self.displayUpdateDialog = function (game) {
-
+        appInsights.trackEvent("UpdateClicked", {known: game.known});
         self.gameToUpdate(game);
         $('#HltbUpdateModal').modal('show');
     };
 
-    self.updateHltb = function(gameToUpdate) {
+    self.updateHltb = function() {
+        var gameToUpdate = self.gameToUpdate();
 
         gameToUpdate.updatePhase(GameUpdatePhase.InProgress);
         $.post("api/games/update/" + gameToUpdate.steamAppId + "/" + gameToUpdate.suggestedHltbId())
             .done(function() {
                 gameToUpdate.updatePhase(GameUpdatePhase.Success);
             })
-            .fail(function(error) {
-                console.error(error);
+            .fail(function (error) {
+                appInsights.trackException(error);
                 gameToUpdate.updatePhase(GameUpdatePhase.Failure);
             });
 
         $('#HltbUpdateModal').modal('hide');
+        appInsights.trackEvent("UpdateSubmitted", {known: gameToUpdate.known });
     };
 
     var getCanonicalAddress = function () {
@@ -875,15 +998,18 @@ function AppViewModel() {
         return self.getShortShareText(false) + " Click to check it out and find out how long you have too :)";
     };
 
-    self.shareOnFacebook = function() {
+    self.shareOnFacebook = function () {
+        appInsights.trackEvent("Shared", {site: "Facebook"});
         self.openShareWindow("https://www.facebook.com/dialog/feed?app_id=445487558932250&display=popup&caption=HowLongToBeatSteam.com&description=" + encodeURIComponent(self.getShareText()) + "&link=" + encodeURIComponent(getCanonicalAddress()) + "&redirect_uri=" + encodeURIComponent("http://howlongtobeatsteam.com/CloseWindow.html") + "&picture=" + encodeURIComponent("http://howlongtobeatsteam.com/Resources/sk5_0.jpg"));
     };
 
     self.shareOnTwitter = function () {
+        appInsights.trackEvent("Shared", {site: "Twitter"});
         self.openShareWindow("https://twitter.com/share?url=" + encodeURIComponent(getCanonicalAddress()) + "&text=" + self.getShortShareText(true) + "&hashtags=hltbs,steam");
     };
 
-    self.shareOnGooglePlus = function() {
+    self.shareOnGooglePlus = function () {
+        appInsights.trackEvent("Shared", {site: "GooglePlus"});
         self.openShareWindow("https://plus.google.com/share?url=" + encodeURIComponent(getCanonicalAddress()));
     };
 
@@ -897,17 +1023,12 @@ function AppViewModel() {
 
 $(document).ready(function () {
 
-    //Fix console for old browsers
-    if (!window.console) { 
-        var noOp = function () { };
-        window.console = { log: noOp, warn: noOp, error: noOp };
-    }
-
+    //init pallete
     for (var i = 0; i < 50; i++) {
         alternatingPalette.push("#97BBCD", "#75C7F0");
     }
 
-    //Fix up layout
+    //enable tooltips
     $('span[data-toggle="tooltip"]').tooltip();
 
     //Init knockout
@@ -918,6 +1039,7 @@ $(document).ready(function () {
     var sammyApp = $.sammy(function () {
 
         this.get("#/", function () {
+            appInsights.trackEvent("NavigatedToHomepage");
             viewModel.steamVanityUrlName("");
             viewModel.introPage(true);
             setTimeout(function () {
@@ -932,10 +1054,12 @@ $(document).ready(function () {
         };
 
         this.get("#/:vanityUrlName", function () {
+            appInsights.trackEvent("LoadGames");
             loadGames(this.params.vanityUrlName);
         });
 
         this.get("#/cached/:count", function () {
+            appInsights.trackEvent("LoadCachedGames", {}, { count: parseInt(this.params.count) });
             loadGames("cached/" + this.params.count);
         });
     });

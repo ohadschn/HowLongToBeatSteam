@@ -141,6 +141,7 @@
     <None Include="Intellisense\sammy.js" />
     <None Include="Intellisense\serial.js" />
     <None Include="Intellisense\knockout-debug.js" />
+    <Content Include="Intellisense\ApplicationInsights.js" />
     <Content Include="Intellisense\bootstrap.css" />
     <Content Include="Intellisense\bootstrap.js" />
     <None Include="Intellisense\light.js" />

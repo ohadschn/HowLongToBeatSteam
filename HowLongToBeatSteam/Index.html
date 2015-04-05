@@ -14,18 +14,6 @@
     <![endif]-->
     <!-- ReSharper disable All -->
     <script type="text/javascript">
-        (function(e, t, n, r, i, s, o) {
-            e["GoogleAnalyticsObject"] = i;
-            e[i] = e[i] || function() { (e[i].q = e[i].q || []).push(arguments) }, e[i].l = 1 * new Date;
-            s = t.createElement(n), o = t.getElementsByTagName(n)[0];
-            s.async = 1;
-            s.src = r;
-            o.parentNode.insertBefore(s, o)
-        })(window, document, "script", "//www.google-analytics.com/analytics.js", "ga");
-        ga("create", "UA-58442747-1", "auto");
-        ga("send", "pageview")
-    </script>
-    <script type="text/javascript">
         var appInsights = window.appInsights || function (config) {
             function s(config) { t[config] = function () { var i = arguments; t.queue.push(function () { t[config].apply(t, i) }) } } var t = { config: config }, r = document, f = window, e = "script", o = r.createElement(e), i, u; for (o.src = config.url || "//az416426.vo.msecnd.net/scripts/a/ai.0.js", r.getElementsByTagName(e)[0].parentNode.appendChild(o), t.cookie = r.cookie, t.queue = [], i = ["Event", "Exception", "Metric", "PageView", "Trace"]; i.length;) s("track" + i.pop()); return config.disableExceptionTracking || (i = "onerror", s("_" + i), u = f[i], f[i] = function (config, r, f, e, o) { var s = u && u(config, r, f, e, o); return s !== !0 && t["_" + i](config, r, f, e, o), s }), t
         }({
@@ -123,7 +111,7 @@
                                 </span>
                                 <button type="submit"
                                         class="btn btn-primary col-sm-2"
-                                        data-bind="enable: (gameToUpdate().suggestedHltbId() != gameToUpdate().hltbId) && (gameToUpdate().suggestedHltbId() !== ''), click: function () { $root.updateHltb(gameToUpdate()); }">
+                                        data-bind="enable: (gameToUpdate().suggestedHltbId() != gameToUpdate().hltbId) && (gameToUpdate().suggestedHltbId() !== ''), click: $root.updateHltb">
                                     Update
                                 </button>
                             </div>
@@ -205,34 +193,34 @@
                             <div class="btn-group" role="group" aria-label="Playtime type">
                                 <button type="button"
                                         class="btn btn-default"
-                                        data-bind="click: function() { sliceTotal(true); }, css: { active: sliceTotal() === true }">
+                                        data-bind="click: sliceTotalClicked, css: { active: sliceTotal() === true }">
                                     Total
                                 </button>
                                 <button type="button"
                                         class="btn btn-default"
-                                        data-bind="click: function() { sliceTotal(false); }, css: { active: sliceTotal() === false }">
+                                        data-bind="click: sliceRemainingClicked, css: { active: sliceTotal() === false }">
                                     Remaining
                                 </button>
                             </div>
                             <div data-bind="css: 'btn-group' + (superSmall ? ' btn-group-xs' : '')" role="group" aria-label="Completion levels">
                                 <button type="button"
                                         class="btn btn-default"
-                                        data-bind="enable: sliceTotal, click: function() { sliceCompletionLevel(PlaytimeType.Current); }, css: { active: sliceCompletionLevel() === PlaytimeType.Current }">
+                                        data-bind="enable: sliceTotal, click: sliceCurrentClicked, css: { active: sliceCompletionLevel() === PlaytimeType.Current }">
                                     Current
                                 </button>
                                 <button type="button"
                                         class="btn btn-default"
-                                        data-bind="click: function() { sliceCompletionLevel(PlaytimeType.Main); }, css: { active: sliceCompletionLevel() === PlaytimeType.Main }">
+                                        data-bind="click: sliceMainClicked, css: { active: sliceCompletionLevel() === PlaytimeType.Main }">
                                     Main
                                 </button>
                                 <button type="button"
                                         class="btn btn-default"
-                                        data-bind="click: function() { sliceCompletionLevel(PlaytimeType.Extras); }, css: { active: sliceCompletionLevel() === PlaytimeType.Extras }">
+                                        data-bind="click: sliceExtrasClicked, css: { active: sliceCompletionLevel() === PlaytimeType.Extras }">
                                     Extras
                                 </button>
                                 <button type="button"
                                         class="btn btn-default"
-                                        data-bind="click: function() { sliceCompletionLevel(PlaytimeType.Completionist); }, css: { active: sliceCompletionLevel() === PlaytimeType.Completionist }">
+                                        data-bind="click: sliceCompletionistClicked, css: { active: sliceCompletionLevel() === PlaytimeType.Completionist }">
                                     Completionist
                                 </button>
                             </div>
@@ -279,33 +267,33 @@
                                     <input type="checkbox" data-bind="click: $root.toggleAll, checked: $root.toggleAllChecked()" />
                                 </th>
                                 <!-- ReSharper disable UnknownCssClass -->
-                                <th class="sortable" unselectable="on" data-bind="click: toggleSort('steamName')">
-                                <!-- ReSharper restore UnknownCssClass -->
+                                <th class="sortable" unselectable="on" data-bind="click: $root.toggleNameSort">
+                                    <!-- ReSharper restore UnknownCssClass -->
                                     Game
                                     <span data-bind="css: sortClass('steamName')" aria-hidden="true"></span>
                                 </th>
-                                <th class="sortable compressed hidden-xs" unselectable="on" data-bind="click: toggleSort('steamPlaytime')">
+                                <th class="sortable compressed hidden-xs" unselectable="on" data-bind="click: $root.togglePlaytimeSort">
                                     <span data-placement="top"
                                           data-toggle="tooltip"
                                           data-container="body"
                                           title="Current Steam playtime (in hours)">Playtime</span>
                                     <span data-bind="css: sortClass('steamPlaytime')" aria-hidden="true"></span>
                                 </th>
-                                <th class="sortable compressed hidden-xs" unselectable="on" data-bind="click: toggleSort('hltbMainTtb')">
+                                <th class="sortable compressed hidden-xs" unselectable="on" data-bind="click: $root.toggleMainTtbSort">
                                     <span data-placement="top"
                                           data-toggle="tooltip"
                                           data-container="body"
                                           title="Time to beat main objectives (hours)">Main</span>
                                     <span data-bind="css: sortClass('hltbMainTtb')" aria-hidden="true"></span>
                                 </th>
-                                <th class="sortable compressed hidden-xs" unselectable="on" data-bind="click: toggleSort('hltbExtrasTtb')">
+                                <th class="sortable compressed hidden-xs" unselectable="on" data-bind="click: $root.toggleExtrasTtbSort">
                                     <span data-placement="top"
                                           data-toggle="tooltip"
                                           data-container="body"
                                           title="Time to beat main+extra objectives (hours)">Extras</span>
                                     <span data-bind="css: sortClass('hltbExtrasTtb')" aria-hidden="true"></span>
                                 </th>
-                                <th class="sortable compressed hidden-xs" unselectable="on" data-bind="click: toggleSort('hltbCompletionistTtb')">
+                                <th class="sortable compressed hidden-xs" unselectable="on" data-bind="click: $root.toggleCompletionistTtbSort">
                                     <span data-placement="top"
                                           data-toggle="tooltip"
                                           data-container="body"
@@ -375,21 +363,21 @@
                         <select data-bind="options: $root.pageSizeOptions, value: perPage"></select>
                     </div>
                     <ul class="pagination gamePagination">
-                        <li data-bind="css: leftPagerClass() + ' hidden-xs', click: gotoPage(1)">
+                        <li data-bind="css: leftPagerClass() + ' hidden-xs', click: $root.gotoFirstPage">
                             <a href="#" title="First page" data-bind="css: currentPageNumber() === 1 ? 'cursor-default' : ''"><span class="fa fa-fw fa-angle-double-left"></span></a>
                         </li>
-                        <li data-bind="css: leftPagerClass, click: prevPage">
+                        <li data-bind="css: leftPagerClass, click: $root.gotoPrevPage">
                             <a href="#" title="Previous page" data-bind="css: currentPageNumber() === 1 ? 'cursor-default' : ''"><span class="fa fa-fw fa-angle-left"></span></a>
                         </li>
                         <!-- ko foreach: {data: limitedPages} -->
                         <li data-bind="css: number === $parent.currentPageNumber() ? 'active' : ''">
-                            <a href="#" class="fixed-page" data-bind="text: number, click: $parent.gotoPage(number)"></a>
+                            <a href="#" class="fixed-page" data-bind="text: number, click: $root.gotoPage"></a>
                         </li>
                         <!-- /ko -->
-                        <li data-bind="css: rightPagerClass, click: nextPage">
+                        <li data-bind="css: rightPagerClass, click: $root.gotoNextPage ">
                             <a href="#" title="Next page" data-bind="css: currentPageNumber() === pages().length ? 'cursor-default' : ''"><span class=" fa fa-fw fa-angle-right"></span></a>
                         </li>
-                        <li data-bind="css: rightPagerClass() + ' hidden-xs', click: gotoPage(pages().length)">
+                        <li data-bind="css: rightPagerClass() + ' hidden-xs', click: $root.gotoLastPage">
                             <a href="#" title="Last page" data-bind="css: currentPageNumber() === pages().length ? 'cursor-default' : ''"><span class="fa fa-fw fa-angle-double-right"></span></a>
                         </li>
                     </ul>
