@@ -861,7 +861,9 @@ function AppViewModel() {
         }
         $('html, body').animate({
             scrollTop: $("#alerts").offset().top - 10
-        }, 1500);
+        }, 2500, function () {
+            self.sliceTotal.valueHasMutated(); //needed for pie charts
+        });
     };
 
     var renderedRows = 0;
@@ -936,7 +938,7 @@ function AppViewModel() {
         self.partialCache(false);
         self.imputedTtbs(false);
         self.missingHltbIds(false);
-        self.sliceTotal(false);
+        self.sliceTotal(true);
         self.sliceCompletionLevel(PlaytimeType.Main);
         self.gameTable.filter("");
         self.gameTable.toggleSort("");
