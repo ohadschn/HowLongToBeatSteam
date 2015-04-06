@@ -805,7 +805,7 @@ function AppViewModel() {
         }
         chratsInitialized = true;
 
-        $("#content").show(); 
+        $("#content").show();
         self.playtimeChart = initSerialChart("playtimeChart",
         [
             { playtime: "Current", hours: 0 },
@@ -831,7 +831,7 @@ function AppViewModel() {
                 self.sliceCompletionLevel(PlaytimeType.Main); //will trigger slice chart update per above
             }
         });
-    }
+    };
 
     var chartsInvalidated = false;
     var animateCharts = function () {
@@ -855,11 +855,9 @@ function AppViewModel() {
         if (window.pageYOffset > 0) {
             return; //don't override user position
         }
-        setTimeout(function() {
-            $('html, body').animate({
-                scrollTop: $("#alerts").offset().top - 10
-            }, 800);
-        }, 200);
+        $('html, body').animate({
+            scrollTop: $("#alerts").offset().top - 10
+        }, 1500);
     };
 
     var renderedRows = 0;
@@ -886,6 +884,7 @@ function AppViewModel() {
 
         stopProcessing();
         animateCharts();
+        scrollToAlerts();
 
         if (firstTableRender) {
             $.each($("table th.compressed"), function () {
@@ -897,7 +896,6 @@ function AppViewModel() {
             firstTableRender = false;
         }
 
-        scrollToAlerts();
     };
 
     var getGamesArray = function(gameData) {
