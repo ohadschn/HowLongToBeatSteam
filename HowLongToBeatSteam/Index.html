@@ -72,7 +72,7 @@
                     <span class="hidden-xs"> HowLongToBeat. Click the update links next to missing games in the table below to help!</span>
                 </p>
             </div>
-            <div role="alert" data-bind="visible: !error() && !alertHidden(), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-6' : 'col-md-12')">
+            <div role="alert" data-bind="visible: !error() && !alertHidden() && (imputedTtbs() || partialCache() || gameTable.rows().length===0 || !extraSmall), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-6' : 'col-md-12')">
                 <button type="button" class="close" data-bind="click: function() {alertHidden(true); }">
                     <span aria-hidden="true">&times;</span>
                     <span class="sr-only">Close</span>
