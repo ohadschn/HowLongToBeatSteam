@@ -172,7 +172,7 @@ function AppViewModel() {
     var stopProcessing = function() {
         self.status("");
         self.processing(false);
-    }
+    };
 
     self.gameTable.filter.subscribe(function (val) {
         appInsights.trackEvent("FilterApplied", {}, { length: val.length });
@@ -256,7 +256,7 @@ function AppViewModel() {
         toggleSort("hltbCompletionistTtb");
     };
 
-    var sliceByTotal = function(total) {
+    var sliceByTotal = function (total) {
         self.sliceTotal(total);
         appInsights.trackEvent("Slice", { by: total ? "Total" : "Remaining" });
     };
@@ -797,46 +797,58 @@ function AppViewModel() {
         return chart;
     };
 
-    var firstInit = true;
+    var chratsInitialized = false;
     var initCharts = function() {
 
-        if (!firstInit) {
-            stopProcessing();
+        if (chratsInitialized) {
+            return;
+        }
+        chratsInitialized = true;
+
+        $("#content").show(); 
+        self.playtimeChart = initSerialChart("playtimeChart",
+        [
+            { playtime: "Current", hours: 0 },
+            { playtime: "Main", hours: 0 },
+            { playtime: "Extras", hours: 0 },
+            { playtime: "Complete", hours: 0 }
+        ]);
+
+        self.remainingChart = initSerialChart("remainingChart", [
+            { playtime: "Main", hours: 0 },
+            { playtime: "Extras", hours: 0 },
+            { playtime: "Complete", hours: 0 }
+        ]);
+
+        self.genreChart = initPieChart("genreChart", 25);
+        self.metacriticChart = initPieChart("metacriticChart", 25, updateMetacriticChart);
+
+        $("#content").hide();
+
+        self.total.subscribe(updateCharts);
+        self.sliceTotal.subscribe(function(slicetotal) {
+            if (!slicetotal && self.sliceCompletionLevel() === PlaytimeType.Current) {
+                self.sliceCompletionLevel(PlaytimeType.Main); //will trigger slice chart update per above
+            }
+        });
+    }
+
+    var chartsInvalidated = false;
+    var animateCharts = function () {
+        if (chartsInvalidated) {
             self.playtimeChart.animateAgain();
             self.remainingChart.animateAgain();
             return;
         }
-        firstInit = false;
 
-        self.status("Initializing Charts...");
-
+        //needed for initial responsive rules application
+        chartsInvalidated = true;
         setTimeout(function() {
-            self.playtimeChart = initSerialChart("playtimeChart",
-            [
-                { playtime: "Current", hours: 0 },
-                { playtime: "Main", hours: 0 },
-                { playtime: "Extras", hours: 0 },
-                { playtime: "Complete", hours: 0 }
-            ]);
-
-            self.remainingChart = initSerialChart("remainingChart", [
-                { playtime: "Main", hours: 0 },
-                { playtime: "Extras", hours: 0 },
-                { playtime: "Complete", hours: 0 }
-            ]);
-
-            self.genreChart = initPieChart("genreChart", 25);
-            self.metacriticChart = initPieChart("metacriticChart", 25, updateMetacriticChart);
-
-            self.total.subscribe(updateCharts);
-            self.sliceTotal.subscribe(function(slicetotal) {
-                if (!slicetotal && self.sliceCompletionLevel() === PlaytimeType.Current) {
-                    self.sliceCompletionLevel(PlaytimeType.Main); //will trigger slice chart update per above
-                }
-            });
-            updateCharts(self.total());
-            stopProcessing();
-        }, 30); //yield to let KO update the status before initializing the charts
+            self.genreChart.invalidateSize();
+            self.metacriticChart.invalidateSize();
+            self.playtimeChart.invalidateSize();
+            self.remainingChart.invalidateSize();
+        }, 0);
     };
 
     var scrollToAlerts = function () {
@@ -872,20 +884,19 @@ function AppViewModel() {
 
         afterRequest = false;
 
-        initCharts();
+        stopProcessing();
+        animateCharts();
 
-        if (!firstTableRender) {
-            scrollToAlerts();
-            return;
+        if (firstTableRender) {
+            $.each($("table th.compressed"), function () {
+                $(this).css("width", $(this).width() + 10 + "px");
+            });
+
+            $("#gameTable").css('table-layout', "fixed");
+
+            firstTableRender = false;
         }
 
-        $.each($("table th.compressed"), function () {
-            $(this).css("width", $(this).width() + 10 + "px");
-        });
-
-        $("#gameTable").css('table-layout', "fixed");
-
-        firstTableRender = false;
         scrollToAlerts();
     };
 
@@ -974,7 +985,9 @@ function AppViewModel() {
                 self.alertHidden(false);
                 self.missingAlertHidden(false);
                 self.errorAlertHidden(false);
-        });
+            });
+
+        initCharts(); //init charts while waiting for response
     };
 
     self.displayUpdateDialog = function (game) {
