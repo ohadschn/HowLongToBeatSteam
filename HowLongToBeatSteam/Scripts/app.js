@@ -435,11 +435,13 @@ function AppViewModel() {
         self.playtimeChart.dataProvider[1].hours = getHours(total.mainTtb);
         self.playtimeChart.dataProvider[2].hours = getHours(total.extrasTtb);
         self.playtimeChart.dataProvider[3].hours = getHours(total.completionistTtb);
+        self.playtimeChart.invalidateSize();
         self.playtimeChart.validateData();
 
         self.remainingChart.dataProvider[0].hours = getHours(total.mainRemaining);
         self.remainingChart.dataProvider[1].hours = getHours(total.extrasRemaining);
         self.remainingChart.dataProvider[2].hours = getHours(total.completionistRemaining);
+        self.remainingChart.invalidateSize();
         self.remainingChart.validateData();
     };
 
@@ -488,6 +490,7 @@ function AppViewModel() {
                 color: unknownColor
             });
         }
+        chart.invalidateSize();
         chart.validateData();
     };
 
@@ -658,6 +661,7 @@ function AppViewModel() {
         }
 
         chart.dataProvider = categories;
+        chart.invalidateSize();
         chart.validateData();
     };
 
@@ -843,7 +847,7 @@ function AppViewModel() {
 
         //needed for initial responsive rules application
         chartsInvalidated = true;
-        setTimeout(function() {
+        setTimeout(function () {
             self.genreChart.invalidateSize();
             self.metacriticChart.invalidateSize();
             self.playtimeChart.invalidateSize();
