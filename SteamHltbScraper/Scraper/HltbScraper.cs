@@ -24,7 +24,7 @@ namespace SteamHltbScraper.Scraper
         private const string SearchHltbPostDataFormat = @"queryString={0}";
 
         private const string HltbGamePageFormat = @"http://www.howlongtobeat.com/game.php?id={0}";
-        private const string HltbGameOverviewPageFormat = @"http://www.howlongtobeat.com/game_overview.php?id={0}";
+        private const string HltbGameOverviewPageFormat = @"http://howlongtobeat.com/game_main.php?id={0}";
 
         private static readonly int ScrapingLimit = SiteUtil.GetOptionalValueFromConfig("ScrapingLimit", int.MaxValue);
         private static readonly int ScrapingRetries = SiteUtil.GetOptionalValueFromConfig("HltbScraperScrapingRetries", 5);

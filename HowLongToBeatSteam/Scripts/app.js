@@ -154,6 +154,7 @@ function AppViewModel() {
     self.avatarUrl = ko.observable("");
 
     self.processing = ko.observable(false);
+    self.populating = ko.observable(false);
     self.error = ko.observable(false);
     self.bonusLinkVisible = ko.observable(true);
 
@@ -795,6 +796,7 @@ function AppViewModel() {
     var initCharts = function() {
 
         if (!firstInit) {
+            self.populating(false);
             self.playtimeChart.animateAgain();
             self.remainingChart.animateAgain();
             return;
@@ -825,6 +827,7 @@ function AppViewModel() {
             }
         });
         updateCharts(self.total());
+        self.populating(false);
     };
 
     var scrollToAlerts = function () {
@@ -906,7 +909,7 @@ function AppViewModel() {
         $("#content").hide(); //IE + FF fix
 
         self.processing(true);
-
+        
         self.error(false);
         self.partialCache(false);
         self.imputedTtbs(false);
@@ -946,8 +949,10 @@ function AppViewModel() {
                     renderedRows = 0;
                 }
 
-                if(!firstTableRender || self.gameTable.rows().length === 0) {
+                if (!firstTableRender || self.gameTable.rows().length === 0) {
                     self.processing(false);
+                } else {
+                    self.populating(true);
                 }
             })
             .fail(function(error) {
@@ -960,7 +965,7 @@ function AppViewModel() {
                 self.alertHidden(false);
                 self.missingAlertHidden(false);
                 self.errorAlertHidden(false);
-            });
+        });
     };
 
     self.displayUpdateDialog = function (game) {
