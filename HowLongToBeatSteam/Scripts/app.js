@@ -154,7 +154,7 @@ function AppViewModel() {
     self.avatarUrl = ko.observable("");
 
     self.processing = ko.observable(false);
-    self.populating = ko.observable(false);
+    self.status = ko.observable("");
     self.error = ko.observable(false);
     self.bonusLinkVisible = ko.observable(true);
 
@@ -168,6 +168,11 @@ function AppViewModel() {
         hltbId: "",
         suggestedHltbId: ko.observable("")
     });
+
+    var stopProcessing = function() {
+        self.status("");
+        self.processing(false);
+    }
 
     self.gameTable.filter.subscribe(function (val) {
         appInsights.trackEvent("FilterApplied", {}, { length: val.length });
@@ -796,38 +801,42 @@ function AppViewModel() {
     var initCharts = function() {
 
         if (!firstInit) {
-            self.populating(false);
+            stopProcessing();
             self.playtimeChart.animateAgain();
             self.remainingChart.animateAgain();
             return;
         }
         firstInit = false;
 
-        self.playtimeChart = initSerialChart("playtimeChart",
-        [
-            { playtime: "Current", hours: 0 },
-            { playtime: "Main", hours: 0 },
-            { playtime: "Extras", hours: 0 },
-            { playtime: "Complete", hours: 0 }
-        ]);
+        self.status("Initializing Charts...");
 
-        self.remainingChart = initSerialChart("remainingChart", [
-            { playtime: "Main", hours: 0 },
-            { playtime: "Extras", hours: 0 },
-            { playtime: "Complete", hours: 0 }
-        ]);
+        setTimeout(function() {
+            self.playtimeChart = initSerialChart("playtimeChart",
+            [
+                { playtime: "Current", hours: 0 },
+                { playtime: "Main", hours: 0 },
+                { playtime: "Extras", hours: 0 },
+                { playtime: "Complete", hours: 0 }
+            ]);
 
-        self.genreChart = initPieChart("genreChart", 25);
-        self.metacriticChart = initPieChart("metacriticChart", 25, updateMetacriticChart);
+            self.remainingChart = initSerialChart("remainingChart", [
+                { playtime: "Main", hours: 0 },
+                { playtime: "Extras", hours: 0 },
+                { playtime: "Complete", hours: 0 }
+            ]);
 
-        self.total.subscribe(updateCharts);
-        self.sliceTotal.subscribe(function (slicetotal) {
-            if (!slicetotal && self.sliceCompletionLevel() === PlaytimeType.Current) {
-                self.sliceCompletionLevel(PlaytimeType.Main); //will trigger slice chart update per above
-            }
-        });
-        updateCharts(self.total());
-        self.populating(false);
+            self.genreChart = initPieChart("genreChart", 25);
+            self.metacriticChart = initPieChart("metacriticChart", 25, updateMetacriticChart);
+
+            self.total.subscribe(updateCharts);
+            self.sliceTotal.subscribe(function(slicetotal) {
+                if (!slicetotal && self.sliceCompletionLevel() === PlaytimeType.Current) {
+                    self.sliceCompletionLevel(PlaytimeType.Main); //will trigger slice chart update per above
+                }
+            });
+            updateCharts(self.total());
+            stopProcessing();
+        }, 30); //yield to let KO update the status before initializing the charts
     };
 
     var scrollToAlerts = function () {
@@ -877,7 +886,6 @@ function AppViewModel() {
         $("#gameTable").css('table-layout', "fixed");
 
         firstTableRender = false;
-        self.processing(false);
         scrollToAlerts();
     };
 
@@ -909,7 +917,8 @@ function AppViewModel() {
         $("#content").hide(); //IE + FF fix
 
         self.processing(true);
-        
+        self.status("Retrieving Data...");
+
         self.error(false);
         self.partialCache(false);
         self.imputedTtbs(false);
@@ -950,16 +959,16 @@ function AppViewModel() {
                 }
 
                 if (!firstTableRender || self.gameTable.rows().length === 0) {
-                    self.processing(false);
+                    stopProcessing();
                 } else {
-                    self.populating(true);
+                    self.status("Processing Data...");
                 }
             })
             .fail(function(error) {
                 appInsights.trackException(error);
                 self.gameTable.rows([]);
                 self.error(true);
-                self.processing(false);
+                stopProcessing();
             })
             .always(function() {
                 self.alertHidden(false);

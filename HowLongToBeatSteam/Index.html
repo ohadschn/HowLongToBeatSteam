@@ -50,8 +50,8 @@
     <div data-bind="visible: processing" style="display: none">
         <img class="loader" src="https://cdnjs.cloudflare.com/ajax/libs/owl-carousel/1.3.2/AjaxLoader.gif" alt="Loading..."/>
     </div>
-    <div data-bind="visible: populating" style="display: none" class="text-center lead">
-        <h1 class="loader">Populating Data...</h1>
+    <div data-bind="visible: status() != ''" style="display: none" class="text-center lead">
+        <h1 class="loader" data-bind="text: status"></h1>
     </div>
     <div id="alerts" class="alerts" data-bind="visible: !introPage() && !processing()" style="display: none">
         <div class="alert alert-danger alert-dismissible" role="alert" data-bind="visible: error() && !errorAlertHidden()">
