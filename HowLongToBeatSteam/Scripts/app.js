@@ -859,10 +859,22 @@ function AppViewModel() {
         if (window.pageYOffset > 0) {
             return; //don't override user position
         }
-        $('html, body').animate({
+
+        var $viewport = $('html, body');
+
+        $viewport.animate({
             scrollTop: $("#alerts").offset().top - 10
         }, 2500, function () {
             self.sliceTotal.valueHasMutated(); //needed for pie charts
+        });
+
+        var scrollEvents = "scroll mousedown DOMMouseScroll mousewheel keyup touchstart";
+        $viewport.bind(scrollEvents, function (e) {
+            if (e.which > 0 || e.type === "mousedown" || e.type === "mousewheel" || e.type === 'touchstart') {
+                // Identify the scroll as a user action, stop the animation, and unbind the event
+                $viewport.stop().unbind(scrollEvents);
+                self.sliceTotal.valueHasMutated(); //needed for pie charts (the animation completion won'tt ake place now)
+            }
         });
     };
 
