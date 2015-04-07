@@ -72,16 +72,13 @@
                     <span class="hidden-xs"> HowLongToBeat. Click the update links next to missing games in the table below to help!</span>
                 </p>
             </div>
-            <div role="alert" data-bind="visible: !error() && !alertHidden() && (imputedTtbs() || partialCache() || gameTable.rows().length===0 || !extraSmall), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-6' : 'col-md-12')">
+            <div role="alert" data-bind="visible: !error() && !alertHidden() && (imputedTtbs() || partialCache() || gameTable.rows().length===0), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-6' : 'col-md-12')">
                 <button type="button" class="close" data-bind="click: function() {alertHidden(true); }">
                     <span aria-hidden="true">&times;</span>
                     <span class="sr-only">Close</span>
                 </button>
                 <div data-bind="visible: gameTable.rows().length===0">
                     <span class="fa fa-fw fa-ban"></span> You have no games in your library. What kind of a sick person are you?
-                </div>
-                <div class="hidden-xs" data-bind="visible: gameTable.rows().length>0">
-                    <span class="fa fa-fw fa-copyright"></span> Completion definitions and statistics by <a href="http://howlongtobeat.com" target="_blank">HowLongToBeat</a>. Scores by <a href="http://www.metacritic.com" target="_blank">Metacritic</a>.
                 </div>
                 <div data-bind="visible: imputedTtbs">
                     <span class="fa fa-fw fa-bar-chart"></span> Some values missing from <abbr title="HowLongToBeat">HLTB</abbr> were <a href="http://en.wikipedia.org/wiki/Imputation_%28statistics%29" class="alert-link" target="_blank">imputed</a>. Such values are <span class="emphasized"> italicized</span>.
@@ -241,7 +238,7 @@
                                 </h1>
                             </div>
                             <div class="col-lg-6">
-                                <h4 class="text-center text-nowrap">Playtime by Metacritic score</h4>
+                                <h4 class="text-center text-nowrap">Playtime by <a href="http://www.metacritic.com">Metacritic</a> score</h4>
                                 <div id="metacriticChart" class="full-width"></div>
                                 <h1 id="metacriticChartNoData" class="no-vertical-margin text-center">
                                     <span class="vertically-centered">No Data</span>
@@ -391,6 +388,8 @@
     <div class="footer" data-bind="visible: !introPage()" style="display: none">
         <a href="https://azure.microsoft.com/" target="_blank">Powered by Azure.</a>
         <a href="http://steampowered.com" target="_blank">Powered by Steam.</a>
+        <br/>
+        Completion definitions and statistics by <a href="http://howlongtobeat.com" target="_blank">HowLongToBeat</a>.
         <br />
         All Rights Reserved Ohad Schneider &copy; 2015
         <a href="mailto:howlongtobeatsteam@outlook.com">Feedback</a>
