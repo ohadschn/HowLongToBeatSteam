@@ -136,6 +136,7 @@ function AppViewModel() {
     };
 
     self.introPage = ko.observable(true);
+    self.privacyPolicyPage = ko.observable("");
 
     self.gameTable = new DataTable([], tableOptions);
     self.pageSizeOptions = [10, 25, 50];
@@ -1009,8 +1010,15 @@ function AppViewModel() {
     self.displayUpdateDialog = function (game) {
         appInsights.trackEvent("UpdateClicked", {known: game.known});
         self.gameToUpdate(game);
-        $('#HltbUpdateModal').modal('show');
+        $("#HltbUpdateModal").modal("show");
     };
+
+    self.displayPrivacyPolicy = function() {
+        appInsights.trackEvent("PrivacyPolicyClicked");
+        self.privacyPolicyPage("Privacy.html");
+        $("#privacyModalBody").height(0.6 * $(window).height());
+        $("#privacyModal").modal("show");
+    }
 
     self.updateHltb = function() {
         var gameToUpdate = self.gameToUpdate();

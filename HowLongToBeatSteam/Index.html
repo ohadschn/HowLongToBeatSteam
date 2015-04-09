@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <title>How Long To Beat Steam</title>
-    <meta name="description" content="Find out how long it would take you to complete your entire Steam library in different completion levels"/>
+    <meta name="description" content="Find out how long it would take you to complete all the games in your Steam library in different completion levels"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css">
@@ -13,6 +13,18 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
     <!-- ReSharper disable All -->
+    <script type="text/javascript">
+    (function (e, t, n, r, i, s, o) {
+        e["GoogleAnalyticsObject"] = i;
+        e[i] = e[i] || function () { (e[i].q = e[i].q || []).push(arguments) }, e[i].l = 1 * new Date;
+        s = t.createElement(n), o = t.getElementsByTagName(n)[0];
+        s.async = 1;
+        s.src = r;
+        o.parentNode.insertBefore(s, o)
+    })(window, document, "script", "//www.google-analytics.com/analytics.js", "ga");
+    ga("create", "UA-58442747-1", "auto");
+    ga("send", "pageview")
+    </script>
     <script type="text/javascript">
         var appInsights = window.appInsights || function (config) {
             function s(config) { t[config] = function () { var i = arguments; t.queue.push(function () { t[config].apply(t, i) }) } } var t = { config: config }, r = document, f = window, e = "script", o = r.createElement(e), i, u; for (o.src = config.url || "//az416426.vo.msecnd.net/scripts/a/ai.0.js", r.getElementsByTagName(e)[0].parentNode.appendChild(o), t.cookie = r.cookie, t.queue = [], i = ["Event", "Exception", "Metric", "PageView", "Trace"]; i.length;) s("track" + i.pop()); return config.disableExceptionTracking || (i = "onerror", s("_" + i), u = f[i], f[i] = function (config, r, f, e, o) { var s = u && u(config, r, f, e, o); return s !== !0 && t["_" + i](config, r, f, e, o), s }), t
@@ -28,6 +40,19 @@
     <div class="attribution" data-bind="visible: introPage">
         <a href="http://opengameart.org/content/kujasa-the-beginning" target="_blank" class="attribution-link"><i>Kujasa - The Beginning</i></a> by Sergei Churbanov<br />
         Licensed by <a href="http://williamthompsonj.blogspot.de" target="_blank" class="attribution-link">William Thompson</a> under <a href="http://creativecommons.org/licenses/by/3.0/" target="_blank" class="attribution-link">CC BY 3.0</a>
+    </div>
+    <div id="privacyModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Privacy Policy" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Privacy Policy</h4>
+                </div>
+                <div id="privacyModalBody" class="modal-body">
+                    <iframe class="full-width full-height" data-bind="attr: {src: privacyPolicyPage}"></iframe>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="header" data-bind="css: introPage() ? 'header-intro' : ''">
         <a href="/#/" class="a-unstyled">
@@ -48,7 +73,7 @@
         </form>
     </div>
     <div data-bind="visible: processing" style="display: none">
-        <img class="loader" src="https://cdnjs.cloudflare.com/ajax/libs/owl-carousel/1.3.2/AjaxLoader.gif" alt="Loading..."/>
+        <img class="loader" src="https://cdnjs.cloudflare.com/ajax/libs/owl-carousel/1.3.2/AjaxLoader.gif" alt="Loading..." />
     </div>
     <div data-bind="visible: status() != ''" style="display: none" class="text-center lead">
         <h3 class="loader" data-bind="text: status"></h3>
@@ -68,7 +93,7 @@
                     <span class="sr-only">Close</span>
                 </button>
                 <p class="lead">
-                    <span class="fa fa-puzzle-piece"></span> Some of your games could not be found on <abbr class="visible-xs-inline" title="HowLongToBeat">HLTB</abbr> 
+                    <span class="fa fa-puzzle-piece"></span> Some of your games could not be found on <abbr class="visible-xs-inline" title="HowLongToBeat">HLTB</abbr>
                     <span class="hidden-xs"> HowLongToBeat. Click the update links next to missing games in the table below to help!</span>
                 </p>
             </div>
@@ -124,7 +149,7 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <div class="h3 summary-heading">
-                        <img data-bind="attr: {src: avatarUrl}" alt="User Avatar"/>
+                        <img data-bind="attr: {src: avatarUrl}" alt="User Avatar" />
                         <span data-bind="text: personaName"></span>
                         <ul class="inline list-inline text-nowrap push-right">
                             <li><a href="javascript:;" data-bind="click: shareOnFacebook"><span class="fa fa-facebook"></span></a></li>
@@ -154,19 +179,31 @@
                             </div>
                             <div class="col-lg-4">
                                 <h3 class="text-center text-nowrap">
-                                    Playtime remaining
+                                    Playtime Remaining
                                     <small class="text-info">
                                         <span>
                                             <span class=" glyphicon glyphicon-info-sign"
                                                   data-placement="top"
                                                   data-toggle="tooltip"
                                                   data-container="body"
-                                                  title="For each game, the expected time to beat is subtracted from the time played (to a minimum of zero)">
+                                                  title="For each game, the expected time to beat (per HowLongToBeat) is subtracted from the time played (to a minimum of zero)">
                                             </span>
                                         </span>
                                     </small>
                                 </h3>
                                 <div id="remainingChart" class="full-width"></div>
+                            </div>
+                            <div class="col-lg-4">
+                                <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                                <!-- Main -->
+                                <ins class="adsbygoogle"
+                                     style="display:block"
+                                     data-ad-client="ca-pub-6877197967563569"
+                                     data-ad-slot="8177136535"
+                                     data-ad-format="auto"></ins>
+                                <script>
+                                    (adsbygoogle = window.adsbygoogle || []).push({});
+                                </script>
                             </div>
                         </div>
                     </div>
@@ -175,9 +212,9 @@
                     </p>
                     <ul class="lead">
                         <li>Your total amount of consecutive <strong>current</strong> playtime is <span data-bind="text: getYears(total().playtime)"></span>.</li>
-                        <li>Your remaining amount of consecutive <abbr title="you complete the main objectives, just enough to see the credits roll"><strong>main</strong></abbr> playtime is <span data-bind="text: getYears(total().mainRemaining)"></span>.</li>
-                        <li>Your remaining amount of consecutive <abbr title="you take your time, discover and complete additional tasks not required"><strong>extras</strong></abbr> playtime is <span data-bind="text: getYears(total().extrasRemaining)"></span>.</li>
-                        <li>Your remaining amount of consecutive <abbr title="you strive for every achievement, every medal and conquer all that the game has to offer"><strong>completionist</strong></abbr> playtime is <span data-bind="text: getYears(total().completionistRemaining)"></span>.</li>
+                        <li>Your remaining amount of consecutive <abbr title="Per HowLongToBeat: You complete the main objectives, just enough to see the credits roll"><strong>main</strong></abbr> playtime is <span data-bind="text: getYears(total().mainRemaining)"></span>.</li>
+                        <li>Your remaining amount of consecutive <abbr title="Per HowLongToBeat: You take your time, discover and complete additional tasks not required"><strong>extras</strong></abbr> playtime is <span data-bind="text: getYears(total().extrasRemaining)"></span>.</li>
+                        <li>Your remaining amount of consecutive <abbr title="Per HowLongToBeat: You strive for every achievement, every medal and conquer all that the game has to offer"><strong>completionist</strong></abbr> playtime is <span data-bind="text: getYears(total().completionistRemaining)"></span>.</li>
                     </ul>
                     <p class="lead" data-bind="visible: bonusLinkVisible">
                         <!-- ReSharper disable once Html.IdNotResolved -->
@@ -252,7 +289,7 @@
                 <div class="panel-heading overflow-hidden">
                     <h3 class="pull-left">
                         Filter
-                        <input type="text" class="invisible no-width"/>
+                        <input type="text" class="invisible no-width" />
                     </h3>
                     <h3 class="overflow-hidden">
                         <input type="text" class="filter-input" data-bind="textInput: filter" />
@@ -385,14 +422,23 @@
             </div>
         </div>
     </div>
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <!-- Main -->
+    <ins class="adsbygoogle"
+         style="display: block"
+         data-ad-client="ca-pub-6877197967563569"
+         data-ad-slot="8177136535"
+         data-ad-format="auto"></ins>
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
     <div class="footer" data-bind="visible: !introPage()" style="display: none">
-        <a href="https://azure.microsoft.com/" target="_blank">Powered by Azure.</a>
-        <a href="http://steampowered.com" target="_blank">Powered by Steam.</a>
-        <br/>
-        Game completion definitions and statistics by <a href="http://howlongtobeat.com" target="_blank">HowLongToBeat</a>.
+        <a href="mailto:howlongtobeatsteam@outlook.com">Feedback</a> |
+        <a href="javascript:;" data-bind="click: displayPrivacyPolicy">Privacy Policy</a>
+        <br />
+        <a href="http://steampowered.com" target="_blank">Powered by Steam</a> & <a href="http://howlongtobeat.com" target="_blank">HowLongToBeat</a>
         <br />
         All Rights Reserved Ohad Schneider &copy; 2015
-        <a class="emphasized" href="mailto:howlongtobeatsteam@outlook.com">Feedback</a>
     </div>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/sammy.js/0.7.6/sammy.min.js"></script>

@@ -3,7 +3,7 @@
   min-height: 100%;
 }
 .content {
-    margin: 0 20px 120px;
+    margin: 0 20px 100px;
 }
 .header {
     margin: 30px 0 20px;
@@ -14,6 +14,9 @@
 }
 .full-width {
     width: 100%;
+}
+.full-height {
+    height: 100%;
 }
 .vertically-centered {
   display: inline-block;
@@ -26,7 +29,7 @@
 }
 .loader {
     display: block;
-    margin: 30px auto 0;
+    margin: 20px auto 0;
 }
 .footer {
   position: absolute;
