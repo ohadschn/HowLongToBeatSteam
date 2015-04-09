@@ -157,8 +157,7 @@ namespace HowLongToBeatSteam.Controllers
                 mainTtb += cachedGameData.HltbInfo.MainTtb;
                 extrasTtb += cachedGameData.HltbInfo.ExtrasTtb;
                 completionistTtb += cachedGameData.HltbInfo.CompletionistTtb;
-                var gameMainRemaining = Math.Max(0, cachedGameData.HltbInfo.MainTtb - game.playtime_forever);
-                mainRemaining += gameMainRemaining;
+                mainRemaining += Math.Max(0, cachedGameData.HltbInfo.MainTtb - game.playtime_forever);
                 extrasRemaining += Math.Max(0, cachedGameData.HltbInfo.ExtrasTtb - game.playtime_forever);
                 completionistRemaining += Math.Max(0, cachedGameData.HltbInfo.CompletionistTtb - game.playtime_forever);
 
@@ -167,8 +166,8 @@ namespace HowLongToBeatSteam.Controllers
                 {
                     genres = cachedGameData.Genres;
                 }
-                IncrementDictionaryEntryFromZero(playtimesByGenre, String.Join("/", genres), gameMainRemaining);
-                IncrementDictionaryEntryFromZero(playtimesByMetacritic, cachedGameData.MetacriticScore, gameMainRemaining);
+                IncrementDictionaryEntryFromZero(playtimesByGenre, String.Join("/", genres), cachedGameData.HltbInfo.MainTtb);
+                IncrementDictionaryEntryFromZero(playtimesByMetacritic, cachedGameData.MetacriticScore, cachedGameData.HltbInfo.MainTtb);
 
                 games.Add(new SteamAppUserData(cachedGameData, game.playtime_forever));
             }

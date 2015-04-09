@@ -348,9 +348,11 @@ function AppViewModel() {
         var playtimesByGenre = {};
         var playtimesByMetacritic = {};
 
-        var arr = ko.utils.arrayFilter(filteredRows, function (game) { return game.included(); });
-        for (var i = 0; i < arr.length; ++i) {
-            var game = arr[i];
+        for (var i = 0; i < filteredRows.length; ++i) {
+            var game = filteredRows[i];
+            if (!game.included()) {
+                continue;
+            }
 
             count++;
             playtime += game.steamPlaytime;
@@ -367,7 +369,7 @@ function AppViewModel() {
             completionistRemaining += gameCompletionistRemaining;
 
             var realGenres = ko.utils.arrayFilter(game.genres, function (subGenre) { return subGenre !== "Indie" && subGenre !== "Casual"; });
-            var genre = (realGenres.length === 0 ? game.genres : realGenres).join('/');
+            var genre = (realGenres.length === 0 ? game.genres : realGenres).join("/");
 
             var slicedPlaytime = getSlicedPlaytime(sliceCompletionLevel, sliceTotal, game, gameMainRemaining, gameExtrasRemaining, gameCompletionistRemaining);
             updateSlicedPlaytime(playtimesByGenre, genre, slicedPlaytime);
@@ -681,7 +683,7 @@ function AppViewModel() {
     };
 
     var updateSliceCharts = function (total) {
-        //we need to use jQuery as knockout is not immediate and thus the chart rendering will fail
+        //we need to use jQuery as knockout is not immediate and thus trips chart rendering
         var sliceCharts = $("#genreChart, #metacriticChart");
         var noDataIndicators = $("#genreChartNoData, #metacriticChartNoData");
 
@@ -856,6 +858,7 @@ function AppViewModel() {
         }, 0);
     };
 
+    var scrollEvents = "scroll mousedown DOMMouseScroll mousewheel keyup touchstart";
     var scrollToAlerts = function () {
         if (window.pageYOffset > 0) {
             return; //don't override user position
@@ -863,18 +866,15 @@ function AppViewModel() {
 
         var $viewport = $('html, body');
 
+        //scroll viewport
         $viewport.animate({
             scrollTop: $("#alerts").offset().top - 10
-        }, 2500, function () {
-            self.sliceTotal.valueHasMutated(); //needed for pie charts
-        });
+        }, 1500);
 
-        var scrollEvents = "scroll mousedown DOMMouseScroll mousewheel keyup touchstart";
+        //stop scrolling on user interruption
         $viewport.bind(scrollEvents, function (e) {
-            if (e.which > 0 || e.type === "mousedown" || e.type === "mousewheel" || e.type === 'touchstart') {
-                // Identify the scroll as a user action, stop the animation, and unbind the event
-                $viewport.stop().unbind(scrollEvents);
-                self.sliceTotal.valueHasMutated(); //needed for pie charts (the animation completion won'tt ake place now)
+            if (e.which > 0 || e.type === "mousedown" || e.type === "mousewheel" || e.type === "touchstart") {
+                $viewport.stop().unbind(scrollEvents); // Identify the scroll as a user action, stop the animation, and unbind the event
             }
         });
     };
