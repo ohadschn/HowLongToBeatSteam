@@ -858,6 +858,21 @@ function AppViewModel() {
         }, 0);
     };
 
+    var adsenseHtml = '<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6877197967563569" data-ad-slot="8177136535" data-ad-format="{format}"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>';
+    var displayAd = function (id, format) {
+        $("#" + id).html(adsenseHtml.replace("{format}", format));
+    };
+
+    var adsDisplayed = false;
+    var displayAds = function () {
+        if (adsDisplayed) {
+            return;
+        }
+
+        displayAd("adsenseRectangle", "rectangle");
+        adsDisplayed = true;
+    };
+
     var scrollEvents = "scroll mousedown DOMMouseScroll mousewheel keyup touchstart";
     var scrollToAlerts = function () {
         if (window.pageYOffset > 0) {
@@ -869,12 +884,15 @@ function AppViewModel() {
         //scroll viewport
         $viewport.animate({
             scrollTop: $("#alerts").offset().top - 10
-        }, 1500);
+        }, 1500, function() {
+            displayAds();
+        });
 
         //stop scrolling on user interruption
         $viewport.bind(scrollEvents, function (e) {
             if (e.which > 0 || e.type === "mousedown" || e.type === "mousewheel" || e.type === "touchstart") {
                 $viewport.stop().unbind(scrollEvents); // Identify the scroll as a user action, stop the animation, and unbind the event
+                displayAds();
             }
         });
     };
@@ -914,7 +932,6 @@ function AppViewModel() {
 
             firstTableRender = false;
         }
-
     };
 
     var getGamesArray = function(gameData) {
@@ -1018,7 +1035,7 @@ function AppViewModel() {
         self.privacyPolicyPage("Privacy.html");
         $("#privacyModalBody").height(0.6 * $(window).height());
         $("#privacyModal").modal("show");
-    }
+    };
 
     self.updateHltb = function() {
         var gameToUpdate = self.gameToUpdate();
