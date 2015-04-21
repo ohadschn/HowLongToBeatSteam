@@ -41,12 +41,12 @@
         <a href="http://opengameart.org/content/kujasa-the-beginning" target="_blank" class="attribution-link"><i>Kujasa - The Beginning</i></a> by Sergei Churbanov<br />
         Licensed by <a href="http://williamthompsonj.blogspot.de" target="_blank" class="attribution-link">William Thompson</a> under <a href="http://creativecommons.org/licenses/by/3.0/" target="_blank" class="attribution-link">CC BY 3.0</a>
     </div>
-    <div id="privacyModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Privacy Policy" aria-hidden="true">
+    <div id="privacyModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="privacyTitle" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title">Privacy Policy</h4>
+                    <h4 id="privacyTitle" class="modal-title">Privacy Policy</h4>
                 </div>
                 <div id="privacyModalBody" class="modal-body">
                     <iframe class="full-width full-height" data-bind="attr: {src: privacyPolicyPage}"></iframe>
@@ -115,12 +115,12 @@
         </div>
     </div>
     <div id="content" class="content" data-bind="visible: !introPage()" style="display: none">
-        <div id="HltbUpdateModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="HLTB update modal" aria-hidden="true">
+        <div id="HltbUpdateModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="HltbUpdateTitle" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title" data-bind="text: 'Update ' + gameToUpdate().steamName"></h4>
+                        <h4 id="HltbUpdateTitle" class="modal-title" data-bind="text: 'Update ' + gameToUpdate().steamName"></h4>
                     </div>
                     <div class="modal-body">
                         <ol>
@@ -427,11 +427,11 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/sammy.js/0.7.6/sammy.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.3.0/knockout-min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="http://www.amcharts.com/lib/3/amcharts.js"></script>
-    <script type="text/javascript" src="http://www.amcharts.com/lib/3/themes/light.js"></script>
-    <script type="text/javascript" src="http://www.amcharts.com/lib/3/serial.js"></script>
-    <script type="text/javascript" src="http://www.amcharts.com/lib/3/pie.js"></script>
-    <script type="text/javascript" src="http://www.amcharts.com/lib/3/plugins/responsive/responsive.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/amcharts/3.13.0/amcharts.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/amcharts/3.13.0/themes/light.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/amcharts/3.13.0/serial.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/amcharts/3.13.0/pie.js"></script>
+    <script type="text/javascript" src="Scripts/responsive.min.js"></script>
     <script type="text/javascript" src="bower_components/knockout-datatable/knockout-datatable.min.js"></script>
     <script type="text/javascript" src="Scripts/countdown.min.js"></script>
     <script type="text/javascript" src="Scripts/app.min.js"></script>

@@ -157,6 +157,10 @@
       <DependentUpon>app.js</DependentUpon>
     </Content>
     <Content Include="Scripts\countdown.min.js" />
+    <Content Include="Scripts\responsive.js" />
+    <Content Include="Scripts\responsive.min.js">
+      <DependentUpon>responsive.js</DependentUpon>
+    </Content>
     <Content Include="Styles\hltbs.css" />
     <Content Include="Styles\hltbs.min.css">
       <DependentUpon>hltbs.css</DependentUpon>
@@ -188,6 +192,9 @@
       <DependentUpon>app.min.js</DependentUpon>
     </Content>
     <None Include="Properties\PublishProfiles\howlongtobeatsteam.pubxml" />
+    <Content Include="Scripts\responsive.min.js.map">
+      <DependentUpon>responsive.min.js</DependentUpon>
+    </Content>
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
