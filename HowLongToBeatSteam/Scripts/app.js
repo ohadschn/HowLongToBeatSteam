@@ -1054,8 +1054,12 @@ function AppViewModel() {
         appInsights.trackEvent("UpdateSubmitted", {known: gameToUpdate.known });
     };
 
-    var getCanonicalAddress = function () {
-        return "http://howlongtobeatsteam.com" + window.location.pathname + window.location.hash;
+    var getOrigin = function() {
+        return window.location.protocol + "//" + window.location.host;
+    };
+
+    var getCurrentAddress = function () {
+        return getOrigin() + window.location.pathname + window.location.hash;
     };
 
     self.getShortShareText = function (hours) {
@@ -1068,17 +1072,17 @@ function AppViewModel() {
 
     self.shareOnFacebook = function () {
         appInsights.trackEvent("Shared", {site: "Facebook"});
-        self.openShareWindow("https://www.facebook.com/dialog/feed?app_id=445487558932250&display=popup&caption=HowLongToBeatSteam.com&description=" + encodeURIComponent(self.getShareText()) + "&link=" + encodeURIComponent(getCanonicalAddress()) + "&redirect_uri=" + encodeURIComponent("http://howlongtobeatsteam.com/CloseWindow.html") + "&picture=" + encodeURIComponent("http://howlongtobeatsteam.com/Resources/sk5_0.jpg"));
+        self.openShareWindow("https://www.facebook.com/dialog/feed?app_id=445487558932250&display=popup&caption=HowLongToBeatSteam&description=" + encodeURIComponent(self.getShareText()) + "&link=" + encodeURIComponent(getCurrentAddress()) + "&redirect_uri=" + encodeURIComponent(getOrigin() + "/CloseWindow.html") + "&picture=" + encodeURIComponent(getOrigin() + "/Resources/sk5_0.jpg"));
     };
 
     self.shareOnTwitter = function () {
         appInsights.trackEvent("Shared", {site: "Twitter"});
-        self.openShareWindow("https://twitter.com/share?url=" + encodeURIComponent(getCanonicalAddress()) + "&text=" + self.getShortShareText(true) + "&hashtags=hltbs,steam");
+        self.openShareWindow("https://twitter.com/share?url=" + encodeURIComponent(getCurrentAddress()) + "&text=" + self.getShortShareText(true) + "&hashtags=hltbs,steam");
     };
 
     self.shareOnGooglePlus = function () {
         appInsights.trackEvent("Shared", {site: "GooglePlus"});
-        self.openShareWindow("https://plus.google.com/share?url=" + encodeURIComponent(getCanonicalAddress()));
+        self.openShareWindow("https://plus.google.com/share?url=" + encodeURIComponent(getCurrentAddress()));
     };
 
     self.openShareWindow = function(url) {
@@ -1087,6 +1091,11 @@ function AppViewModel() {
             "share",
             "toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=600,height=600");
     };
+
+    self.authenticate = function () {
+        appInsights.trackEvent("SteamLogin");
+        window.location.href = "/Authentication";
+    }
 }
 
 $(document).ready(function () {

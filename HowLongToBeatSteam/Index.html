@@ -60,7 +60,7 @@
             <span class="h1 text-vertical-middle">How Long <span class="text-nowrap">To Beat Steam</span></span>
         </a>
         <form data-bind="submit: vanityUrlSubmitted, attr: { action: '#/' + steamVanityUrlName() }" role="form" class="form-inline">
-            <div class="form-group lowered">
+            <div class="form-group lowered" data-bind="visible: introPage" style="display: none">
                 <span class="glyphicon glyphicon glyphicon-question-sign"
                       data-placement="bottom"
                       data-toggle="tooltip"
@@ -70,16 +70,16 @@
                 <input id="steamIdText" type="text" data-bind="textInput : steamVanityUrlName" placeholder="Steam Profile ID" class="form-control inline-form-input">
                 <button type="submit" data-bind="enable: !processing() && steamVanityUrlName() !== ''" class="btn btn-primary">Tell me how long</button>
             </div>
-            <div class="lowered-extra">
+            <div class="lowered-extra" data-bind="visible: introPage" style="display: none">
                 Can't find your Profile ID?
                 <!-- ReSharper disable once Html.PathError -->
-                <a href="/Authentication">
+                <a href="javascript:;" data-bind="click: authenticate">
                     <img src="http://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_large_noborder.png" alt="Sign in through Steam" />
                 </a>
             </div>
         </form>
     </div>
-    <div data-bind="visible: processing" style="display: none">
+    <div class="lowered-extra-double" data-bind="visible: processing" style="display: none">
         <img class="loader" src="https://cdnjs.cloudflare.com/ajax/libs/owl-carousel/1.3.2/AjaxLoader.gif" alt="Loading..." />
     </div>
     <div data-bind="visible: status() != ''" style="display: none" class="text-center lead">
