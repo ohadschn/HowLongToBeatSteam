@@ -91,9 +91,9 @@
                 <span aria-hidden="true">&times;</span>
                 <span class="sr-only">Close</span>
             </button>
-            <strong>Error:</strong> Could not retrieve Steam library information.
+            <strong class="emphasized">Error:</strong> Could not retrieve Steam library information.
                 <span data-bind="visible: authenticated() === AuthenticationStatus.Failure">Steam Authentication failed.</span>
-                <span data-bind="visible: authenticated() === AuthenticationStatus.None">Are you sure your profile ID is correct? Try signing-in through Steam.</span>
+                <span data-bind="visible: authenticated() === AuthenticationStatus.None">Are you sure your profile ID is correct (and <a href="http://google.com/#q=set+steam+profile+public" target="_blank" class="alert-link">set to public</a>)? Try signing-in through Steam.</span>
                 <span data-bind="visible: authenticated() === AuthenticationStatus.Success">Make sure your profile is <a href="http://google.com/#q=set+steam+profile+public" target="_blank" class="alert-link"> set to public in your Steam profile settings</a>.</span>
         </div>
         <div class="row horizontal-alert-row">
