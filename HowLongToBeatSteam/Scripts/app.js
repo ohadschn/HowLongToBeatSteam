@@ -58,6 +58,12 @@ var PlaytimeType = {
     Completionist: "completionist"
 };
 
+var AuthenticationStatus = {
+    None: "None",
+    Success: "Success",
+    Failure: "Failure"
+};
+
 var alternatingPalette = [];
 var progressivePalette = ["#75c7f0", "#6CC3EF", "#6CC3EF", "#5ABCED", "#47B4EB", "#35ADE9", "#23A5E7", "#189BDC", "#168ECA", "#1481B8"];
 var unknownColor = "#ABB5BA";
@@ -137,6 +143,7 @@ function AppViewModel() {
 
     self.introPage = ko.observable(true);
     self.privacyPolicyPage = ko.observable("");
+    self.authenticated = ko.observable(AuthenticationStatus.None);
 
     self.gameTable = new DataTable([], tableOptions);
     self.pageSizeOptions = [10, 25, 50];
@@ -1092,10 +1099,10 @@ function AppViewModel() {
             "toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=600,height=600");
     };
 
-    self.authenticate = function () {
+    self.authenticate = function() {
         appInsights.trackEvent("SteamLogin");
         window.location.href = "/Authentication";
-    }
+    };
 }
 
 $(document).ready(function () {
@@ -1131,8 +1138,22 @@ $(document).ready(function () {
         };
 
         this.get("#/:vanityUrlName", function () {
-            appInsights.trackEvent("LoadGames");
+            viewModel.authenticated(AuthenticationStatus.None);
+            appInsights.trackEvent("LoadGames", { authenticated: false });
             loadGames(this.params.vanityUrlName);
+        });
+
+        this.get("#/auth/:steamid", function () {
+            if (this.params.steamid === "failed") {
+                viewModel.authenticated(AuthenticationStatus.Failure);
+                viewModel.introPage(false);
+                viewModel.error(true);
+                return;
+            }
+
+            viewModel.authenticated(AuthenticationStatus.Success);
+            appInsights.trackEvent("LoadGames", { authenticated: true });
+            loadGames(this.params.steamid);
         });
 
         this.get("#/cached/:count", function () {
