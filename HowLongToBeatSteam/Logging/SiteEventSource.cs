@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.Tracing;
 using Common.Logging;
+using DotNetOpenAuth.OpenId.RelyingParty;
 
 namespace HowLongToBeatSteam.Logging
 {
@@ -25,6 +26,7 @@ namespace HowLongToBeatSteam.Logging
             public const EventKeywords SteamApi = (EventKeywords)1;
             public const EventKeywords TableStorage = (EventKeywords) 2;
             public const EventKeywords GamesController = (EventKeywords) 4;
+            public const EventKeywords OpenId = (EventKeywords) 8;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
@@ -38,6 +40,7 @@ namespace HowLongToBeatSteam.Logging
             public const EventTask HandleGetGamesRequest = (EventTask) 5;
             public const EventTask ResolveVanityUrl = (EventTask) 6;
             public const EventTask RetrievePersonaInfo = (EventTask) 7;
+            public const EventTask CreateAuthenticationRequest = (EventTask) 8;
         }
 // ReSharper restore ConvertToStaticClass
 
@@ -265,6 +268,60 @@ namespace HowLongToBeatSteam.Logging
         public void ErrorRetrievingPersonaInfo(long steamId)
         {
             WriteEvent(23, steamId);
+        }
+
+        [Event(
+            24,
+            Message = "Start creating Open ID authentication request",
+            Keywords = Keywords.OpenId,
+            Level = EventLevel.Informational,
+            Task = Tasks.CreateAuthenticationRequest,
+            Opcode = EventOpcode.Start)]
+        public void CreateAuthenticationRequestStart()
+        {
+            WriteEvent(24);
+        }
+
+        [Event(
+            25,
+            Message = "Finished creating Open ID authentication request",
+            Keywords = Keywords.OpenId,
+            Level = EventLevel.Informational,
+            Task = Tasks.CreateAuthenticationRequest,
+            Opcode = EventOpcode.Stop)]
+        public void CreateAuthenticationRequestStop()
+        {
+            WriteEvent(25);
+        }
+
+        [Event(
+            26,
+            Message = "Malformed Steam Claimed ID provided: {0} ({1})",
+            Keywords = Keywords.OpenId,
+            Level = EventLevel.Error)]
+        public void MalformedSteamClaimedIdProvided(string claimedId, string error)
+        {
+            WriteEvent(26, claimedId, error);
+        }
+
+        [Event(
+            27,
+            Message = "Steam Authentication Failed. AuthenticationStatus: {0}",
+            Keywords = Keywords.OpenId,
+            Level = EventLevel.Warning)]
+        public void SteamAuthenticationFailed(AuthenticationStatus authenticationStatus)
+        {
+            WriteEvent(27, (int)authenticationStatus);
+        }
+
+        [Event(
+            28,
+            Message = "Steam authentication succeeded. Claimed ID: {0}",
+            Keywords = Keywords.OpenId,
+            Level = EventLevel.Informational)]
+        public void SteamAuthenticationSucceeded(string claimedId)
+        {
+            WriteEvent(28, claimedId);
         }
     }
 }

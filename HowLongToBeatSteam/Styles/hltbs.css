@@ -125,6 +125,9 @@
 .lowered {
     margin-top: 10px;
 }
+.lowered-extra {
+    margin-top: 20px;
+}
 .lead-lowered {
     margin-top: 15px;
     margin-bottom: 10px;

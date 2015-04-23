@@ -70,6 +70,13 @@
                 <input id="steamIdText" type="text" data-bind="textInput : steamVanityUrlName" placeholder="Steam Profile ID" class="form-control inline-form-input">
                 <button type="submit" data-bind="enable: !processing() && steamVanityUrlName() !== ''" class="btn btn-primary">Tell me how long</button>
             </div>
+            <div class="lowered-extra">
+                Can't find your Profile ID?
+                <!-- ReSharper disable once Html.PathError -->
+                <a href="/Authentication">
+                    <img src="http://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_large_noborder.png" alt="Sign in through Steam" />
+                </a>
+            </div>
         </form>
     </div>
     <div data-bind="visible: processing" style="display: none">
