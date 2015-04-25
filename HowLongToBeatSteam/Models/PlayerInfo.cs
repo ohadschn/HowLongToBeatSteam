@@ -60,6 +60,12 @@ namespace HowLongToBeatSteam.Models
         [DataMember]
         public int CompletionistRemaining { get; private set; }
         [DataMember]
+        public int MainCompleted { get; private set; }
+        [DataMember]
+        public int ExtrasCompleted { get; private set; }
+        [DataMember]
+        public int CompletionistCompleted { get; private set; }
+        [DataMember]
         public Dictionary<string, int> PlaytimesByGenre { get; private set; }
         [DataMember]
         public Dictionary<int, int> PlaytimesByMetacritic { get; private set; }
@@ -71,6 +77,7 @@ namespace HowLongToBeatSteam.Models
         public Dictionary<int, int> PlaytimesByReleaseYear { get; private set; }
 
         public Totals(int playtime, int mainTtb, int extrasTtb, int completionistTtb, int mainRemaining, int extrasRemaining, int completionistRemaining,
+            int mainCompleted, int extrasCompleted, int completionistCompleted,
             Dictionary<string, int> playtimesByGenre, Dictionary<int, int> playtimesByMetacritic, Dictionary<string, int> playtimesByAppType,
             Dictionary<string, int> playtimesByPlatform, Dictionary<int, int> playtimesByReleaseYear)
         {
@@ -81,6 +88,9 @@ namespace HowLongToBeatSteam.Models
             MainRemaining = mainRemaining;
             ExtrasRemaining = extrasRemaining;
             CompletionistRemaining = completionistRemaining;
+            MainCompleted = mainCompleted;
+            ExtrasCompleted = extrasCompleted;
+            CompletionistCompleted = completionistCompleted;
             PlaytimesByGenre = playtimesByGenre;
             PlaytimesByMetacritic = playtimesByMetacritic;
             PlaytimesByAppType = playtimesByAppType;

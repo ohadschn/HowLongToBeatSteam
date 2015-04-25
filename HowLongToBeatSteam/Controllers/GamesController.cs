@@ -130,6 +130,9 @@ namespace HowLongToBeatSteam.Controllers
             int mainRemaining = 0;
             int extrasRemaining = 0;
             int completionistRemaining = 0;
+            int mainCompleted = 0;
+            int extrasCompleted = 0;
+            int completionistCompleted = 0;
             Dictionary<string, int> playtimesByGenre = new Dictionary<string, int>();
             Dictionary<int, int> playtimesByMetacritic = new Dictionary<int, int>();
             Dictionary<string, int> playtimesByAppType = new Dictionary<string, int>();
@@ -160,6 +163,9 @@ namespace HowLongToBeatSteam.Controllers
                 mainRemaining += Math.Max(0, cachedGameData.HltbInfo.MainTtb - game.playtime_forever);
                 extrasRemaining += Math.Max(0, cachedGameData.HltbInfo.ExtrasTtb - game.playtime_forever);
                 completionistRemaining += Math.Max(0, cachedGameData.HltbInfo.CompletionistTtb - game.playtime_forever);
+                mainCompleted += Math.Min(game.playtime_forever, cachedGameData.HltbInfo.MainTtb);
+                extrasCompleted += Math.Min(game.playtime_forever, cachedGameData.HltbInfo.ExtrasTtb);
+                completionistCompleted += Math.Min(game.playtime_forever, cachedGameData.HltbInfo.CompletionistTtb);
 
                 IReadOnlyList<string> genres = cachedGameData.Genres.Except(NonGenres).ToArray();
                 if (genres.Count == 0)
@@ -175,6 +181,7 @@ namespace HowLongToBeatSteam.Controllers
 
             return new PlayerInfo(partialCache, games, new
                 Totals(playtime, mainTtb, extrasTtb, completionistTtb, mainRemaining, extrasRemaining, completionistRemaining,
+                mainCompleted, extrasCompleted, completionistCompleted,
                 playtimesByGenre, playtimesByMetacritic, playtimesByAppType, playtimesByPlatform, playtimesByReleaseYear), personaInfo);
         }
 

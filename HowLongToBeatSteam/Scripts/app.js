@@ -44,6 +44,10 @@ var getYears = function (minutes) { // jshint ignore:line
     /*jshint bitwise: true*/
 };
 
+var getPercent = function (portion, total) { // jshint ignore:line
+    return (100 * portion / total).toFixed(2) + "%";
+};
+
 var GameUpdatePhase = {
     None: "None",
     InProgress: "InProgress",
@@ -352,6 +356,9 @@ function AppViewModel() {
         var mainRemaining = 0;
         var extrasRemaining = 0;
         var completionistRemaining = 0;
+        var mainCompleted = 0;
+        var extrasCompleted = 0;
+        var completionistCompleted = 0;
         var playtimesByGenre = {};
         var playtimesByMetacritic = {};
 
@@ -366,6 +373,9 @@ function AppViewModel() {
             mainTtb += game.hltbMainTtb;
             extrasTtb += game.hltbExtrasTtb;
             completionistTtb += game.hltbCompletionistTtb;
+            mainCompleted += Math.min(game.steamPlaytime, game.hltbMainTtb);
+            extrasCompleted += Math.min(game.steamPlaytime, game.hltbExtrasTtb);
+            completionistCompleted += Math.min(game.steamPlaytime, game.hltbCompletionistTtb);
 
             var gameMainRemaining = Math.max(0, game.hltbMainTtb - game.steamPlaytime);
             var gameExtrasRemaining = Math.max(0, game.hltbExtrasTtb - game.steamPlaytime);
@@ -398,6 +408,9 @@ function AppViewModel() {
             mainRemaining: mainRemaining,
             extrasRemaining: extrasRemaining,
             completionistRemaining: completionistRemaining,
+            mainCompleted: mainCompleted,
+            extrasCompleted: extrasCompleted,
+            completionistCompleted: completionistCompleted,
             playtimesByGenre: playtimesByGenre,
             playtimesByMetacritic: playtimesByMetacritic
         };
@@ -441,18 +454,19 @@ function AppViewModel() {
     };
 
     var updateMainCharts = function (total) {
-        self.playtimeChart.dataProvider[0].hours = getHours(total.playtime);
-        self.playtimeChart.dataProvider[1].hours = getHours(total.mainTtb);
-        self.playtimeChart.dataProvider[2].hours = getHours(total.extrasTtb);
-        self.playtimeChart.dataProvider[3].hours = getHours(total.completionistTtb);
+        self.playtimeChart.dataProvider[0].completed = getHours(total.playtime);
+
+        self.playtimeChart.dataProvider[1].completed = getHours(total.mainCompleted);
+        self.playtimeChart.dataProvider[1].remaining = getHours(total.mainRemaining);
+
+        self.playtimeChart.dataProvider[2].completed = getHours(total.extrasCompleted);
+        self.playtimeChart.dataProvider[2].remaining = getHours(total.extrasRemaining);
+
+        self.playtimeChart.dataProvider[3].completed = getHours(total.completionistCompleted);
+        self.playtimeChart.dataProvider[3].remaining = getHours(total.completionistRemaining);
+
         self.playtimeChart.invalidateSize();
         self.playtimeChart.validateData();
-
-        self.remainingChart.dataProvider[0].hours = getHours(total.mainRemaining);
-        self.remainingChart.dataProvider[1].hours = getHours(total.extrasRemaining);
-        self.remainingChart.dataProvider[2].hours = getHours(total.completionistRemaining);
-        self.remainingChart.invalidateSize();
-        self.remainingChart.validateData();
     };
 
     var getPlaytimeTotalHours = function () {
@@ -712,9 +726,12 @@ function AppViewModel() {
         updateSliceCharts(total);
     };
 
-    var initChart = function (chartId) {
+    var initChart = function (chartId, factor) {
+        if (typeof factor === 'undefined') {
+            factor = 1;
+        }
         var chart = $("#" + chartId);
-        var chartHeight = chart.width() * (self.superSmall ? 1 : 2/3);
+        var chartHeight = chart.width() * (self.superSmall ? 1.1 : factor * 2 / 3);
         chart.height(chartHeight);
 
         var noDataIndicator = $("#" + chartId + "NoData");
@@ -723,29 +740,43 @@ function AppViewModel() {
     };
 
     var initSerialChart = function(chartId, dataProvider) {
-        initChart(chartId);
-        return AmCharts.makeChart(chartId, {
+        initChart(chartId, 0.5);
+        var chart = AmCharts.makeChart(chartId, {
             panEventsEnabled: false,
             type: "serial",
             theme: "light",
+            pathToImages: "http://www.amcharts.com/lib/3/images/",
+            rotate: !self.superSmall,
             colors: alternatingPalette,
             dataProvider: dataProvider,
-            categoryField: "playtime",
+            categoryField: "playtimeType",
             valueAxes: [
                 {
                     axisAlpha: 0,
-                    position: "left",
-                    title: "Hours"
+                    stackType: "regular",
+                    position: "left"
                 }
             ],
-            categoryAxis: { gridPosition: "start" },
+            categoryAxis: {
+                gridPosition: "start",
+                labelRotation: self.superSmall ? 45 : 0
+            },
             graphs: [
                 {
                     type: "column",
-                    valueField: "hours",
-                    colorField: "color",
+                    title: "Completed",
+                    valueField: "completed",
                     lineThickness: 1.5,
-                    balloonText: "<b>[[value]] hours</b>",
+                    balloonText: "<b>[[value]] hours completed</b> ([[percents]]%)",
+                    fillAlphas: 0.5,
+                    lineAlpha: 0.8
+                },
+                {
+                    type: "column",
+                    title: "Remaining",
+                    valueField: "remaining",
+                    lineThickness: 1.5,
+                    balloonText: "<b>[[value]] hours remaining</b> ([[percents]]%)",
                     fillAlphas: 0.5,
                     lineAlpha: 0.8
                 }
@@ -768,6 +799,8 @@ function AppViewModel() {
                 }]
             }
         });
+        chart.balloon.maxWidth *= 0.9;
+        return chart;
     };
 
     var initPieChart = function(chartId, marginTop, updater) {
@@ -776,6 +809,7 @@ function AppViewModel() {
             panEventsEnabled: false,
             type: "pie",
             theme: "light",
+            pathToImages: "http://www.amcharts.com/lib/3/images/",
             colors: alternatingPalette,
             marginLeft: 0,
             marginRight: 0,
@@ -822,16 +856,16 @@ function AppViewModel() {
         $("#content").show();
         self.playtimeChart = initSerialChart("playtimeChart",
         [
-            { playtime: "Current", hours: 0 },
-            { playtime: "Main", hours: 0 },
-            { playtime: "Extras", hours: 0 },
-            { playtime: "Complete", hours: 0 }
+            { playtimeType: "Current", hours: 0 },
+            { playtimeType: "Main", hours: 0 },
+            { playtimeType: "Extras", hours: 0 },
+            { playtimeType: "Complete", hours: 0 }
         ]);
 
         self.remainingChart = initSerialChart("remainingChart", [
-            { playtime: "Main", hours: 0 },
-            { playtime: "Extras", hours: 0 },
-            { playtime: "Complete", hours: 0 }
+            { playtimeType: "Main", hours: 0 },
+            { playtimeType: "Extras", hours: 0 },
+            { playtimeType: "Complete", hours: 0 }
         ]);
 
         self.genreChart = initPieChart("genreChart", 25);
@@ -997,6 +1031,9 @@ function AppViewModel() {
                     mainRemaining: data.Totals.MainRemaining,
                     extrasRemaining: data.Totals.ExtrasRemaining,
                     completionistRemaining: data.Totals.CompletionistRemaining,
+                    mainCompleted: data.Totals.MainCompleted,
+                    extrasCompleted: data.Totals.ExtrasCompleted,
+                    completionistCompleted: data.Totals.CompletionistCompleted,
                     playtimesByGenre: data.Totals.PlaytimesByGenre,
                     playtimesByMetacritic: data.Totals.PlaytimesByMetacritic
                 };
@@ -1107,9 +1144,9 @@ function AppViewModel() {
 
 $(document).ready(function () {
 
-    //init pallete
+    //init palette
     for (var i = 0; i < 50; i++) {
-        alternatingPalette.push("#97BBCD", "#75C7F0");
+        alternatingPalette.push("#75C7F0", "#97BBCD");
     }
 
     //enable tooltips

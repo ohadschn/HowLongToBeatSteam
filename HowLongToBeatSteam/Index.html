@@ -171,39 +171,23 @@
                 <div class="panel-body">
                     <div class="container-fluid">
                         <div class="row">
-                            <div class="col-lg-4">
+                            <div class="col-lg-8">
                                 <h3 class="text-center">
-                                    Total Playtime
+                                    Playtime
                                     <small class="text-info">
                                         <span>
                                             <span class=" glyphicon glyphicon-info-sign"
-                                                  data-placement="top"
+                                                  data-placement="bottom"
                                                   data-toggle="tooltip"
                                                   data-container="body"
-                                                  title="As recorded by Steam and estimated by HowLongToBeat">
+                                                  title="As recorded by Steam and estimated by HLTB. To calculate the remaining playtime in the different completion levels, the expected time to beat each game was subtracted from the time played (to a minimum of zero). Completed playtimes were calculated similarly, which is why they may be different for each completion level - each game's contribution is bounded by the HLTB estimated time to beat it for that level (except for the 'current' row where it is unbounded).">
                                             </span>
                                         </span>
                                     </small>
                                 </h3>
                                 <div id="playtimeChart" class="full-width"></div>
                             </div>
-                            <div class="col-lg-4">
-                                <h3 class="text-center text-nowrap">
-                                    Playtime Remaining
-                                    <small class="text-info">
-                                        <span>
-                                            <span class=" glyphicon glyphicon-info-sign"
-                                                  data-placement="top"
-                                                  data-toggle="tooltip"
-                                                  data-container="body"
-                                                  title="For each game, the expected time to beat is subtracted from the time played (to a minimum of zero)">
-                                            </span>
-                                        </span>
-                                    </small>
-                                </h3>
-                                <div id="remainingChart" class="full-width"></div>
-                            </div>
-                            <h3 class="text-center text-nowrap adsenseTitle">
+                            <h3 class="text-center text-nowrap adsenseTitle" data-bind="visible: !medium">
                                 Sponsored Links
                             </h3>
                             <div id="adsenseRectangle" class="col-lg-4">
@@ -215,9 +199,9 @@
                     </p>
                     <ul class="lead">
                         <li>Your total amount of consecutive <strong>current</strong> playtime is <span data-bind="text: getYears(total().playtime)"></span>.</li>
-                        <li>Your remaining amount of consecutive <abbr title="Per HowLongToBeat: You complete the main objectives, just enough to see the credits roll"><strong>main</strong></abbr> playtime is <span data-bind="text: getYears(total().mainRemaining)"></span>.</li>
-                        <li>Your remaining amount of consecutive <abbr title="Per HowLongToBeat: You take your time, discover and complete additional tasks not required"><strong>extras</strong></abbr> playtime is <span data-bind="text: getYears(total().extrasRemaining)"></span>.</li>
-                        <li>Your remaining amount of consecutive <abbr title="Per HowLongToBeat: You strive for every achievement, every medal and conquer all that the game has to offer"><strong>completionist</strong></abbr> playtime is <span data-bind="text: getYears(total().completionistRemaining)"></span>.</li>
+                        <li>Your remaining amount of consecutive <abbr title="Per HowLongToBeat: You complete the main objectives, just enough to see the credits roll"><strong>main</strong></abbr> playtime is <span data-bind="text: getYears(total().mainRemaining) + ' (' + getPercent(total().mainRemaining, total().mainTtb)  + ')'"></span>.</li>
+                        <li>Your remaining amount of consecutive <abbr title="Per HowLongToBeat: You take your time, discover and complete additional tasks not required"><strong>extras</strong></abbr> playtime is <span data-bind="text: getYears(total().extrasRemaining) + ' (' + getPercent(total().extrasRemaining, total().extrasTtb)  + ')'"></span>.</li>
+                        <li>Your remaining amount of consecutive <abbr title="Per HowLongToBeat: You strive for every achievement, every medal and conquer all that the game has to offer"><strong>completionist</strong></abbr> playtime is <span data-bind="text: getYears(total().completionistRemaining) + ' (' + getPercent(total().completionistRemaining, total().completionistTtb)  + ')'"></span>.</li>
                     </ul>
                     <p class="lead" data-bind="visible: bonusLinkVisible">
                         <!-- ReSharper disable once Html.IdNotResolved -->
@@ -278,7 +262,7 @@
                                 </h1>
                             </div>
                             <div class="col-lg-6">
-                                <h4 class="text-center text-nowrap">Playtime by <a href="http://www.metacritic.com">Metacritic</a> score</h4>
+                                <h4 class="text-center text-nowrap">Playtime by <a href="http://www.metacritic.com" target="_blank">Metacritic</a> score</h4>
                                 <div id="metacriticChart" class="full-width"></div>
                                 <h1 id="metacriticChartNoData" class="no-vertical-margin text-center">
                                     <span class="vertically-centered">No Data</span>
