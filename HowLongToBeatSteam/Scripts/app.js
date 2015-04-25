@@ -917,6 +917,7 @@ function AppViewModel() {
         }
 
         displayAd("adsenseRectangle", "rectangle");
+        displayAd("adsenseFooter", "horizontal");
         adsDisplayed = true;
     };
 
@@ -932,7 +933,9 @@ function AppViewModel() {
         $viewport.animate({
             scrollTop: $("#alerts").offset().top - 10
         }, 1500, function() {
-            displayAds();
+            setTimeout(function() {
+                displayAds();
+            }, 1500);
         });
 
         //stop scrolling on user interruption

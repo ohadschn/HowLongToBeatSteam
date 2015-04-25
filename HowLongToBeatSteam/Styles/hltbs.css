@@ -31,8 +31,11 @@
     display: block;
     margin: 20px auto 0;
 }
-.advertisement {
+.playtimeAd {
     margin-top: 20px;
+}
+.footerAd {
+    text-align: center;
 }
 .footer {
   position: absolute;
