@@ -731,7 +731,7 @@ function AppViewModel() {
             factor = 1;
         }
         var chart = $("#" + chartId);
-        var chartHeight = chart.width() * (self.superSmall ? 1.1 : factor * 2 / 3);
+        var chartHeight = chart.width() * factor * (self.superSmall ? 1.3 : 2 / 3);
         chart.height(chartHeight);
 
         var noDataIndicator = $("#" + chartId + "NoData");
@@ -740,13 +740,13 @@ function AppViewModel() {
     };
 
     var initSerialChart = function(chartId, dataProvider) {
-        initChart(chartId, 0.5);
+        initChart(chartId, Math.max(Math.min(768 / self.width, 0.9), 0.6));
         var chart = AmCharts.makeChart(chartId, {
             panEventsEnabled: false,
             type: "serial",
             theme: "light",
             pathToImages: "http://www.amcharts.com/lib/3/images/",
-            rotate: !self.superSmall,
+            rotate: !self.extraSmall,
             colors: alternatingPalette,
             dataProvider: dataProvider,
             categoryField: "playtimeType",
