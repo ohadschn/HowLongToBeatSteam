@@ -905,9 +905,9 @@ function AppViewModel() {
         }, 0);
     };
 
-    var adsenseHtml = '<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6877197967563569" data-ad-slot="8177136535" data-ad-format="{format}"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>';
-    var displayAd = function (id, format) {
-        $("#" + id).html(adsenseHtml.replace("{format}", format));
+    var adsenseHtml = '<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins id="{id}Internal" class="adsbygoogle{centered}" style="display:block" data-ad-client="ca-pub-6877197967563569" data-ad-slot="8177136535" data-ad-format="{format}"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>';
+    var displayAd = function (id, format, center) {
+        $("#" + id).html(adsenseHtml.replace("{format}", format).replace("{centered}", center ? " centered" : "").replace("{id}", id));
     };
 
     var adsDisplayed = false;
@@ -916,14 +916,30 @@ function AppViewModel() {
             return;
         }
 
-        displayAd("adsenseRectangle", "rectangle");
-        displayAd("adsenseFooter", "horizontal");
+        var adsenseRectangle = $("#adsenseRectangle");
+
+        //we need to set the height so that centering works
+        //we subtract 50 to account for chart axis labels
+        //we make sure that the ad is not too short to be a rectangle ad
+        adsenseRectangle.height(Math.max($("#playtimeChart").height() - 50, 290));
+
+        //we only set the background now so that we don't see a stripe before this point
+        adsenseRectangle.css("background-color", "#f5f5f5");
+
+        displayAd("adsenseRectangle", "rectangle", true);
+
+        //we slightly reduce the internal rectangle width so that we can still see the background
+        var adsenseRectangleInternal = $("#adsenseRectangleInternal");
+        adsenseRectangleInternal.width(0.9 * adsenseRectangleInternal.width());
+
+        displayAd("adsenseFooter", "horizontal", false);
         adsDisplayed = true;
     };
 
     var scrollEvents = "scroll mousedown DOMMouseScroll mousewheel keyup touchstart";
     var scrollToAlerts = function () {
         if (window.pageYOffset > 0) {
+            displayAds();
             return; //don't override user position
         }
 
