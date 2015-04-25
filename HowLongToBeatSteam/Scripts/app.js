@@ -454,7 +454,7 @@ function AppViewModel() {
     };
 
     var updateMainCharts = function (total) {
-        self.playtimeChart.dataProvider[0].completed = getHours(total.playtime);
+        self.playtimeChart.dataProvider[0].current = getHours(total.playtime);
 
         self.playtimeChart.dataProvider[1].completed = getHours(total.mainCompleted);
         self.playtimeChart.dataProvider[1].remaining = getHours(total.mainRemaining);
@@ -764,7 +764,6 @@ function AppViewModel() {
             graphs: [
                 {
                     type: "column",
-                    title: "Completed",
                     valueField: "completed",
                     lineThickness: 1.5,
                     balloonText: "<b>[[value]] hours completed</b> ([[percents]]%)",
@@ -773,10 +772,17 @@ function AppViewModel() {
                 },
                 {
                     type: "column",
-                    title: "Remaining",
                     valueField: "remaining",
                     lineThickness: 1.5,
                     balloonText: "<b>[[value]] hours remaining</b> ([[percents]]%)",
+                    fillAlphas: 0.5,
+                    lineAlpha: 0.8
+                },
+                {
+                    type: "column",
+                    valueField: "current",
+                    lineThickness: 1.5,
+                    balloonText: "<b>[[value]] total hours played</b>",
                     fillAlphas: 0.5,
                     lineAlpha: 0.8
                 }
