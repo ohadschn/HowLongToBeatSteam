@@ -905,9 +905,11 @@ function AppViewModel() {
         }, 0);
     };
 
-    var adsenseHtml = '<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins id="{id}Internal" class="adsbygoogle{centered}" style="display:block" data-ad-client="ca-pub-6877197967563569" data-ad-slot="8177136535" data-ad-format="{format}"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>';
-    var displayAd = function (id, format, center) {
-        $("#" + id).html(adsenseHtml.replace("{format}", format).replace("{centered}", center ? " centered" : "").replace("{id}", id));
+    var adsenseHtmlTemplate = '<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins id="{id}Internal" class="adsbygoogle{centered}" style="display:block" data-ad-client="ca-pub-6877197967563569" data-ad-slot="{adUnitId}" data-ad-format="{format}"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>';
+    var displayAd = function (divId, adUnitId, format, center) {
+        var adHtml = adsenseHtmlTemplate
+                     .replace("{format}", format).replace("{centered}", center ? " centered" : "").replace("{id}", divId).replace("{adUnitId}", adUnitId);
+        $("#" + divId).html(adHtml);
     };
 
     var adsDisplayed = false;
@@ -926,13 +928,13 @@ function AppViewModel() {
         //we only set the background now so that we don't see a stripe before this point
         adsenseRectangle.css("background-color", "#f5f5f5");
 
-        displayAd("adsenseRectangle", "rectangle", true);
+        displayAd("adsenseRectangle", "rectangle", true, "9687661733");
 
         //we slightly reduce the internal rectangle width so that we can still see the background
         var adsenseRectangleInternal = $("#adsenseRectangleInternal");
         adsenseRectangleInternal.width(0.9 * adsenseRectangleInternal.width());
 
-        displayAd("adsenseFooter", "horizontal", false);
+        displayAd("adsenseFooter", "horizontal", false, "7792126130");
         adsDisplayed = true;
     };
 
