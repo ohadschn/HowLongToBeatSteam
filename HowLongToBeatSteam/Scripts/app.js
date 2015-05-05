@@ -851,6 +851,7 @@ function AppViewModel() {
         return chart;
     };
 
+    var animate = false;
     var chratsInitialized = false;
     var initCharts = function() {
 
@@ -859,7 +860,6 @@ function AppViewModel() {
         }
         chratsInitialized = true;
 
-        $("#content").show();
         self.playtimeChart = initSerialChart("playtimeChart",
         [
             { playtimeType: "Current", hours: 0 },
@@ -868,16 +868,16 @@ function AppViewModel() {
             { playtimeType: "Complete", hours: 0 }
         ]);
 
-        self.remainingChart = initSerialChart("remainingChart", [
-            { playtimeType: "Main", hours: 0 },
-            { playtimeType: "Extras", hours: 0 },
-            { playtimeType: "Complete", hours: 0 }
-        ]);
+        self.playtimeChart.addListener("dataUpdated", function () {
+            if (animate && self.total().count > 0) {
+                self.playtimeChart.animateAgain();
+                animate = false;
+            }
+        });
 
         self.genreChart = initPieChart("genreChart", 25);
         self.metacriticChart = initPieChart("metacriticChart", 25, updateMetacriticChart);
 
-        $("#content").hide();
 
         self.total.subscribe(updateCharts);
         self.sliceTotal.subscribe(function(slicetotal) {
@@ -890,8 +890,7 @@ function AppViewModel() {
     var chartsInvalidated = false;
     var animateCharts = function () {
         if (chartsInvalidated) {
-            self.playtimeChart.animateAgain();
-            self.remainingChart.animateAgain();
+            //TODO test without chartsInvalidated
             return;
         }
 
@@ -901,7 +900,6 @@ function AppViewModel() {
             self.genreChart.invalidateSize();
             self.metacriticChart.invalidateSize();
             self.playtimeChart.invalidateSize();
-            self.remainingChart.invalidateSize();
         }, 0);
     };
 
@@ -914,7 +912,7 @@ function AppViewModel() {
 
     var adsDisplayed = false;
     var displayAds = function () {
-        if (adsDisplayed) {
+        if (adsDisplayed || self.introPage()) { //don't try and display ads if user quickly went back to intro
             return;
         }
 
@@ -928,13 +926,13 @@ function AppViewModel() {
         //we only set the background now so that we don't see a stripe before this point
         adsenseRectangle.css("background-color", "#f5f5f5");
 
-        displayAd("adsenseRectangle", "rectangle", true, "9687661733");
+        displayAd("adsenseRectangle", "9687661733", "rectangle", true);
 
         //we slightly reduce the internal rectangle width so that we can still see the background
         var adsenseRectangleInternal = $("#adsenseRectangleInternal");
         adsenseRectangleInternal.width(0.9 * adsenseRectangleInternal.width());
 
-        displayAd("adsenseFooter", "horizontal", false, "7792126130");
+        displayAd("adsenseFooter", "7792126130", "horizontal", false);
         adsDisplayed = true;
     };
 
@@ -1027,10 +1025,10 @@ function AppViewModel() {
             self.currentRequest.abort(); //in case of hash tag navigation while we're loading
         }
 
-        $("#content").hide(); //IE + FF fix
-
         self.processing(true);
         self.status("Retrieving Data...");
+
+        $("html, body").animate({ scrollTop: 0 }, 500);
 
         self.error(false);
         self.partialCache(false);
@@ -1069,7 +1067,6 @@ function AppViewModel() {
                 self.originalMainRemaining = data.Totals.MainRemaining;
 
                 if (self.gameTable.rows().length > 0) {
-                    $("#content").show(); //IE + FF fix
                     self.gameTable.currentPageNumber(1);
                     renderedRows = 0;
                 }
@@ -1093,6 +1090,7 @@ function AppViewModel() {
             });
 
         initCharts(); //init charts while waiting for response
+        animate = true;
     };
 
     self.displayUpdateDialog = function (game) {
