@@ -443,13 +443,8 @@ function AppViewModel() {
 
     self.vanityUrlSubmitted = function() {
         if (window.location.hash === "#/" + self.steamVanityUrlName()) {
-            var split = self.steamVanityUrlName().split('/');
-            if (split.length === 2) {
-                appInsights.trackEvent("LoadCachedGames", {}, { count: parseInt(split[1]) });
-            } else {
-                appInsights.trackEvent("LoadGames");   
-            }
-            self.loadGames(); //no submission will take place since it's the same URL, so just load again
+            //no submission will take place since it's the same URL, so we need to trigger Sammy manually
+            self.sammyApp.runRoute("get", window.location.hash);
         }
     };
 
@@ -887,20 +882,18 @@ function AppViewModel() {
         });
     };
 
-    var chartsInvalidated = false;
-    var animateCharts = function () {
-        if (chartsInvalidated) {
-            //TODO test without chartsInvalidated
+    var chartsSizeInvalidated = false;
+    var invalidateChartSize = function () {
+        if (chartsSizeInvalidated) {
             return;
         }
 
-        //needed for initial responsive rules application
-        chartsInvalidated = true;
         setTimeout(function () {
             self.genreChart.invalidateSize();
             self.metacriticChart.invalidateSize();
-            self.playtimeChart.invalidateSize();
         }, 0);
+
+        chartsSizeInvalidated = true;
     };
 
     var adsenseHtmlTemplate = '<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins id="{id}Internal" class="adsbygoogle{centered}" style="display:block" data-ad-client="ca-pub-6877197967563569" data-ad-slot="{adUnitId}" data-ad-format="{format}"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>';
@@ -986,7 +979,7 @@ function AppViewModel() {
         afterRequest = false;
 
         stopProcessing();
-        animateCharts();
+        invalidateChartSize(); //needed for initial responsive rules application
         scrollToAlerts();
 
         if (firstTableRender) {
@@ -1081,6 +1074,7 @@ function AppViewModel() {
                 appInsights.trackException(error);
                 self.gameTable.rows([]);
                 self.error(true);
+                self.introPage(true);
                 stopProcessing();
             })
             .always(function() {
@@ -1224,5 +1218,6 @@ $(document).ready(function () {
         });
     });
 
+    viewModel.sammyApp = sammyApp;
     sammyApp.run("#/");
 });
