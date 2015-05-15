@@ -251,6 +251,8 @@
     <Content Include="Scripts\app.min.js.map">
       <DependentUpon>app.min.js</DependentUpon>
     </Content>
+    <None Include="Properties\PublishProfiles\hltbsprod.pubxml" />
+    <None Include="Properties\PublishProfiles\howlongtobeatsteam-PROD.pubxml" />
     <None Include="Properties\PublishProfiles\howlongtobeatsteam.pubxml" />
     <Content Include="Scripts\responsive.min.js.map">
       <DependentUpon>responsive.min.js</DependentUpon>

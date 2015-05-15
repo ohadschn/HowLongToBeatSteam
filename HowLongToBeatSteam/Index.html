@@ -85,7 +85,7 @@
     <div data-bind="visible: status() != ''" style="display: none" class="text-center lead push-down-max">
         <h3 class="loader" data-bind="text: status"></h3>
     </div>
-    <div id="alerts" class="alerts" data-bind="visible: (!introPage() || error()) && !processing()" style="display: none">
+    <div id="alerts" class="alerts" data-bind="visible: (!introPage() || error() || libraryIsEmpty()) && !processing()" style="display: none">
         <div class="alert alert-danger alert-dismissible" role="alert" data-bind="visible: error() && !errorAlertHidden()">
             <button type="button" class="close" data-bind="click: function () { errorAlertHidden(true); }">
                 <span aria-hidden="true">&times;</span>
@@ -107,12 +107,12 @@
                     <span class="hidden-xs"> HowLongToBeat. Click the update links next to missing games in the table below to help!</span>
                 </p>
             </div>
-            <div role="alert" data-bind="visible: !error() && !alertHidden() && (imputedTtbs() || partialCache() || gameTable.rows().length===0), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-6' : 'col-md-12')">
+            <div role="alert" data-bind="visible: !error() && !alertHidden() && (imputedTtbs() || partialCache() || libraryIsEmpty()), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-6' : 'col-md-12')">
                 <button type="button" class="close" data-bind="click: function() {alertHidden(true); }">
                     <span aria-hidden="true">&times;</span>
                     <span class="sr-only">Close</span>
                 </button>
-                <div data-bind="visible: gameTable.rows().length===0">
+                <div data-bind="visible: libraryIsEmpty()">
                     <span class="fa fa-fw fa-ban"></span> You have no games in your library. What kind of a sick person are you?
                 </div>
                 <div data-bind="visible: imputedTtbs">

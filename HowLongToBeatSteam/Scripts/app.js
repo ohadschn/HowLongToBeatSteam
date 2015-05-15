@@ -161,7 +161,7 @@ function AppViewModel() {
     self.partialCache = ko.observable(false);
     self.imputedTtbs = ko.observable(false);
     self.missingHltbIds = ko.observable(false);
-
+    self.libraryIsEmpty = ko.observable(false);
     self.personaName = ko.observable("");
     self.avatarUrl = ko.observable("");
 
@@ -1027,6 +1027,7 @@ function AppViewModel() {
         self.partialCache(false);
         self.imputedTtbs(false);
         self.missingHltbIds(false);
+        self.libraryIsEmpty(false);
         self.sliceTotal(true);
         self.sliceCompletionLevel(PlaytimeType.Main);
         self.gameTable.filter("");
@@ -1062,9 +1063,14 @@ function AppViewModel() {
                 if (self.gameTable.rows().length > 0) {
                     self.gameTable.currentPageNumber(1);
                     renderedRows = 0;
+                } else {
+                    self.libraryIsEmpty(true);
+                    self.introPage(true);
+                    stopProcessing();
+                    return;
                 }
 
-                if (!firstTableRender || self.gameTable.rows().length === 0) {
+                if (!firstTableRender) {
                     stopProcessing();
                 } else {
                     self.status("Processing Data...");
