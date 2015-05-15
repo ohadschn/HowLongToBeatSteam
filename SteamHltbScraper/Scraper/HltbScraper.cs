@@ -36,6 +36,7 @@ namespace SteamHltbScraper.Scraper
             EventSource.SetCurrentThreadActivityId(Guid.NewGuid());
             try
             {
+                SiteUtil.KeepWebJobAlive();
                 MainAsync().Wait();
             }
             finally

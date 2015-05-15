@@ -101,6 +101,7 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Properties\PublishProfiles\hltbsprod.pubxml" />
     <None Include="Properties\PublishProfiles\howlongtobeatsteam.pubxml" />
     <None Include="Properties\webjob-publish-settings.json" />
   </ItemGroup>

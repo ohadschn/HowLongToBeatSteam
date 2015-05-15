@@ -23,6 +23,7 @@ namespace UnknownUpdater.Updater
             EventSource.SetCurrentThreadActivityId(Guid.NewGuid());
             try
             {
+                SiteUtil.KeepWebJobAlive();
                 SiteUtil.SetDefaultConnectionLimit();
                 using (Client)
                 {

@@ -24,6 +24,7 @@ namespace MissingGamesUpdater.Updater
             EventSource.SetCurrentThreadActivityId(Guid.NewGuid());
             try
             {
+                SiteUtil.KeepWebJobAlive();
                 SiteUtil.SetDefaultConnectionLimit();
                 using (s_client = new HttpRetryClient(SteamApiRetries))
                 {

@@ -270,5 +270,12 @@ namespace Common.Util
                 ? connectionString.ConnectionString
                 : Environment.GetEnvironmentVariable("CUSTOMCONNSTR_" + key);
         }
+
+        private static readonly int KeepAliveIntervalSeconds = GetOptionalValueFromConfig("KeepAliveIntervalSeconds", 10);
+        public static void KeepWebJobAlive()
+        {
+            Console.WriteLine("Keepalive...");
+            Task.Delay(KeepAliveIntervalSeconds*1000).ContinueWith(t => KeepWebJobAlive());
+        }
     }
 }
