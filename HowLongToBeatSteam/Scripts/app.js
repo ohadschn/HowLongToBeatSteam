@@ -268,6 +268,10 @@ function AppViewModel() {
         toggleSort("hltbCompletionistTtb");
     };
 
+    self.toggleHltbNameSort = function() {
+        toggleSort("hltbName");
+    };
+
     var sliceByTotal = function (total) {
         self.sliceTotal(total);
         appInsights.trackEvent("Slice", { by: total ? "Total" : "Remaining" });

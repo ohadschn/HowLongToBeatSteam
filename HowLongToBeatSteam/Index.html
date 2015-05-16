@@ -324,7 +324,10 @@
                                     <span data-bind="css: sortClass('hltbCompletionistTtb')" aria-hidden="true"></span>
                                 </th>
                                 <!-- ReSharper disable UnknownCssClass -->
-                                <th class="hidden-xs">HLTB Name</th>
+                                <th class="sortable hidden-xs" unselectable="on" data-bind="click: $root.toggleHltbNameSort">
+                                    HLTB Name
+                                    <span data-bind="css: sortClass('hltbName')" aria-hidden="true"></span>
+                                </th>
                                 <!-- ReSharper restore UnknownCssClass -->
                             </tr>
                         </thead>
@@ -349,20 +352,20 @@
                                 <td data-bind="css: 'vcenter compressed hidden-xs' + (included() ? '' : ' text-muted') + (hltbExtrasTtbImputed ? ' emphasized' : ''), text: getHours($data.hltbExtrasTtb) + 'h'"></td>
                                 <td data-bind="css: 'vcenter compressed hidden-xs' + (included() ? '' : ' text-muted') + (hltbCompletionistTtbImputed ? ' emphasized' : ''), text: getHours($data.hltbCompletionistTtb) + 'h'">></td>
                                 <td data-bind="css: 'vcenter hidden-xs' + (known ? '' : ' emphasized')">
-                                    <a data-bind="visible: !known && (updatePhase() == GameUpdatePhase.None), click: $root.displayUpdateDialog" href="javascript:;">
+                                    <a data-bind="visible: !known && (updatePhase() === GameUpdatePhase.None), click: $root.displayUpdateDialog, css: (included() ? '' : 'text-muted')" href="javascript:;">
                                         <span class="fa fa-puzzle-piece"></span> Missing (click to update)
                                     </a>
-                                    <span data-bind="visible: known && (updatePhase() == GameUpdatePhase.None)">
-                                        <a data-bind="text: hltbName, attr: {href: 'http://www.howlongtobeat.com/game.php?id=' + hltbId}" target="_blank"></a>
-                                        <a data-bind="click: $root.displayUpdateDialog" href="javascript:;">(wrong game?)</a>
+                                    <span data-bind="visible: known && (updatePhase() === GameUpdatePhase.None)">
+                                        <a data-bind="text: hltbName, attr: {href: 'http://www.howlongtobeat.com/game.php?id=' + hltbId}, css: (included() ? '' : 'text-muted')" target="_blank"></a>
+                                        <a data-bind="click: $root.displayUpdateDialog, css: (included() ? '' : 'text-muted')" href="javascript:;">(wrong game?)</a>
                                     </span>
-                                    <span data-bind="visible: updatePhase() == GameUpdatePhase.InProgress">
+                                    <span data-bind="visible: updatePhase() === GameUpdatePhase.InProgress, css: (included() ? '' : 'text-muted')">
                                         <span class="fa fa-spinner fa-spin"></span> Updating...
                                     </span>
-                                    <span data-bind="visible: updatePhase() == GameUpdatePhase.Success">
+                                    <span data-bind="visible: updatePhase() === GameUpdatePhase.Success, css: (included() ? '' : 'text-muted')">
                                         <span class="fa fa-check"></span> Update submitted for approval
                                     </span>
-                                    <a data-bind="visible: updatePhase() == GameUpdatePhase.Failure, click: $root.displayUpdateDialog" href="javascript:;">
+                                    <a data-bind="visible: updatePhase() === GameUpdatePhase.Failure, click: $root.displayUpdateDialog, css: (included() ? '' : 'text-muted')" href="javascript:;">
                                         <span class="fa fa-warning"></span> Update failed (click to retry)
                                     </a>
                                 </td>
