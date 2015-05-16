@@ -104,7 +104,7 @@ namespace Common.Storage
                 await table.ExecuteBatchAsync(tboi.Operation).ConfigureAwait(false);
                 CommonEventSource.Log.ExecuteBucketBatchOperationStop(tboi.Bucket, tboi.Batch, final);
 
-            }).ConfigureAwait(false);
+            }, false).ConfigureAwait(false);
             CommonEventSource.Log.ExecuteOperationsStop();
         }
 

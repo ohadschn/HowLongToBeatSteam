@@ -32,18 +32,31 @@ namespace Common.Util
         }
 
         //http://blogs.msdn.com/b/pfxteam/archive/2012/03/05/10278165.aspx
-        public static Task ForEachAsync<T>(this IEnumerable<T> collection, int maxDegreeOfConcurrency, Func<T, Task> taskFactory)
+        public static Task ForEachAsync<T>(this IEnumerable<T> collection, int maxDegreeOfConcurrency, Func<T, Task> taskFactory, bool failEarly=true)
         {
+            var cts = new CancellationTokenSource();
             return Task.WhenAll(Partitioner.Create(collection).GetPartitions(maxDegreeOfConcurrency).Select(partition => Task.Run(async delegate
                     {
                         using (partition)
                         {
                             while (partition.MoveNext())
                             {
-                                await taskFactory(partition.Current).ConfigureAwait(false);
+                                cts.Token.ThrowIfCancellationRequested();
+                                try
+                                {
+                                    await taskFactory(partition.Current).ConfigureAwait(false);
+                                }
+                                catch (Exception)
+                                {
+                                    if (failEarly)
+                                    {
+                                        cts.Cancel();
+                                    }
+                                    throw;
+                                }
                             }
                         }
-                    })));
+                    }, cts.Token)));
         }
 
         private const char ListSeparator = ';';
@@ -274,7 +287,7 @@ namespace Common.Util
         private static readonly int KeepAliveIntervalSeconds = GetOptionalValueFromConfig("KeepAliveIntervalSeconds", 10);
         public static void KeepWebJobAlive()
         {
-            Console.WriteLine("KeepAlive...");
+            Console.WriteLine("Keepalive...");
             Task.Delay(KeepAliveIntervalSeconds*1000).ContinueWith(t => KeepWebJobAlive());
         }
     }

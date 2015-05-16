@@ -13,6 +13,7 @@
            <Word>Metacritic</Word>
            <Word>Overriden</Word>
            <Word>dlc</Word>
+           <Word>Keepalive</Word>
          </Recognized>
 		    <Compound>
             <Term CompoundAlternate="CoOp">coop</Term>
