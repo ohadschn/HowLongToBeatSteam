@@ -274,7 +274,7 @@ namespace Common.Util
         private static readonly int KeepAliveIntervalSeconds = GetOptionalValueFromConfig("KeepAliveIntervalSeconds", 10);
         public static void KeepWebJobAlive()
         {
-            Console.WriteLine("Keepalive...");
+            Console.WriteLine("KeepAlive...");
             Task.Delay(KeepAliveIntervalSeconds*1000).ContinueWith(t => KeepWebJobAlive());
         }
     }

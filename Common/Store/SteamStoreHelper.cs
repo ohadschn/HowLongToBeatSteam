@@ -17,19 +17,19 @@ namespace Common.Store
         private const string SteamStoreApiUrlTemplate = "http://store.steampowered.com/api/appdetails/?appids={0}";
         private static readonly int MaxSteamStoreIdsPerRequest = SiteUtil.GetOptionalValueFromConfig("MaxSteamStoreIdsPerRequest", 50);
 
-        public static async Task<ConcurrentBag<AppEntity>> GetStoreInformationUpdates(IEnumerable<BasicStoreInfo> missingApps, HttpRetryClient client)
+        public static async Task GetStoreInformationUpdates(
+            IEnumerable<BasicStoreInfo> missingApps, 
+            HttpRetryClient client, 
+            ConcurrentBag<AppEntity> updates)
         {
             int counter = 0;
-            var updates = new ConcurrentBag<AppEntity>();
-            
+
             CommonEventSource.Log.RetrieveMissingStoreInformationStart();
             await missingApps.Partition(MaxSteamStoreIdsPerRequest).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, async partition =>
             {
                 await GetStoreInfo(Interlocked.Add(ref counter, MaxSteamStoreIdsPerRequest), partition, updates, client).ConfigureAwait(false);
             }).ConfigureAwait(false);
             CommonEventSource.Log.RetrieveMissingStoreInformationStop();
-
-            return updates;
         }
 
         private static async Task GetStoreInfo(int counter, IList<BasicStoreInfo> apps, ConcurrentBag<AppEntity> updates, HttpRetryClient client)

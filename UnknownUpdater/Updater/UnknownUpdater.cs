@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,8 +15,8 @@ namespace UnknownUpdater.Updater
 {
     class UnknownUpdater
     {
-        private static readonly int StoreApiRetries = SiteUtil.GetOptionalValueFromConfig("UnknownUpdaterStoreApiRetries", 100);
-        private static readonly int StorageRetries = SiteUtil.GetOptionalValueFromConfig("UnknownUpdaterStorageRetries", 10);
+        private static readonly int StoreApiRetries = SiteUtil.GetOptionalValueFromConfig("UnknownUpdaterStoreApiRetries", 1000);
+        private static readonly int StorageRetries = SiteUtil.GetOptionalValueFromConfig("UnknownUpdaterStorageRetries", 100);
 
         private static readonly HttpRetryClient Client = new HttpRetryClient(StoreApiRetries);
         static void Main()
@@ -41,8 +42,18 @@ namespace UnknownUpdater.Updater
             UnknownUpdaterEventSource.Log.UpdateUnknownAppsStart();
 
             var apps = await StorageHelper.GetAllApps(ae => ae, AppEntity.UnknownFilter, StorageRetries).ConfigureAwait(false);
-            var updates = await SteamStoreHelper.GetStoreInformationUpdates(
-                        apps.Select(ae => new BasicStoreInfo(ae.SteamAppId, ae.SteamName, ae.AppType)), Client).ConfigureAwait(false);
+            
+            var updates = new ConcurrentBag<AppEntity>();
+            InvalidOperationException ioe = null;
+            try
+            {
+                await SteamStoreHelper.GetStoreInformationUpdates(
+                    apps.Select(ae => new BasicStoreInfo(ae.SteamAppId, ae.SteamName, ae.AppType)), Client, updates).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                ioe = new InvalidOperationException("Could not retrieve store information for all apps", e);
+            }
 
             UnknownUpdaterEventSource.Log.UpdateNewlyCategorizedApps(updates);
 
@@ -51,6 +62,11 @@ namespace UnknownUpdater.Updater
                     ae => new[] { TableOperation.Delete(appsDict[ae.SteamAppId]), TableOperation.Insert(ae) }, StorageRetries).ConfigureAwait(false);
 
             UnknownUpdaterEventSource.Log.UpdateUnknownAppsStop();
+
+            if (ioe != null)
+            {
+                throw ioe; //fail job
+            }
         }
     }
 }

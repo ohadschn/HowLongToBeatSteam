@@ -16,7 +16,7 @@ namespace HltbTests.Steam
         [TestMethod]
         public void TestStoreApi()
         {
-            ConcurrentBag<AppEntity> updates;
+            ConcurrentBag<AppEntity> updates = new ConcurrentBag<AppEntity>();
 
             using (var client = new HttpRetryClient(200))
             {
@@ -25,7 +25,7 @@ namespace HltbTests.Steam
                 Assert.IsNotNull(portalApp, "Could not find Portal in the steam library: {0}",
                     String.Join(", ", steamApps.Select(a => String.Format(CultureInfo.InvariantCulture, "{0}/{1}", a.appid, a.name))));
 
-                updates = SteamStoreHelper.GetStoreInformationUpdates(new[] { new BasicStoreInfo(portalApp.appid, portalApp.name, null) }, client).Result;
+                SteamStoreHelper.GetStoreInformationUpdates(new[] { new BasicStoreInfo(portalApp.appid, portalApp.name, null) }, client, updates).Wait();
             }
 
             Assert.AreEqual(1, updates.Count, "Expected exactly one update for requested app (Portal)");

@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Threading.Tasks;
+using Common.Entities;
 using Common.Logging;
 using Common.Storage;
 using Common.Store;
@@ -13,8 +15,8 @@ namespace MissingGamesUpdater.Updater
 {
     class MissingUpdater
     {
-        private static readonly int SteamApiRetries = SiteUtil.GetOptionalValueFromConfig("MissingUpdaterSteamApiRetries", 200);
-        private static readonly int StorageRetries = SiteUtil.GetOptionalValueFromConfig("MissingUpdaterStorageRetries", 5);
+        private static readonly int SteamApiRetries = SiteUtil.GetOptionalValueFromConfig("MissingUpdaterSteamApiRetries", 100);
+        private static readonly int StorageRetries = SiteUtil.GetOptionalValueFromConfig("MissingUpdaterStorageRetries", 10);
         private static readonly int UpdateLimit = SiteUtil.GetOptionalValueFromConfig("MissingUpdateLimit", int.MaxValue);
         private static readonly Uri GetSteamAppListUrl = new Uri("http://api.steampowered.com/ISteamApps/GetAppList/v0001/");
         private static HttpRetryClient s_client;
@@ -52,11 +54,25 @@ namespace MissingGamesUpdater.Updater
             var knownSteamIdsHash = new HashSet<int>(knownSteamIds);
             var missingApps = apps.Where(a => !knownSteamIdsHash.Contains(a.appid)).Take(UpdateLimit);
 
-            var updates = await SteamStoreHelper.GetStoreInformationUpdates(missingApps.Select(a => new BasicStoreInfo(a.appid, a.name, null)), s_client)
-                .ConfigureAwait(false);
+            var updates = new ConcurrentBag<AppEntity>();
+            InvalidOperationException ioe = null;
+            try
+            {
+                await SteamStoreHelper.GetStoreInformationUpdates(missingApps.Select(a => new BasicStoreInfo(a.appid, a.name, null)), s_client, updates)
+                    .ConfigureAwait(false);
+            }
+            catch(Exception e)
+            {
+                ioe = new InvalidOperationException("Could not retrieve store information for all games", e);
+            }
 
             await StorageHelper.InsertApps(updates, StorageRetries).ConfigureAwait(false);  //we're inserting new entries, no fear of collisions 
             MissingUpdaterEventSource.Log.UpdateMissingGamesStop();                         //(even if two jobs overlap the next one will fix it)
+
+            if (ioe != null)
+            {
+                throw ioe; //fail job
+            }
         }
 
         internal static async Task<IList<App>> GetAllSteamApps(HttpRetryClient client)
