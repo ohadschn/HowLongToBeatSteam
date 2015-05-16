@@ -90,6 +90,11 @@ namespace Common.Storage
             return ExecuteAppOperations(games, e => new [] {TableOperation.Insert(e)}, retries);
         }
 
+        public static Task InsertOrReplaceApps(IEnumerable<AppEntity> games, int retries = -1)
+        {
+            return ExecuteAppOperations(games, e => new [] {TableOperation.InsertOrReplace(e)}, retries);
+        }
+
         public static async Task ExecuteAppOperations(IEnumerable<AppEntity> apps, Func<AppEntity, TableOperation[]> operationGenerator, int retries = -1)
         {
             CommonEventSource.Log.ExecuteOperationsStart();

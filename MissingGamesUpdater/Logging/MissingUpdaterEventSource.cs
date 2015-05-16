@@ -130,7 +130,7 @@ namespace MissingGamesUpdater.Logging
 
         [Event(
             4,
-            Message = "Retrieved {1} games from {0}",
+            Message = "Retrieved {1} apps from {0}",
             Keywords = Keywords.SteamApi,
             Level = EventLevel.Informational)]
         private void RetrievedAllSteamApps(string uri, int count)
