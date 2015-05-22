@@ -1,9 +1,9 @@
 ﻿{
   "$schema": "http://schemastore.org/schemas/json/webjob-publish-settings.json",
-  "webJobName": "SteamHltbScraper",
-  "startTime": "2015-05-22T00:00:00+02:00",
+  "webJobName": "UnknownUpdater",
+  "startTime": "2015-05-30T00:00:00+02:00",
   "endTime": null,
-  "jobRecurrenceFrequency": "Week",
+  "jobRecurrenceFrequency": "Month",
   "interval": 1,
   "runMode": "Scheduled"
 }

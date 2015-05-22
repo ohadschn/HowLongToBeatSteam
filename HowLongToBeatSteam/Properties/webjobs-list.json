@@ -1,0 +1,14 @@
+﻿{
+  "$schema": "http://schemastore.org/schemas/json/webjobs-list.json",
+  "WebJobs": [
+    {
+      "filePath": "../SteamHltbScraper/SteamHltbScraper.csproj"
+    },
+    {
+      "filePath": "../MissingGamesUpdater/MissingGamesUpdater.csproj"
+    },
+    {
+      "filePath": "../UnknownUpdater/UnknownUpdater.csproj"
+    }
+  ]
+}

@@ -1,9 +1,9 @@
 ﻿{
   "$schema": "http://schemastore.org/schemas/json/webjob-publish-settings.json",
   "webJobName": "MissingGamesUpdater",
-  "startTime": "2014-09-16T12:00:00+02:00",
+  "startTime": "2015-05-17T00:00:00+02:00",
   "endTime": null,
-  "jobRecurrenceFrequency": "Day",
+  "jobRecurrenceFrequency": "Hour",
   "interval": 1,
   "runMode": "Scheduled"
 }
