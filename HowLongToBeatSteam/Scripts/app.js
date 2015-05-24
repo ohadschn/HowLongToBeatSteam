@@ -437,6 +437,11 @@ function AppViewModel() {
         }
     };
 
+    self.getCombinedGenre = function(genres) {
+        var realGenres = ko.utils.arrayFilter(genres, function (subGenre) { return subGenre !== "Indie" && subGenre !== "Casual"; });
+        return (realGenres.length === 0 ? genres : realGenres).join("/");
+    };
+
     self.total = ko.pureComputed(function () {
 
         //visit dependencies first so that knockout subscribes to them regardless of initialTotal
@@ -496,11 +501,8 @@ function AppViewModel() {
             extrasRemaining += gameExtrasRemaining;
             completionistRemaining += gameCompletionistRemaining;
 
-            var realGenres = ko.utils.arrayFilter(game.genres, function (subGenre) { return subGenre !== "Indie" && subGenre !== "Casual"; });
-            var genre = (realGenres.length === 0 ? game.genres : realGenres).join("/");
-
             var slicedPlaytime = getSlicedPlaytime(sliceCompletionLevel, sliceTotal, game, gameMainRemaining, gameExtrasRemaining, gameCompletionistRemaining);
-            updateSlicedPlaytime(playtimesByGenre, genre, slicedPlaytime);
+            updateSlicedPlaytime(playtimesByGenre, getCombinedGenre(game.genres), slicedPlaytime);
             updateSlicedPlaytime(playtimesByMetacritic, game.metacriticScore, slicedPlaytime);
         }
 
