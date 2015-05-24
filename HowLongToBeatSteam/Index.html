@@ -210,14 +210,15 @@
         <div data-bind="css: !processing() && gameTable.rows().length>0 ? '' : 'invisible'">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <div class="h3 summary-heading">
-                        <img data-bind="attr: {src: avatarUrl}" alt="User Avatar" />
+                    <div class="h3 summary-heading overflow-hidden">
+                        <img data-bind="attr: {src: avatarUrl}" alt="User Avatar"/>
                         <span data-bind="text: personaName"></span>
                         <ul class="inline list-inline text-nowrap push-right">
                             <li><a href="javascript:;" data-bind="click: shareOnFacebook"><span class="fa fa-facebook"></span></a></li>
                             <li><a href="javascript:;" data-bind="click: shareOnTwitter"><span class="fa fa-twitter"></span></a></li>
                             <li><a href="javascript:;" data-bind="click: shareOnGooglePlus"><span class="fa fa-google-plus"></span></a></li>
                         </ul>
+                        <span class="pull-right label label-warning" data-bind="visible: advancedFilterApplied() || gameTable.filter() !== ''" title="You can modify or clear the filter at the bottom section of this page">filter<br/>active</span>
                     </div>
                 </div>
                 <div class="panel-body">
@@ -259,8 +260,9 @@
             </div>
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <div class="h3">
+                    <div class="h3 overflow-hidden">
                         Slice
+                        <span class="pull-right label label-warning" data-bind="visible: advancedFilterApplied() || gameTable.filter() !== ''" title="You can modify or clear the filter at the bottom section of this page">filter<br />active</span>
                         <div class="btn-toolbar inline-btn-toolbar" role="toolbar" aria-label="Slice Options">
                             <div class="btn-group" role="group" aria-label="Playtime type">
                                 <button type="button"
