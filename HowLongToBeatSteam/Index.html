@@ -126,7 +126,7 @@
     </div>
     <div id="content" class="content" data-bind="visible: !introPage()" style="display: none">
         <div id="advancedFilterModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="AdvancedFilterTitle" aria-hidden="true">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -139,9 +139,17 @@
                                     <h5>
                                         <strong>Genre</strong>
                                     </h5>
-                                    <ul class="list-without-bullets">
-                                        <li><input type="checkbox" /> All</li>
-                                    </ul>
+                                    <a href="javascript:;" data-bind="click: includeAllGenreFilters">All</a> |
+                                    <a href="javascript:;" data-bind="click: excludeAllGenreFilters">None</a>
+                                    <div id="filterGenreContainer" class="filter-genre-container">
+                                        <ul class="list-without-bullets" data-bind="foreach: genrePossibleFilters">
+                                            <li>
+                                                <input type="checkbox" data-bind="checked: included" />
+                                                <span data-bind="text: genre"></span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <span data-bind="visible: genrePossibleFilters().length === 0">(unknown)</span>
                                 </div>
                                 <div class="col-sm-6">
                                     <h5>
@@ -155,10 +163,11 @@
                                             <span data-bind="text: category + ' (' + min + '-' + max + ')'"></span>
                                         </li>
                                     </ul>
+                                    <span data-bind="visible: metacriticPossibleFilters().length === 0">(unknown)</span>
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button id="filterForum" type="submit" class="btn btn-primary" data-bind="click: applyAdvancedFilter">Apply</button> 
+                                <button id="filterForum" type="submit" class="btn btn-primary" data-bind="click: applyAdvancedFilter">Apply</button>
                             </div>
                         </form>
                     </div>
@@ -379,7 +388,7 @@
                                 <!-- ReSharper disable UnknownCssClass -->
                                 <td class="vcenter">
                                     <!-- ReSharper restore UnknownCssClass -->
-                                    <a data-bind="attr: {href: 'http://store.steampowered.com/app/' + steamAppId, title: 'Genre: ' + $root.getCombinedGenre(genres) + '\nMetacritic score: ' + (metacriticScore === -1 ? 'unknown' : metacriticScore)}" target="_blank">
+                                    <a data-bind="attr: {href: 'http://store.steampowered.com/app/' + steamAppId, title: 'Genre: ' + getCombinedGenre() + '\nMetacritic score: ' + (metacriticScore === -1 ? '(unknown)' : metacriticScore)}" target="_blank">
                                         <span data-bind="text:steamName, css: (included() ? '' : 'text-muted')"></span>
                                     </a>
                                     <span class="glyphicon glyphicon-time visible-xs-inline pull-right"

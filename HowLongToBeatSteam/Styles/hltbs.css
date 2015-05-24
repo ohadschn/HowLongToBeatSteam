@@ -141,6 +141,9 @@
 .filter-game-count {
     margin-top: 2px;
 }
+.filter-genre-container {
+    overflow: auto;
+}
 .list-without-bullets {
     list-style-type: none;
     padding-left: 0;

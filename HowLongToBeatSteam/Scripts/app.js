@@ -13,7 +13,15 @@ var getOrderedOwnProperties = function(object) {
             propArr.push(prop);
         }
     }
-    propArr.sort(); //we don't care that it's not alphabetical as long as it's consistent
+    propArr.sort(function (a, b) {
+        var aLower = a.toLowerCase();
+        var bLower = b.toLowerCase();
+        if (aLower < bLower) //sort string ascending
+            return -1;
+        if (aLower > bLower)
+            return 1;
+        return 0; //default return value (no sorting)
+    });
     return propArr;
 };
 
@@ -113,8 +121,19 @@ function Game(steamGame) {
 Game.prototype.match = function (filter) { //define in prototype to prevent memory footprint on each instance
     return (this.steamName.toLowerCase().indexOf(filter.toLowerCase()) !== -1) &&
     (!this.viewModel.advancedFilterApplied() ||
-        (this.viewModel.allMetacriticCategoriesIncluded || this.viewModel.metacriticAppliedFilter[this.metacriticScore])
+        (
+            (this.viewModel.allMetacriticCategoriesIncluded || this.viewModel.metacriticAppliedFilter[this.metacriticScore]) &&
+            (this.viewModel.allGenresIncluded || this.viewModel.genreAppliedFilter[this.getCombinedGenre()])
+        )
     );
+};
+
+Game.prototype.getCombinedGenre = function() {
+    if (!this.combinedGenre) {
+        var realGenres = ko.utils.arrayFilter(this.genres, function(g) { return g !== "Indie" && g !== "Casual"; });
+        this.combinedGenre = (realGenres.length === 0 ? this.genres : realGenres).join("/");
+    }
+    return this.combinedGenre;
 };
 
 function AppViewModel() {
@@ -130,12 +149,12 @@ function AppViewModel() {
     self.small = self.width < 992;
     self.medium = self.width < 1200;
 
-    $(window).on("orientationchange", function () {
-        setTimeout(function () { location.reload(); }, 0); //can't reload inside event handler in FireFox
+    $(window).on("orientationchange", function() {
+        setTimeout(function() { location.reload(); }, 0); //can't reload inside event handler in FireFox
     });
-    $(window).resize(function () {
+    $(window).resize(function() {
         if ($(window).height() === self.width && $(window).width() === self.height) {
-            setTimeout(function () { location.reload(); }, 0); //can't reload inside event handler in FireFox
+            setTimeout(function() { location.reload(); }, 0); //can't reload inside event handler in FireFox
         }
     });
 
@@ -201,23 +220,30 @@ function AppViewModel() {
         { title: "Universal Acclaim", min: 90, max: 100 }
     ];
 
-    self.gameTable.filter.subscribe(function (val) {
+    self.gameTable.filter.subscribe(function(val) {
         appInsights.trackEvent("FilterApplied", {}, { length: val.length });
     });
 
     self.advancedFilterApplied = ko.observable(false);
-    self.metacriticPossibleFilters = ko.observableArray();
-    self.metacriticAppliedFilter = [];
     var possibleFiltersCalculated = false;
 
-    var resetAdvancedFilters = function () {
-        self.advancedFilterApplied(false);
+    self.metacriticPossibleFilters = ko.observableArray();
+    self.metacriticAppliedFilter = [];
+    self.allMetacriticCategoriesIncluded = true;
+
+    self.genrePossibleFilters = ko.observableArray();
+    self.genreAppliedFilter = {};
+    self.allGenresIncluded = true;
+
+    var resetAdvancedFilters = function() {
         self.metacriticPossibleFilters([]);
+        self.genrePossibleFilters([]);
+        self.advancedFilterApplied(false);
         possibleFiltersCalculated = false;
     };
 
-    var calculateMetacriticPossibleFilters = function () {
-        var possibleFilters = ko.utils.arrayMap(metacriticCategories, function (category) {
+    var calculateMetacriticPossibleFilters = function() {
+        var possibleFilters = ko.utils.arrayMap(metacriticCategories, function(category) {
             return {
                 category: category.title,
                 included: ko.observable(true),
@@ -249,45 +275,79 @@ function AppViewModel() {
                 visitedCategoriesCounter++;
             }
         }
-        self.metacriticPossibleFilters(ko.utils.arrayFilter(possibleFilters, function (pf) { return pf.visited; }));
+        self.metacriticPossibleFilters(ko.utils.arrayFilter(possibleFilters, function(pf) { return pf.visited; }));
     };
 
-    self.advancedFilterClicked = function () {
+    var calculateGenrePossibleFilters = function() {
+        var games = self.gameTable.rows();
+        var possibleFilterHash = {};
+        for (var i = 0; i < games.length; i++) {
+            possibleFilterHash[games[i].getCombinedGenre()] = true;
+        }
+
+        var possibleFilters = getOrderedOwnProperties(possibleFilterHash);
+        for (var j = 0; j < possibleFilters.length; j++) {
+            if (possibleFilters[j] !== unknownTitle) {
+                self.genrePossibleFilters.push({ genre: possibleFilters[j], included: ko.observable(true) });
+            }
+        }
+    };
+
+    self.advancedFilterClicked = function() {
         if (!possibleFiltersCalculated) {
             calculateMetacriticPossibleFilters();
+            calculateGenrePossibleFilters();
             possibleFiltersCalculated = true;
         }
+        $("#filterGenreContainer").height(0.6 * $(window).height());
         $("#advancedFilterModal").modal("show");
     };
 
-    var toggleAllMetacriticFilters = function(include) {
-        for (var i = 0; i < self.metacriticPossibleFilters().length; i++) {
-            self.metacriticPossibleFilters()[i].included(include);
+    var toggleAllFilters = function(possibleFilters, include) {
+        for (var i = 0; i < possibleFilters.length; i++) {
+            possibleFilters[i].included(include);
         }
     };
 
     self.includeAllMetacriticFilters = function() {
-        toggleAllMetacriticFilters(true);
+        toggleAllFilters(self.metacriticPossibleFilters(), true);
     };
 
     self.excludeAllMetacriticFilters = function() {
-        toggleAllMetacriticFilters(false);
+        toggleAllFilters(self.metacriticPossibleFilters(), false);
     };
 
-    self.allMetacriticCategoriesIncluded = true;
+    self.includeAllGenreFilters = function() {
+        toggleAllFilters(self.genrePossibleFilters(), true);
+    };
+
+    self.excludeAllGenreFilters = function() {
+        toggleAllFilters(self.genrePossibleFilters(), false);
+    };
+
     self.applyAdvancedFilter = function () {
         self.allMetacriticCategoriesIncluded = true;
-        for (var i = 0; i < self.metacriticPossibleFilters().length; i++) {
-            var min = self.metacriticPossibleFilters()[i].min;
-            var max = self.metacriticPossibleFilters()[i].max;
-            var included = self.metacriticPossibleFilters()[i].included();
+        var metacriticPossibleFilters = self.metacriticPossibleFilters();
+        for (var i = 0; i < metacriticPossibleFilters.length; i++) {
+            var min = metacriticPossibleFilters[i].min;
+            var max = metacriticPossibleFilters[i].max;
+            var categoryIncluded = metacriticPossibleFilters[i].included();
             for (var j = min; j <= max; j++) {
-                self.metacriticAppliedFilter[j] = included;
+                self.metacriticAppliedFilter[j] = categoryIncluded;
             }
-            self.allMetacriticCategoriesIncluded = self.allMetacriticCategoriesIncluded && included;
+            self.allMetacriticCategoriesIncluded = self.allMetacriticCategoriesIncluded && categoryIncluded;
         }
 
-        self.advancedFilterApplied(!self.allMetacriticCategoriesIncluded);
+        self.allGenresIncluded = true;
+        var genrePossibleFilters = self.genrePossibleFilters();
+        for (var k = 0; k < genrePossibleFilters.length; k++) {
+            var genre = genrePossibleFilters[k].genre;
+            var genreIncluded = genrePossibleFilters[k].included();
+            self.genreAppliedFilter[genre] = genreIncluded;
+            self.allGenresIncluded = self.allGenresIncluded && genreIncluded;
+        }
+
+        self.advancedFilterApplied(!self.allMetacriticCategoriesIncluded || !self.allGenresIncluded);
         self.gameTable.triggerFilterCalculation();
         $("#advancedFilterModal").modal("hide");
     };
@@ -437,11 +497,6 @@ function AppViewModel() {
         }
     };
 
-    self.getCombinedGenre = function(genres) {
-        var realGenres = ko.utils.arrayFilter(genres, function (subGenre) { return subGenre !== "Indie" && subGenre !== "Casual"; });
-        return (realGenres.length === 0 ? genres : realGenres).join("/");
-    };
-
     self.total = ko.pureComputed(function () {
 
         //visit dependencies first so that knockout subscribes to them regardless of initialTotal
@@ -502,7 +557,7 @@ function AppViewModel() {
             completionistRemaining += gameCompletionistRemaining;
 
             var slicedPlaytime = getSlicedPlaytime(sliceCompletionLevel, sliceTotal, game, gameMainRemaining, gameExtrasRemaining, gameCompletionistRemaining);
-            updateSlicedPlaytime(playtimesByGenre, getCombinedGenre(game.genres), slicedPlaytime);
+            updateSlicedPlaytime(playtimesByGenre, game.getCombinedGenre(), slicedPlaytime);
             updateSlicedPlaytime(playtimesByMetacritic, game.metacriticScore, slicedPlaytime);
         }
 
