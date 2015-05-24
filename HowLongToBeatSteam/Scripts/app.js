@@ -293,7 +293,9 @@ function AppViewModel() {
         }
     };
 
-    self.advancedFilterClicked = function() {
+    self.advancedFilterClicked = function () {
+        appInsights.trackEvent("advancedFilterClicked");
+
         if (!possibleFiltersCalculated) {
             calculateMetacriticPossibleFilters();
             calculateGenrePossibleFilters();
@@ -309,23 +311,30 @@ function AppViewModel() {
         }
     };
 
-    self.includeAllMetacriticFilters = function() {
+    self.includeAllMetacriticFilters = function () {
+        appInsights.trackEvent("toggleAdvancedFilter", {filter: "Metacritic", included: "true"});
         toggleAllFilters(self.metacriticPossibleFilters(), true);
     };
 
     self.excludeAllMetacriticFilters = function() {
+        appInsights.trackEvent("toggleAdvancedFilter", { filter: "Metacritic", included: "false" });
         toggleAllFilters(self.metacriticPossibleFilters(), false);
     };
 
     self.includeAllGenreFilters = function() {
+        appInsights.trackEvent("toggleAdvancedFilter", { filter: "Genre", included: "true" });
         toggleAllFilters(self.genrePossibleFilters(), true);
     };
 
     self.excludeAllGenreFilters = function() {
+        appInsights.trackEvent("toggleAdvancedFilter", { filter: "Genre", included: "false" });
         toggleAllFilters(self.genrePossibleFilters(), false);
     };
 
     self.applyAdvancedFilter = function () {
+        var metacriticCategoryIncludeCount = 0;
+        var genreIncludeCount = 0;
+
         self.allMetacriticCategoriesIncluded = true;
         var metacriticPossibleFilters = self.metacriticPossibleFilters();
         for (var i = 0; i < metacriticPossibleFilters.length; i++) {
@@ -336,6 +345,7 @@ function AppViewModel() {
                 self.metacriticAppliedFilter[j] = categoryIncluded;
             }
             self.allMetacriticCategoriesIncluded = self.allMetacriticCategoriesIncluded && categoryIncluded;
+            metacriticCategoryIncludeCount += (categoryIncluded ? 1 : 0);
         }
 
         self.allGenresIncluded = true;
@@ -345,14 +355,24 @@ function AppViewModel() {
             var genreIncluded = genrePossibleFilters[k].included();
             self.genreAppliedFilter[genre] = genreIncluded;
             self.allGenresIncluded = self.allGenresIncluded && genreIncluded;
+            genreIncludeCount += (genreIncluded ? 1 : 0);
         }
 
         self.advancedFilterApplied(!self.allMetacriticCategoriesIncluded || !self.allGenresIncluded);
         self.gameTable.triggerFilterCalculation();
         $("#advancedFilterModal").modal("hide");
+
+        appInsights.trackEvent("AdvancedFilterApplied", {}, {
+            MetacriticCategoriesIncluded: metacriticCategoryIncludeCount,
+            MetacriticCategoriesPossible: metacriticPossibleFilters.length,
+            GenresIncluded: genreIncludeCount,
+            GenresPossible: genrePossibleFilters.length
+        });
     };
 
-    self.clearFilter = function() {
+    self.clearFilter = function () {
+        appInsights.trackEvent("ClearAdvancedFilter");
+
         resetAdvancedFilters();
         self.gameTable.triggerFilterCalculation();
     };
