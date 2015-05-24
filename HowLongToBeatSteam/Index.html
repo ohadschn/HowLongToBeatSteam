@@ -107,7 +107,7 @@
                     <span class="hidden-xs"> HowLongToBeat. Click the update links next to missing games in the table below to help!</span>
                 </p>
             </div>
-            <div role="alert" data-bind="visible: !error() && !alertHidden() && (imputedTtbs() || partialCache() || libraryIsEmpty()), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-6' : 'col-md-12')">
+            <div role="alert" data-bind="visible: !error() && !alertHidden(), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-6' : 'col-md-12')">
                 <button type="button" class="close" data-bind="click: function() {alertHidden(true); }">
                     <span aria-hidden="true">&times;</span>
                     <span class="sr-only">Close</span>
@@ -120,6 +120,9 @@
                 </div>
                 <div data-bind="visible: partialCache">
                     <span class="fa fa-fw fa-database"></span> Some games haven't been processed by the site's engine yet (or they have been removed from the Steam store).
+                </div>
+                <div>
+                    <span class="fa fa-fw fa-desktop"></span> Like playing your games on the TV? Check out <a href="http://www.ohadsoft.com/2014/07/tvgamelaunchergui/" target="_blank">TvGameLauncher</a>!
                 </div>
             </div>
         </div>
