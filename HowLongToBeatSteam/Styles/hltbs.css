@@ -35,8 +35,13 @@
     margin-bottom: 9999px;
 }
 .playtimeAd {
-    margin-top: 20px;
+    margin-top: 74px;
     position: relative;
+}
+@media (max-width: 1199px) {
+    .playtimeAd {
+        margin-top: 20px;
+    }
 }
 .centered {
     position: absolute;
@@ -115,12 +120,30 @@
     display: inline;
 }
 .filter-input {
-        width: 400px;
+        width: 300px;
     }
 @media (max-width: 767px) {
     .filter-input {
         width: 100%;
     }
+}
+.filter-clear {
+    color: darkred !important;
+}
+.filter-active {
+    font-weight: bold;
+    font-style: italic;
+}
+.filter-link {
+    font-size: 80%;
+    vertical-align: 1px;
+}
+.filter-game-count {
+    margin-top: 2px;
+}
+.list-without-bullets {
+    list-style-type: none;
+    padding-left: 0;
 }
 .push-right {
     margin-left: 10px;

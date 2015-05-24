@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>HowLongToBeatSteam - Find out how long would it take to complete your entire Steam video game collection</title>
+    <title>HowLongToBeatSteam - how long would it take to complete your entire Steam game collection?</title>
     <meta name="description" content="Find out how much time you have left to complete your entire video game backlog on Steam. Calculate different completion level playtime statistics (main, extras, completionist), slice by genre and Metacritic score, and filter to your favorite games!"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/css/bootstrap.min.css">
@@ -125,6 +125,46 @@
         </div>
     </div>
     <div id="content" class="content" data-bind="visible: !introPage()" style="display: none">
+        <div id="advancedFilterModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="AdvancedFilterTitle" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 id="AdvancedFilterTitle" class="modal-title">Advanced Filter</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form role="form">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h5>
+                                        <strong>Genre</strong>
+                                    </h5>
+                                    <ul class="list-without-bullets">
+                                        <li><input type="checkbox" /> All</li>
+                                    </ul>
+                                </div>
+                                <div class="col-sm-6">
+                                    <h5>
+                                        <strong>Metacritic Score</strong>
+                                    </h5>
+                                    <a href="javascript:;" data-bind="click: includeAllMetacriticFilters">All</a> |
+                                    <a href="javascript:;" data-bind="click: excludeAllMetacriticFilters">None</a>
+                                    <ul class="list-without-bullets" data-bind="foreach: metacriticPossibleFilters">
+                                        <li>
+                                            <input type="checkbox" data-bind="checked: included" />
+                                            <span data-bind="text: category + ' (' + min + '-' + max + ')'"></span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button id="filterForum" type="submit" class="btn btn-primary" data-bind="click: applyAdvancedFilter">Apply</button> 
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div id="HltbUpdateModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="HltbUpdateTitle" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -187,9 +227,6 @@
                                 </h3>
                                 <div id="playtimeChart" class="full-width"></div>
                             </div>
-                            <h3 class="text-center text-nowrap adsenseTitle">
-                                Sponsored Links
-                            </h3>
                             <div id="adsenseRectangle" class="col-lg-4 playtimeAd"></div>
                         </div>
                     </div>
@@ -279,7 +316,11 @@
                     </h3>
                     <h3 class="overflow-hidden">
                         <input type="text" class="filter-input" data-bind="textInput: filter" />
-                        <span class="text-nowrap hidden-xs push-right" data-bind="text: '(' + numberWithCommas($root.total().count) + ($root.total().count === 1 ? ' game)' : ' games)')"></span>
+                        <a href="javascript:;" data-bind="css: 'hidden-xs filter-link' + ($root.advancedFilterApplied() ? ' filter-active' : ''), click: $root.advancedFilterClicked, attr: {title: ($root.advancedFilterApplied() ? 'Advanced filter applied (click to modify)' : '')}">Advanced</a>
+                        <a href="javascript:;" data-bind="visible: $root.advancedFilterApplied, click: $root.clearFilter">
+                            <span class="glyphicon glyphicon-remove small filter-clear" title="Advanced filter applied (click to clear)"></span>
+                        </a>
+                        <span class="text-nowrap hidden-xs pull-right h4 filter-game-count label label-default" data-bind="text: numberWithCommas($root.total().count) + ($root.total().count === 1 ? ' game' : ' games')"></span>
                     </h3>
                 </div>
                 <div class="panel-body">
@@ -411,7 +452,6 @@
             </div>
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <h3>Sponsored Links</h3>
                 </div>
                 <div class="panel-body">
                     <div id="adsenseFooter"></div>

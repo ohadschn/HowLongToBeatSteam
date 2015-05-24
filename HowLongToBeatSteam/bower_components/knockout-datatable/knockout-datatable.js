@@ -41,6 +41,7 @@
         perPage: options.perPage || 15,
         paginationLimit: options.paginationLimit || 10,
         filterFn: options.filterFn || void 0,
+        alwaysMatch: options.alwaysMatch || false,
         unsortedClass: options.unsortedClass || '',
         descSortClass: options.descSortClass || '',
         ascSortClass: options.ascSortClass || ''
@@ -63,7 +64,12 @@
       this.sortField = ko.observable(this.options.sortField);
       this.perPage = ko.observable(this.options.perPage);
       this.currentPageNumber = ko.observable(1);
-      this.filter = ko.observable('').extend({ rateLimit: { timeout: 400, method: "notifyWhenChangesStop" } });
+      this.filter = ko.observable('').extend({
+        rateLimit: {
+          method: "notifyWhenChangesStop",
+          timeout: 400
+        }
+      });
       this.loading = ko.observable(false);
       return this.rows = ko.observableArray([]);
     };
@@ -110,7 +116,7 @@
     };
 
     DataTable.prototype.initWithClientSidePagination = function(rows) {
-      var _defaultMatch;
+      var filterTrigger, _defaultMatch;
       this.filtering = ko.observable(false);
       this.filter.subscribe((function(_this) {
         return function() {
@@ -139,13 +145,22 @@
           return attrMap;
         };
       })(this));
+      filterTrigger = ko.observable().extend({
+        notify: 'always'
+      });
+      this.triggerFilterCalculation = (function(_this) {
+        return function() {
+          return filterTrigger.valueHasMutated();
+        };
+      })(this);
       this.filteredRows = pureComputed((function(_this) {
         return function() {
           var filter, filterFn;
+          filterTrigger();
           _this.filtering(true);
           filter = _this.filter();
           rows = _this.rows.slice(0);
-          if (filter !== '') {
+          if (_this.options.alwaysMatch || filter !== '') {
             filterFn = _this.filterFn(filter);
             rows = rows.filter(filterFn);
           }
@@ -370,7 +385,7 @@
               }
               return _results;
             }).call(_this);
-            return (__indexOf.call(conditionals, false) < 0) && (filter !== '' ? (row.match != null ? row.match(filter) : _defaultMatch(filter, row, _this.rowAttributeMap())) : true);
+            return (__indexOf.call(conditionals, false) < 0) && (_this.options.alwaysMatch || filter !== '' ? (row.match != null ? row.match(filter) : _defaultMatch(filter, row, _this.rowAttributeMap())) : true);
           };
         };
       })(this);

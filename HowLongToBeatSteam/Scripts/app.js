@@ -71,6 +71,7 @@ var AuthenticationStatus = {
 var alternatingPalette = [];
 var progressivePalette = ["#75c7f0", "#6CC3EF", "#6CC3EF", "#5ABCED", "#47B4EB", "#35ADE9", "#23A5E7", "#189BDC", "#168ECA", "#1481B8"];
 var unknownColor = "#ABB5BA";
+var unknownTitle = "Unknown";
 
 var slashRegex = new RegExp("/", "g");
 var genreSeparatorReplacer = function(genre) { //avoid creating function objects
@@ -109,12 +110,17 @@ function Game(steamGame) {
     self.hltbCompletionistTtbImputed = hltbInfo.CompletionistTtbImputed;
 }
 
-Game.prototype.match = function(filter) { //define in prototype to prevent memory footprint on each instance
-    return this.steamName.toLowerCase().indexOf(filter.toLowerCase()) !== -1;
+Game.prototype.match = function (filter) { //define in prototype to prevent memory footprint on each instance
+    return (this.steamName.toLowerCase().indexOf(filter.toLowerCase()) !== -1) &&
+    (!this.viewModel.advancedFilterApplied() ||
+        (this.viewModel.allMetacriticCategoriesIncluded || this.viewModel.metacriticAppliedFilter[this.metacriticScore])
+    );
 };
 
 function AppViewModel() {
     var self = this;
+
+    Game.prototype.viewModel = self; //define in prototype to prevent memory footprint on each instance
 
     self.width = $(window).width();
     self.height = $(window).height();
@@ -142,7 +148,8 @@ function AppViewModel() {
         paginationLimit: self.superSmall ? 3 : (self.small ? 4 : (self.medium ? 6 : 10)),
         unsortedClass: "glyphicon glyphicon-sort",
         ascSortClass: "glyphicon glyphicon-sort-by-attributes",
-        descSortClass: "glyphicon glyphicon-sort-by-attributes-alt"
+        descSortClass: "glyphicon glyphicon-sort-by-attributes-alt",
+        alwaysMatch: true
     };
 
     self.introPage = ko.observable(true);
@@ -186,9 +193,109 @@ function AppViewModel() {
         self.processing(false);
     };
 
+    var metacriticCategories = [
+        { title: "Overwhelming Dislike", min: 0, max: 19 },
+        { title: "Generally Unfavorable", min: 20, max: 49 },
+        { title: "Mixed or Average", min: 50, max: 74 },
+        { title: "Generally Favorable", min: 75, max: 89 },
+        { title: "Universal Acclaim", min: 90, max: 100 }
+    ];
+
     self.gameTable.filter.subscribe(function (val) {
         appInsights.trackEvent("FilterApplied", {}, { length: val.length });
     });
+
+    self.advancedFilterApplied = ko.observable(false);
+    self.metacriticPossibleFilters = ko.observableArray();
+    self.metacriticAppliedFilter = [];
+    var possibleFiltersCalculated = false;
+
+    var resetAdvancedFilters = function () {
+        self.advancedFilterApplied(false);
+        self.metacriticPossibleFilters([]);
+        possibleFiltersCalculated = false;
+    };
+
+    var calculateMetacriticPossibleFilters = function () {
+        var possibleFilters = ko.utils.arrayMap(metacriticCategories, function (category) {
+            return {
+                category: category.title,
+                included: ko.observable(true),
+                min: category.min,
+                max: category.max
+            };
+        });
+        var possibleFiltersHash = [];
+        for (var l = 0; l < possibleFilters.length; l++) {
+            var min = possibleFilters[l].min;
+            var max = possibleFilters[l].max;
+            for (var k = min; k <= max; k++) {
+                possibleFiltersHash[k] = possibleFilters[l];
+            }
+        }
+
+        var visitedCategoriesCounter = 0;
+        var games = self.gameTable.rows();
+        for (var i = 0; i < games.length; i++) {
+            if (visitedCategoriesCounter === possibleFilters.length) {
+                break;
+            }
+            if (games[i].metacriticScore === -1) {
+                continue;
+            }
+            var possibleFilter = possibleFiltersHash[games[i].metacriticScore];
+            if (!possibleFilter.visited) {
+                possibleFilter.visited = true;
+                visitedCategoriesCounter++;
+            }
+        }
+        self.metacriticPossibleFilters(ko.utils.arrayFilter(possibleFilters, function (pf) { return pf.visited; }));
+    };
+
+    self.advancedFilterClicked = function () {
+        if (!possibleFiltersCalculated) {
+            calculateMetacriticPossibleFilters();
+            possibleFiltersCalculated = true;
+        }
+        $("#advancedFilterModal").modal("show");
+    };
+
+    var toggleAllMetacriticFilters = function(include) {
+        for (var i = 0; i < self.metacriticPossibleFilters().length; i++) {
+            self.metacriticPossibleFilters()[i].included(include);
+        }
+    };
+
+    self.includeAllMetacriticFilters = function() {
+        toggleAllMetacriticFilters(true);
+    };
+
+    self.excludeAllMetacriticFilters = function() {
+        toggleAllMetacriticFilters(false);
+    };
+
+    self.allMetacriticCategoriesIncluded = true;
+    self.applyAdvancedFilter = function () {
+        self.allMetacriticCategoriesIncluded = true;
+        for (var i = 0; i < self.metacriticPossibleFilters().length; i++) {
+            var min = self.metacriticPossibleFilters()[i].min;
+            var max = self.metacriticPossibleFilters()[i].max;
+            var included = self.metacriticPossibleFilters()[i].included();
+            for (var j = min; j <= max; j++) {
+                self.metacriticAppliedFilter[j] = included;
+            }
+            self.allMetacriticCategoriesIncluded = self.allMetacriticCategoriesIncluded && included;
+        }
+
+        self.advancedFilterApplied(!self.allMetacriticCategoriesIncluded);
+        self.gameTable.triggerFilterCalculation();
+        $("#advancedFilterModal").modal("hide");
+    };
+
+    self.clearFilter = function() {
+        resetAdvancedFilters();
+        self.gameTable.triggerFilterCalculation();
+    };
 
     self.toggleAllChecked = ko.observable(true);
 
@@ -484,8 +591,6 @@ function AppViewModel() {
         }
     };
 
-    var unknownTitle = "Unknown";
-
     var updateDiscreteSliceChart = function (chart, slicedPlaytime) {
         var groupingThreshold = 0.01;
         var titles = getOrderedOwnProperties(slicedPlaytime);
@@ -689,13 +794,10 @@ function AppViewModel() {
     };
 
     var updateMetacriticChart = function(total, clickedSlice) {
-        updateContinuousSliceChart(self.metacriticChart, total.playtimesByMetacritic, [
-            { title: "Overwhelming Dislike", min: 0, max: 19 },
-            { title: "Generally Unfavorable", min: 20, max: 49 },
-            { title: "Mixed or Average", min: 50, max: 74 },
-            { title: "Generally Favorable", min: 75, max: 89 },
-            { title: "Universal Acclaim", min: 90, max: 100 }
-        ], clickedSlice);
+        var categories = ko.utils.arrayMap(metacriticCategories, function(cat) {
+            return { title: cat.title, min: cat.min, max: cat.max }; //create copy as to not alter the original objects
+        });
+        updateContinuousSliceChart(self.metacriticChart, total.playtimesByMetacritic, categories, clickedSlice);
     };
 
     var updateGenreChart = function(total) {
@@ -1035,6 +1137,7 @@ function AppViewModel() {
         self.sliceTotal(true);
         self.sliceCompletionLevel(PlaytimeType.Main);
         self.gameTable.filter("");
+        resetAdvancedFilters();
         self.gameTable.toggleSort("");
         self.bonusLinkVisible(self.steamVanityUrlName().indexOf("cached/") === -1);
 
