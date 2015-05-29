@@ -38,24 +38,33 @@ namespace SteamHltbScraper.Imputation
         private static readonly int AzureMlImputePollTimeoutMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollTimeoutMs", 120 * 1000);
         private static readonly string BlobContainerName = SiteUtil.GetOptionalValueFromConfig("BlobContainerName", "jobdata");
 
+        private static readonly int ImputationServiceRetries = SiteUtil.GetOptionalValueFromConfig("ImputationServiceRetries", 100);
+        private static HttpRetryClient s_client;
+
         internal static async Task Impute(IReadOnlyList<AppEntity> allApps)
         {
             HltbScraperEventSource.Log.ImputeStart();
 
-            await ImputeTypeGenres(allApps, a => a.IsGame, "games").ConfigureAwait(false);
-            await ImputeTypeGenres(allApps, a => !a.IsGame, "dlcs/mods").ConfigureAwait(false);
+            using (s_client = new HttpRetryClient(ImputationServiceRetries))
+            {
+                s_client.DefaultRequestAuthorization = new AuthenticationHeaderValue("Bearer", ApiKey);
+
+                var gamesImputationTask = ImputeTypeGenres(allApps.Where(a => a.IsGame).ToArray(), "games");
+                var dlcsImputationTask = ImputeTypeGenres(allApps.Where(a => !a.IsGame).ToArray(), "dlcs/mods");
+
+                await Task.WhenAll(gamesImputationTask, dlcsImputationTask).ConfigureAwait(false);
+            }
 
             HltbScraperEventSource.Log.ImputeStop();
         }
 
-        private static async Task ImputeTypeGenres(IReadOnlyList<AppEntity> allApps, Predicate<AppEntity> predicate, string gameType)
+        private static async Task ImputeTypeGenres(IReadOnlyList<AppEntity> games, string gameType)
         {
-            var games = allApps.Where(a => predicate(a)).ToArray();
             var ratios = await ImputeGenreAndGetRatios(games, String.Format("<all {0}>", gameType), null, true).ConfigureAwait(false);
-            foreach (var genreApps in games.GroupBy(a => a.Genres.First()))
+            await games.GroupBy(a => a.Genres.First()).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests/2, async genreApps =>
             {
                 await ImputeGenreAndGetRatios(genreApps.ToArray(), String.Format("{0} ({1})", genreApps.Key, gameType), ratios, false).ConfigureAwait(false);
-            }
+            }).ConfigureAwait(false);
         }
 
         private static async Task<TtbRatios> ImputeGenreAndGetRatios(IReadOnlyList<AppEntity> apps, string genre, TtbRatios fallbackRatios, bool initial)
@@ -196,24 +205,19 @@ namespace SteamHltbScraper.Imputation
         private static async Task<string> InvokeImputationService(IReadOnlyList<AppEntity> notCompletelyMissing)
         {
             var blobPath = await UploadTtbInputToBlob(notCompletelyMissing).ConfigureAwait(false);
-
-            using (var client = new HttpRetryClient(50))
-            {
-                client.DefaultRequestAuthorization = new AuthenticationHeaderValue("Bearer", ApiKey);
-                string jobId = await SubmitImputationJob(client, blobPath).ConfigureAwait(false);
-                return await PollForImputeJobCompletion(client, AzureMlImputeServiceBaseUrl + "/" + jobId).ConfigureAwait(false);
-            }
+            string jobId = await SubmitImputationJob(blobPath).ConfigureAwait(false);
+            return await PollForImputeJobCompletion(AzureMlImputeServiceBaseUrl + "/" + jobId).ConfigureAwait(false);
         }
 
-        private static async Task<string> PollForImputeJobCompletion(HttpRetryClient client, string jobLocation)
+        private static async Task<string> PollForImputeJobCompletion(string jobLocation)
         {
             HltbScraperEventSource.Log.PollImputationJobStatusStart();
 
             string imputed = null;
             var startTicks = Environment.TickCount;
-            while (imputed == null && (Environment.TickCount - startTicks) < AzureMlImputePollTimeoutMs)
+            while (imputed == null && (Environment.TickCount - startTicks) <AzureMlImputePollTimeoutMs)
             {
-                var status = await SiteUtil.GetAsync<BatchScoreStatus>(client, jobLocation).ConfigureAwait(false);
+                var status = await SiteUtil.GetAsync<BatchScoreStatus>(s_client, jobLocation).ConfigureAwait(false);
                 switch (status.StatusCode)
                 {
                     case BatchScoreStatusCode.NotStarted:
@@ -246,7 +250,7 @@ namespace SteamHltbScraper.Imputation
             return imputed;
         }
 
-        private static async Task<string> SubmitImputationJob(HttpRetryClient client, string inputBlobPath)
+        private static async Task<string> SubmitImputationJob(string inputBlobPath)
         {
             var request = new BatchScoreRequest
             {
@@ -260,7 +264,7 @@ namespace SteamHltbScraper.Imputation
 
             HltbScraperEventSource.Log.SubmitImputationJobStart();
             string jobId;
-            using (var response = await client.PostAsJsonAsync(AzureMlImputeServiceBaseUrl, request).ConfigureAwait(false))
+            using (var response = await s_client.PostAsJsonAsync(AzureMlImputeServiceBaseUrl, request).ConfigureAwait(false))
             {
                 jobId = await response.Content.ReadAsAsync<string>().ConfigureAwait(false);
             }
@@ -279,7 +283,7 @@ namespace SteamHltbScraper.Imputation
                     a.ExtrasTtbImputed ? 0 : a.ExtrasTtb,
                     a.CompletionistTtbImputed ? 0 : a.CompletionistTtb)));
 
-            var blobName = String.Format(CultureInfo.InvariantCulture, "ttb-{0}.csv", SiteUtil.CurrentTimestamp);
+            var blobName = String.Format(CultureInfo.InvariantCulture, "ttb-{0}-{1}.csv", SiteUtil.CurrentTimestamp, Guid.NewGuid());
 
             HltbScraperEventSource.Log.UploadTtbToBlobStart(blobName);
 
