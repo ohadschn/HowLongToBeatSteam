@@ -3,7 +3,7 @@
   "webJobName": "MissingGamesUpdater",
   "startTime": "2015-05-17T00:00:00+02:00",
   "endTime": null,
-  "jobRecurrenceFrequency": "Hour",
+  "jobRecurrenceFrequency": "Day",
   "interval": 1,
   "runMode": "Scheduled"
 }
