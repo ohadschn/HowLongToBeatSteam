@@ -176,7 +176,7 @@ function AppViewModel() {
     self.authenticated = ko.observable(AuthenticationStatus.None);
 
     self.gameTable = new DataTable([], tableOptions);
-    self.pageSizeOptions = [10, 25, 50];
+    self.pageSizeOptions = [10, 25, 50, 100];
     self.gameTable.perPage.subscribe(function(perPage) {
         appInsights.trackEvent("PerPageChanged", {}, { perPage: perPage });
     });
