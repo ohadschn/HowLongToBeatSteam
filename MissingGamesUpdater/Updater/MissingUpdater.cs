@@ -66,7 +66,7 @@ namespace MissingGamesUpdater.Updater
                 ioe = new InvalidOperationException("Could not retrieve store information for all games", e);
             }
 
-            await StorageHelper.InsertApps(updates, StorageRetries).ConfigureAwait(false);  //we're inserting new entries, no fear of collisions 
+            await StorageHelper.Insert(updates, StorageRetries).ConfigureAwait(false);  //we're inserting new entries, no fear of collisions 
             MissingUpdaterEventSource.Log.UpdateMissingGamesStop();                         //(even if two jobs overlap the next one will fix it)
 
             if (ioe != null)

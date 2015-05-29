@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -14,6 +15,11 @@ namespace Common.Util
 {
     public static class SiteUtil
     {
+        public static string CleanString(string str, HashSet<char> disallowedChars)
+        {
+            return new String(str.Where(c => !disallowedChars.Contains(c)).ToArray());
+        }
+
         public static TValue GetOrCreate<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
             where TValue : new()
         {
@@ -101,7 +107,7 @@ namespace Common.Util
             return first.GetAwaiter().GetResult(); //will throw the original exception if first failed (we want to fail fast)
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "task")]
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "task")]
         public static void Forget(this Task task) //suppress CS4014
         {
         }
@@ -170,26 +176,6 @@ namespace Common.Util
             return source.IndexOf(toCheck, comp) >= 0;
         }
 
-        public static T[] GenerateInitializedArray<T>(int size, Func<int, T> factory)
-        {
-            if (factory == null)
-            {
-                throw new ArgumentNullException("factory");
-            }
-
-            if (size < 0)
-            {
-                throw new ArgumentOutOfRangeException("size");
-            }
-
-            var arr = new T[size];
-            for (int i = 0; i < arr.Length; i++)
-            {
-                arr[i] = factory(i);
-            }
-            return arr;
-        }
-
         public static void SetDefaultConnectionLimit()
         {
             ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
@@ -203,13 +189,13 @@ namespace Common.Util
             get { return s_maxConcurrentHttpRequests.Value; }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1057:StringUriOverloadsCallSystemUriOverloads")]
+        [SuppressMessage("Microsoft.Design", "CA1057:StringUriOverloadsCallSystemUriOverloads")]
         public static Task<T> GetAsync<T>(HttpRetryClient client, string url)
         {
             return GetAsync<T>(client, new Uri(url), CancellationToken.None);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1057:StringUriOverloadsCallSystemUriOverloads")]
+        [SuppressMessage("Microsoft.Design", "CA1057:StringUriOverloadsCallSystemUriOverloads")]
         public static Task<T> GetAsync<T>(HttpRetryClient client, string url, CancellationToken ct)
         {
             return GetAsync<T>(client, new Uri(url), ct);

@@ -303,7 +303,7 @@ namespace Common.Logging
         }
 
         [NonEvent]
-        public void ExecuteBucketBatchOperationStart(int bucket, int batch, string final)
+        public void ExecuteBucketBatchOperationStart(string bucket, int batch, string final)
         {
             ExecuteBucketBatchOperationStart(final, bucket, batch);
         }
@@ -315,13 +315,13 @@ namespace Common.Logging
             Level = EventLevel.Informational,
             Task = Tasks.ExecuteBucketBatchOperation,
             Opcode = EventOpcode.Start)]
-        private void ExecuteBucketBatchOperationStart(string final, int bucket, int batch)
+        private void ExecuteBucketBatchOperationStart(string final, string bucket, int batch)
         {
             WriteEvent(16, final, bucket, batch);
         }
 
         [NonEvent]
-        public void ExecuteBucketBatchOperationStop(int bucket, int batch, string final)
+        public void ExecuteBucketBatchOperationStop(string bucket, int batch, string final)
         {
             ExecuteBucketBatchOperationStop(final, bucket, batch);
         }
@@ -333,7 +333,7 @@ namespace Common.Logging
             Level = EventLevel.Informational,
             Task = Tasks.ExecuteBucketBatchOperation,
             Opcode = EventOpcode.Stop)]
-        private void ExecuteBucketBatchOperationStop(string final, int bucket, int batch)
+        private void ExecuteBucketBatchOperationStop(string final, string bucket, int batch)
         {
             WriteEvent(17, final, bucket, batch);
         }

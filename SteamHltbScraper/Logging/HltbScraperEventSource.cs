@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using Common.Logging;
 
@@ -14,7 +15,7 @@ namespace SteamHltbScraper.Logging
         }
 
 // ReSharper disable ConvertToStaticClass
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
+        [SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
         public sealed class Keywords
         {
             private Keywords() { }
@@ -25,7 +26,7 @@ namespace SteamHltbScraper.Logging
             public const EventKeywords BlobStorage = (EventKeywords)16;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
+        [SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
         public sealed class Tasks
         {
             private Tasks() { }
@@ -43,6 +44,7 @@ namespace SteamHltbScraper.Logging
             public const EventTask UploadTtbToBlob = (EventTask) 12;
             public const EventTask PollImputationJobStatus = (EventTask) 13;
             public const EventTask ImputeGenre = (EventTask) 14;
+            public const EventTask UpdateGenreStats = (EventTask) 15;
         }
 // ReSharper restore ConvertToStaticClass
 
@@ -670,5 +672,29 @@ namespace SteamHltbScraper.Logging
         //{
         //    WriteEvent(34, steamName, steamAppId, mainAverage, extrasAverage, completionistAverage);
         //}
+
+        [Event(
+            35,
+            Message = "Start updating genre stats (genre count: {0})",
+            Keywords = Keywords.Imputation,
+            Level = EventLevel.Informational,
+            Task = Tasks.UpdateGenreStats,
+            Opcode = EventOpcode.Start)]
+        public void UpdateGenreStatsStart(int genreCount)
+        {
+            WriteEvent(35, genreCount);
+        }
+
+        [Event(
+            36,
+            Message = "Finished updating genre stats (genre count: {0})",
+            Keywords = Keywords.Imputation,
+            Level = EventLevel.Informational,
+            Task = Tasks.UpdateGenreStats,
+            Opcode = EventOpcode.Stop)]
+        public void UpdateGenreStatsStop(int genreCount)
+        {
+            WriteEvent(36, genreCount);
+        }
     }
 }

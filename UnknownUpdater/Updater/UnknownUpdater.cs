@@ -58,7 +58,7 @@ namespace UnknownUpdater.Updater
             UnknownUpdaterEventSource.Log.UpdateNewlyCategorizedApps(updates);
 
             var appsDict = apps.ToDictionary(ae => ae.SteamAppId);
-            await StorageHelper.ExecuteAppOperations(updates,
+            await StorageHelper.ExecuteOperations(updates,
                     ae => new[] { TableOperation.Delete(appsDict[ae.SteamAppId]), TableOperation.Insert(ae) }, StorageRetries).ConfigureAwait(false);
 
             UnknownUpdaterEventSource.Log.UpdateUnknownAppsStop();

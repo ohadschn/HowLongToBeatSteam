@@ -75,7 +75,7 @@ namespace ManualTableUpdater.Updater
                 appData = (AppEntityData[]) new DataContractSerializer(typeof (AppEntityData[])).ReadObject(stream);
             }
 
-            StorageHelper.InsertOrReplaceApps(appData.Select(
+            StorageHelper.InsertOrReplace(appData.Select(
                 a => new AppEntity(a.SteamAppId, a.SteamName, a.AppType, a.Platforms, a.Categories, a.Genres,
                     a.Publishers, a.Developers, a.ReleaseDate, a.MetacriticScore))).Wait();
         }
@@ -177,7 +177,7 @@ namespace ManualTableUpdater.Updater
                 games.Add(new AppEntity(appId, name, hltbId.ToString()));
             }
 
-            StorageHelper.InsertApps(games);
+            StorageHelper.Insert(games);
         }
     }
 }

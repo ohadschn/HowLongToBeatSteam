@@ -98,7 +98,6 @@ namespace Common.Entities
         public DateTime ReleaseDate { get; set; }
         public int MetacriticScore { get; set; }
 
-        [IgnoreProperty] public int Bucket { get { return int.Parse(PartitionKey, CultureInfo.InvariantCulture); } }
         [IgnoreProperty] public bool Measured { get { return RowKey.StartsWith(MeasuredKey, StringComparison.Ordinal); } }
 
         public static string MeasuredFilter

@@ -73,7 +73,7 @@ namespace SuggestionProcessor
                 }
             });
 
-            await Task.WhenAll(suggestionsTask, appsTask);
+            await Task.WhenAll(suggestionsTask, appsTask).ConfigureAwait(false);
 
             int i = 0;
             foreach (var suggestion in suggestions)

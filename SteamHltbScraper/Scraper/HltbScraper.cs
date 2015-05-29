@@ -29,7 +29,7 @@ namespace SteamHltbScraper.Scraper
         private static readonly int ScrapingLimit = SiteUtil.GetOptionalValueFromConfig("ScrapingLimit", int.MaxValue);
         private static readonly int ScrapingRetries = SiteUtil.GetOptionalValueFromConfig("HltbScraperScrapingRetries", 5);
         private static readonly int StorageRetries = SiteUtil.GetOptionalValueFromConfig("HltbScraperStorageRetries", 20);
-        private static readonly HttpRetryClient Client = new HttpRetryClient(ScrapingRetries);
+        private static HttpRetryClient s_client;
 
         private static void Main()
         {
@@ -52,15 +52,20 @@ namespace SteamHltbScraper.Scraper
             var allApps = (await StorageHelper.GetAllApps(e => e, AppEntity.MeasuredFilter, StorageRetries).ConfigureAwait(false))
                 .Take(ScrapingLimit).ToArray();
 
-            using (Client)
-            {
-                await ScrapeHltb(allApps).ConfigureAwait(false);
-            }
+            await ScrapeHltb(allApps);
 
             await Imputer.Impute(allApps).ConfigureAwait(false);
 
             //we're using Replace since the only other update to an existing game-typed entity would have to be manual which should take precedence
-            await StorageHelper.ReplaceApps(allApps, StorageRetries).ConfigureAwait(false); 
+            await StorageHelper.Replace(allApps, StorageRetries).ConfigureAwait(false); 
+        }
+
+        public static async Task ScrapeHltb(AppEntity[] allApps)
+        {
+            using (s_client = new HttpRetryClient(ScrapingRetries))
+            {
+                await ScrapeHltb((IEnumerable<AppEntity>) allApps).ConfigureAwait(false);
+            }
         }
 
         internal static async Task ScrapeHltb(IEnumerable<AppEntity> allApps)
@@ -163,7 +168,7 @@ namespace SteamHltbScraper.Scraper
             var gameOverviewUrl = new Uri(String.Format(HltbGameOverviewPageFormat, hltbId));
 
             HltbScraperEventSource.Log.GetGameOverviewPageStart(gameOverviewUrl);
-            var doc = await LoadDocument(() => Client.GetAsync(gameOverviewUrl)).ConfigureAwait(false);
+            var doc = await LoadDocument(() => s_client.GetAsync(gameOverviewUrl)).ConfigureAwait(false);
             HltbScraperEventSource.Log.GetGameOverviewPageStop(gameOverviewUrl);
 
             var list = doc.DocumentNode.Descendants("div").FirstOrDefault(n => n.GetAttributeValue("class", null) == "gprofile_times");
@@ -203,7 +208,7 @@ namespace SteamHltbScraper.Scraper
             var gamePageUrl = new Uri(String.Format(HltbGamePageFormat, hltbId));
 
             HltbScraperEventSource.Log.GetHltbGamePageStart(gamePageUrl);
-            var doc = await LoadDocument(() => Client.GetAsync(gamePageUrl)).ConfigureAwait(false);
+            var doc = await LoadDocument(() => s_client.GetAsync(gamePageUrl)).ConfigureAwait(false);
             HltbScraperEventSource.Log.GetHltbGamePageStop(gamePageUrl);
 
             var headerDiv = doc.DocumentNode.Descendants().FirstOrDefault(n => n.GetAttributeValue("class", null) == "gprofile_header");
@@ -312,7 +317,7 @@ namespace SteamHltbScraper.Scraper
             };
 
             HltbScraperEventSource.Log.PostHltbSearchStart(SearchHltbUrl, content);
-            var doc = await LoadDocument(() => Client.SendAsync(requestFactory, SearchHltbUrl)).ConfigureAwait(false);
+            var doc = await LoadDocument(() => s_client.SendAsync(requestFactory, SearchHltbUrl)).ConfigureAwait(false);
             HltbScraperEventSource.Log.PostHltbSearchStop(SearchHltbUrl, content);
 
             var first = doc.DocumentNode.Descendants("li").FirstOrDefault();

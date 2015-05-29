@@ -22,10 +22,29 @@ namespace Common.Storage
 
         private const int MaxBatchOperations = 100;
 
-        private static readonly string SteamToHltbTableName = SiteUtil.GetMandatoryValueFromConfig("SteamToHltbTableName");
+        public static readonly string SteamToHltbTableName = SiteUtil.GetOptionalValueFromConfig("SteamToHltbTableName", "steamToHltb");
+        public static readonly string GenreStatsTableName = SiteUtil.GetOptionalValueFromConfig("GenreStatsTableName", "genreStats");
         public static readonly string AzureStorageTablesConnectionString = SiteUtil.GetMandatoryCustomConnectionStringFromConfig("HltbsTables");
         public static readonly string AzureStorageBlobConnectionString = SiteUtil.GetMandatoryCustomConnectionStringFromConfig("HltbsBlobs");        
         private static readonly TimeSpan DefaultDeltaBackoff = TimeSpan.FromSeconds(4);
+
+        //https://msdn.microsoft.com/en-us/library/azure/dd179338.aspx
+        public static string CleanStringForTableKey(string str)
+        {
+            var disallowedChars = new HashSet<char>(new[] { '/', '\\', '#', '?' });
+
+            for (char i = (char)0; i <= 0x1F; i++)
+            {
+                disallowedChars.Add(i);
+            }
+
+            for (char i = (char)0x7F; i <= 0x9F; i++)
+            {
+                disallowedChars.Add(i);
+            }
+
+            return SiteUtil.CleanString(str, disallowedChars);
+        }
 
         public static async Task<ConcurrentBag<T>> GetAllApps<T>(Func<AppEntity, T> selector, string rowFilter = null, int retries = -1)
         {
@@ -89,27 +108,28 @@ namespace Common.Storage
 
         }
 
-        public static Task ReplaceApps(IEnumerable<AppEntity> games, int retries = -1)
+        public static Task Replace<T>(IEnumerable<T> entities, int retries = -1, string tableName = null) where T : ITableEntity
         {
-            return ExecuteAppOperations(games, e => new [] {TableOperation.Replace(e)}, retries);
+            return ExecuteOperations(entities, e => new[] { TableOperation.Replace(e) }, retries, tableName);
         }
 
-        public static Task InsertApps(IEnumerable<AppEntity> games, int retries = -1)
+        public static Task Insert<T>(IEnumerable<T> entities, int retries = -1, string tableName = null) where T : ITableEntity
         {
-            return ExecuteAppOperations(games, e => new [] {TableOperation.Insert(e)}, retries);
+            return ExecuteOperations(entities, e => new[] { TableOperation.Insert(e) }, retries, tableName);
         }
 
-        public static Task InsertOrReplaceApps(IEnumerable<AppEntity> games, int retries = -1)
+        public static Task InsertOrReplace<T>(IEnumerable<T> entities, int retries = -1, string tableName = null) where T : ITableEntity
         {
-            return ExecuteAppOperations(games, e => new [] {TableOperation.InsertOrReplace(e)}, retries);
+            return ExecuteOperations(entities, e => new[] { TableOperation.InsertOrReplace(e) }, retries, tableName);
         }
 
-        public static async Task ExecuteAppOperations(IEnumerable<AppEntity> apps, Func<AppEntity, TableOperation[]> operationGenerator, int retries = -1)
+        public static async Task ExecuteOperations<T>(IEnumerable<T> entities, Func<T, TableOperation[]> operationGenerator, int retries = -1, string tableName = null)
+            where T : ITableEntity
         {
             CommonEventSource.Log.ExecuteOperationsStart();
-            var table = await GetSteamToHltbTable(retries);
+            var table = await GetSteamToHltbTable(retries, tableName);
 
-            await SplitToBatchOperations(apps, operationGenerator).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, async tboi =>
+            await SplitToBatchOperations(entities, operationGenerator).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, async tboi =>
             {
                 var final = tboi.Final ? "(final)" : String.Empty;
 
@@ -159,13 +179,14 @@ namespace Common.Storage
             CommonEventSource.Log.AcceptSuggestionStop(suggestion.SteamAppId, suggestion.HltbId);
         }
 
-        private static IEnumerable<TableBatchOperationInfo> SplitToBatchOperations(
-            IEnumerable<AppEntity> apps, Func<AppEntity, TableOperation[]> operationGenerator)
+        private static IEnumerable<TableBatchOperationInfo> SplitToBatchOperations<T>(
+            IEnumerable<T> entities, Func<T, TableOperation[]> operationGenerator)
+            where T: ITableEntity
         {
-            var allOperations = SiteUtil.GenerateInitializedArray(AppEntity.Buckets, i => new List<TableBatchOperationInfo>());
-            foreach (var appGroup in apps.GroupBy(ae => ae.Bucket))
+            var allOperations = new Dictionary<string, List<TableBatchOperationInfo>> ();
+            foreach (var appGroup in entities.GroupBy(ae => ae.PartitionKey))
             {
-                int bucket = appGroup.Key;
+                string bucket = appGroup.Key;
                 int batch = 1;
                 var batchOperation = new TableBatchOperation();
                 foreach (var appEntity in appGroup)
@@ -179,7 +200,7 @@ namespace Common.Storage
 
                     if (batchOperation.Count + operations.Length > MaxBatchOperations)
                     {
-                        allOperations[bucket].Add(new TableBatchOperationInfo(bucket, batch++, false, batchOperation));
+                        allOperations.GetOrCreate(bucket).Add(new TableBatchOperationInfo(bucket, batch++, false, batchOperation));
                         batchOperation = new TableBatchOperation();
                     }
 
@@ -191,10 +212,10 @@ namespace Common.Storage
 
                 if (batchOperation.Count != 0)
                 {
-                    allOperations[bucket].Add(new TableBatchOperationInfo(bucket, batch, true, batchOperation));
+                    allOperations.GetOrCreate(bucket).Add(new TableBatchOperationInfo(bucket, batch, true, batchOperation));
                 }
             }
-            return allOperations.Interleave();
+            return allOperations.Values.Interleave();
         }
 
         public static string StartsWithFilter(string propertyName, string value)
@@ -223,9 +244,9 @@ namespace Common.Storage
             return cloudTableClient;
         }
 
-        private static async Task<CloudTable> GetSteamToHltbTable(int retries)
+        private static async Task<CloudTable> GetSteamToHltbTable(int retries, string tableName = null)
         {
-            var table = GetCloudTableClient(retries).GetTableReference(SteamToHltbTableName);
+            var table = GetCloudTableClient(retries).GetTableReference(tableName ?? SteamToHltbTableName);
             await table.CreateIfNotExistsAsync().ConfigureAwait(false);
             return table;
         }
@@ -250,12 +271,12 @@ namespace Common.Storage
 
         class TableBatchOperationInfo
         {
-            public int Bucket { get; private set; }
+            public string Bucket { get; private set; }
             public int Batch { get; private set; }
             public bool Final { get; private set; }
             public TableBatchOperation Operation { get; private set; }
 
-            public TableBatchOperationInfo(int bucket, int batch, bool final, TableBatchOperation operation)
+            public TableBatchOperationInfo(string bucket, int batch, bool final, TableBatchOperation operation)
             {
                 Bucket = bucket;
                 Batch = batch;

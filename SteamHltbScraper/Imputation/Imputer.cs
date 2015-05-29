@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -32,14 +33,19 @@ namespace SteamHltbScraper.Imputation
     public static class Imputer
     {
         internal const string ImputedCsvFileName = "imputed.csv";
+        public static string AllGenresId { get { return "All"; } }
+
         private static readonly string ApiKey = SiteUtil.GetMandatoryValueFromConfig("AzureMlImputeApiKey");
         private static readonly string AzureMlImputeServiceBaseUrl = SiteUtil.GetMandatoryValueFromConfig("AzureMlImputeServiceBaseUrl");
         private static readonly int AzureMlImputePollIntervalMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollIntervalMs", 1000);
         private static readonly int AzureMlImputePollTimeoutMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollTimeoutMs", 120 * 1000);
         private static readonly string BlobContainerName = SiteUtil.GetOptionalValueFromConfig("BlobContainerName", "jobdata");
 
+        private static readonly int GenreStatsStorageRetries = SiteUtil.GetOptionalValueFromConfig("GenreStatsStorageRetries", 100);
         private static readonly int ImputationServiceRetries = SiteUtil.GetOptionalValueFromConfig("ImputationServiceRetries", 100);
         private static HttpRetryClient s_client;
+
+        private static readonly ConcurrentDictionary<string, GenreStatsEntity> s_genreStats = new ConcurrentDictionary<string, GenreStatsEntity>();
 
         internal static async Task Impute(IReadOnlyList<AppEntity> allApps)
         {
@@ -55,15 +61,26 @@ namespace SteamHltbScraper.Imputation
                 await Task.WhenAll(gamesImputationTask, dlcsImputationTask).ConfigureAwait(false);
             }
 
+            HltbScraperEventSource.Log.UpdateGenreStatsStart(s_genreStats.Count);
+            await StorageHelper.InsertOrReplace(s_genreStats.Values, GenreStatsStorageRetries, StorageHelper.GenreStatsTableName).ConfigureAwait(false);
+            HltbScraperEventSource.Log.UpdateGenreStatsStop(s_genreStats.Count);
+
             HltbScraperEventSource.Log.ImputeStop();
         }
 
         private static async Task ImputeTypeGenres(IReadOnlyList<AppEntity> games, string gameType)
         {
-            var ratios = await ImputeGenreAndGetRatios(games, String.Format("<all {0}>", gameType), null, true).ConfigureAwait(false);
-            await games.GroupBy(a => a.Genres.First()).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests/2, async genreApps =>
+            var gameTypeGenre = GenreStatsEntity.GetDecoratedGenre(AllGenresId, gameType);
+            s_genreStats[gameTypeGenre] = new GenreStatsEntity(AllGenresId, gameType);
+            var ratios = await ImputeGenreAndGetRatios(games, gameTypeGenre, null, true).ConfigureAwait(false);
+
+            //we divide MaxConcurrentHttpRequests by 2 since both games and DLCs are imputed in parallel
+            await games.GroupBy(a => a.Genres.First()).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests / 2, async genreApps =>
             {
-                await ImputeGenreAndGetRatios(genreApps.ToArray(), String.Format("{0} ({1})", genreApps.Key, gameType), ratios, false).ConfigureAwait(false);
+                var firstGenre = genreApps.Key;
+                var decoratedGenre = GenreStatsEntity.GetDecoratedGenre(firstGenre, gameType);
+                s_genreStats[decoratedGenre] = new GenreStatsEntity(firstGenre, gameType);
+                await ImputeGenreAndGetRatios(genreApps.ToArray(), decoratedGenre, ratios, false).ConfigureAwait(false);
             }).ConfigureAwait(false);
         }
 
@@ -72,6 +89,8 @@ namespace SteamHltbScraper.Imputation
             HltbScraperEventSource.Log.ImputeGenreStart(genre, apps.Count);
 
             var ratios = GetTtbRatios(apps, fallbackRatios);
+            
+            UpdateGenreStats(genre, ratios);
             await Impute(apps, genre, ratios, initial).ConfigureAwait(false);
             
             HltbScraperEventSource.Log.ImputeGenreStop(genre, apps.Count);
@@ -131,6 +150,11 @@ namespace SteamHltbScraper.Imputation
                     throw new InvalidOperationException("All TTBs are missing");
                 }
                 HltbScraperEventSource.Log.GenreHasNoTtbs(genre);
+
+                //all apps are completely missing, so the current value in each of them is the game type average
+                //we want the genre stats to use that average as well, so we'll just take the first (again, they are all the same)
+                UpdateGenreStats(genre, apps.First().MainTtb, apps.First().ExtrasTtb, apps.First().CompletionistTtb);
+                
                 return;
             }
 
@@ -147,10 +171,10 @@ namespace SteamHltbScraper.Imputation
                 }
             }
             
-            FillCompletelyMissing(apps, notCompletelyMissing);
+            FillCompletelyMissing(genre, apps, notCompletelyMissing);
         }
 
-        private static void FillCompletelyMissing(IEnumerable<AppEntity> allApps, IReadOnlyCollection<AppEntity> notCompletelyMissing)
+        private static void FillCompletelyMissing(string genre, IEnumerable<AppEntity> allApps, IReadOnlyCollection<AppEntity> notCompletelyMissing)
         {
             Trace.Assert(notCompletelyMissing.Count > 0, "Empty notCompletelyMissing");
 
@@ -169,6 +193,8 @@ namespace SteamHltbScraper.Imputation
             int mainAvg = mainSum/notCompletelyMissing.Count;
             int extrasAvg = extrasSum / notCompletelyMissing.Count;
             int completionistAvg = completionistSum / notCompletelyMissing.Count;
+
+            UpdateGenreStats(genre, mainAvg, extrasAvg, completionistAvg);
 
             foreach (var app in allApps.Except(notCompletelyMissing)) //not not completely missing = completely missing
             {
@@ -418,6 +444,22 @@ namespace SteamHltbScraper.Imputation
         internal static int GetRoundedValue(string value)
         {
             return (int)Math.Round(Double.Parse(value, CultureInfo.InvariantCulture));
+        }
+
+        private static void UpdateGenreStats(string genre, int mainAvg, int extrasAvg, int completionistAvg)
+        {
+            var stats = s_genreStats[genre];
+            stats.MainAverage = mainAvg;
+            stats.ExtrasAverage = extrasAvg;
+            stats.CompletionistAverage = completionistAvg;
+        }
+
+        private static void UpdateGenreStats(string genre, TtbRatios ratios)
+        {
+            var stats = s_genreStats[genre];
+            stats.MainExtrasRatio = ratios.MainExtras;
+            stats.ExtrasCompletionistRatio = ratios.ExtrasCompletionist;
+            stats.ExtrasPlacementRatio = ratios.ExtrasPlacement;
         }
     }
 }
