@@ -34,6 +34,9 @@ namespace Common.Logging
             public const EventTask ExecuteOperations = (EventTask)6;
             public const EventTask ExecuteBucketBatchOperation = (EventTask)7;
             public const EventTask InsertSuggestion = (EventTask)8;
+            public const EventTask QueryAllSuggestions = (EventTask) 9;
+            public const EventTask DeleteSuggestion = (EventTask) 10;
+            public const EventTask AcceptSuggestion = (EventTask) 11;
         }
 // ReSharper restore ConvertToStaticClass
 
@@ -204,6 +207,30 @@ namespace Common.Logging
         }
 
         [Event(
+            80,
+            Message = "Querying table storage for all suggestions with filter: {0}",
+            Keywords = Keywords.TableStorage,
+            Level = EventLevel.Informational,
+            Task = Tasks.QueryAllSuggestions,
+            Opcode = EventOpcode.Start)]
+        public void QueryAllSuggestionsStart(string rowFilter)
+        {
+            WriteEvent(80, rowFilter);
+        }
+
+        [Event(
+            81,
+            Message = "Finished querying table storage for all suggestions with filter: {0} (count: {1})",
+            Keywords = Keywords.TableStorage,
+            Level = EventLevel.Informational,
+            Task = Tasks.QueryAllSuggestions,
+            Opcode = EventOpcode.Stop)]
+        public void QueryAllSuggestionsStop(string rowFilter, int count)
+        {
+            WriteEvent(81, rowFilter, count);
+        }
+
+        [Event(
             10,
             Message = "Start retrieving mappings for bucket {0} / batch {1} from table storage",
             Keywords = Keywords.TableStorage,
@@ -333,6 +360,54 @@ namespace Common.Logging
         public void InsertSuggestionStop(int steamAppId, int hltbId)
         {
             WriteEvent(19, steamAppId, hltbId);
+        }
+
+        [Event(
+            20,
+            Message = "Start deleting suggestion for Steam ID {0} : HLTB ID {1}",
+            Keywords = Keywords.TableStorage,
+            Level = EventLevel.Informational,
+            Task = Tasks.DeleteSuggestion,
+            Opcode = EventOpcode.Start)]
+        public void DeleteSuggestionStart(int steamAppId, int hltbId)
+        {
+            WriteEvent(20, steamAppId, hltbId);
+        }
+
+        [Event(
+            21,
+            Message = "Finished deleting suggestion for Steam ID: {0} HLTB ID: {1}",
+            Keywords = Keywords.TableStorage,
+            Level = EventLevel.Informational,
+            Task = Tasks.DeleteSuggestion,
+            Opcode = EventOpcode.Stop)]
+        public void DeleteSuggestionStop(int steamAppId, int hltbId)
+        {
+            WriteEvent(21, steamAppId, hltbId);
+        }
+
+        [Event(
+            22,
+            Message = "Start accepting suggestion for Steam ID: {0} HLTB ID: {1}",
+            Keywords = Keywords.TableStorage,
+            Level = EventLevel.Informational,
+            Task = Tasks.AcceptSuggestion,
+            Opcode = EventOpcode.Start)]
+        public void AcceptSuggestionStart(int steamAppId, int hltbId)
+        {
+            WriteEvent(22, steamAppId, hltbId);
+        }
+
+        [Event(
+            23,
+            Message = "Finished accepting suggestion for Steam ID: {0} HLTB ID: {1}",
+            Keywords = Keywords.TableStorage,
+            Level = EventLevel.Informational,
+            Task = Tasks.AcceptSuggestion,
+            Opcode = EventOpcode.Stop)]
+        public void AcceptSuggestionStop(int steamAppId, int hltbId)
+        {
+            WriteEvent(23, steamAppId, hltbId);
         }
     }
 }

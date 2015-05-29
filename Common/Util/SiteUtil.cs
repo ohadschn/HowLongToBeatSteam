@@ -149,6 +149,17 @@ namespace Common.Util
             }
         }
 
+        public static void AddRange<T>([NotNull] this ConcurrentBag<T> bag, [NotNull] IEnumerable<T> range)
+        {
+            if (bag == null) throw new ArgumentNullException("bag");
+            if (range == null) throw new ArgumentNullException("range");
+
+            foreach (var item in range)
+            {
+                bag.Add(item);
+            }
+        }
+
         public static bool Contains(this string source, string toCheck, StringComparison comp)
         {
             if (source == null)

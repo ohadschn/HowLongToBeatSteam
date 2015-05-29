@@ -123,7 +123,7 @@ namespace SteamHltbScraper.Scraper
             HltbScraperEventSource.Log.ScrapeHltbStop();
         }
 
-        private static Task<T> ScrapeWithExponentialRetries<T>(Func<int, Task<T>> scraper, int hltbId)
+        public static Task<T> ScrapeWithExponentialRetries<T>(Func<int, Task<T>> scraper, int hltbId)
         {
             return ExponentialBackoff.ExecuteAsyncWithExponentialRetries(
                         () => scraper(hltbId),
@@ -196,7 +196,7 @@ namespace SteamHltbScraper.Scraper
             return new HltbInfo(unifiedMain, unifiedExtras, completionistTtb);
         }
 
-        private static async Task<string> ScrapeHltbName(int hltbId)
+        public static async Task<string> ScrapeHltbName(int hltbId)
         {
             HltbScraperEventSource.Log.ScrapeHltbNameStart(hltbId);
 

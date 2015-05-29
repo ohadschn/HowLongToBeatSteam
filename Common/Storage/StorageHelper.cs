@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Common.Entities;
 using Common.Logging;
 using Common.Util;
+using JetBrains.Annotations;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.RetryPolicies;
@@ -32,26 +33,34 @@ namespace Common.Storage
             var knownSteamIds = new ConcurrentBag<T>();
 
             CommonEventSource.Log.QueryAllAppsStart(rowFilter ?? "(none)");
-            await QueryAllApps((segment, bucket) =>
-            {
-                foreach (var game in segment)
-                {
-                    knownSteamIds.Add(selector(game));
-                }
-            }, rowFilter, retries).ConfigureAwait(false);
+            await QueryAllTableEntities<AppEntity>(
+                (segment, bucket) => knownSteamIds.AddRange(segment.Select(selector)), AppEntity.Buckets, rowFilter, retries).ConfigureAwait(false);
             CommonEventSource.Log.QueryAllAppsStop(rowFilter ?? "(none)", knownSteamIds.Count);
             
             return knownSteamIds;
         }
 
+        public static async Task<ConcurrentBag<SuggestionEntity>> GetAllSuggestions(int retries = -1)
+        {
+            var suggestions = new ConcurrentBag<SuggestionEntity>();
+
+            CommonEventSource.Log.QueryAllSuggestionsStart(SuggestionEntity.SuggestionFilter);
+            await QueryAllTableEntities<SuggestionEntity>(
+                (segment, bucket) => suggestions.AddRange(segment), SuggestionEntity.Buckets, SuggestionEntity.SuggestionFilter, retries)
+                .ConfigureAwait(false);
+            CommonEventSource.Log.QueryAllSuggestionsStop(SuggestionEntity.SuggestionFilter, suggestions.Count);
+
+            return suggestions;
+        }
+
         //segmentHandler(segment, bucket) will be called synchronously for each bucket but parallel across buckets
-        public static async Task QueryAllApps(Action<TableQuerySegment<AppEntity>, int> segmentHandler, string rowFilter = null, int retries = -1)
+        public static async Task QueryAllTableEntities<T>(Action<TableQuerySegment<T>, int> segmentHandler, int buckets, string rowFilter = null, int retries = -1)
+            where T : ITableEntity, new()
         {
             rowFilter = rowFilter ?? SuggestionEntity.NotSuggestionFilter;
-            var table = GetCloudTableClient(retries).GetTableReference(SteamToHltbTableName);
-            await table.CreateIfNotExistsAsync().ConfigureAwait(false);
+            var table = await GetSteamToHltbTable(retries);
 
-            await Enumerable.Range(0, AppEntity.Buckets).ForEachAsync(AppEntity.Buckets, async bucket =>
+            await Enumerable.Range(0, buckets).ForEachAsync(buckets, async bucket =>
             {
                 var partitionFilter = 
                     TableQuery.GenerateFilterCondition(PartitionKey, QueryComparisons.Equal, bucket.ToString(CultureInfo.InvariantCulture));
@@ -60,9 +69,9 @@ namespace Common.Storage
                     ? partitionFilter
                     : TableQuery.CombineFilters(partitionFilter, TableOperators.And, rowFilter);
 
-                var query = new TableQuery<AppEntity>().Where(filter);
+                var query = new TableQuery<T>().Where(filter);
 
-                TableQuerySegment<AppEntity> currentSegment = null;
+                TableQuerySegment<T> currentSegment = null;
                 int batch = 1;
                 while (currentSegment == null || currentSegment.ContinuationToken != null)
                 {
@@ -98,8 +107,7 @@ namespace Common.Storage
         public static async Task ExecuteAppOperations(IEnumerable<AppEntity> apps, Func<AppEntity, TableOperation[]> operationGenerator, int retries = -1)
         {
             CommonEventSource.Log.ExecuteOperationsStart();
-            var table = GetCloudTableClient(retries).GetTableReference(SteamToHltbTableName);
-            await table.CreateIfNotExistsAsync().ConfigureAwait(false);
+            var table = await GetSteamToHltbTable(retries);
 
             await SplitToBatchOperations(apps, operationGenerator).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, async tboi =>
             {
@@ -120,12 +128,35 @@ namespace Common.Storage
                 throw new ArgumentNullException("suggestion");
             }
 
-            var table = GetCloudTableClient(retries).GetTableReference(SteamToHltbTableName);
-            await table.CreateIfNotExistsAsync().ConfigureAwait(false);
+            var table = await GetSteamToHltbTable(retries);
 
             CommonEventSource.Log.InsertSuggestionStart(suggestion.SteamAppId, suggestion.HltbId);
             await table.ExecuteAsync(TableOperation.InsertOrReplace(suggestion)).ConfigureAwait(false);
             CommonEventSource.Log.InsertSuggestionStop(suggestion.SteamAppId, suggestion.HltbId);
+        }
+
+        public static async Task DeleteSuggestion([NotNull] SuggestionEntity suggestion, int retries = -1)
+        {
+            if (suggestion == null) throw new ArgumentNullException("suggestion");
+
+            var table = await GetSteamToHltbTable(retries);
+
+            CommonEventSource.Log.DeleteSuggestionStart(suggestion.SteamAppId, suggestion.HltbId);
+            await table.ExecuteAsync(TableOperation.Delete(suggestion)).ConfigureAwait(false);
+            CommonEventSource.Log.DeleteSuggestionStop(suggestion.SteamAppId, suggestion.HltbId);
+        }
+
+        public static async Task AcceptSuggestion([NotNull] AppEntity app, [NotNull] SuggestionEntity suggestion, int retries = -1)
+        {
+            if (app == null) throw new ArgumentNullException("app");
+            if (suggestion == null) throw new ArgumentNullException("suggestion");
+
+            var table = await GetSteamToHltbTable(retries);
+
+            CommonEventSource.Log.AcceptSuggestionStart(suggestion.SteamAppId, suggestion.HltbId);
+            app.HltbId = suggestion.HltbId;
+            await table.ExecuteBatchAsync(new TableBatchOperation {TableOperation.Replace(app), TableOperation.Delete(suggestion)});
+            CommonEventSource.Log.AcceptSuggestionStop(suggestion.SteamAppId, suggestion.HltbId);
         }
 
         private static IEnumerable<TableBatchOperationInfo> SplitToBatchOperations(
@@ -190,6 +221,13 @@ namespace Common.Storage
                 cloudTableClient.DefaultRequestOptions.RetryPolicy = new ExponentialRetry(DefaultDeltaBackoff, retries);
             }
             return cloudTableClient;
+        }
+
+        private static async Task<CloudTable> GetSteamToHltbTable(int retries)
+        {
+            var table = GetCloudTableClient(retries).GetTableReference(SteamToHltbTableName);
+            await table.CreateIfNotExistsAsync().ConfigureAwait(false);
+            return table;
         }
 
         public static CloudBlobClient GetCloudBlobClient(int retries)
