@@ -29,7 +29,7 @@ namespace Common.Storage
         private static readonly TimeSpan DefaultDeltaBackoff = TimeSpan.FromSeconds(4);
 
         //https://msdn.microsoft.com/en-us/library/azure/dd179338.aspx
-        public static string CleanStringForTableKey(string str)
+        public static string CleanStringForTableKey(string text)
         {
             var disallowedChars = new HashSet<char>(new[] { '/', '\\', '#', '?' });
 
@@ -43,7 +43,7 @@ namespace Common.Storage
                 disallowedChars.Add(i);
             }
 
-            return SiteUtil.CleanString(str, disallowedChars);
+            return SiteUtil.CleanString(text, disallowedChars);
         }
 
         public static async Task<ConcurrentBag<T>> GetAllApps<T>(Func<AppEntity, T> selector, string rowFilter = null, int retries = -1)
@@ -134,7 +134,20 @@ namespace Common.Storage
                 var final = tboi.Final ? "(final)" : String.Empty;
 
                 CommonEventSource.Log.ExecuteBucketBatchOperationStart(tboi.Bucket, tboi.Batch, final);
-                await table.ExecuteBatchAsync(tboi.Operation).ConfigureAwait(false);
+                try
+                {
+                    await table.ExecuteBatchAsync(tboi.Operation).ConfigureAwait(false);
+                }
+                catch (StorageException e)
+                {
+                    CommonEventSource.Log.ErrorExecutingBucketBatchOperation(
+                        e, 
+                        e.RequestInformation.HttpStatusCode, 
+                        e.RequestInformation.ExtendedErrorInformation.ErrorCode,
+                        e.RequestInformation.ExtendedErrorInformation.ErrorMessage, 
+                        tboi.Operation);
+                    throw;
+                }
                 CommonEventSource.Log.ExecuteBucketBatchOperationStop(tboi.Bucket, tboi.Batch, final);
 
             }, false).ConfigureAwait(false);

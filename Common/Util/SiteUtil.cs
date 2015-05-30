@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -15,9 +16,16 @@ namespace Common.Util
 {
     public static class SiteUtil
     {
-        public static string CleanString(string str, HashSet<char> disallowedChars)
+        public static T GetNonPublicInstancePropertyValue<T>([NotNull] object instance, string propName)
         {
-            return new String(str.Where(c => !disallowedChars.Contains(c)).ToArray());
+            if (instance == null) throw new ArgumentNullException("instance");
+
+            return (T)instance.GetType().GetProperty(propName, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(instance, null);
+        }
+
+        public static string CleanString(string text, HashSet<char> disallowedChars)
+        {
+            return new String(text.Where(c => !disallowedChars.Contains(c)).ToArray());
         }
 
         public static TValue GetOrCreate<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
@@ -38,10 +46,12 @@ namespace Common.Util
         }
 
         //http://blogs.msdn.com/b/pfxteam/archive/2012/03/05/10278165.aspx
-        public static Task ForEachAsync<T>(this IEnumerable<T> collection, int maxDegreeOfConcurrency, Func<T, Task> taskFactory, bool failEarly=true)
+        public static async Task ForEachAsync<T>(this IEnumerable<T> collection, int maxDegreeOfConcurrency, Func<T, Task> taskFactory, bool failEarly=true)
         {
             var cts = new CancellationTokenSource();
-            return Task.WhenAll(Partitioner.Create(collection).GetPartitions(maxDegreeOfConcurrency).Select(partition => Task.Run(async delegate
+            var exceptions = new ConcurrentBag<Exception>();
+
+            await Task.WhenAll(Partitioner.Create(collection).GetPartitions(maxDegreeOfConcurrency).Select(partition => Task.Run(async delegate
                     {
                         using (partition)
                         {
@@ -52,17 +62,24 @@ namespace Common.Util
                                 {
                                     await taskFactory(partition.Current).ConfigureAwait(false);
                                 }
-                                catch (Exception)
+                                catch (Exception e)
                                 {
                                     if (failEarly)
                                     {
                                         cts.Cancel();
+                                        throw;
                                     }
-                                    throw;
+
+                                    exceptions.Add(e);
                                 }
                             }
                         }
                     }, cts.Token)));
+
+            if (exceptions.Count > 0)
+            {
+                throw new AggregateException(exceptions);
+            }
         }
 
         private const char ListSeparator = ';';

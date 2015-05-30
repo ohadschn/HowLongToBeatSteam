@@ -1,6 +1,12 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
+using System.Globalization;
+using System.Linq;
 using Common.Entities;
+using Common.Storage;
+using JetBrains.Annotations;
+using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Common.Logging
 {
@@ -13,7 +19,7 @@ namespace Common.Logging
         }
 
 // ReSharper disable ConvertToStaticClass
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
+        [SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
         public sealed class Keywords
         {
             private Keywords() {}
@@ -22,7 +28,7 @@ namespace Common.Logging
             public const EventKeywords TableStorage = (EventKeywords)4;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
+        [SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
         public sealed class Tasks
         {
             private Tasks() { }
@@ -348,6 +354,30 @@ namespace Common.Logging
         public void InsertSuggestionStart(int steamAppId, int hltbId)
         {
             WriteEvent(18, steamAppId, hltbId);
+        }
+
+        [NonEvent]
+        public void ErrorExecutingBucketBatchOperation(
+            [NotNull] Exception exception, 
+            int statusCode, string errorCode, string errorMessage,
+            [NotNull] TableBatchOperation batchOperation)
+        {
+            if (exception == null) throw new ArgumentNullException("exception");
+            if (batchOperation == null) throw new ArgumentNullException("batchOperation");
+
+            ErrorExecutingBucketBatchOperation(exception.ToString(), statusCode, errorCode, errorMessage, String.Join(Environment.NewLine,
+                    batchOperation.Select((o, i) => String.Format(CultureInfo.InvariantCulture, 
+                        "[{0}] Type: {1} Partition: {2} Row: {3}", i, o.GetTableOperationType(), o.GetPartitionKey(), o.GetRowKey()))));
+        }
+
+        [Event(
+            100,
+            Message = "Error executing batch operation: {0}. Status code: {1}. Error code: {2}. Error message: {3}. Batch contents: {4}",
+            Keywords = Keywords.TableStorage,
+            Level = EventLevel.Error)]
+        private void ErrorExecutingBucketBatchOperation(string exception, int statusCode, string errorCode, string errorMessage, string batchContents)
+        {
+            WriteEvent(100, exception, statusCode, errorCode, errorMessage, batchContents);
         }
 
         [Event(

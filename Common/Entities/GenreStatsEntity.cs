@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Common.Storage;
 using JetBrains.Annotations;
 using Microsoft.WindowsAzure.Storage.Table;
@@ -9,11 +10,11 @@ namespace Common.Entities
     {
         public static string GetDecoratedGenre(string genre, string gameType)
         {
-            return String.Format("{0} ({1})", genre, gameType);
+            return String.Format(CultureInfo.InvariantCulture, "{0} ({1})", genre, gameType);
         }
 
         public string Genre { get; set; }
-        public string Type { get; set; }
+        public string AppType { get; set; }
         public int MainAverage { get; set; }
         public int ExtrasAverage { get; set; }
         public int CompletionistAverage { get; set; }
@@ -25,14 +26,14 @@ namespace Common.Entities
         {
         }
 
-        public GenreStatsEntity([NotNull] string genre, [NotNull] string type)
-            : base("GenreStats", StorageHelper.CleanStringForTableKey(GetDecoratedGenre(genre, type))) 
+        public GenreStatsEntity([NotNull] string genre, [NotNull] string appType)
+            : base("GenreStats", StorageHelper.CleanStringForTableKey(GetDecoratedGenre(genre, appType))) 
         {
             if (genre == null) throw new ArgumentNullException("genre");
-            if (type == null) throw new ArgumentNullException("type");
+            if (appType == null) throw new ArgumentNullException("appType");
 
             Genre = genre;
-            Type = type;
+            AppType = appType;
         }
     }
 }
