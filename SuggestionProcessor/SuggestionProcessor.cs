@@ -64,7 +64,7 @@ namespace SuggestionProcessor
             }).Unwrap();
 
             var apps = new Dictionary<long, AppEntity>();
-            var appsTask = StorageHelper.GetAllApps(a => a, AppEntity.MeasuredFilter).ContinueWith(t =>
+            var appsTask = StorageHelper.GetAllApps(AppEntity.MeasuredFilter).ContinueWith(t =>
             {
                 Console.WriteLine("Populating apps dictionary...");
                 foreach (var app in t.Result)

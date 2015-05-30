@@ -16,7 +16,7 @@ namespace Common.Util
 {
     public static class SiteUtil
     {
-        public static T GetNonPublicInstancePropertyValue<T>([NotNull] object instance, string propName)
+        public static T GetNonpublicInstancePropertyValue<T>([NotNull] object instance, string propName)
         {
             if (instance == null) throw new ArgumentNullException("instance");
 

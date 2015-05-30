@@ -35,10 +35,10 @@ namespace Common.Logging
             public const EventTask RetrieveMissingStoreInformation = (EventTask)1;
             public const EventTask RetrieveStoreInformation = (EventTask)2;
             public const EventTask QueryAllApps = (EventTask)3;
-            public const EventTask RetrieveBucketBatchMappings = (EventTask)4;
-            public const EventTask ProcessBucketBatch = (EventTask)5;
+            public const EventTask RetrievePartitionBatchMappings = (EventTask)4;
+            public const EventTask ProcessPartitionBatch = (EventTask)5;
             public const EventTask ExecuteOperations = (EventTask)6;
-            public const EventTask ExecuteBucketBatchOperation = (EventTask)7;
+            public const EventTask ExecutePartitionBatchOperation = (EventTask)7;
             public const EventTask InsertSuggestion = (EventTask)8;
             public const EventTask QueryAllSuggestions = (EventTask) 9;
             public const EventTask DeleteSuggestion = (EventTask) 10;
@@ -238,50 +238,50 @@ namespace Common.Logging
 
         [Event(
             10,
-            Message = "Start retrieving mappings for bucket {0} / batch {1} from table storage",
+            Message = "Start retrieving mappings for partition {0} / batch {1} from table storage",
             Keywords = Keywords.TableStorage,
             Level = EventLevel.Informational,
-            Task = Tasks.RetrieveBucketBatchMappings,
+            Task = Tasks.RetrievePartitionBatchMappings,
             Opcode = EventOpcode.Start)]
-        public void RetrieveBucketBatchMappingsStart(int bucket, int batch)
+        public void RetrievePartitionBatchMappingsStart(string partition, int batch)
         {
-            WriteEvent(10, bucket, batch);
+            WriteEvent(10, partition, batch);
         }
 
         [Event(
             11,
-            Message = "Finished retrieving mappings for bucket {0} / batch {1} from table storage",
+            Message = "Finished retrieving mappings for partition {0} / batch {1} from table storage",
             Keywords = Keywords.TableStorage,
             Level = EventLevel.Informational,
-            Task = Tasks.RetrieveBucketBatchMappings,
+            Task = Tasks.RetrievePartitionBatchMappings,
             Opcode = EventOpcode.Stop)]
-        public void RetrieveBucketBatchMappingsStop(int bucket, int batch)
+        public void RetrievePartitionBatchMappingsStop(string partition, int batch)
         {
-            WriteEvent(11, bucket, batch);
+            WriteEvent(11, partition, batch);
         }
 
         [Event(
             12,
-            Message = "Start processing app entity bucket {0} / batch {1}",
+            Message = "Start processing app entity partition {0} / batch {1}",
             Keywords = Keywords.TableStorage,
             Level = EventLevel.Informational,
-            Task = Tasks.ProcessBucketBatch,
+            Task = Tasks.ProcessPartitionBatch,
             Opcode = EventOpcode.Start)]
-        public void ProcessBucketBatchStart(int bucket, int batch)
+        public void ProcessPartitionBatchStart(string partition, int batch)
         {
-            WriteEvent(12, bucket, batch);
+            WriteEvent(12, partition, batch);
         }
 
         [Event(
             13,
-            Message = "Finished processing app entity bucket {0} / batch {1}",
+            Message = "Finished processing app entity partition {0} / batch {1}",
             Keywords = Keywords.TableStorage,
             Level = EventLevel.Informational,
-            Task = Tasks.ProcessBucketBatch,
+            Task = Tasks.ProcessPartitionBatch,
             Opcode = EventOpcode.Stop)]
-        public void ProcessBucketBatchStop(int bucket, int batch)
+        public void ProcessPartitionBatchStop(string partition, int batch)
         {
-            WriteEvent(13, bucket, batch);
+            WriteEvent(13, partition, batch);
         }
 
         [Event(
@@ -309,39 +309,39 @@ namespace Common.Logging
         }
 
         [NonEvent]
-        public void ExecuteBucketBatchOperationStart(string bucket, int batch, string final)
+        public void ExecutePartitionBatchOperationStart(string partition, int batch, string final)
         {
-            ExecuteBucketBatchOperationStart(final, bucket, batch);
+            ExecutePartitionBatchOperationStart(final, partition, batch);
         }
 
         [Event(
             16,
-            Message = "Start executing batch operation for bucket {1} / batch {2} {0}",
+            Message = "Start executing batch operation for partition {1} / batch {2} {0}",
             Keywords = Keywords.TableStorage,
             Level = EventLevel.Informational,
-            Task = Tasks.ExecuteBucketBatchOperation,
+            Task = Tasks.ExecutePartitionBatchOperation,
             Opcode = EventOpcode.Start)]
-        private void ExecuteBucketBatchOperationStart(string final, string bucket, int batch)
+        private void ExecutePartitionBatchOperationStart(string final, string partition, int batch)
         {
-            WriteEvent(16, final, bucket, batch);
+            WriteEvent(16, final, partition, batch);
         }
 
         [NonEvent]
-        public void ExecuteBucketBatchOperationStop(string bucket, int batch, string final)
+        public void ExecutePartitionBatchOperationStop(string partition, int batch, string final)
         {
-            ExecuteBucketBatchOperationStop(final, bucket, batch);
+            ExecutePartitionBatchOperationStop(final, partition, batch);
         }
 
         [Event(
             17,
-            Message = "Finished executing batch operation for bucket {1} / batch {2} {0}",
+            Message = "Finished executing batch operation for partition {1} / batch {2} {0}",
             Keywords = Keywords.TableStorage,
             Level = EventLevel.Informational,
-            Task = Tasks.ExecuteBucketBatchOperation,
+            Task = Tasks.ExecutePartitionBatchOperation,
             Opcode = EventOpcode.Stop)]
-        private void ExecuteBucketBatchOperationStop(string final, string bucket, int batch)
+        private void ExecutePartitionBatchOperationStop(string final, string partition, int batch)
         {
-            WriteEvent(17, final, bucket, batch);
+            WriteEvent(17, final, partition, batch);
         }
 
         [Event(
@@ -357,7 +357,7 @@ namespace Common.Logging
         }
 
         [NonEvent]
-        public void ErrorExecutingBucketBatchOperation(
+        public void ErrorExecutingPartitionBatchOperation(
             [NotNull] Exception exception, 
             int statusCode, string errorCode, string errorMessage,
             [NotNull] TableBatchOperation batchOperation)
@@ -365,7 +365,7 @@ namespace Common.Logging
             if (exception == null) throw new ArgumentNullException("exception");
             if (batchOperation == null) throw new ArgumentNullException("batchOperation");
 
-            ErrorExecutingBucketBatchOperation(exception.ToString(), statusCode, errorCode, errorMessage, String.Join(Environment.NewLine,
+            ErrorExecutingPartitionBatchOperation(exception.ToString(), statusCode, errorCode, errorMessage, String.Join(Environment.NewLine,
                     batchOperation.Select((o, i) => String.Format(CultureInfo.InvariantCulture, 
                         "[{0}] Type: {1} Partition: {2} Row: {3}", i, o.GetTableOperationType(), o.GetPartitionKey(), o.GetRowKey()))));
         }
@@ -375,7 +375,7 @@ namespace Common.Logging
             Message = "Error executing batch operation: {0}. Status code: {1}. Error code: {2}. Error message: {3}. Batch contents: {4}",
             Keywords = Keywords.TableStorage,
             Level = EventLevel.Error)]
-        private void ErrorExecutingBucketBatchOperation(string exception, int statusCode, string errorCode, string errorMessage, string batchContents)
+        private void ErrorExecutingPartitionBatchOperation(string exception, int statusCode, string errorCode, string errorMessage, string batchContents)
         {
             WriteEvent(100, exception, statusCode, errorCode, errorMessage, batchContents);
         }

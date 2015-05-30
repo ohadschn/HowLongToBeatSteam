@@ -82,7 +82,7 @@ namespace ManualTableUpdater.Updater
 
         private static void SerializeAllAppsToFile()
         {
-            var appData = StorageHelper.GetAllApps(a => a).Result.Select(a =>
+            var appData = StorageHelper.GetAllApps().Result.Select(a =>
                 new AppEntityData(a.SteamAppId, a.SteamName, a.AppType, a.Platforms, a.Categories.ToArray(), a.Genres.ToArray(),
                     a.Developers.ToArray(), a.Publishers.ToArray(), a.ReleaseDate, a.MetacriticScore)).ToArray();
 
@@ -94,7 +94,7 @@ namespace ManualTableUpdater.Updater
 
         private static void PrintGenres()
         {
-            var measured = StorageHelper.GetAllApps(e => e, AppEntity.MeasuredFilter).Result;
+            var measured = StorageHelper.GetAllApps(AppEntity.MeasuredFilter).Result;
             foreach (var genre in measured.Select(a => a.Genres.First()).Distinct())
             {
                 Console.WriteLine(genre);
@@ -112,7 +112,7 @@ namespace ManualTableUpdater.Updater
                 Console.WriteLine("{0}: {1} | {2}", app.SteamName, app.GenresFlat, app.CategoriesFlat);
             }
 
-            foreach (var app in StorageHelper.GetAllApps(a => a).Result
+            foreach (var app in StorageHelper.GetAllApps().Result
                 .Where(a => a.Genres.Contains("Massively Multiplayer", StringComparer.OrdinalIgnoreCase) && a.Measured && a.Categories.Contains("Single-player", StringComparer.OrdinalIgnoreCase)))
             {
                 Console.WriteLine("{10} / {0} ({9}): {1}/{2}/{3} ({4}/{5}/{6}) | {7} | {8}",
@@ -128,7 +128,7 @@ namespace ManualTableUpdater.Updater
             {
                 writer.WriteLine(
                     "SteamID\tSteamName\tType\tGenres\tCategories\tHltbID\tHltbName\tMain\tMainImputed\tExtras\tExtrasImputed\tCompletionist\tCompletionistImputed\tDevelopers\tPublishers\tPlatforms\tMetacritic\tReleaseDate");
-                foreach (var app in StorageHelper.GetAllApps(a => a, AppEntity.MeasuredFilter).Result)
+                foreach (var app in StorageHelper.GetAllApps(AppEntity.MeasuredFilter).Result)
                 {
                     writer.WriteLine(
                         "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}",

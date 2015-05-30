@@ -49,8 +49,7 @@ namespace SteamHltbScraper.Scraper
         {
             SiteUtil.SetDefaultConnectionLimit();
 
-            var allApps = (await StorageHelper.GetAllApps(e => e, AppEntity.MeasuredFilter, StorageRetries).ConfigureAwait(false))
-                .Take(ScrapingLimit).ToArray();
+            var allApps = (await StorageHelper.GetAllApps(AppEntity.MeasuredFilter, StorageRetries).ConfigureAwait(false)).Take(ScrapingLimit).ToArray();
 
             await ScrapeHltb(allApps);
 

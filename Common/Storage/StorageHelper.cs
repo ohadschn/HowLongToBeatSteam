@@ -46,43 +46,42 @@ namespace Common.Storage
             return SiteUtil.CleanString(text, disallowedChars);
         }
 
-        public static async Task<ConcurrentBag<T>> GetAllApps<T>(Func<AppEntity, T> selector, string rowFilter = null, int retries = -1)
+        public static async Task<ConcurrentBag<AppEntity>> GetAllApps(string rowFilter = null, int retries = -1)
         {
-            rowFilter = rowFilter ?? SuggestionEntity.NotSuggestionFilter;
-            var knownSteamIds = new ConcurrentBag<T>();
+            rowFilter = rowFilter ?? SuggestionEntity.NonSuggestionFilter;
 
-            CommonEventSource.Log.QueryAllAppsStart(rowFilter ?? "(none)");
-            await QueryAllTableEntities<AppEntity>(
-                (segment, bucket) => knownSteamIds.AddRange(segment.Select(selector)), AppEntity.Buckets, rowFilter, retries).ConfigureAwait(false);
-            CommonEventSource.Log.QueryAllAppsStop(rowFilter ?? "(none)", knownSteamIds.Count);
+            CommonEventSource.Log.QueryAllAppsStart(rowFilter);
+            var knownSteamIds = await QueryAllTableEntities<AppEntity>(SteamToHltbTableName, AppEntity.GetPartitions(), rowFilter, retries)
+                .ConfigureAwait(false);
+            CommonEventSource.Log.QueryAllAppsStop(rowFilter, knownSteamIds.Count);
             
             return knownSteamIds;
         }
 
-        public static async Task<ConcurrentBag<SuggestionEntity>> GetAllSuggestions(int retries = -1)
+        public static async Task<ConcurrentBag<SuggestionEntity>> GetAllSuggestions(string rowFilter = null, int retries = -1)
         {
-            var suggestions = new ConcurrentBag<SuggestionEntity>();
+            rowFilter = rowFilter ?? SuggestionEntity.SuggestionFilter;
 
             CommonEventSource.Log.QueryAllSuggestionsStart(SuggestionEntity.SuggestionFilter);
-            await QueryAllTableEntities<SuggestionEntity>(
-                (segment, bucket) => suggestions.AddRange(segment), SuggestionEntity.Buckets, SuggestionEntity.SuggestionFilter, retries)
+            var suggestions = await QueryAllTableEntities<SuggestionEntity>(SteamToHltbTableName, SuggestionEntity.GetPartitions(), rowFilter, retries)
                 .ConfigureAwait(false);
             CommonEventSource.Log.QueryAllSuggestionsStop(SuggestionEntity.SuggestionFilter, suggestions.Count);
 
             return suggestions;
         }
 
-        //segmentHandler(segment, bucket) will be called synchronously for each bucket but parallel across buckets
-        public static async Task QueryAllTableEntities<T>(Action<TableQuerySegment<T>, int> segmentHandler, int buckets, string rowFilter = null, int retries = -1)
+        private static async Task<ConcurrentBag<T>> QueryAllTableEntities<T>(
+            string tableName, ICollection<string> partitionKeys, string rowFilter = "", int retries = -1)
             where T : ITableEntity, new()
         {
-            rowFilter = rowFilter ?? SuggestionEntity.NotSuggestionFilter;
-            var table = await GetSteamToHltbTable(retries);
+            var allEntities = new ConcurrentBag<T>();
 
-            await Enumerable.Range(0, buckets).ForEachAsync(buckets, async bucket =>
+            var table = await GetTable(tableName, retries);
+
+            await partitionKeys.ForEachAsync(partitionKeys.Count, async partition =>
             {
                 var partitionFilter = 
-                    TableQuery.GenerateFilterCondition(PartitionKey, QueryComparisons.Equal, bucket.ToString(CultureInfo.InvariantCulture));
+                    TableQuery.GenerateFilterCondition(PartitionKey, QueryComparisons.Equal, partition.ToString(CultureInfo.InvariantCulture));
 
                 var filter = String.IsNullOrWhiteSpace(rowFilter)
                     ? partitionFilter
@@ -94,53 +93,68 @@ namespace Common.Storage
                 int batch = 1;
                 while (currentSegment == null || currentSegment.ContinuationToken != null)
                 {
-                    CommonEventSource.Log.RetrieveBucketBatchMappingsStart(bucket, batch);
+                    CommonEventSource.Log.RetrievePartitionBatchMappingsStart(partition, batch);
                     currentSegment = await table.ExecuteQuerySegmentedAsync(query, currentSegment != null ? currentSegment.ContinuationToken : null).ConfigureAwait(false);
-                    CommonEventSource.Log.RetrieveBucketBatchMappingsStop(bucket, batch);
+                    CommonEventSource.Log.RetrievePartitionBatchMappingsStop(partition, batch);
 
-                    CommonEventSource.Log.ProcessBucketBatchStart(bucket, batch);
-                    segmentHandler(currentSegment, bucket);
-                    CommonEventSource.Log.ProcessBucketBatchStop(bucket, batch);
+                    CommonEventSource.Log.ProcessPartitionBatchStart(partition, batch);
+                    allEntities.AddRange(currentSegment);
+                    CommonEventSource.Log.ProcessPartitionBatchStop(partition, batch);
 
                     batch++;
                 }
             }).ConfigureAwait(false);
 
+            return allEntities;
         }
 
-        public static Task Replace<T>(IEnumerable<T> entities, int retries = -1, string tableName = null) where T : ITableEntity
+        public static Task Replace<T>([NotNull] IEnumerable<T> entities, int retries = -1, string tableName = null) where T : ITableEntity
         {
-            return ExecuteOperations(entities, e => new[] { TableOperation.Replace(e) }, retries, tableName);
+            if (entities == null) throw new ArgumentNullException("entities");
+
+            return ExecuteOperations(entities, e => new[] { TableOperation.Replace(e) }, tableName ?? SteamToHltbTableName, retries);
         }
 
-        public static Task Insert<T>(IEnumerable<T> entities, int retries = -1, string tableName = null) where T : ITableEntity
+        public static Task Insert<T>([NotNull] IEnumerable<T> entities, int retries = -1, string tableName = null) where T : ITableEntity
         {
-            return ExecuteOperations(entities, e => new[] { TableOperation.Insert(e) }, retries, tableName);
+            if (entities == null) throw new ArgumentNullException("entities");
+
+            return ExecuteOperations(entities, e => new[] { TableOperation.Insert(e) }, tableName ?? SteamToHltbTableName, retries);
         }
 
-        public static Task InsertOrReplace<T>(IEnumerable<T> entities, int retries = -1, string tableName = null) where T : ITableEntity
+        public static Task InsertOrReplace<T>([NotNull] IEnumerable<T> entities, int retries = -1, string tableName = null) where T : ITableEntity
         {
-            return ExecuteOperations(entities, e => new[] { TableOperation.InsertOrReplace(e) }, retries, tableName);
+            if (entities == null) throw new ArgumentNullException("entities");
+
+            return ExecuteOperations(entities, e => new[] { TableOperation.InsertOrReplace(e) }, tableName ?? SteamToHltbTableName, retries);
         }
 
-        public static async Task ExecuteOperations<T>(IEnumerable<T> entities, Func<T, TableOperation[]> operationGenerator, int retries = -1, string tableName = null)
+        public static async Task ExecuteOperations<T>(
+            [NotNull] IEnumerable<T> entities,
+            [NotNull] Func<T, TableOperation[]> operationGenerator, 
+            [NotNull] string tableName, 
+            int retries = -1)
             where T : ITableEntity
         {
+            if (entities == null) throw new ArgumentNullException("entities");
+            if (operationGenerator == null) throw new ArgumentNullException("operationGenerator");
+            if (tableName == null) throw new ArgumentNullException("tableName");
+
             CommonEventSource.Log.ExecuteOperationsStart();
-            var table = await GetSteamToHltbTable(retries, tableName);
+            var table = await GetTable(tableName, retries);
 
             await SplitToBatchOperations(entities, operationGenerator).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, async tboi =>
             {
                 var final = tboi.Final ? "(final)" : String.Empty;
 
-                CommonEventSource.Log.ExecuteBucketBatchOperationStart(tboi.Bucket, tboi.Batch, final);
+                CommonEventSource.Log.ExecutePartitionBatchOperationStart(tboi.Partition, tboi.Batch, final);
                 try
                 {
                     await table.ExecuteBatchAsync(tboi.Operation).ConfigureAwait(false);
                 }
                 catch (StorageException e)
                 {
-                    CommonEventSource.Log.ErrorExecutingBucketBatchOperation(
+                    CommonEventSource.Log.ErrorExecutingPartitionBatchOperation(
                         e, 
                         e.RequestInformation.HttpStatusCode, 
                         e.RequestInformation.ExtendedErrorInformation.ErrorCode,
@@ -148,7 +162,7 @@ namespace Common.Storage
                         tboi.Operation);
                     throw;
                 }
-                CommonEventSource.Log.ExecuteBucketBatchOperationStop(tboi.Bucket, tboi.Batch, final);
+                CommonEventSource.Log.ExecutePartitionBatchOperationStop(tboi.Partition, tboi.Batch, final);
 
             }, false).ConfigureAwait(false);
             CommonEventSource.Log.ExecuteOperationsStop();
@@ -156,12 +170,9 @@ namespace Common.Storage
 
         public static async Task InsertSuggestion(SuggestionEntity suggestion, int retries = -1)
         {
-            if (suggestion == null)
-            {
-                throw new ArgumentNullException("suggestion");
-            }
+            if (suggestion == null) throw new ArgumentNullException("suggestion");
 
-            var table = await GetSteamToHltbTable(retries);
+            var table = await GetTable(SteamToHltbTableName, retries);
 
             CommonEventSource.Log.InsertSuggestionStart(suggestion.SteamAppId, suggestion.HltbId);
             await table.ExecuteAsync(TableOperation.InsertOrReplace(suggestion)).ConfigureAwait(false);
@@ -172,7 +183,7 @@ namespace Common.Storage
         {
             if (suggestion == null) throw new ArgumentNullException("suggestion");
 
-            var table = await GetSteamToHltbTable(retries);
+            var table = await GetTable(SteamToHltbTableName, retries);
 
             CommonEventSource.Log.DeleteSuggestionStart(suggestion.SteamAppId, suggestion.HltbId);
             await table.ExecuteAsync(TableOperation.Delete(suggestion)).ConfigureAwait(false);
@@ -184,7 +195,7 @@ namespace Common.Storage
             if (app == null) throw new ArgumentNullException("app");
             if (suggestion == null) throw new ArgumentNullException("suggestion");
 
-            var table = await GetSteamToHltbTable(retries);
+            var table = await GetTable(SteamToHltbTableName, retries);
 
             CommonEventSource.Log.AcceptSuggestionStart(suggestion.SteamAppId, suggestion.HltbId);
             app.HltbId = suggestion.HltbId;
@@ -199,7 +210,7 @@ namespace Common.Storage
             var allOperations = new Dictionary<string, List<TableBatchOperationInfo>> ();
             foreach (var appGroup in entities.GroupBy(ae => ae.PartitionKey))
             {
-                string bucket = appGroup.Key;
+                string partition = appGroup.Key;
                 int batch = 1;
                 var batchOperation = new TableBatchOperation();
                 foreach (var appEntity in appGroup)
@@ -213,7 +224,7 @@ namespace Common.Storage
 
                     if (batchOperation.Count + operations.Length > MaxBatchOperations)
                     {
-                        allOperations.GetOrCreate(bucket).Add(new TableBatchOperationInfo(bucket, batch++, false, batchOperation));
+                        allOperations.GetOrCreate(partition).Add(new TableBatchOperationInfo(partition, batch++, false, batchOperation));
                         batchOperation = new TableBatchOperation();
                     }
 
@@ -225,29 +236,35 @@ namespace Common.Storage
 
                 if (batchOperation.Count != 0)
                 {
-                    allOperations.GetOrCreate(bucket).Add(new TableBatchOperationInfo(bucket, batch, true, batchOperation));
+                    allOperations.GetOrCreate(partition).Add(new TableBatchOperationInfo(partition, batch, true, batchOperation));
                 }
             }
             return allOperations.Values.Interleave();
         }
 
-        public static string StartsWithFilter(string propertyName, string value)
+        public static string StartsWithFilter([NotNull] string propertyName, [NotNull] string value)
         {
+            if (propertyName == null) throw new ArgumentNullException("propertyName");
+            if (value == null) throw new ArgumentNullException("value");
+
             return TableQuery.CombineFilters(
                 TableQuery.GenerateFilterCondition(propertyName, QueryComparisons.GreaterThanOrEqual, value),
                 TableOperators.And,
                 TableQuery.GenerateFilterCondition(propertyName, QueryComparisons.LessThan, IncrementLastChar(value)));
         }
 
-        public static string DoesNotStartWithFilter(string propertyName, string value)
+        public static string DoesNotStartWithFilter([NotNull] string propertyName, [NotNull] string value)
         {
+            if (propertyName == null) throw new ArgumentNullException("propertyName");
+            if (value == null) throw new ArgumentNullException("value");
+
             return TableQuery.CombineFilters(
                 TableQuery.GenerateFilterCondition(propertyName, QueryComparisons.LessThan, value),
                 TableOperators.Or,
                 TableQuery.GenerateFilterCondition(propertyName, QueryComparisons.GreaterThanOrEqual, IncrementLastChar(value)));
         }
 
-        private static CloudTableClient GetCloudTableClient(int retries)
+        private static CloudTableClient GetCloudTableClient(int retries = -1)
         {
             var cloudTableClient = CloudStorageAccount.Parse(AzureStorageTablesConnectionString).CreateCloudTableClient();
             if (retries >= 0)
@@ -257,14 +274,14 @@ namespace Common.Storage
             return cloudTableClient;
         }
 
-        private static async Task<CloudTable> GetSteamToHltbTable(int retries, string tableName = null)
+        private static async Task<CloudTable> GetTable(string tableName, int retries)
         {
-            var table = GetCloudTableClient(retries).GetTableReference(tableName ?? SteamToHltbTableName);
+            var table = GetCloudTableClient(retries).GetTableReference(tableName);
             await table.CreateIfNotExistsAsync().ConfigureAwait(false);
             return table;
         }
 
-        public static CloudBlobClient GetCloudBlobClient(int retries)
+        public static CloudBlobClient GetCloudBlobClient(int retries = -1)
         {
             var cloudBlobClient = CloudStorageAccount.Parse(AzureStorageBlobConnectionString).CreateCloudBlobClient();
             if (retries >= 0)
@@ -284,14 +301,14 @@ namespace Common.Storage
 
         class TableBatchOperationInfo
         {
-            public string Bucket { get; private set; }
+            public string Partition { get; private set; }
             public int Batch { get; private set; }
             public bool Final { get; private set; }
             public TableBatchOperation Operation { get; private set; }
 
-            public TableBatchOperationInfo(string bucket, int batch, bool final, TableBatchOperation operation)
+            public TableBatchOperationInfo(string partition, int batch, bool final, TableBatchOperation operation)
             {
-                Bucket = bucket;
+                Partition = partition;
                 Batch = batch;
                 Final = final;
                 Operation = operation;

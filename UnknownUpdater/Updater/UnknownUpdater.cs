@@ -41,7 +41,7 @@ namespace UnknownUpdater.Updater
         {
             UnknownUpdaterEventSource.Log.UpdateUnknownAppsStart();
 
-            var apps = await StorageHelper.GetAllApps(ae => ae, AppEntity.UnknownFilter, StorageRetries).ConfigureAwait(false);
+            var apps = await StorageHelper.GetAllApps(AppEntity.UnknownFilter, StorageRetries).ConfigureAwait(false);
             
             var updates = new ConcurrentBag<AppEntity>();
             InvalidOperationException ioe = null;
@@ -59,7 +59,8 @@ namespace UnknownUpdater.Updater
 
             var appsDict = apps.ToDictionary(ae => ae.SteamAppId);
             await StorageHelper.ExecuteOperations(updates,
-                    ae => new[] { TableOperation.Delete(appsDict[ae.SteamAppId]), TableOperation.Insert(ae) }, StorageRetries).ConfigureAwait(false);
+                ae => new[] {TableOperation.Delete(appsDict[ae.SteamAppId]), TableOperation.Insert(ae)},
+                StorageHelper.SteamToHltbTableName, StorageRetries).ConfigureAwait(false);
 
             UnknownUpdaterEventSource.Log.UpdateUnknownAppsStop();
 

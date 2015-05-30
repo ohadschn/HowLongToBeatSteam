@@ -46,13 +46,13 @@ namespace HowLongToBeatSteam.Controllers
                 EventSource.SetCurrentThreadActivityId(Guid.NewGuid());
 
                 SiteEventSource.Log.UpdateCacheStart();
-                await StorageHelper.QueryAllTableEntities<AppEntity>((segment, bucket) =>
+
+                var allApps = await StorageHelper.GetAllApps(null, 100).ConfigureAwait(false); //we'll crash and get recycled after 100 failed attempts
+                foreach (var appEntity in allApps)
                 {
-                    foreach (var appEntity in segment)
-                    {
-                        Cache[appEntity.SteamAppId] = new SteamAppData(appEntity);
-                    }
-                }, AppEntity.Buckets, null, 100).ConfigureAwait(false); //we'll crash and get recycled after 100 failed attempts - something would have to be very wrong!
+                    Cache[appEntity.SteamAppId] = new SteamAppData(appEntity);
+                }
+                
                 SiteEventSource.Log.UpdateCacheStop(Cache.Count);
                 
                 await Task.Delay(TimeSpan.FromHours(1)).ConfigureAwait(false);

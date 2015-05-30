@@ -7,8 +7,6 @@ namespace Common.Entities
 {
     public class SuggestionEntity : TableEntity
     {
-        public static int Buckets { get { return AppEntity.Buckets; } }
-
         public const string SuggestionPrefix = "Suggestion";
         public int SteamAppId { get; set; }
         public int HltbId { get; set; }
@@ -34,9 +32,14 @@ namespace Common.Entities
             get { return StorageHelper.StartsWithFilter(StorageHelper.RowKey, SuggestionPrefix); }
         }
 
-        public static string NotSuggestionFilter
+        public static string NonSuggestionFilter
         {
             get { return StorageHelper.DoesNotStartWithFilter(StorageHelper.RowKey, SuggestionPrefix); }
+        }
+
+        public static string[] GetPartitions()
+        {
+            return AppEntity.GetPartitions();
         }
     }
 }

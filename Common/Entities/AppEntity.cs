@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Common.Storage;
@@ -21,7 +22,7 @@ namespace Common.Entities
     }
     public class AppEntity : TableEntity
     {
-        public const int Buckets = 20;
+        private const int Buckets = 20;
 
         public const string UnknownType = "Unknown";
         public const string MeasuredKey = "Measured";
@@ -199,6 +200,11 @@ namespace Common.Entities
         public override string ToString()
         {
             return string.Format(CultureInfo.InvariantCulture, "SteamAppId: {0}, SteamName: {1}, HltbId: {2}, HltbName: {3}, MainTtb: {4}, MainTtbImputed: {5}, ExtrasTtb: {6}, ExtrasTtbImputed: {7}, CompletionistTtb: {8}, CompletionistTtbImputed: {9}, AppType: {10}, Platforms: {11}, Categories: {12}, Genres: {13}, Developers: {14}, Publishers: {15}, ReleaseDate: {16}, MetacriticScore: {17}", SteamAppId, SteamName, HltbId, HltbName, MainTtb, MainTtbImputed, ExtrasTtb, ExtrasTtbImputed, CompletionistTtb, CompletionistTtbImputed, AppType, Platforms, CategoriesFlat, GenresFlat, DevelopersFlat, PublishersFlat, ReleaseDate, MetacriticScore);
+        }
+
+        public static string[] GetPartitions()
+        {
+            return Enumerable.Range(0, Buckets).Select(i => i.ToString(CultureInfo.InvariantCulture)).ToArray();
         }
     }
 }

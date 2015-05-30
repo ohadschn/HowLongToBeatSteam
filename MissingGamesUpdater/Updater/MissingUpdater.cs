@@ -44,12 +44,12 @@ namespace MissingGamesUpdater.Updater
             MissingUpdaterEventSource.Log.UpdateMissingGamesStart();
 
             var steamTask = GetAllSteamApps(s_client);
-            var tableTask = StorageHelper.GetAllApps(ae => ae.SteamAppId, null, StorageRetries);
+            var tableTask = StorageHelper.GetAllApps(null, StorageRetries);
             
             await Task.WhenAll(steamTask, tableTask).ConfigureAwait(false);
 
             var apps = steamTask.Result;
-            var knownSteamIds = tableTask.Result;
+            var knownSteamIds = tableTask.Result.Select(ae => ae.SteamAppId);
 
             var knownSteamIdsHash = new HashSet<int>(knownSteamIds);
             var missingApps = apps.Where(a => !knownSteamIdsHash.Contains(a.appid)).Take(UpdateLimit);
