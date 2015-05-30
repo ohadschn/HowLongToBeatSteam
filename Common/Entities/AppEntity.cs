@@ -60,6 +60,13 @@ namespace Common.Entities
             CompletionistTtb = ttb;
             CompletionistTtbImputed = imputed;
         }
+
+        public void FixTtbs(int mainTtb, int extrasTtb, int completionistTtb) //without altering imputation flags
+        {
+            MainTtb = mainTtb;
+            ExtrasTtb = extrasTtb;
+            CompletionistTtb = completionistTtb;
+        }
         public string AppType { get; set; }
         public bool IsGame { get { return String.Equals(AppType, GameTypeName, StringComparison.OrdinalIgnoreCase); }}
         public bool IsDlc { get { return String.Equals(AppType, DlcTypeName, StringComparison.OrdinalIgnoreCase); } }

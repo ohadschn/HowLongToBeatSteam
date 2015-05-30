@@ -48,26 +48,39 @@ namespace Common.Storage
 
         public static async Task<ConcurrentBag<AppEntity>> GetAllApps(string rowFilter = null, int retries = -1)
         {
+            const string entitiesType = "apps";
             rowFilter = rowFilter ?? SuggestionEntity.NonSuggestionFilter;
 
-            CommonEventSource.Log.QueryAllAppsStart(rowFilter);
+            CommonEventSource.Log.QueryAllEntitiesStart(entitiesType, rowFilter);
             var knownSteamIds = await QueryAllTableEntities<AppEntity>(SteamToHltbTableName, AppEntity.GetPartitions(), rowFilter, retries)
                 .ConfigureAwait(false);
-            CommonEventSource.Log.QueryAllAppsStop(rowFilter, knownSteamIds.Count);
+            CommonEventSource.Log.QueryAllEntitiesStop(entitiesType, rowFilter, knownSteamIds.Count);
             
             return knownSteamIds;
         }
 
         public static async Task<ConcurrentBag<SuggestionEntity>> GetAllSuggestions(string rowFilter = null, int retries = -1)
         {
+            const string entitiesType = "suggestions";
             rowFilter = rowFilter ?? SuggestionEntity.SuggestionFilter;
 
-            CommonEventSource.Log.QueryAllSuggestionsStart(SuggestionEntity.SuggestionFilter);
+            CommonEventSource.Log.QueryAllEntitiesStart(entitiesType, rowFilter);
             var suggestions = await QueryAllTableEntities<SuggestionEntity>(SteamToHltbTableName, SuggestionEntity.GetPartitions(), rowFilter, retries)
                 .ConfigureAwait(false);
-            CommonEventSource.Log.QueryAllSuggestionsStop(SuggestionEntity.SuggestionFilter, suggestions.Count);
+            CommonEventSource.Log.QueryAllEntitiesStop(entitiesType, rowFilter, suggestions.Count);
 
             return suggestions;
+        }
+
+        public static async Task<ConcurrentBag<GenreStatsEntity>> GetAllGenreStats(string rowFilter = "", int retries = -1)
+        {
+            const string entitiesType = "genre stats";
+
+            CommonEventSource.Log.QueryAllEntitiesStart(entitiesType, rowFilter);
+            var genreStats = await QueryAllTableEntities<GenreStatsEntity>(GenreStatsTableName, GenreStatsEntity.GetPartitions(), rowFilter, retries);
+            CommonEventSource.Log.QueryAllEntitiesStop(entitiesType, rowFilter, genreStats.Count);
+
+            return genreStats;
         }
 
         private static async Task<ConcurrentBag<T>> QueryAllTableEntities<T>(

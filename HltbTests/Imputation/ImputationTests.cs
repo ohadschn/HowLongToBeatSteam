@@ -16,43 +16,67 @@ namespace HltbTests.Imputation
         [TestMethod]
         public async Task TestImputation()
         {
+            var games = GetSampleGames();
+
+            await Imputer.Impute(games).ConfigureAwait(false);
+
+            AssertValidTtbs(games);
+        }
+
+        [TestMethod]
+        public async Task TestImputationFromGenreStats()
+        {
+            var games = GetSampleGames();
+
+            await Imputer.ImputeFromStats(games).ConfigureAwait(false);
+
+            AssertValidTtbs(games);
+        }
+
+        private static AppEntity[] GetSampleGames()
+        {
             int i = 1;
-            var apps = File.ReadLines("Imputation\\games.csv").Select(row =>
+            return File.ReadLines("Imputation\\games.csv").Select(row =>
             {
                 var gameValues = row.Split(',');
                 Trace.Assert(gameValues.Length == 5, "Invalid CSV row (must contain exactly 5 values) " + row);
 
-                var app = new AppEntity(i, "Game" + i.ToString(CultureInfo.InvariantCulture),
+                var game = new AppEntity(i, "Game" + i.ToString(CultureInfo.InvariantCulture),
                     Boolean.Parse(gameValues[0]) ? AppEntity.GameTypeName : AppEntity.DlcTypeName)
                 {
-                    Genres = new[] { gameValues[1]}
+                    Genres = new[] {gameValues[1]}
                 };
 
                 var mainTtb = Imputer.GetRoundedValue(gameValues[2]);
-                app.SetMainTtb(mainTtb, mainTtb == 0);
+                game.SetMainTtb(mainTtb, mainTtb == 0);
 
                 var extrasTtb = Imputer.GetRoundedValue(gameValues[3]);
-                app.SetExtrasTtb(extrasTtb, extrasTtb == 0);
+                game.SetExtrasTtb(extrasTtb, extrasTtb == 0);
 
                 var completionistTtb = Imputer.GetRoundedValue(gameValues[4]);
-                app.SetCompletionistTtb(completionistTtb, completionistTtb == 0);
+                game.SetCompletionistTtb(completionistTtb, completionistTtb == 0);
 
                 i++;
 
-                return app;
+                return game;
             }).ToArray();
+        }
 
-            await Imputer.Impute(apps).ConfigureAwait(false);
-
-            foreach (var app in apps)
+        private static void AssertValidTtbs(AppEntity[] games)
+        {
+            foreach (var game in games)
             {
-                Assert.IsTrue(app.MainTtb <= app.ExtrasTtb, 
-                    String.Format(CultureInfo.InvariantCulture, "Main {0} > Extras {1}", app.MainTtb, app.ExtrasTtb));
+                Assert.AreNotEqual(0, game.MainTtb, "Main TTB = 0");
+                Assert.AreNotEqual(0, game.ExtrasTtb, "Extras TTB = 0");
+                Assert.AreNotEqual(0, game.CompletionistTtb, "Completionist TTB = 0");
 
-                Assert.IsTrue(app.ExtrasTtb <= app.CompletionistTtb, 
-                    String.Format(CultureInfo.InvariantCulture, "Extras {0} > Completionist {1}", app.MainTtb, app.ExtrasTtb));
+                Assert.IsTrue(game.MainTtb <= game.ExtrasTtb,
+                    String.Format(CultureInfo.InvariantCulture, "Main {0} > Extras {1}", game.MainTtb, game.ExtrasTtb));
 
-                Console.WriteLine("{0} {1} {2}", app.MainTtb, app.ExtrasTtb, app.CompletionistTtb);
+                Assert.IsTrue(game.ExtrasTtb <= game.CompletionistTtb,
+                    String.Format(CultureInfo.InvariantCulture, "Extras {0} > Completionist {1}", game.MainTtb, game.ExtrasTtb));
+
+                Console.WriteLine("{0} {1} {2}", game.MainTtb, game.ExtrasTtb, game.CompletionistTtb);
             }
         }
     }

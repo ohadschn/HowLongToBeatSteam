@@ -34,15 +34,14 @@ namespace Common.Logging
             private Tasks() { }
             public const EventTask RetrieveMissingStoreInformation = (EventTask)1;
             public const EventTask RetrieveStoreInformation = (EventTask)2;
-            public const EventTask QueryAllApps = (EventTask)3;
+            public const EventTask QueryAllEntities = (EventTask)3;
             public const EventTask RetrievePartitionBatchMappings = (EventTask)4;
             public const EventTask ProcessPartitionBatch = (EventTask)5;
             public const EventTask ExecuteOperations = (EventTask)6;
             public const EventTask ExecutePartitionBatchOperation = (EventTask)7;
             public const EventTask InsertSuggestion = (EventTask)8;
-            public const EventTask QueryAllSuggestions = (EventTask) 9;
-            public const EventTask DeleteSuggestion = (EventTask) 10;
-            public const EventTask AcceptSuggestion = (EventTask) 11;
+            public const EventTask DeleteSuggestion = (EventTask) 9;
+            public const EventTask AcceptSuggestion = (EventTask) 10;
         }
 // ReSharper restore ConvertToStaticClass
 
@@ -190,50 +189,26 @@ namespace Common.Logging
 
         [Event(
             8,
-            Message = "Querying table storage for all apps with filter: {0}",
+            Message = "Querying table storage for all {0} with filter: [{1}]",
             Keywords = Keywords.TableStorage,
             Level = EventLevel.Informational,
-            Task = Tasks.QueryAllApps,
+            Task = Tasks.QueryAllEntities,
             Opcode = EventOpcode.Start)]
-        public void QueryAllAppsStart(string rowFilter)
+        public void QueryAllEntitiesStart(string entitiesType, string rowFilter)
         {
-            WriteEvent(8, rowFilter);
+            WriteEvent(8, entitiesType, rowFilter);
         }
 
         [Event(
             9,
-            Message = "Finished querying table storage for all apps with filter: {0} (count: {1})",
+            Message = "Finished querying table storage for all {0} with filter: [{1}] (count: {2})",
             Keywords = Keywords.TableStorage,
             Level = EventLevel.Informational,
-            Task = Tasks.QueryAllApps,
+            Task = Tasks.QueryAllEntities,
             Opcode = EventOpcode.Stop)]
-        public void QueryAllAppsStop(string rowFilter, int count)
+        public void QueryAllEntitiesStop(string entitiesType, string rowFilter, int count)
         {
-            WriteEvent(9, rowFilter, count);
-        }
-
-        [Event(
-            80,
-            Message = "Querying table storage for all suggestions with filter: {0}",
-            Keywords = Keywords.TableStorage,
-            Level = EventLevel.Informational,
-            Task = Tasks.QueryAllSuggestions,
-            Opcode = EventOpcode.Start)]
-        public void QueryAllSuggestionsStart(string rowFilter)
-        {
-            WriteEvent(80, rowFilter);
-        }
-
-        [Event(
-            81,
-            Message = "Finished querying table storage for all suggestions with filter: {0} (count: {1})",
-            Keywords = Keywords.TableStorage,
-            Level = EventLevel.Informational,
-            Task = Tasks.QueryAllSuggestions,
-            Opcode = EventOpcode.Stop)]
-        public void QueryAllSuggestionsStop(string rowFilter, int count)
-        {
-            WriteEvent(81, rowFilter, count);
+            WriteEvent(9, entitiesType, rowFilter, count);
         }
 
         [Event(

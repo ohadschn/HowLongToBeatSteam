@@ -16,7 +16,7 @@ using SteamHltbScraper.Logging;
 
 namespace SteamHltbScraper.Imputation
 {
-    internal class TtbRatios
+    public class TtbRatios
     {
         public double MainExtras { get; private set; }
         public double ExtrasCompletionist { get; private set; }
@@ -33,6 +33,8 @@ namespace SteamHltbScraper.Imputation
     public static class Imputer
     {
         internal const string ImputedCsvFileName = "imputed.csv";
+        private const string GameTypeGames = "games";
+        private const string GameTypeDlcsMods = "dlcs/mods";
         public static string AllGenresId { get { return "All"; } }
 
         private static readonly string ApiKey = SiteUtil.GetMandatoryValueFromConfig("AzureMlImputeApiKey");
@@ -55,8 +57,8 @@ namespace SteamHltbScraper.Imputation
             {
                 s_client.DefaultRequestAuthorization = new AuthenticationHeaderValue("Bearer", ApiKey);
 
-                var gamesImputationTask = ImputeTypeGenres(allApps.Where(a => a.IsGame).ToArray(), "games");
-                var dlcsImputationTask = ImputeTypeGenres(allApps.Where(a => !a.IsGame).ToArray(), "dlcs/mods");
+                var gamesImputationTask = ImputeTypeGenres(allApps.Where(a => a.IsGame).ToArray(), GameTypeGames);
+                var dlcsImputationTask = ImputeTypeGenres(allApps.Where(a => !a.IsGame).ToArray(), GameTypeDlcsMods);
 
                 await Task.WhenAll(gamesImputationTask, dlcsImputationTask).ConfigureAwait(false);
             }
@@ -345,7 +347,7 @@ namespace SteamHltbScraper.Imputation
 
             if (imputedMain == 0 || imputedExtras == 0 || imputedCompletionist == 0)
             {
-                FixImputationZero(appEntity, ratios, ref imputedMain, ref imputedExtras, ref imputedCompletionist);
+                FixImputationZeroes(appEntity, ratios, ref imputedMain, ref imputedExtras, ref imputedCompletionist);
             }
 
             if (imputedMain > imputedExtras || imputedExtras > imputedCompletionist)
@@ -353,12 +355,46 @@ namespace SteamHltbScraper.Imputation
                 FixImputationMiss(appEntity, ratios, ref imputedMain, ref imputedExtras, ref imputedCompletionist);
             }
 
-            appEntity.SetMainTtb(imputedMain, appEntity.MainTtbImputed);
-            appEntity.SetExtrasTtb(imputedExtras, appEntity.ExtrasTtbImputed);
-            appEntity.SetCompletionistTtb(imputedCompletionist, appEntity.CompletionistTtbImputed);
+            appEntity.FixTtbs(imputedMain, imputedExtras, imputedCompletionist);
         }
 
-        private static void FixImputationZero(AppEntity appEntity, TtbRatios ratios, ref int imputedMain, ref int imputedExtras, ref int imputedCompletionist)
+        public static async Task ImputeFromStats(IEnumerable<AppEntity> games)
+        {
+            var genreStats = await StorageHelper.GetAllGenreStats(String.Empty, GenreStatsStorageRetries);
+            var genreStatDict = genreStats.ToDictionary(gs => GenreStatsEntity.GetDecoratedGenre(gs.Genre, gs.AppType));
+            
+            var gameStats = genreStatDict[GenreStatsEntity.GetDecoratedGenre(AllGenresId, GameTypeGames)];
+            var dlcModStats = genreStatDict[GenreStatsEntity.GetDecoratedGenre(AllGenresId, GameTypeDlcsMods)];
+
+            foreach (var game in games)
+            {
+                GenreStatsEntity gameGenreStats;
+                if (!genreStatDict.TryGetValue(
+                    GenreStatsEntity.GetDecoratedGenre(game.Genres.First(), game.IsGame ? GameTypeGames : GameTypeDlcsMods), out gameGenreStats))
+                {
+                    gameGenreStats = game.IsGame ? gameStats : dlcModStats;
+                }
+
+                if (game.MainTtb == 0 && game.ExtrasTtb == 0 && game.CompletionistTtb == 0)
+                {
+                    game.SetMainTtb(gameGenreStats.MainAverage, true);
+                    game.SetExtrasTtb(gameGenreStats.ExtrasAverage, true);
+                    game.SetCompletionistTtb(gameGenreStats.CompletionistAverage, true);
+                    continue;
+                }
+                
+                int mainTtb = game.MainTtb;
+                int extrasTtb = game.ExtrasTtb;
+                int completionistTtb = game.CompletionistTtb;
+                var ratios = new TtbRatios(gameGenreStats.MainExtrasRatio, gameGenreStats.ExtrasCompletionistRatio, gameGenreStats.ExtrasPlacementRatio);
+                FixTtbZeroes(ratios, ref mainTtb, ref extrasTtb, ref completionistTtb);
+                FixInvalidTtbs(game, ratios, ref mainTtb, ref extrasTtb, ref completionistTtb);
+
+                game.FixTtbs(mainTtb, extrasTtb, completionistTtb);
+            }
+        }
+
+        private static void FixImputationZeroes(AppEntity appEntity, TtbRatios ratios, ref int imputedMain, ref int imputedExtras, ref int imputedCompletionist)
         {
             HltbScraperEventSource.Log.ImputationProducedZeroTtb(
                 appEntity.SteamName, appEntity.SteamAppId, imputedMain, imputedExtras, imputedCompletionist,
@@ -366,21 +402,27 @@ namespace SteamHltbScraper.Imputation
 
             Trace.Assert(imputedMain > 0 || imputedExtras > 0 || imputedCompletionist > 0, "all TTBs of a not completely missing app are zeroes");
 
-            if (imputedMain == 0)
+            FixTtbZeroes(ratios, ref imputedMain, ref imputedExtras, ref imputedCompletionist);
+        }
+
+        private static void FixTtbZeroes(TtbRatios ratios, ref int mainTtb, ref int extrasTtb, ref int completionistTtb)
+        {
+            //May result in invalid TTBs, so genreally FixInvalidTtbs should be used as well
+            if (mainTtb == 0)
             {
-                if (imputedExtras == 0)
+                if (extrasTtb == 0)
                 {
-                    imputedExtras = (int) (imputedCompletionist*ratios.ExtrasCompletionist);
+                    extrasTtb = (int) (completionistTtb*ratios.ExtrasCompletionist);
                 }
-                imputedMain = (int) (imputedExtras*ratios.MainExtras); //we know that imputedExtras is non-zero now
+                mainTtb = (int) (extrasTtb*ratios.MainExtras); //we know that extrasTtb is non-zero now
             }
-            if (imputedExtras == 0)
+            if (extrasTtb == 0)
             {
-                imputedExtras = (int) (imputedMain/ratios.MainExtras); //we know imputedMain is non-zero now
+                extrasTtb = (int) (mainTtb/ratios.MainExtras); //we know mainTtb is non-zero now
             }
-            if (imputedCompletionist == 0)
+            if (completionistTtb == 0)
             {
-                imputedCompletionist = (int) (imputedExtras/ratios.ExtrasCompletionist); //we know imputedExtras is non-zero now
+                completionistTtb = (int) (extrasTtb/ratios.ExtrasCompletionist); //we know extrasTtb is non-zero now
             }
         }
 
@@ -390,37 +432,42 @@ namespace SteamHltbScraper.Imputation
             int originalImputedExtras = imputedExtras;
             int originalImputedCompletionist = imputedCompletionist;
 
+            if (FixInvalidTtbs(appEntity, ratios, ref imputedMain, ref imputedExtras, ref imputedCompletionist))
+            {
+                LogImputationMiss(
+                    appEntity, originalImputedMain, originalImputedExtras, originalImputedCompletionist, imputedMain, imputedExtras, imputedCompletionist);
+            }
+        }
+
+        private static bool FixInvalidTtbs(AppEntity appEntity, TtbRatios ratios, ref int mainTtb, ref int extrasTtb, ref int completionistTtb)
+        {
             bool imputationMiss = false;
-            if (imputedMain > imputedExtras)
+            if (mainTtb > extrasTtb)
             {
                 imputationMiss = true;
                 if (appEntity.MainTtbImputed) //main imputed (possibly extras as well)
                 {
-                    imputedMain = (int) (imputedExtras*ratios.MainExtras);
+                    mainTtb = (int) (extrasTtb*ratios.MainExtras);
                 }
                 else //extras imputed (main not imputed)
                 {
-                    imputedExtras = (int) (imputedMain/ratios.MainExtras);
+                    extrasTtb = (int) (mainTtb/ratios.MainExtras);
                 }
             }
-            if (imputedExtras > imputedCompletionist)
+            if (extrasTtb > completionistTtb)
             {
                 imputationMiss = true;
                 if (appEntity.CompletionistTtbImputed) //completionist imputed (possibly extras as well)
                 {
-                    imputedCompletionist = (int) (imputedExtras/ratios.ExtrasCompletionist);
+                    completionistTtb = (int) (extrasTtb/ratios.ExtrasCompletionist);
                 }
-                else //extras imputed (completionist not imputed) - we'll use the extras placement to avoid reducing extras below main
+                else
+                //extras imputed (completionist not imputed) - we'll use the extras placement to avoid reducing extras below main
                 {
-                    imputedExtras = (int) (imputedMain + ratios.ExtrasPlacement*(imputedCompletionist - imputedMain));
+                    extrasTtb = (int) (mainTtb + ratios.ExtrasPlacement*(completionistTtb - mainTtb));
                 }
             }
-
-            if (imputationMiss)
-            {
-                LogImputationMiss(appEntity, originalImputedMain, originalImputedExtras, originalImputedCompletionist, 
-                    imputedMain, imputedExtras, imputedCompletionist);
-            }
+            return imputationMiss;
         }
 
         private static void LogImputationMiss(
