@@ -177,7 +177,7 @@ namespace MissingGamesUpdater.Logging
 
         [Event(
             7,
-            Message = "Updating {0} missing apps: {1}",
+            Message = "Updating {0} missing apps:\n{1}",
             Keywords = Keywords.MissingGamesUpdater,
             Level = EventLevel.Informational)]
         public void MissingAppsDetermined(int count, string appSummary)

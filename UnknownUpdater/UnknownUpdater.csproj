@@ -89,6 +89,10 @@
       <Project>{046818b8-ef77-4af3-9ef6-3b4cc98715b2}</Project>
       <Name>Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SteamHltbScraper\SteamHltbScraper.csproj">
+      <Project>{B6C78316-2C1D-4459-AAAA-84B6F430D88D}</Project>
+      <Name>SteamHltbScraper</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Web.WebJobs.Publish.1.0.3\tools\webjobs.targets" Condition="Exists('..\packages\Microsoft.Web.WebJobs.Publish.1.0.3\tools\webjobs.targets')" />

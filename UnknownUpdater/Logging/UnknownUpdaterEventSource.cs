@@ -73,7 +73,7 @@ namespace UnknownUpdater.Logging
 
         [Event(
             3,
-            Message = "Updating {0} newly categorized apps: {1}",
+            Message = "Updating {0} newly categorized apps:\n{1}",
             Keywords = Keywords.UnknownUpdater,
             Level = EventLevel.Informational)]
         private void UpdateNewlyCategorizedApps(int count, string appSummary)
