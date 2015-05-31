@@ -211,14 +211,9 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <div class="h3 summary-heading overflow-hidden">
-                        <img data-bind="attr: {src: avatarUrl}" alt="User Avatar"/>
+                        <img data-bind="attr: {src: avatarUrl}" alt="User Avatar" />
                         <span data-bind="text: personaName"></span>
-                        <ul class="inline list-inline text-nowrap push-right">
-                            <li><a href="javascript:;" data-bind="click: shareOnFacebook"><span class="fa fa-facebook"></span></a></li>
-                            <li><a href="javascript:;" data-bind="click: shareOnTwitter"><span class="fa fa-twitter"></span></a></li>
-                            <li><a href="javascript:;" data-bind="click: shareOnGooglePlus"><span class="fa fa-google-plus"></span></a></li>
-                        </ul>
-                        <span class="pull-right label label-warning" data-bind="visible: advancedFilterApplied() || gameTable.filter() !== ''" title="You can modify or clear the filter at the bottom section of this page">filter<br/>active</span>
+                        <span class="pull-right label label-warning" data-bind="visible: advancedFilterApplied() || gameTable.filter() !== ''" title="You can modify or clear the filter at the bottom section of this page">filter<br />active</span>
                     </div>
                 </div>
                 <div class="panel-body">
@@ -252,10 +247,12 @@
                         <li>Your remaining amount of consecutive <abbr title="Per HowLongToBeat: You take your time, discover and complete additional tasks not required"><strong>extras</strong></abbr> playtime is <span data-bind="text: getYears(total().extrasRemaining) + ' (' + getPercent(total().extrasRemaining, total().extrasTtb)  + ')'"></span>.</li>
                         <li>Your remaining amount of consecutive <abbr title="Per HowLongToBeat: You strive for every achievement, every medal and conquer all that the game has to offer"><strong>completionist</strong></abbr> playtime is <span data-bind="text: getYears(total().completionistRemaining) + ' (' + getPercent(total().completionistRemaining, total().completionistTtb)  + ')'"></span>.</li>
                     </ul>
-                    <p class="lead" data-bind="visible: bonusLinkVisible">
-                        <!-- ReSharper disable once Html.IdNotResolved -->
-                        <span class="label label-default inline-label">Bonus</span> <a href="#/cached/all" target="_blank">See how you compare against an imaginary profile containing the entire Steam library!</a>
-                    </p>
+                    <h1>
+                        <span class="share-title">Share</span>
+                        <a href="javascript:;" data-bind="click: shareOnFacebook"><span class="fa fa-facebook-official"></span></a>
+                        <a href="javascript:;" data-bind="click: shareOnTwitter"><span class="fa fa-twitter-square"></span></a>
+                        <a href="javascript:;" data-bind="click: shareOnGooglePlus"><span class="fa fa-google-plus-square"></span></a>
+                    </h1>
                 </div>
             </div>
             <div class="panel panel-default">
@@ -462,6 +459,15 @@
                             <a href="#" title="Last page" data-bind="css: currentPageNumber() === pages().length ? 'cursor-default' : ''"><span class="fa fa-fw fa-angle-double-right"></span></a>
                         </li>
                     </ul>
+                </div>
+            </div>
+            <div class="panel panel-default" data-bind="visible: bonusLinkVisible">
+                <div class="panel-heading">
+                    <h3>
+                        <span class="label label-default inline-label">Bonus</span>
+                        <!-- ReSharper disable once Html.IdNotResolved -->
+                        <a href="#/cached/all" target="_blank">See how you compare against an imaginary profile containing the entire Steam library!</a>
+                    </h3>
                 </div>
             </div>
             <div class="panel panel-default">

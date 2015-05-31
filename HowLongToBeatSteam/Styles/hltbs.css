@@ -148,6 +148,10 @@
     list-style-type: none;
     padding-left: 0;
 }
+.share-title {
+    font-size: 70%;
+    vertical-align: 3px;
+}
 .push-right {
     margin-left: 10px;
 }
