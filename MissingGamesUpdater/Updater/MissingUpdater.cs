@@ -10,6 +10,8 @@ using Common.Storage;
 using Common.Store;
 using Common.Util;
 using MissingGamesUpdater.Logging;
+using SteamHltbScraper.Imputation;
+using SteamHltbScraper.Scraper;
 
 namespace MissingGamesUpdater.Updater
 {
@@ -52,7 +54,9 @@ namespace MissingGamesUpdater.Updater
             var knownSteamIds = tableTask.Result.Select(ae => ae.SteamAppId);
 
             var knownSteamIdsHash = new HashSet<int>(knownSteamIds);
-            var missingApps = apps.Where(a => !knownSteamIdsHash.Contains(a.appid)).Take(UpdateLimit);
+            var missingApps = apps.Where(a => !knownSteamIdsHash.Contains(a.appid)).Take(UpdateLimit).ToArray();
+
+            MissingUpdaterEventSource.Log.MissingAppsDetermined(missingApps);
 
             var updates = new ConcurrentBag<AppEntity>();
             InvalidOperationException ioe = null;
@@ -66,8 +70,11 @@ namespace MissingGamesUpdater.Updater
                 ioe = new InvalidOperationException("Could not retrieve store information for all games", e);
             }
 
+            await HltbScraper.ScrapeHltb(updates.ToArray()).ConfigureAwait(false);
+            await Imputer.ImputeFromStats(updates).ConfigureAwait(false);
+
             await StorageHelper.Insert(updates, StorageRetries).ConfigureAwait(false);  //we're inserting new entries, no fear of collisions 
-            MissingUpdaterEventSource.Log.UpdateMissingGamesStop();                         //(even if two jobs overlap the next one will fix it)
+            MissingUpdaterEventSource.Log.UpdateMissingGamesStop();                     //(even if two jobs overlap the next one will fix it)
 
             if (ioe != null)
             {

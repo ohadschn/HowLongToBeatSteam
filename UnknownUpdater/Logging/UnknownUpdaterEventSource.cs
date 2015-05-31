@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
-using System.Globalization;
-using System.Linq;
 using Common.Entities;
 using Common.Logging;
+using Common.Storage;
 
 namespace UnknownUpdater.Logging
 {
@@ -17,14 +17,14 @@ namespace UnknownUpdater.Logging
         }
 
 // ReSharper disable ConvertToStaticClass
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
+        [SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
         public sealed class Keywords
         {
             private Keywords() {}
             public const EventKeywords UnknownUpdater = (EventKeywords) 1;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
+        [SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
         public sealed class Tasks
         {
             private Tasks() { }
@@ -68,16 +68,17 @@ namespace UnknownUpdater.Logging
                 return;
             }
 
-            UpdateNewlyCategorizedApps(
-                String.Join(", ", updates.Select(ae => String.Format(CultureInfo.InvariantCulture, "{0} / {1}", ae.SteamAppId, ae.SteamName))));
+            UpdateNewlyCategorizedApps(updates.Count, StorageHelper.GetAppSummary(updates));
         }
 
         [Event(
             3,
-            Message = "Updating newly categorized apps: {0}")]
-        private void UpdateNewlyCategorizedApps(string apps)
+            Message = "Updating {0} newly categorized apps: {1}",
+            Keywords = Keywords.UnknownUpdater,
+            Level = EventLevel.Informational)]
+        private void UpdateNewlyCategorizedApps(int count, string appSummary)
         {
-            WriteEvent(3, apps);
+            WriteEvent(3, count, appSummary);
         }
     }
 }

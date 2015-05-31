@@ -1,6 +1,11 @@
 ﻿using System;
 using System.Diagnostics.Tracing;
+using System.Linq;
+using Common.Entities;
 using Common.Logging;
+using Common.Storage;
+using JetBrains.Annotations;
+using MissingGamesUpdater.Updater;
 
 namespace MissingGamesUpdater.Logging
 {
@@ -160,6 +165,24 @@ namespace MissingGamesUpdater.Logging
         public void UpdateMissingGamesStop()
         {
             WriteEvent(6);
+        }
+
+        [NonEvent]
+        public void MissingAppsDetermined([NotNull] App[] missingApps)
+        {
+            if (missingApps == null) throw new ArgumentNullException("missingApps");
+
+            MissingAppsDetermined(missingApps.Length, StorageHelper.GetAppSummary(missingApps.Select(a => new AppEntity(a.appid, a.name, ""))));
+        }
+
+        [Event(
+            7,
+            Message = "Updating {0} missing apps: {1}",
+            Keywords = Keywords.MissingGamesUpdater,
+            Level = EventLevel.Informational)]
+        public void MissingAppsDetermined(int count, string appSummary)
+        {
+            WriteEvent(7, count, appSummary);
         }
     }
 }

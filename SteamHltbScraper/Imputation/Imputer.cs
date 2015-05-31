@@ -360,17 +360,32 @@ namespace SteamHltbScraper.Imputation
 
         public static async Task ImputeFromStats(IEnumerable<AppEntity> games)
         {
+            HltbScraperEventSource.Log.ImputeFromGenreStatsStart();
+
             var genreStats = await StorageHelper.GetAllGenreStats(String.Empty, GenreStatsStorageRetries);
             var genreStatDict = genreStats.ToDictionary(gs => GenreStatsEntity.GetDecoratedGenre(gs.Genre, gs.AppType));
-            
-            var gameStats = genreStatDict[GenreStatsEntity.GetDecoratedGenre(AllGenresId, GameTypeGames)];
-            var dlcModStats = genreStatDict[GenreStatsEntity.GetDecoratedGenre(AllGenresId, GameTypeDlcsMods)];
 
+            GenreStatsEntity gameStats, dlcModStats;
+            if (!genreStatDict.TryGetValue(GenreStatsEntity.GetDecoratedGenre(AllGenresId, GameTypeGames), out gameStats) ||
+                !genreStatDict.TryGetValue(GenreStatsEntity.GetDecoratedGenre(AllGenresId, GameTypeDlcsMods), out dlcModStats))
+            {
+                throw new InvalidOperationException("No genre stats available - run the scraper job and try again");
+            }
+
+            ImputeFromGenreStats(games, genreStatDict, gameStats, dlcModStats);
+
+            HltbScraperEventSource.Log.ImputeFromGenreStatsStop();
+        }
+
+        private static void ImputeFromGenreStats(IEnumerable<AppEntity> games, 
+            Dictionary<string, GenreStatsEntity> genreStatDict, GenreStatsEntity gameStats, GenreStatsEntity dlcModStats)
+        {
             foreach (var game in games)
             {
                 GenreStatsEntity gameGenreStats;
                 if (!genreStatDict.TryGetValue(
-                    GenreStatsEntity.GetDecoratedGenre(game.Genres.First(), game.IsGame ? GameTypeGames : GameTypeDlcsMods), out gameGenreStats))
+                    GenreStatsEntity.GetDecoratedGenre(game.Genres.First(), game.IsGame ? GameTypeGames : GameTypeDlcsMods),
+                    out gameGenreStats))
                 {
                     gameGenreStats = game.IsGame ? gameStats : dlcModStats;
                 }
@@ -382,7 +397,7 @@ namespace SteamHltbScraper.Imputation
                     game.SetCompletionistTtb(gameGenreStats.CompletionistAverage, true);
                     continue;
                 }
-                
+
                 int mainTtb = game.MainTtb;
                 int extrasTtb = game.ExtrasTtb;
                 int completionistTtb = game.CompletionistTtb;

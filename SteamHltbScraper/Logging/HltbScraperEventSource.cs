@@ -45,6 +45,7 @@ namespace SteamHltbScraper.Logging
             public const EventTask PollImputationJobStatus = (EventTask) 13;
             public const EventTask ImputeGenre = (EventTask) 14;
             public const EventTask UpdateGenreStats = (EventTask) 15;
+            public const EventTask ImputeFromGenreStats = (EventTask) 16;
         }
 // ReSharper restore ConvertToStaticClass
 
@@ -695,6 +696,30 @@ namespace SteamHltbScraper.Logging
         public void UpdateGenreStatsStop(int genreCount)
         {
             WriteEvent(36, genreCount);
+        }
+
+        [Event(
+            37,
+            Message = "Start imputing playtimes from genre stats",
+            Keywords = Keywords.Imputation,
+            Level = EventLevel.Informational,
+            Task = Tasks.ImputeFromGenreStats,
+            Opcode = EventOpcode.Start)]
+        public void ImputeFromGenreStatsStart()
+        {
+            WriteEvent(37);
+        }
+
+        [Event(
+            38,
+            Message = "Finished imputing playtimes from genre stats",
+            Keywords = Keywords.Imputation,
+            Level = EventLevel.Informational,
+            Task = Tasks.ImputeFromGenreStats,
+            Opcode = EventOpcode.Stop)]
+        public void ImputeFromGenreStatsStop()
+        {
+            WriteEvent(38);
         }
     }
 }

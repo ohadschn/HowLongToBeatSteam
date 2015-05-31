@@ -46,6 +46,14 @@ namespace Common.Storage
             return SiteUtil.CleanString(text, disallowedChars);
         }
 
+        public static string GetAppSummary([NotNull] IEnumerable<AppEntity> apps)
+        {
+            if (apps == null) throw new ArgumentNullException("apps");
+
+            return String.Join(Environment.NewLine,
+                apps.Select(ae => String.Format(CultureInfo.InvariantCulture, "{0} ({1})", ae.SteamName, ae.SteamAppId)));
+        }
+
         public static async Task<ConcurrentBag<AppEntity>> GetAllApps(string rowFilter = null, int retries = -1)
         {
             const string entitiesType = "apps";
