@@ -59,16 +59,17 @@ namespace SteamHltbScraper.Scraper
             await StorageHelper.Replace(allApps, StorageRetries).ConfigureAwait(false); 
         }
 
-        public static async Task ScrapeHltb(AppEntity[] allApps)
+        public static async Task ScrapeHltb(AppEntity[] allApps, Action<AppEntity, Exception> errorHandler = null)
         {
             using (s_client = new HttpRetryClient(ScrapingRetries))
             {
-                await ScrapeHltb((IEnumerable<AppEntity>) allApps).ConfigureAwait(false);
+                await ScrapeHltbCore(allApps, errorHandler).ConfigureAwait(false);
             }
         }
 
-        internal static async Task ScrapeHltb(IEnumerable<AppEntity> allApps)
+        internal static async Task ScrapeHltbCore(IEnumerable<AppEntity> allApps, Action<AppEntity, Exception> errorHandler = null)
         {
+            errorHandler = errorHandler ?? ( (a,e) => { });
             HltbScraperEventSource.Log.ScrapeHltbStart();
 
             int count = 0;
@@ -87,6 +88,7 @@ namespace SteamHltbScraper.Scraper
                     catch (Exception e)
                     {
                         HltbScraperEventSource.Log.ErrorScrapingHltbId(current, app.SteamAppId, app.SteamName, e);
+                        errorHandler(app, e);
                         return;
                     }
 
@@ -104,6 +106,7 @@ namespace SteamHltbScraper.Scraper
                 {
                     MakeVerbose(e);
                     HltbScraperEventSource.Log.ErrorScrapingHltbName(current, app.SteamAppId, app.SteamName, app.HltbId, e);
+                    errorHandler(app, e);
                     return;
                 }
 
@@ -116,6 +119,7 @@ namespace SteamHltbScraper.Scraper
                 {
                     MakeVerbose(e);
                     HltbScraperEventSource.Log.ErrorScrapingHltbInfo(current, app.SteamAppId, app.SteamName, e);
+                    errorHandler(app, e);
                     return;
                 }
 

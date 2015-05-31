@@ -211,6 +211,7 @@ namespace Common.Storage
             CommonEventSource.Log.DeleteSuggestionStop(suggestion.SteamAppId, suggestion.HltbId);
         }
 
+        //assumes app has been already modified to contain the updated HLTB info
         public static async Task AcceptSuggestion([NotNull] AppEntity app, [NotNull] SuggestionEntity suggestion, int retries = -1)
         {
             if (app == null) throw new ArgumentNullException("app");
@@ -219,7 +220,6 @@ namespace Common.Storage
             var table = await GetTable(SteamToHltbTableName, retries);
 
             CommonEventSource.Log.AcceptSuggestionStart(suggestion.SteamAppId, suggestion.HltbId);
-            app.HltbId = suggestion.HltbId;
             await table.ExecuteBatchAsync(new TableBatchOperation {TableOperation.Replace(app), TableOperation.Delete(suggestion)});
             CommonEventSource.Log.AcceptSuggestionStop(suggestion.SteamAppId, suggestion.HltbId);
         }
