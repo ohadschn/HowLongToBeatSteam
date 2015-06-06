@@ -1338,11 +1338,16 @@ function AppViewModel() {
         self.openShareWindow("https://plus.google.com/share?url=" + encodeURIComponent(getCurrentAddress()));
     };
 
-    self.openShareWindow = function(url) {
+    self.shareOnReddit = function () {
+        appInsights.trackEvent("Shared", { site: "Reddit" });
+        self.openShareWindow("http://www.reddit.com/submit?url=" + encodeURIComponent(getCurrentAddress()) + "&title=" + self.getShortShareText(false), true);
+    };
+
+    self.openShareWindow = function (url, wide) {
         window.open(
             url,
             "share",
-            "toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=600,height=600");
+            "toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, height=600, width=" + (wide ? "900" : "600"));
     };
 
     self.authenticate = function() {
