@@ -74,6 +74,8 @@ namespace UnknownUpdater.Updater
             {
                 throw ioe; //fail job
             }
+
+            await SiteUtil.SendSuccessMail("Unknown updater");
         }
     }
 }

@@ -26,6 +26,7 @@ namespace Common.Logging
             public const EventKeywords Http = (EventKeywords)1;
             public const EventKeywords StoreApi = (EventKeywords)2;
             public const EventKeywords TableStorage = (EventKeywords)4;
+            public const EventKeywords Email = (EventKeywords) 8;
         }
 
         [SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
@@ -42,6 +43,7 @@ namespace Common.Logging
             public const EventTask InsertSuggestion = (EventTask)8;
             public const EventTask DeleteSuggestion = (EventTask) 9;
             public const EventTask AcceptSuggestion = (EventTask) 10;
+            public const EventTask SendSuccessMail = (EventTask) 11;
         }
 // ReSharper restore ConvertToStaticClass
 
@@ -413,6 +415,31 @@ namespace Common.Logging
         public void AcceptSuggestionStop(int steamAppId, int hltbId)
         {
             WriteEvent(23, steamAppId, hltbId);
+        }
+
+        [Event(
+            24,
+            Message = "Start sending success email for: {0}",
+            Keywords = Keywords.Email,
+            Level = EventLevel.Informational,
+            Task = Tasks.SendSuccessMail,
+            Opcode = EventOpcode.Start)]
+        public void SendSuccessMailStart(string description)
+        {
+            WriteEvent(24, description);
+        }
+
+        [SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "MailStop")]
+        [Event(
+            25,
+            Message = "Finished sending success email for: {0}",
+            Keywords = Keywords.Email,
+            Level = EventLevel.Informational,
+            Task = Tasks.SendSuccessMail,
+            Opcode = EventOpcode.Stop)]
+        public void SendSuccessMailStop(string description)
+        {
+            WriteEvent(25, description);
         }
     }
 }

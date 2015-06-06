@@ -7,15 +7,22 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Mail;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Common.Logging;
 using JetBrains.Annotations;
+using SendGrid;
 
 namespace Common.Util
 {
     public static class SiteUtil
     {
+        private static readonly string SendGridUser = GetMandatoryValueFromConfig("SendGridUser");
+        private static readonly string SendGridPassword = GetMandatoryValueFromConfig("SendGridPassword");
+        private static readonly string NotificationEmailAddress = GetMandatoryValueFromConfig("NotificationEmailAddress");
+
         public static T GetNonpublicInstancePropertyValue<T>([NotNull] object instance, string propName)
         {
             if (instance == null) throw new ArgumentNullException("instance");
@@ -303,6 +310,31 @@ namespace Common.Util
         {
             Console.WriteLine("Keepalive...");
             Task.Delay(KeepAliveIntervalSeconds*1000).ContinueWith(t => KeepWebJobAlive());
+        }
+
+        public static string WebJobName
+        {
+            get { return Environment.GetEnvironmentVariable("WEBJOBS_NAME"); }
+        }
+
+        public static string WebJobRunId
+        {
+            get { return Environment.GetEnvironmentVariable("WEBJOBS_RUN_ID "); }
+        }
+
+        public static async Task SendSuccessMail([NotNull] string description)
+        {
+            if (description == null) throw new ArgumentNullException("description");
+
+            CommonEventSource.Log.SendSuccessMailStart(description);
+            await new Web(new NetworkCredential(SendGridUser, SendGridPassword)).DeliverAsync(new SendGridMessage
+            {
+                From = new MailAddress("webjobs@howlongtobeatsteam.com", "HowLongToBeatSteam WebJob notifier"),
+                Subject = String.Format(CultureInfo.InvariantCulture, "{0} ({1}) - Success", WebJobName, WebJobRunId),
+                To = new[] { new MailAddress(NotificationEmailAddress) },
+                Text = "Sent by SendGrid"
+            });
+            CommonEventSource.Log.SendSuccessMailStop(description);
         }
     }
 }

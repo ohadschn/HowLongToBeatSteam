@@ -82,6 +82,8 @@ namespace MissingGamesUpdater.Updater
             {
                 throw ioe; //fail job
             }
+
+            await SiteUtil.SendSuccessMail("Missing updater");
         }
 
         internal static async Task<IList<App>> GetAllSteamApps(HttpRetryClient client)
