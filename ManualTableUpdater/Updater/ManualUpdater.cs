@@ -77,7 +77,7 @@ namespace ManualTableUpdater.Updater
 
             StorageHelper.InsertOrReplace(appData.Select(
                 a => new AppEntity(a.SteamAppId, a.SteamName, a.AppType, a.Platforms, a.Categories, a.Genres,
-                    a.Publishers, a.Developers, a.ReleaseDate, a.MetacriticScore))).Wait();
+                    a.Publishers, a.Developers, a.ReleaseDate, a.MetacriticScore)), "updating apps from file").Wait();
         }
 
         private static void SerializeAllAppsToFile()
@@ -177,7 +177,7 @@ namespace ManualTableUpdater.Updater
                 games.Add(new AppEntity(appId, name, hltbId.ToString()));
             }
 
-            StorageHelper.Insert(games);
+            StorageHelper.Insert(games, "inserting apps from CSV");
         }
     }
 }

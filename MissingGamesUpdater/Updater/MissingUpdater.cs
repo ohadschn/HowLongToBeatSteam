@@ -74,8 +74,9 @@ namespace MissingGamesUpdater.Updater
             await HltbScraper.ScrapeHltb(updates.ToArray()).ConfigureAwait(false);
             await Imputer.ImputeFromStats(updates).ConfigureAwait(false);
 
-            await StorageHelper.Insert(updates, StorageRetries).ConfigureAwait(false);  //we're inserting new entries, no fear of collisions 
-            MissingUpdaterEventSource.Log.UpdateMissingGamesStop();                     //(even if two jobs overlap the next one will fix it)
+            //we're inserting new entries, no fear of collisions (even if two jobs overlap the next one will fix it)
+            await StorageHelper.Insert(updates, "updating missing games", StorageRetries).ConfigureAwait(false);  
+            MissingUpdaterEventSource.Log.UpdateMissingGamesStop();                         
 
             if (ioe != null)
             {

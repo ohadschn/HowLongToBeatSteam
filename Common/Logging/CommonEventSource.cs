@@ -261,26 +261,26 @@ namespace Common.Logging
 
         [Event(
             14,
-            Message = "Start executing table operations",
+            Message = "Start executing table operations: {0}",
             Keywords = Keywords.TableStorage,
             Level = EventLevel.Informational,
             Task = Tasks.ExecuteOperations,
             Opcode = EventOpcode.Start)]
-        public void ExecuteOperationsStart()
+        public void ExecuteOperationsStart(string description)
         {
-                WriteEvent(14);
+            WriteEvent(14, description);
         }
 
         [Event(
             15,
-            Message = "Finished executing table operations",
+            Message = "Finished executing table operations: {0}",
             Keywords = Keywords.TableStorage,
             Level = EventLevel.Informational,
             Task = Tasks.ExecuteOperations,
             Opcode = EventOpcode.Stop)]
-        public void ExecuteOperationsStop()
+        public void ExecuteOperationsStop(string description)
         {
-            WriteEvent(15);
+            WriteEvent(15, description);
         }
 
         [NonEvent]

@@ -64,7 +64,7 @@ namespace SteamHltbScraper.Imputation
             }
 
             HltbScraperEventSource.Log.UpdateGenreStatsStart(s_genreStats.Count);
-            await StorageHelper.InsertOrReplace(s_genreStats.Values, GenreStatsStorageRetries, StorageHelper.GenreStatsTableName).ConfigureAwait(false);
+            await StorageHelper.InsertOrReplace(s_genreStats.Values, "updating genre statistics", GenreStatsStorageRetries, StorageHelper.GenreStatsTableName).ConfigureAwait(false);
             HltbScraperEventSource.Log.UpdateGenreStatsStop(s_genreStats.Count);
 
             HltbScraperEventSource.Log.ImputeStop();

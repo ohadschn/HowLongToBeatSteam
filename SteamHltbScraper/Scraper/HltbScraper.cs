@@ -56,7 +56,7 @@ namespace SteamHltbScraper.Scraper
             await Imputer.Impute(allApps).ConfigureAwait(false);
 
             //we're using Replace since the only other update to an existing game-typed entity would have to be manual which should take precedence
-            await StorageHelper.Replace(allApps, StorageRetries).ConfigureAwait(false);
+            await StorageHelper.Replace(allApps, "updating scraped gametimes", StorageRetries).ConfigureAwait(false);
         }
 
         public static async Task ScrapeHltb(AppEntity[] allApps, Action<AppEntity, Exception> errorHandler = null)

@@ -129,39 +129,47 @@ namespace Common.Storage
             return allEntities;
         }
 
-        public static Task Replace<T>([NotNull] IEnumerable<T> entities, int retries = -1, string tableName = null) where T : ITableEntity
+        public static Task Replace<T>([NotNull] IEnumerable<T> entities, [NotNull] string description, int retries = -1, string tableName = null) 
+            where T : ITableEntity
         {
             if (entities == null) throw new ArgumentNullException("entities");
+            if (description == null) throw new ArgumentNullException("description");
 
-            return ExecuteOperations(entities, e => new[] { TableOperation.Replace(e) }, tableName ?? SteamToHltbTableName, retries);
+            return ExecuteOperations(entities, e => new[] { TableOperation.Replace(e) }, tableName ?? SteamToHltbTableName, description, retries);
         }
 
-        public static Task Insert<T>([NotNull] IEnumerable<T> entities, int retries = -1, string tableName = null) where T : ITableEntity
+        public static Task Insert<T>([NotNull] IEnumerable<T> entities, [NotNull] string description, int retries = -1, string tableName = null) 
+            where T : ITableEntity
         {
             if (entities == null) throw new ArgumentNullException("entities");
+            if (description == null) throw new ArgumentNullException("description");
 
-            return ExecuteOperations(entities, e => new[] { TableOperation.Insert(e) }, tableName ?? SteamToHltbTableName, retries);
+            return ExecuteOperations(entities, e => new[] { TableOperation.Insert(e) }, tableName ?? SteamToHltbTableName, description, retries);
         }
 
-        public static Task InsertOrReplace<T>([NotNull] IEnumerable<T> entities, int retries = -1, string tableName = null) where T : ITableEntity
+        public static Task InsertOrReplace<T>([NotNull] IEnumerable<T> entities, [NotNull] string description, int retries = -1, string tableName = null) 
+            where T : ITableEntity
         {
             if (entities == null) throw new ArgumentNullException("entities");
+            if (description == null) throw new ArgumentNullException("description");
 
-            return ExecuteOperations(entities, e => new[] { TableOperation.InsertOrReplace(e) }, tableName ?? SteamToHltbTableName, retries);
+            return ExecuteOperations(entities, e => new[] { TableOperation.InsertOrReplace(e) }, tableName ?? SteamToHltbTableName, description, retries);
         }
 
         public static async Task ExecuteOperations<T>(
-            [NotNull] IEnumerable<T> entities,
+            [NotNull] IEnumerable<T> entities, 
             [NotNull] Func<T, TableOperation[]> operationGenerator, 
             [NotNull] string tableName, 
+            [NotNull] string description, 
             int retries = -1)
             where T : ITableEntity
         {
             if (entities == null) throw new ArgumentNullException("entities");
             if (operationGenerator == null) throw new ArgumentNullException("operationGenerator");
             if (tableName == null) throw new ArgumentNullException("tableName");
+            if (description == null) throw new ArgumentNullException("description");
 
-            CommonEventSource.Log.ExecuteOperationsStart();
+            CommonEventSource.Log.ExecuteOperationsStart(description);
             var table = await GetTable(tableName, retries);
 
             await SplitToBatchOperations(entities, operationGenerator).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, async tboi =>
@@ -186,7 +194,7 @@ namespace Common.Storage
                 CommonEventSource.Log.ExecutePartitionBatchOperationStop(tboi.Partition, tboi.Batch, final);
 
             }, false).ConfigureAwait(false);
-            CommonEventSource.Log.ExecuteOperationsStop();
+            CommonEventSource.Log.ExecuteOperationsStop(description);
         }
 
         public static async Task InsertSuggestion(SuggestionEntity suggestion, int retries = -1)
