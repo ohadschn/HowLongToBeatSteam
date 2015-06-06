@@ -14,6 +14,7 @@ namespace SuggestionProcessor
 {
     class SuggestionProcessor
     {
+        private const string SteamStoreGamePageTemplate = "http://store.steampowered.com/app/{0}";
         static void Main()
         {
             try
@@ -67,6 +68,9 @@ namespace SuggestionProcessor
                 Console.WriteLine("Can't parse HLTB ID {0} suggested for {1} ({2}): {3}", a.HltbId, a.SteamName, a.SteamAppId, e);
                 bool removed = validSuggestions.TryRemove(a.SteamAppId, out temp);
                 Trace.Assert(removed, "Invalid validSuggestions state");
+
+                //Console.WriteLine("removing suggestion...");
+                //StorageHelper.DeleteSuggestion(temp.Suggestion).Wait();
             }).ConfigureAwait(false);
 
             Console.WriteLine("Imputing missing TTBs from genre stats...");
@@ -112,21 +116,33 @@ namespace SuggestionProcessor
 
                 while (true)
                 {
-                    Console.Write("Accept suggestion? (Y/N) ");
+                    Console.Write("Accept suggestion? (A)ccept / (D)elete / (I)nspect / (S)kip ");
                     var key = Console.ReadKey();
                     Console.WriteLine();
-                    if (key.KeyChar == 'y' || key.KeyChar == 'Y')
+                    if (key.KeyChar == 'a' || key.KeyChar == 'A')
                     {
                         Console.Write("Updating... ");
                         await StorageHelper.AcceptSuggestion(app, suggestion.Suggestion);
                         Console.WriteLine("Done!");
                         break;
                     }
-                    if (key.KeyChar == 'n' || key.KeyChar == 'N')
+                    if (key.KeyChar == 'd' || key.KeyChar == 'D')
                     {
                         Console.Write("Deleting suggestion... ");
                         await StorageHelper.DeleteSuggestion(suggestion.Suggestion);
                         Console.WriteLine("Done!");
+                        break;
+                    }
+                    if (key.KeyChar == 'i' || key.KeyChar == 'I')
+                    {
+                        Console.WriteLine("Launching game and suggestion URL...");
+                        Process.Start(String.Format(HltbScraper.HltbGamePageFormat, app.HltbId));
+                        Process.Start(String.Format(SteamStoreGamePageTemplate, app.SteamAppId));
+                        continue;
+                    }
+                    if (key.KeyChar == 's' || key.KeyChar == 'S')
+                    {
+                        Console.WriteLine("Skipping...");
                         break;
                     }
                 }

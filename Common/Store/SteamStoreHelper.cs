@@ -18,7 +18,7 @@ namespace Common.Store
         private static readonly int MaxSteamStoreIdsPerRequest = SiteUtil.GetOptionalValueFromConfig("MaxSteamStoreIdsPerRequest", 50);
 
         public static async Task GetStoreInformationUpdates(
-            IEnumerable<BasicStoreInfo> missingApps, 
+            ICollection<BasicStoreInfo> missingApps, 
             HttpRetryClient client, 
             ConcurrentBag<AppEntity> updates)
         {
@@ -27,16 +27,17 @@ namespace Common.Store
             CommonEventSource.Log.RetrieveMissingStoreInformationStart();
             await missingApps.Partition(MaxSteamStoreIdsPerRequest).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, async partition =>
             {
-                await GetStoreInfo(Interlocked.Add(ref counter, MaxSteamStoreIdsPerRequest), partition, updates, client).ConfigureAwait(false);
+                await GetStoreInfo(Interlocked.Add(ref counter, MaxSteamStoreIdsPerRequest), missingApps.Count, partition, updates, client)
+                    .ConfigureAwait(false);
             }).ConfigureAwait(false);
             CommonEventSource.Log.RetrieveMissingStoreInformationStop();
         }
 
-        private static async Task GetStoreInfo(int counter, IList<BasicStoreInfo> apps, ConcurrentBag<AppEntity> updates, HttpRetryClient client)
+        private static async Task GetStoreInfo(int counter, int total, IList<BasicStoreInfo> apps, ConcurrentBag<AppEntity> updates, HttpRetryClient client)
         {
             var start = counter - MaxSteamStoreIdsPerRequest + 1;
             var requestUrl = new Uri(String.Format(SteamStoreApiUrlTemplate, String.Join(",", apps.Select(si => si.AppId))));
-            CommonEventSource.Log.RetrieveStoreInformationStart(start, counter, requestUrl);
+            CommonEventSource.Log.RetrieveStoreInformationStart(start, counter, total, requestUrl);
 
             var jObject = await SiteUtil.GetAsync<JObject>(client, requestUrl).ConfigureAwait(false);
 
@@ -64,7 +65,7 @@ namespace Common.Store
                 PopulateApp(updates, appInfo, app, type);
             }
 
-            CommonEventSource.Log.RetrieveStoreInformationStop(start, counter, requestUrl);
+            CommonEventSource.Log.RetrieveStoreInformationStop(start, counter, total, requestUrl);
         }
 
         private static void PopulateApp(ConcurrentBag<AppEntity> updates, StoreAppInfo appInfo, BasicStoreInfo app, string type)

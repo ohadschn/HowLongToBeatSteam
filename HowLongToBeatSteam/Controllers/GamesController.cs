@@ -33,6 +33,7 @@ namespace HowLongToBeatSteam.Controllers
         private const string GetPlayerSummariesUrlFormat = @"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={0}&steamids={1}";
 
         private const string CacheAvatar = @"https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/ce/ce8f7969f8c79019ab3c7c88ccfbf3185e8ec7da_medium.jpg";
+        private static readonly int s_cacheUpdateIntervalMinutes = SiteUtil.GetOptionalValueFromConfig("CacheUpdateIntervalMinutes", 60);
 
         private static readonly HttpRetryClient Client = new HttpRetryClient(0);
         private static readonly ConcurrentDictionary<int, SteamAppData> Cache = new ConcurrentDictionary<int, SteamAppData>();
@@ -54,8 +55,8 @@ namespace HowLongToBeatSteam.Controllers
                 }
                 
                 SiteEventSource.Log.UpdateCacheStop(Cache.Count);
-                
-                await Task.Delay(TimeSpan.FromHours(1)).ConfigureAwait(false);
+
+                await Task.Delay(TimeSpan.FromMinutes(s_cacheUpdateIntervalMinutes)).ConfigureAwait(false);
             }
 // ReSharper disable FunctionNeverReturns
         }

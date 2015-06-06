@@ -23,7 +23,7 @@ namespace SteamHltbScraper.Scraper
         private static readonly Uri SearchHltbUrl = new Uri(@"http://howlongtobeat.com/search_main.php?t=games&page=1&sorthead=popular&sortd=Normal%20Order&plat=&detail=0");
         private const string SearchHltbPostDataFormat = @"queryString={0}";
 
-        private const string HltbGamePageFormat = @"http://www.howlongtobeat.com/game.php?id={0}";
+        public const string HltbGamePageFormat = @"http://www.howlongtobeat.com/game.php?id={0}";
         private const string HltbGameOverviewPageFormat = @"http://howlongtobeat.com/game_main.php?id={0}";
 
         private static readonly int ScrapingLimit = SiteUtil.GetOptionalValueFromConfig("ScrapingLimit", int.MaxValue);
@@ -56,7 +56,7 @@ namespace SteamHltbScraper.Scraper
             await Imputer.Impute(allApps).ConfigureAwait(false);
 
             //we're using Replace since the only other update to an existing game-typed entity would have to be manual which should take precedence
-            await StorageHelper.Replace(allApps, StorageRetries).ConfigureAwait(false); 
+            await StorageHelper.Replace(allApps, StorageRetries).ConfigureAwait(false);
         }
 
         public static async Task ScrapeHltb(AppEntity[] allApps, Action<AppEntity, Exception> errorHandler = null)
@@ -67,7 +67,7 @@ namespace SteamHltbScraper.Scraper
             }
         }
 
-        internal static async Task ScrapeHltbCore(IEnumerable<AppEntity> allApps, Action<AppEntity, Exception> errorHandler = null)
+        internal static async Task ScrapeHltbCore(AppEntity[] allApps, Action<AppEntity, Exception> errorHandler = null)
         {
             errorHandler = errorHandler ?? ( (a,e) => { });
             HltbScraperEventSource.Log.ScrapeHltbStart();
@@ -77,7 +77,7 @@ namespace SteamHltbScraper.Scraper
             await allApps.ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, async app =>
             {
                 var current = Interlocked.Increment(ref count);
-                HltbScraperEventSource.Log.ScrapeGameStart(app.SteamAppId, current);
+                HltbScraperEventSource.Log.ScrapeGameStart(app.SteamAppId, current, allApps.Length);
 
                 if (app.HltbId == -1)
                 {
@@ -125,7 +125,7 @@ namespace SteamHltbScraper.Scraper
 
                 PopulateAppEntity(app, hltbInfo);
 
-                HltbScraperEventSource.Log.ScrapeGameStop(app.SteamAppId, current);
+                HltbScraperEventSource.Log.ScrapeGameStop(app.SteamAppId, current, allApps.Length);
             }).ConfigureAwait(false);
             
             HltbScraperEventSource.Log.ScrapeHltbStop();

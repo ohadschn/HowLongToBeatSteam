@@ -75,26 +75,26 @@ namespace SteamHltbScraper.Logging
 
         [Event(
             3,
-            Message = "Start scraping Steam ID {0} (#{1})",
+            Message = "Start scraping Steam ID {0} (#{1} / {2})",
             Keywords = Keywords.Scraping,
             Level = EventLevel.Informational,
             Task = Tasks.ScrapeGame,
             Opcode = EventOpcode.Start)]
-        public void ScrapeGameStart(int steamAppId, int current)
+        public void ScrapeGameStart(int steamAppId, int current, int total)
         {
-            WriteEvent(3, steamAppId, current);
+            WriteEvent(3, steamAppId, current, total);
         }
 
         [Event(
             4,
-            Message = "Finished scraping Steam ID {0} (#{1})",
+            Message = "Finished scraping Steam ID {0} (#{1} / {2})",
             Keywords = Keywords.Scraping,
             Level = EventLevel.Informational,
             Task = Tasks.ScrapeGame,
             Opcode = EventOpcode.Stop)]
-        public void ScrapeGameStop(int steamAppId, int current)
+        public void ScrapeGameStop(int steamAppId, int current, int total)
         {
-            WriteEvent(4, steamAppId, current);
+            WriteEvent(4, steamAppId, current, total);
         }
 
         [Event(

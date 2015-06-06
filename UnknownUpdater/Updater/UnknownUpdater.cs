@@ -51,7 +51,7 @@ namespace UnknownUpdater.Updater
             try
             {
                 await SteamStoreHelper.GetStoreInformationUpdates(
-                    apps.Select(ae => new BasicStoreInfo(ae.SteamAppId, ae.SteamName, ae.AppType)), Client, updates).ConfigureAwait(false);
+                    apps.Select(ae => new BasicStoreInfo(ae.SteamAppId, ae.SteamName, ae.AppType)).ToArray(), Client, updates).ConfigureAwait(false);
             }
             catch (Exception e)
             {

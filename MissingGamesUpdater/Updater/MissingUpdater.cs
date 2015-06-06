@@ -62,7 +62,8 @@ namespace MissingGamesUpdater.Updater
             InvalidOperationException ioe = null;
             try
             {
-                await SteamStoreHelper.GetStoreInformationUpdates(missingApps.Select(a => new BasicStoreInfo(a.appid, a.name, null)), s_client, updates)
+                await SteamStoreHelper
+                    .GetStoreInformationUpdates(missingApps.Select(a => new BasicStoreInfo(a.appid, a.name, null)).ToArray(), s_client, updates)
                     .ConfigureAwait(false);
             }
             catch(Exception e)

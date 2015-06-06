@@ -101,7 +101,7 @@ namespace Common.Logging
         }
 
         [NonEvent]
-        public void RetrieveStoreInformationStart(int startIndex, int endIndex, Uri uri)
+        public void RetrieveStoreInformationStart(int startIndex, int endIndex, int total, Uri uri)
         {
             if (uri == null)
             {
@@ -113,23 +113,23 @@ namespace Common.Logging
                 return;
             }
 
-            RetrieveStoreInformationStart(uri.ToString(), startIndex, endIndex);
+            RetrieveStoreInformationStart(uri.ToString(), startIndex, endIndex, total);
         }
 
         [Event(
             4,
-            Message = "Start retrieving Steam store info for apps {1}-{2} from {0}",
+            Message = "Start retrieving Steam store info for apps #{1}-#{2} / {3} from: {0}",
             Keywords = Keywords.StoreApi,
             Level = EventLevel.Informational,
             Task = Tasks.RetrieveStoreInformation,
             Opcode = EventOpcode.Start)]
-        private void RetrieveStoreInformationStart(string uri, int start, int end)
+        private void RetrieveStoreInformationStart(string uri, int start, int end, int total)
         {
-            WriteEvent(4, uri, start, end);
+            WriteEvent(4, uri, start, end, total);
         }
 
         [NonEvent]
-        public void RetrieveStoreInformationStop(int startIndex, int endIndex, Uri uri)
+        public void RetrieveStoreInformationStop(int startIndex, int endIndex, int total, Uri uri)
         {
             if (uri == null)
             {
@@ -141,19 +141,19 @@ namespace Common.Logging
                 return;
             }
 
-            RetrieveStoreInformationStop(uri.ToString(), startIndex, endIndex);
+            RetrieveStoreInformationStop(uri.ToString(), startIndex, endIndex, total);
         }
 
         [Event(
             5,
-            Message = "Finished retrieving Steam store info for apps {1}-{2} from {0}",
+            Message = "Finished retrieving Steam store info for apps #{1}-#{2} / {3} from: {0}",
             Keywords = Keywords.StoreApi,
             Level = EventLevel.Informational,
             Task = Tasks.RetrieveStoreInformation,
             Opcode = EventOpcode.Stop)]
-        private void RetrieveStoreInformationStop(string uri, int start, int end)
+        private void RetrieveStoreInformationStop(string uri, int start, int end, int total)
         {
-            WriteEvent(5, uri, start, end);
+            WriteEvent(5, uri, start, end, total);
         }
 
         [Event(
