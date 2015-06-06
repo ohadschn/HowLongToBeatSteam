@@ -29,6 +29,7 @@ namespace MissingGamesUpdater.Updater
             try
             {
                 SiteUtil.KeepWebJobAlive();
+                SiteUtil.MockWebJobEnvironmentIfMissing("MissingUpdater", new Random().Next());
                 SiteUtil.SetDefaultConnectionLimit();
                 using (s_client = new HttpRetryClient(SteamApiRetries))
                 {
@@ -43,6 +44,7 @@ namespace MissingGamesUpdater.Updater
 
         private static async Task UpdateMissingGames()
         {
+            var tickCount = Environment.TickCount;
             MissingUpdaterEventSource.Log.UpdateMissingGamesStart();
 
             var steamTask = GetAllSteamApps(s_client);
@@ -76,14 +78,14 @@ namespace MissingGamesUpdater.Updater
 
             //we're inserting new entries, no fear of collisions (even if two jobs overlap the next one will fix it)
             await StorageHelper.Insert(updates, "updating missing games", StorageRetries).ConfigureAwait(false);  
-            MissingUpdaterEventSource.Log.UpdateMissingGamesStop();                         
 
             if (ioe != null)
             {
                 throw ioe; //fail job
             }
 
-            await SiteUtil.SendSuccessMail("Missing updater");
+            await SiteUtil.SendSuccessMail("Missing updater", SiteUtil.GetTimeElapsedFromTickCount(tickCount));
+            MissingUpdaterEventSource.Log.UpdateMissingGamesStop();
         }
 
         internal static async Task<IList<App>> GetAllSteamApps(HttpRetryClient client)

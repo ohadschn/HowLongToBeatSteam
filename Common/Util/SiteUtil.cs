@@ -23,6 +23,9 @@ namespace Common.Util
         private static readonly string SendGridPassword = GetMandatoryValueFromConfig("SendGridPassword");
         private static readonly string NotificationEmailAddress = GetMandatoryValueFromConfig("NotificationEmailAddress");
 
+        private const string WebjobNameEnvironmentVariable = "WEBJOBS_NAME";
+        private const string WebjobRunIDEnvironmentVariable = "WEBJOBS_RUN_ID";
+
         public static T GetNonpublicInstancePropertyValue<T>([NotNull] object instance, string propName)
         {
             if (instance == null) throw new ArgumentNullException("instance");
@@ -314,27 +317,43 @@ namespace Common.Util
 
         public static string WebJobName
         {
-            get { return Environment.GetEnvironmentVariable("WEBJOBS_NAME"); }
+            get { return Environment.GetEnvironmentVariable(WebjobNameEnvironmentVariable); }
         }
 
         public static string WebJobRunId
         {
-            get { return Environment.GetEnvironmentVariable("WEBJOBS_RUN_ID "); }
+            get { return Environment.GetEnvironmentVariable(WebjobRunIDEnvironmentVariable); }
         }
 
-        public static async Task SendSuccessMail([NotNull] string description)
+        public static void MockWebJobEnvironmentIfMissing(string name, int runId)
+        {
+            if (WebJobName != null || WebJobRunId != null) //only mock if not in actual webjob context
+            {
+                return;
+            }
+
+            Environment.SetEnvironmentVariable(WebjobNameEnvironmentVariable, name);
+            Environment.SetEnvironmentVariable(WebjobRunIDEnvironmentVariable, runId.ToString());
+        }
+
+        public static async Task SendSuccessMail([NotNull] string description, TimeSpan duration)
         {
             if (description == null) throw new ArgumentNullException("description");
 
             CommonEventSource.Log.SendSuccessMailStart(description);
             await new Web(new NetworkCredential(SendGridUser, SendGridPassword)).DeliverAsync(new SendGridMessage
             {
-                From = new MailAddress("webjobs@howlongtobeatsteam.com", "HowLongToBeatSteam WebJob notifier"),
-                Subject = String.Format(CultureInfo.InvariantCulture, "{0} ({1}) - Success", WebJobName, WebJobRunId),
+                From = new MailAddress("webjobs@howlongtobeatsteam.com", "HLTBS WebJob notifier"),
+                Subject = String.Format(CultureInfo.InvariantCulture, "{0} [{1}] - Success ({2})", WebJobName, WebJobRunId, duration),
                 To = new[] { new MailAddress(NotificationEmailAddress) },
                 Text = "Sent by SendGrid"
             });
             CommonEventSource.Log.SendSuccessMailStop(description);
+        }
+
+        public static TimeSpan GetTimeElapsedFromTickCount(int tickCount)
+        {
+            return TimeSpan.FromMilliseconds(Environment.TickCount - tickCount);
         }
     }
 }

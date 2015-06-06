@@ -42,6 +42,7 @@ namespace UnknownUpdater.Updater
 
         private async static Task UpdateUnknownApps()
         {
+            var tickCount = Environment.TickCount;
             UnknownUpdaterEventSource.Log.UpdateUnknownAppsStart();
 
             var apps = (await StorageHelper.GetAllApps(AppEntity.UnknownFilter, StorageRetries).ConfigureAwait(false)).Take(UpdateLimit).ToArray();
@@ -68,14 +69,14 @@ namespace UnknownUpdater.Updater
                 ae => new[] {TableOperation.Delete(appsDict[ae.SteamAppId]), TableOperation.Insert(ae)},
                 StorageHelper.SteamToHltbTableName, "updating previously unknown games", StorageRetries).ConfigureAwait(false);
 
-            UnknownUpdaterEventSource.Log.UpdateUnknownAppsStop();
 
             if (ioe != null)
             {
                 throw ioe; //fail job
             }
 
-            await SiteUtil.SendSuccessMail("Unknown updater");
+            await SiteUtil.SendSuccessMail("Unknown updater", SiteUtil.GetTimeElapsedFromTickCount(tickCount));
+            UnknownUpdaterEventSource.Log.UpdateUnknownAppsStop();
         }
     }
 }

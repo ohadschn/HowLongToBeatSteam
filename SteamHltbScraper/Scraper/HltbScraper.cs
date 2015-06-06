@@ -47,6 +47,7 @@ namespace SteamHltbScraper.Scraper
 
         private static async Task MainAsync()
         {
+            var tickCount = Environment.TickCount;
             SiteUtil.SetDefaultConnectionLimit();
 
             var allApps = (await StorageHelper.GetAllApps(AppEntity.MeasuredFilter, StorageRetries).ConfigureAwait(false)).Take(ScrapingLimit).ToArray();
@@ -58,7 +59,7 @@ namespace SteamHltbScraper.Scraper
             //we're using Replace since the only other update to an existing game-typed entity would have to be manual which should take precedence
             await StorageHelper.Replace(allApps, "updating scraped gametimes", StorageRetries).ConfigureAwait(false);
 
-            await SiteUtil.SendSuccessMail("HLTB scraper");
+            await SiteUtil.SendSuccessMail("HLTB scraper", SiteUtil.GetTimeElapsedFromTickCount(tickCount));
         }
 
         public static async Task ScrapeHltb(AppEntity[] allApps, Action<AppEntity, Exception> errorHandler = null)
