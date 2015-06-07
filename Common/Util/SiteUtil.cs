@@ -333,7 +333,7 @@ namespace Common.Util
             }
 
             Environment.SetEnvironmentVariable(WebjobNameEnvironmentVariable, name);
-            Environment.SetEnvironmentVariable(WebjobRunIDEnvironmentVariable, runId.ToString());
+            Environment.SetEnvironmentVariable(WebjobRunIDEnvironmentVariable, runId.ToString(CultureInfo.InvariantCulture));
         }
 
         public static async Task SendSuccessMail([NotNull] string description, TimeSpan duration)

@@ -239,6 +239,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Logging\AppInsightsExceptionLogger.cs" />
     <Compile Include="Models\PlayerInfo.cs" />
     <Compile Include="Models\HltbInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
