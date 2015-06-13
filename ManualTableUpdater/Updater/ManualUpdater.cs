@@ -33,10 +33,28 @@ namespace ManualTableUpdater.Updater
         public DateTime ReleaseDate { get; set; }
         [DataMember]
         public int MetacriticScore { get; set; }
+        [DataMember]
+        public int HltbId { get; set; }
+        [DataMember]
+        public string HltbName { get; set; }
+        [DataMember]
+        public int MainTtb { get; set; }
+        [DataMember]
+        public bool MainTtbImputed { get; set; }
+        [DataMember]
+        public int ExtrasTtb { get; set; }
+        [DataMember]
+        public bool ExtrasTtbImputed { get; set; }
+        [DataMember]
+        public int CompletionistTtb { get; set; }
+        [DataMember]
+        public bool CompletionistTtbImputed { get; set; }
 
         public AppEntityData(int steamAppId, string steamName, string appType, Platforms platforms,
             string[] categories, string[] genres, string[] developers,
-            string[] publishers, DateTime releaseDate, int metacriticScore)
+            string[] publishers, DateTime releaseDate, int metacriticScore,
+            int hltbId, string hltbName, 
+            int mainTtb, bool mainTtbImputed, int extrasTtb, bool extrasTtbImputed, int completionistTtb, bool completionistTtbImputed)
         {
             SteamAppId = steamAppId;
             SteamName = steamName;
@@ -48,6 +66,14 @@ namespace ManualTableUpdater.Updater
             Publishers = publishers;
             ReleaseDate = releaseDate;
             MetacriticScore = metacriticScore;
+            HltbId = hltbId;
+            HltbName = hltbName;
+            MainTtb = mainTtb;
+            MainTtbImputed = mainTtbImputed;
+            ExtrasTtb = extrasTtb;
+            ExtrasTtbImputed = extrasTtbImputed;
+            CompletionistTtb = completionistTtb;
+            CompletionistTtbImputed = completionistTtbImputed;
         }
     }
     class ManualUpdater
@@ -58,12 +84,29 @@ namespace ManualTableUpdater.Updater
         {
             try
             {
-                Console.WriteLine("Press any key to continue...");
+                //SerializeAllAppsToFile();
+                //LoadAllAppsFromFile();
+                Console.WriteLine("Done - Press any key to continue...");
                 Console.ReadLine();
             }
             finally
             {
                 EventSourceRegistrar.DisposeEventListeners();
+            }
+        }
+
+        private static void SerializeAllAppsToFile()
+        {
+            var appData = StorageHelper.GetAllApps().Result.Select(a =>
+                new AppEntityData(a.SteamAppId, a.SteamName, a.AppType, a.Platforms, a.Categories.ToArray(),
+                    a.Genres.ToArray(),
+                    a.Developers.ToArray(), a.Publishers.ToArray(), a.ReleaseDate, a.MetacriticScore, 
+                    a.HltbId, a.HltbName, a.MainTtb, a.MainTtbImputed, a.ExtrasTtb, a.ExtrasTtbImputed, a.CompletionistTtb, a.CompletionistTtbImputed))
+                    .ToArray();
+
+            using (var stream = File.OpenWrite(AppdataXml))
+            {
+                new DataContractSerializer(typeof(AppEntityData[])).WriteObject(stream, appData);
             }
         }
 
@@ -76,20 +119,18 @@ namespace ManualTableUpdater.Updater
             }
 
             StorageHelper.InsertOrReplace(appData.Select(
-                a => new AppEntity(a.SteamAppId, a.SteamName, a.AppType, a.Platforms, a.Categories, a.Genres,
-                    a.Publishers, a.Developers, a.ReleaseDate, a.MetacriticScore)), "updating apps from file").Wait();
-        }
-
-        private static void SerializeAllAppsToFile()
-        {
-            var appData = StorageHelper.GetAllApps().Result.Select(a =>
-                new AppEntityData(a.SteamAppId, a.SteamName, a.AppType, a.Platforms, a.Categories.ToArray(), a.Genres.ToArray(),
-                    a.Developers.ToArray(), a.Publishers.ToArray(), a.ReleaseDate, a.MetacriticScore)).ToArray();
-
-            using (var stream = File.OpenWrite(AppdataXml))
-            {
-                new DataContractSerializer(typeof(AppEntityData[])).WriteObject(stream, appData);
-            }
+                a => new AppEntity(a.SteamAppId, a.SteamName, a.AppType, a.Platforms, a.Categories,
+                    a.Genres, a.Publishers, a.Developers, a.ReleaseDate, a.MetacriticScore)
+                {
+                    HltbId = a.HltbId,
+                    HltbName = a.HltbName,
+                    MainTtb = a.MainTtb,
+                    MainTtbImputed = a.MainTtbImputed,
+                    ExtrasTtb = a.ExtrasTtb,
+                    ExtrasTtbImputed = a.ExtrasTtbImputed,
+                    CompletionistTtb = a.CompletionistTtb,
+                    CompletionistTtbImputed = a.CompletionistTtbImputed
+                }), "updating apps from file").Wait();
         }
 
         private static void PrintGenres()
