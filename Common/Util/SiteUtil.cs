@@ -25,6 +25,7 @@ namespace Common.Util
 
         private const string WebjobNameEnvironmentVariable = "WEBJOBS_NAME";
         private const string WebjobRunIDEnvironmentVariable = "WEBJOBS_RUN_ID";
+        private const string WebsiteNameEnvironmentVariable = "WEBSITE_SITE_NAME";
 
         public static T GetNonpublicInstancePropertyValue<T>([NotNull] object instance, string propName)
         {
@@ -325,15 +326,33 @@ namespace Common.Util
             get { return Environment.GetEnvironmentVariable(WebjobRunIDEnvironmentVariable); }
         }
 
+        public static string WebsiteName
+        {
+            get { return Environment.GetEnvironmentVariable(WebsiteNameEnvironmentVariable); }
+        }
+
         public static void MockWebJobEnvironmentIfMissing(string name, int runId)
         {
-            if (WebJobName != null || WebJobRunId != null) //only mock if not in actual webjob context
+            if (WebJobName != null || WebJobRunId != null || WebsiteName != null) //only mock if not in actual webjob context
             {
                 return;
             }
 
             Environment.SetEnvironmentVariable(WebjobNameEnvironmentVariable, name);
             Environment.SetEnvironmentVariable(WebjobRunIDEnvironmentVariable, runId.ToString(CultureInfo.InvariantCulture));
+            Environment.SetEnvironmentVariable(WebsiteNameEnvironmentVariable, "[mock]");
+        }
+
+        private static string GetTriggeredRunUrl()
+        {
+            return String.Format(CultureInfo.InvariantCulture,
+                "https://{0}.scm.azurewebsites.net/api/triggeredwebjobs/{1}/history/201506122200349072", WebsiteName, WebJobName);
+        }
+
+        private static string GetTriggeredLogUrl()
+        {
+            return String.Format(CultureInfo.InvariantCulture,
+                "https://{0}.scm.azurewebsites.net/vfs/data/jobs/triggered/{1}/201506122200349072/output_log.txt", WebsiteName, WebJobName);
         }
 
         public static async Task SendSuccessMail([NotNull] string description, TimeSpan duration)
@@ -344,9 +363,10 @@ namespace Common.Util
             await new Web(new NetworkCredential(SendGridUser, SendGridPassword)).DeliverAsync(new SendGridMessage
             {
                 From = new MailAddress("webjobs@howlongtobeatsteam.com", "HLTBS WebJob notifier"),
-                Subject = String.Format(CultureInfo.InvariantCulture, "{0} [{1}] - Success ({2})", WebJobName, WebJobRunId, duration),
-                To = new[] { new MailAddress(NotificationEmailAddress) },
-                Text = "Sent by SendGrid"
+                Subject = String.Format(CultureInfo.InvariantCulture, "{0} - Success ({1})", WebJobName, duration),
+                To = new[] {new MailAddress(NotificationEmailAddress)},
+                Text = String.Format(CultureInfo.InvariantCulture, "{1}{0}Run ID: {2}{0}Start time: {3}{0}End time:{4}{0}Output log file: {5}",
+                        Environment.NewLine, GetTriggeredRunUrl(), WebJobRunId, DateTime.UtcNow - duration, DateTime.UtcNow, GetTriggeredLogUrl())
             });
             CommonEventSource.Log.SendSuccessMailStop(description);
         }

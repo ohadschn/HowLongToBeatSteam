@@ -629,16 +629,21 @@ function AppViewModel() {
         return games;
     });
 
-    self.vanityUrlSubmitted = function () {
-
+    var setSteamIdFromUrl = function(prefix) {
         //handle profile URL instead of ID
-        var parts = self.steamVanityUrlName().split("steamcommunity.com/id/");
+        var parts = self.steamVanityUrlName().split(prefix);
         if (parts.length > 1) {
-            //steamVanityUrlName is something like "[http(s)://]steamcommunity.com/id/ohad[/home]"
+            //steamVanityUrlName is something like "[http(s)://](prefix)ID[/home]"
             var suffix = parts[1];
-            //suffix is something like "ohad[/home]"
+            //suffix is something like "(ID)[/home]"
             self.steamVanityUrlName(suffix.split('/')[0]);
         }
+    };
+
+    self.vanityUrlSubmitted = function () {
+
+        setSteamIdFromUrl("steamcommunity.com/id/");
+        setSteamIdFromUrl("steamcommunity.com/profiles/");
 
         if (window.location.hash === "#/" + self.steamVanityUrlName()) {
             //no submission will take place since it's the same URL, so we need to trigger Sammy manually

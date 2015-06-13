@@ -66,7 +66,7 @@
                       data-toggle="tooltip"
                       data-container="body"
                       title="Your profile ID can be found in your Steam profile page URL: steamcommunity.com/id/[ID]. Make sure it is set as public in Steam's privacy settings."></span>
-                <label class="control-label sr-only" for="steamIdText">Stem profile ID</label>
+                <label class="control-label sr-only" for="steamIdText">Steam profile ID</label>
                 <input id="steamIdText" type="text" data-bind="textInput : steamVanityUrlName" placeholder="Steam Profile ID" class="form-control inline-form-input">
                 <button type="submit" data-bind="enable: !processing() && steamVanityUrlName() !== ''" class="btn btn-primary">Tell me how long</button>
             </div>
@@ -410,7 +410,7 @@
                                     </a>
                                     <span data-bind="visible: known && (updatePhase() === GameUpdatePhase.None)">
                                         <a data-bind="text: hltbName, attr: {href: 'http://www.howlongtobeat.com/game.php?id=' + hltbId}, css: (included() ? '' : 'text-muted')" target="_blank"></a>
-                                        <a data-bind="click: $root.displayUpdateDialog, css: (included() ? '' : 'text-muted')" href="javascript:;">(wrong game?)</a>
+                                        <a data-bind="click: $root.displayUpdateDialog, css: 'emphasized' + (included() ? '' : ' text-muted')" href="javascript:;">(wrong game?)</a>
                                     </span>
                                     <span data-bind="visible: updatePhase() === GameUpdatePhase.InProgress, css: (included() ? '' : 'text-muted')">
                                         <span class="fa fa-spinner fa-spin"></span> Updating...
