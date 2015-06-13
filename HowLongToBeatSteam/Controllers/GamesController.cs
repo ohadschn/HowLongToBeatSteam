@@ -35,6 +35,8 @@ namespace HowLongToBeatSteam.Controllers
         private const string CacheAvatar = @"https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/ce/ce8f7969f8c79019ab3c7c88ccfbf3185e8ec7da_medium.jpg";
         private static readonly int s_cacheUpdateIntervalMinutes = SiteUtil.GetOptionalValueFromConfig("CacheUpdateIntervalMinutes", 60);
 
+        private static readonly int VanityUrlToSteamIdCacheExpirationMinutes = SiteUtil.GetOptionalValueFromConfig("VanityUrlToSteamIdCacheExpirationMinutes", 60);
+
         private static readonly HttpRetryClient Client = new HttpRetryClient(0);
         private static readonly ConcurrentDictionary<int, SteamAppData> Cache = new ConcurrentDictionary<int, SteamAppData>();
 
@@ -90,7 +92,7 @@ namespace HowLongToBeatSteam.Controllers
                         throw;
                     }
                 }
-                MemoryCache.Default[userVanityUrlName] = steamId;
+                MemoryCache.Default.Set(userVanityUrlName, steamId, DateTimeOffset.Now.AddMinutes(VanityUrlToSteamIdCacheExpirationMinutes));
             }
 
             var ownedGamesInfo = await GetGamesCore(steamId).ConfigureAwait(true);
