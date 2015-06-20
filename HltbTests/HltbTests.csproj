@@ -146,6 +146,10 @@
       <Project>{B6C78316-2C1D-4459-AAAA-84B6F430D88D}</Project>
       <Name>SteamHltbScraper</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SuggestionWatcher\SuggestionWatcher.csproj">
+      <Project>{B84EA4F7-B99A-4360-ADBC-D1CF113B1B9A}</Project>
+      <Name>SuggestionWatcher</Name>
+    </ProjectReference>
     <ProjectReference Include="..\UnknownUpdater\UnknownUpdater.csproj">
       <Project>{2B5C1778-81EF-41AD-8FA2-3B0FCFEFA039}</Project>
       <Name>UnknownUpdater</Name>

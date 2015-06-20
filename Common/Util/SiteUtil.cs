@@ -355,7 +355,7 @@ namespace Common.Util
                 "https://{0}.scm.azurewebsites.net/vfs/data/jobs/triggered/{1}/201506122200349072/output_log.txt", WebsiteName, WebJobName);
         }
 
-        public static async Task SendSuccessMail([NotNull] string description, TimeSpan duration)
+        public static async Task SendSuccessMail([NotNull] string description, TimeSpan duration, string customMessage = "")
         {
             if (description == null) throw new ArgumentNullException("description");
 
@@ -363,7 +363,7 @@ namespace Common.Util
             await new Web(new NetworkCredential(SendGridUser, SendGridPassword)).DeliverAsync(new SendGridMessage
             {
                 From = new MailAddress("webjobs@howlongtobeatsteam.com", "HLTBS WebJob notifier"),
-                Subject = String.Format(CultureInfo.InvariantCulture, "{0} - Success ({1})", WebJobName, duration),
+                Subject = String.Format(CultureInfo.InvariantCulture, "{0} - Success ({1}) [{2}]", WebJobName, duration, customMessage),
                 To = new[] {new MailAddress(NotificationEmailAddress)},
                 Text = String.Format(CultureInfo.InvariantCulture, "{1}{0}Run ID: {2}{0}Start time: {3}{0}End time:{4}{0}Output log file: {5}",
                         Environment.NewLine, GetTriggeredRunUrl(), WebJobRunId, DateTime.UtcNow - duration, DateTime.UtcNow, GetTriggeredLogUrl())

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.Linq;
 using Common.Entities;
@@ -18,7 +19,7 @@ namespace MissingGamesUpdater.Logging
         }
 
 // ReSharper disable ConvertToStaticClass
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
+        [SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
         public sealed class Keywords
         {
             private Keywords() { }
@@ -26,7 +27,7 @@ namespace MissingGamesUpdater.Logging
             public const EventKeywords MissingGamesUpdater = (EventKeywords) 2;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
+        [SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
         public sealed class Tasks
         {
             private Tasks() { }

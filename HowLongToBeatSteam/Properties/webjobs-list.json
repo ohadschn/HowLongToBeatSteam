@@ -9,6 +9,9 @@
     },
     {
       "filePath": "../UnknownUpdater/UnknownUpdater.csproj"
+    },
+    {
+      "filePath": "../SuggestionWatcher/SuggestionWatcher.csproj"
     }
   ]
 }
