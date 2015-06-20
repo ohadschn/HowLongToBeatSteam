@@ -100,14 +100,13 @@
             <span data-bind="visible: authenticated() === AuthenticationStatus.Success">Make sure your profile is <a href="http://google.com/#q=set+steam+profile+public" target="_blank" class="alert-link"> set to public in your Steam profile settings</a>.</span>
         </div>
         <div class="row horizontal-alert-row">
-            <div role="alert" data-bind="visible: missingHltbIds() && !missingAlertHidden()" class="alert alert-warning alert-dismissable horizontal-alert col-md-6">
+            <div role="alert" data-bind="visible: missingHltbIds() && !missingAlertHidden()" class="hidden-xs alert alert-warning alert-dismissable horizontal-alert col-md-6">
                 <button type="button" class="close" data-bind="click: function() {missingAlertHidden(true); }">
                     <span aria-hidden="true">&times;</span>
                     <span class="sr-only">Close</span>
                 </button>
                 <p class="lead">
-                    <span class="fa fa-puzzle-piece"></span> Some of your games could not be found on <abbr class="visible-xs-inline" title="HowLongToBeat">HLTB</abbr>
-                    <span class="hidden-xs"> HowLongToBeat. Click the update links next to missing games in the table below to help!</span>
+                    <span class="fa fa-puzzle-piece"></span> Some of your games could not be found on HowLongToBeat. Click the update links next to missing games in the table below to help!
                 </p>
             </div>
             <div role="alert" data-bind="visible: !error() && !alertHidden(), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-6' : 'col-md-12')">
@@ -118,16 +117,19 @@
                 <div data-bind="visible: libraryIsEmpty()">
                     <span class="fa fa-fw fa-ban"></span> You have no single-player games in your library. What kind of a sick person are you?
                 </div>
-                <div data-bind="visible: imputedTtbs">
-                    <span class="fa fa-fw fa-bar-chart"></span> Some values missing from <abbr title="HowLongToBeat">HLTB</abbr> were <a href="http://en.wikipedia.org/wiki/Imputation_%28statistics%29" class="alert-link" target="_blank">imputed</a>. Such values are <span class="emphasized"> italicized</span>.
+                <div data-bind="visible: missingHltbIds() || imputedTtbs()" class="hidden-sm hidden-md hidden-lg">
+                    <span class="fa fa-puzzle-piece"></span> Some playtimes could not be found on HowLongToBeat and were therefore <abbr title="Replaced with statistically probable values">statistically imputed</abbr>.
+                </div>
+                <div data-bind="visible: imputedTtbs" class="hidden-xs">
+                    <span class="fa fa-fw fa-bar-chart"></span> Values missing from HowLongToBeat were <abbr title="Replaced with statistically probable values (italicized in the playtime table below)">statistically imputed</abbr>.
                 </div>
                 <div data-bind="visible: partialCache">
                     <span class="fa fa-fw fa-database"></span> Some games haven't been processed by the site's engine yet (or they have been removed from the Steam store).
                 </div>
-                <div>
+                <div class="hidden-xs">
                     <span class="fa fa-fw fa-youtube-play"></span> Want to learn more? Check out the <a href="https://www.youtube.com/watch?v=o_8Rx4Vtyl8" target="_blank">video tutorial</a>!
                 </div>
-                <div>
+                <div class="hidden-xs">
                     <span class="fa fa-fw fa-desktop"></span> Like playing your games on the TV? Check out <a href="http://www.ohadsoft.com/2014/07/tvgamelaunchergui/" target="_blank">TvGameLauncher</a>!
                 </div>
             </div>
@@ -407,9 +409,9 @@
                                           data-bind="attr: { title: 'Current: ' + getHours(steamPlaytime) + 'h / Main: ' + getHours($data.hltbMainTtb) + 'h / Extras: ' + getHours($data.hltbExtrasTtb) + 'h / Completionist: ' + getHours($data.hltbCompletionistTtb) + 'h'}"></span>
                                 </td>
                                 <td data-bind="css: 'vcenter compressed hidden-xs' + (included() ? '' : ' text-muted'), text: getHours(steamPlaytime) + 'h'"></td>
-                                <td data-bind="css: 'vcenter compressed hidden-xs' + (included() ? '' : ' text-muted') + (hltbMainTtbImputed ? ' emphasized' : ''), text: getHours($data.hltbMainTtb) + 'h'"></td>
-                                <td data-bind="css: 'vcenter compressed hidden-xs' + (included() ? '' : ' text-muted') + (hltbExtrasTtbImputed ? ' emphasized' : ''), text: getHours($data.hltbExtrasTtb) + 'h'"></td>
-                                <td data-bind="css: 'vcenter compressed hidden-xs' + (included() ? '' : ' text-muted') + (hltbCompletionistTtbImputed ? ' emphasized' : ''), text: getHours($data.hltbCompletionistTtb) + 'h'">></td>
+                                <td data-bind="css: 'vcenter compressed hidden-xs' + (included() ? '' : ' text-muted') + (hltbMainTtbImputed ? ' emphasized' : ''), text: getHours($data.hltbMainTtb) + 'h', attr: {title: hltbMainTtbImputed ? 'Imputed' : ''}"></td>
+                                <td data-bind="css: 'vcenter compressed hidden-xs' + (included() ? '' : ' text-muted') + (hltbExtrasTtbImputed ? ' emphasized' : ''), text: getHours($data.hltbExtrasTtb) + 'h', attr: {title: hltbExtrasTtbImputed ? 'Imputed' : ''}"></td>
+                                <td data-bind="css: 'vcenter compressed hidden-xs' + (included() ? '' : ' text-muted') + (hltbCompletionistTtbImputed ? ' emphasized' : ''), text: getHours($data.hltbCompletionistTtb) + 'h', attr: {title: hltbCompletionistTtbImputed ? 'Imputed' : ''}">></td>
                                 <td data-bind="css: 'vcenter hidden-xs' + (known ? '' : ' emphasized')">
                                     <a data-bind="visible: !known && (updatePhase() === GameUpdatePhase.None), click: $root.displayUpdateDialog, css: (included() ? '' : 'text-muted')" href="javascript:;">
                                         <span class="fa fa-puzzle-piece"></span> Missing (click to update)
@@ -484,16 +486,28 @@
                     <div id="adsenseFooter"></div>
                 </div>
             </div>
+            <div data-bind="visible: extraExtraSmall, template: 'community-template'" class="text-center"></div>
         </div>
     </div>
     <div class="footer" data-bind="visible: !introPage()" style="display: none">
-        <a href="mailto:info@howlongtobeatsteam.com">Feedback</a> |
-        <a href="javascript:;" data-bind="click: displayPrivacyPolicy">Privacy Policy</a>
-        <br />
-        <a href="http://steampowered.com" target="_blank">Powered by Steam</a> & <a href="http://howlongtobeat.com" target="_blank">HowLongToBeat</a>
-        <br />
-        All Rights Reserved <a href="http://www.ohadsoft.com" target="_blank">Ohad Schneider</a> &copy; 2015
+        <div class="pull-left">
+            <a href="mailto:info@howlongtobeatsteam.com">Feedback</a> |
+            <a href="javascript:;" data-bind="click: displayPrivacyPolicy">Privacy Policy</a>
+            <br />
+            <a href="http://steampowered.com" target="_blank">Powered by Steam</a> & <a href="http://howlongtobeat.com" target="_blank">HowLongToBeat</a>
+            <br />
+            All Rights Reserved <a href="http://www.ohadsoft.com" target="_blank">Ohad Schneider</a> &copy; 2015
+        </div>
+        <div class="pull-right" data-bind="template: 'community-template', visible: !extraExtraSmall"></div>
     </div>
+    <script type="text/html" id="community-template">
+        <h3>
+            <a href="http://steamcommunity.com/groups/hltbs" target="_blank"><span class="fa fa-fw fa-steam-square steam-color"></span></a>
+            <a href="http://www.facebook.com/howlongtobeatsteam" target="_blank"><span class="fa fa-fw fa-facebook-square facebook-color"></span></a>
+            <a href="http://twitter.com/hltbsteam" target="_blank"><span class="fa fa-fw fa-twitter-square twitter-color"></span></a>
+            <a href="http://google.com/+Howlongtobeatsteam" target="_blank"><span class="fa fa-fw fa-google-plus-square google-plus-color"></span></a>
+        </h3>
+    </script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js" crossorigin="anonymous"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/sammy.js/0.7.6/sammy.min.js" crossorigin="anonymous"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.3.0/knockout-min.js" crossorigin="anonymous"></script>

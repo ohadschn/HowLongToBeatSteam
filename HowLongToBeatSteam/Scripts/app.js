@@ -145,6 +145,7 @@ function AppViewModel() {
     self.height = $(window).height();
 
     self.superSmall = self.width < 380;
+    self.extraExtraSmall = self.width < 480;
     self.extraSmall = self.width < 768;
     self.small = self.width < 992;
     self.medium = self.width < 1200;

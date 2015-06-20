@@ -85,6 +85,18 @@
     background-color: black;
     background-color: rgba(0, 0, 0, 0.2);
 }
+.steam-color {
+    color: #171A21
+}
+.facebook-color {
+    color: #435F9C
+}
+.twitter-color {
+    color: #55ACEE
+}
+.google-plus-color {
+    color: #DD4B39
+}
 .attribution {
     position: absolute;
     bottom: 5px;
