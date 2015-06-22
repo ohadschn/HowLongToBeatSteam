@@ -28,6 +28,7 @@ namespace UnknownUpdater.Updater
             try
             {
                 SiteUtil.KeepWebJobAlive();
+                SiteUtil.MockWebJobEnvironmentIfMissing("UnknownUpdater");
                 SiteUtil.SetDefaultConnectionLimit();
                 using (Client)
                 {
@@ -75,7 +76,7 @@ namespace UnknownUpdater.Updater
                 throw ioe; //fail job
             }
 
-            await SiteUtil.SendSuccessMail("Unknown updater", SiteUtil.GetTimeElapsedFromTickCount(tickCount));
+            await SiteUtil.SendSuccessMail("Unknown updater", SiteUtil.GetTimeElapsedFromTickCount(tickCount), updates.Count + " games updated");
             UnknownUpdaterEventSource.Log.UpdateUnknownAppsStop();
         }
     }

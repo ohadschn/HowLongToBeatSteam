@@ -14,7 +14,7 @@ namespace SuggestionWatcher.Watcher
             try
             {
                 SiteUtil.KeepWebJobAlive();
-                SiteUtil.MockWebJobEnvironmentIfMissing("SuggestionWatcher", new Random().Next());
+                SiteUtil.MockWebJobEnvironmentIfMissing("SuggestionWatcher");
                 WatchForSuggestions().Wait();
             }
             finally
@@ -33,7 +33,7 @@ namespace SuggestionWatcher.Watcher
 
             await SiteUtil.SendSuccessMail(
                 "Suggestion Watcher", SiteUtil.GetTimeElapsedFromTickCount(tickCount),
-                pendingSuggestions > 0 ? pendingSuggestions + " suggestion(s) pending" : String.Empty);
+                pendingSuggestions > 0 ? pendingSuggestions + " suggestion(s) pending" : "no pending suggestions");
 
             SuggestionWatcherEventSource.Log.WatchSuggestionsStop(pendingSuggestions);
         }

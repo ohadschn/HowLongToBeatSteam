@@ -331,7 +331,7 @@ namespace Common.Util
             get { return Environment.GetEnvironmentVariable(WebsiteNameEnvironmentVariable); }
         }
 
-        public static void MockWebJobEnvironmentIfMissing(string name, int runId)
+        public static void MockWebJobEnvironmentIfMissing(string name)
         {
             if (WebJobName != null || WebJobRunId != null || WebsiteName != null) //only mock if not in actual webjob context
             {
@@ -339,7 +339,7 @@ namespace Common.Util
             }
 
             Environment.SetEnvironmentVariable(WebjobNameEnvironmentVariable, name);
-            Environment.SetEnvironmentVariable(WebjobRunIDEnvironmentVariable, runId.ToString(CultureInfo.InvariantCulture));
+            Environment.SetEnvironmentVariable(WebjobRunIDEnvironmentVariable, RandomGenerator.Next(0, int.MaxValue).ToString(CultureInfo.InvariantCulture));
             Environment.SetEnvironmentVariable(WebsiteNameEnvironmentVariable, "[mock]");
         }
 
@@ -355,7 +355,7 @@ namespace Common.Util
                 "https://{0}.scm.azurewebsites.net/vfs/data/jobs/triggered/{1}/201506122200349072/output_log.txt", WebsiteName, WebJobName);
         }
 
-        public static async Task SendSuccessMail([NotNull] string description, TimeSpan duration, string customMessage = "")
+        public static async Task SendSuccessMail([NotNull] string description, TimeSpan duration, string customMessage)
         {
             if (description == null) throw new ArgumentNullException("description");
 

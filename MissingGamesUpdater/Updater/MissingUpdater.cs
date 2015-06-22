@@ -29,7 +29,7 @@ namespace MissingGamesUpdater.Updater
             try
             {
                 SiteUtil.KeepWebJobAlive();
-                SiteUtil.MockWebJobEnvironmentIfMissing("MissingUpdater", new Random().Next());
+                SiteUtil.MockWebJobEnvironmentIfMissing("MissingUpdater");
                 SiteUtil.SetDefaultConnectionLimit();
                 using (s_client = new HttpRetryClient(SteamApiRetries))
                 {
@@ -84,7 +84,7 @@ namespace MissingGamesUpdater.Updater
                 throw ioe; //fail job
             }
 
-            await SiteUtil.SendSuccessMail("Missing updater", SiteUtil.GetTimeElapsedFromTickCount(tickCount));
+            await SiteUtil.SendSuccessMail("Missing updater", SiteUtil.GetTimeElapsedFromTickCount(tickCount), updates.Count + " apps added");
             MissingUpdaterEventSource.Log.UpdateMissingGamesStop();
         }
 

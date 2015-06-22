@@ -10,42 +10,44 @@ namespace HltbTests.Scraping
         [TestMethod]
         public void TestFullStats()
         {
-            TestScraping("Portal", true, true, true);
+            TestScraping("Portal", 2007, true, true, true);
         }
 
         [TestMethod]
         public void TestMultiplayerOnly()
         {
-            TestScraping("Spiral Knights", false, false, false);
+            TestScraping("Spiral Knights", 2009, false, false, false);
         }
 
         [TestMethod]
         public void TestEndlessTitle()
         {
-            TestScraping("World of Guns: Gun Disassembly", false, false, false);
+            TestScraping("World of Guns: Gun Disassembly", 2014, false, false, false);
         }
 
         [TestMethod]
         public void TestSinglePlayerUnifiedStat()
         {
-            TestScraping("A Bird Story", true, false, false);
-            TestScraping("The Secret of Hildegards", true, false, false);
-            TestScraping("Cognition: An Erica Reed Thriller", true, false, false);
-            TestScraping("Gearcrack Arena", true, false, false);
-            TestScraping("The Plan (2013)", true, false, false);
-            TestScraping("Crystals of Time", true, true, false);
-            TestScraping("The Wolf Among Us", true, true, false);
+            TestScraping("Commander Keen Collection (Ep. 1-5)", 1990, true, true, false);
+            TestScraping("A Bird Story", 2014, true, false, false);
+            TestScraping("The Secret of Hildegards", 2011, true, false, false);
+            TestScraping("Cognition: An Erica Reed Thriller", 2013, true, false, false);
+            TestScraping("Gearcrack Arena", 2014, true, true, false);
+            TestScraping("The Plan (2013)", 2013, true, false, false);
+            TestScraping("Crystals of Time", 2014, true, true, false);
+            TestScraping("The Wolf Among Us", 2013, true, true, false);
         }
 
         [TestMethod]
         public void TestSinglePlayerUnifiedStatRange()
         {
-            TestScraping("The Walking Dead: Season 2", true, true, false);
+            TestScraping("The Walking Dead: Season 2", 2013, true, true, false);
         }
 
-        private void TestScraping(string name, bool hasMain, bool hasExtras, bool hasCompletionist)
+        private void TestScraping(string name, int releaseYear, bool hasMain, bool hasExtras, bool hasCompletionist)
         {
             var app = GetApp(name);
+            Assert.AreEqual(releaseYear, app.ReleaseDate.Year, "Incorrect release year");
             if (hasMain)
             {
                 Assert.IsTrue(app.MainTtb > 0, "expected positive main TTB");

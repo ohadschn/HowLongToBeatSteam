@@ -37,6 +37,7 @@ namespace SteamHltbScraper.Scraper
             try
             {
                 SiteUtil.KeepWebJobAlive();
+                SiteUtil.MockWebJobEnvironmentIfMissing("HltbScraper");
                 MainAsync().Wait();
             }
             finally
@@ -59,7 +60,7 @@ namespace SteamHltbScraper.Scraper
             //we're using Replace since the only other update to an existing game-typed entity would have to be manual which should take precedence
             await StorageHelper.Replace(allApps, "updating scraped gametimes", StorageRetries).ConfigureAwait(false);
 
-            await SiteUtil.SendSuccessMail("HLTB scraper", SiteUtil.GetTimeElapsedFromTickCount(tickCount));
+            await SiteUtil.SendSuccessMail("HLTB scraper", SiteUtil.GetTimeElapsedFromTickCount(tickCount), allApps.Length + " games scraped");
         }
 
         public static async Task ScrapeHltb(AppEntity[] allApps, Action<AppEntity, Exception> errorHandler = null)
@@ -177,6 +178,54 @@ namespace SteamHltbScraper.Scraper
             var doc = await LoadDocument(() => s_client.GetAsync(gameOverviewUrl)).ConfigureAwait(false);
             HltbScraperEventSource.Log.GetGameOverviewPageStop(gameOverviewUrl);
 
+            int mainTtb, extrasTtb, completionistTtb;
+            ScrapeTtbs(hltbId, doc, out mainTtb, out extrasTtb, out completionistTtb);
+
+            var releaseDate = ScrapeReleaseDate(hltbId, doc);
+
+            HltbScraperEventSource.Log.ScrapeHltbInfoStop(hltbId, mainTtb, extrasTtb, completionistTtb, releaseDate.Year);
+            return new HltbInfo(mainTtb, extrasTtb, completionistTtb, releaseDate);
+        }
+
+        private static DateTime ScrapeReleaseDate(int hltbId, HtmlDocument doc)
+        {
+            var releaseDatesTitle = doc.DocumentNode.Descendants("h5").FirstOrDefault(n => n.InnerText.Contains("Release Date(s):"));
+            if (releaseDatesTitle == null)
+            {
+                return AppEntity.UnknownDate;
+            }
+
+            var releaseDateDiv = releaseDatesTitle.ParentNode;
+            if (releaseDateDiv == null)
+            {
+                throw GetFormatException("Release date title has no parent", hltbId, doc);
+            }
+
+            var minDate = DateTime.MaxValue;
+            foreach (var dateNode in releaseDateDiv.ChildNodes.Where(n => n.NodeType == HtmlNodeType.Text))
+            {
+                DateTime date;
+                if (!DateTime.TryParse(dateNode.InnerText, out date))
+                {
+                    int year;
+                    if (!Int32.TryParse(dateNode.InnerText, out year))
+                    {
+                        continue;
+                    }
+                    date = new DateTime(year, 1, 1);
+                }
+                
+                if (date < minDate)
+                {
+                    minDate = date;
+                }
+            }
+
+            return (minDate == DateTime.MaxValue) ? AppEntity.UnknownDate : minDate;
+        }
+
+        private static void ScrapeTtbs(int hltbId, HtmlDocument doc, out int mainTtb, out int extrasTtb, out int completionistTtb)
+        {
             var list = doc.DocumentNode.Descendants("div").FirstOrDefault(n => n.GetAttributeValue("class", null) == "gprofile_times");
             if (list == null)
             {
@@ -184,11 +233,11 @@ namespace SteamHltbScraper.Scraper
             }
 
             var listItems = list.Descendants("li").Take(4).ToArray();
-            
-            int mainTtb, extrasTtb, completionistTtb, soloTtb, coOp, vs, singlePlayerMain, singlePlayerExtras, dummy;
 
-            bool gotMain = TryGetMinutes(listItems, "main", hltbId, doc, out mainTtb, out dummy);
-            bool gotExtras = TryGetMinutes(listItems, "extras", hltbId, doc, out extrasTtb, out dummy);
+            int mainTtbInitial, extrasTtbInitial, soloTtb, coOp, vs, singlePlayerMain, singlePlayerExtras, dummy;
+
+            bool gotMain = TryGetMinutes(listItems, "main", hltbId, doc, out mainTtbInitial, out dummy);
+            bool gotExtras = TryGetMinutes(listItems, "extras", hltbId, doc, out extrasTtbInitial, out dummy);
             bool gotCompletionist = TryGetMinutes(listItems, "completionist", hltbId, doc, out completionistTtb, out dummy);
             bool gotSolo = TryGetMinutes(listItems, "solo", hltbId, doc, out soloTtb, out dummy);
             bool gotCoOp = TryGetMinutes(listItems, "co-op", hltbId, doc, out coOp, out dummy);
@@ -200,11 +249,8 @@ namespace SteamHltbScraper.Scraper
                 throw new TransientHltbFaultException("Could not find any TTB list item for HLTB ID " + hltbId, doc);
             }
 
-            var unifiedMain = Math.Max(mainTtb, Math.Max(singlePlayerMain, soloTtb));
-            var unifiedExtras = (singlePlayerExtras > singlePlayerMain) ? singlePlayerExtras : extrasTtb;
-
-            HltbScraperEventSource.Log.ScrapeHltbInfoStop(hltbId, unifiedMain, unifiedExtras, completionistTtb);
-            return new HltbInfo(unifiedMain, unifiedExtras, completionistTtb);
+            mainTtb = Math.Max(mainTtbInitial, Math.Max(singlePlayerMain, soloTtb));
+            extrasTtb = (singlePlayerExtras > singlePlayerMain) ? singlePlayerExtras : extrasTtbInitial;
         }
 
         public static async Task<string> ScrapeHltbName(int hltbId)
@@ -377,6 +423,11 @@ namespace SteamHltbScraper.Scraper
 
             var completionistTtb = GetTtb(app, "completionist", app.CompletionistTtb, app.CompletionistTtbImputed, hltbInfo.CompletionistTtb);
             app.SetCompletionistTtb(completionistTtb, completionistTtb == 0);
+
+            if (hltbInfo.ReleaseDate != AppEntity.UnknownDate)
+            {
+                app.ReleaseDate = hltbInfo.ReleaseDate;
+            }
         }
 
         private static int GetTtb(AppEntity app, string ttbType, int currentTtb, bool currentTtbImputed, int scrapedTtb)

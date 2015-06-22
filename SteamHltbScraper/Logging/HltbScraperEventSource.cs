@@ -344,14 +344,14 @@ namespace SteamHltbScraper.Logging
 
         [Event(
             17,
-            Message = "Finished scraping HLTB info for hltb {0}: Main {1} Extras {2} Completionist {3}",
+            Message = "Finished scraping HLTB info for hltb {0}: Main {1} Extras {2} Completionist {3} Release Year {4}",
             Keywords = Keywords.Scraping,
             Level = EventLevel.Informational,
             Task = Tasks.ScrapeHltbInfo,
             Opcode = EventOpcode.Stop)]
-        public void ScrapeHltbInfoStop(int hltbId, int mainTtb, int extrasTtb, int completionistTtb)
+        public void ScrapeHltbInfoStop(int hltbId, int mainTtb, int extrasTtb, int completionistTtb, int releaseYear)
         {
-            WriteEvent(17, hltbId, mainTtb, extrasTtb, completionistTtb);
+            WriteEvent(17, hltbId, mainTtb, extrasTtb, completionistTtb, releaseYear);
         }
 
         [Event(
