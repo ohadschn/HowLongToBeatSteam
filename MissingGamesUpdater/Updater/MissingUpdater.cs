@@ -84,7 +84,7 @@ namespace MissingGamesUpdater.Updater
                 throw ioe; //fail job
             }
 
-            await SiteUtil.SendSuccessMail("Missing updater", SiteUtil.GetTimeElapsedFromTickCount(tickCount), updates.Count + " apps added");
+            await SiteUtil.SendSuccessMail("Missing updater", SiteUtil.GetTimeElapsedFromTickCount(tickCount), updates.Count + " app(s) added");
             MissingUpdaterEventSource.Log.UpdateMissingGamesStop();
         }
 

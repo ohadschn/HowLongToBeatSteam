@@ -76,7 +76,7 @@ namespace UnknownUpdater.Updater
                 throw ioe; //fail job
             }
 
-            await SiteUtil.SendSuccessMail("Unknown updater", SiteUtil.GetTimeElapsedFromTickCount(tickCount), updates.Count + " games updated");
+            await SiteUtil.SendSuccessMail("Unknown updater", SiteUtil.GetTimeElapsedFromTickCount(tickCount), updates.Count + " previously unknown game(s) updated");
             UnknownUpdaterEventSource.Log.UpdateUnknownAppsStop();
         }
     }
