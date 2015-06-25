@@ -346,13 +346,13 @@ namespace Common.Util
         private static string GetTriggeredRunUrl()
         {
             return String.Format(CultureInfo.InvariantCulture,
-                "https://{0}.scm.azurewebsites.net/api/triggeredwebjobs/{1}/history/201506122200349072", WebsiteName, WebJobName);
+                "https://{0}.scm.azurewebsites.net/api/triggeredwebjobs/{1}/history/{2}", WebsiteName, WebJobName, WebJobRunId);
         }
 
         private static string GetTriggeredLogUrl()
         {
             return String.Format(CultureInfo.InvariantCulture,
-                "https://{0}.scm.azurewebsites.net/vfs/data/jobs/triggered/{1}/201506122200349072/output_log.txt", WebsiteName, WebJobName);
+                "https://{0}.scm.azurewebsites.net/vfs/data/jobs/triggered/{1}/{2}/output_log.txt", WebsiteName, WebJobName, WebJobRunId);
         }
 
         public static async Task SendSuccessMail([NotNull] string description, TimeSpan duration, string customMessage)
