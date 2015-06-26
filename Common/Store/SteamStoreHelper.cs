@@ -45,7 +45,7 @@ namespace Common.Store
             {
                 var appInfo = jObject[app.AppId.ToString(CultureInfo.InvariantCulture)].ToObject<StoreAppInfo>();
 
-                string type = !appInfo.success || appInfo.data == null
+                string type = !appInfo.success || appInfo.data == null || String.IsNullOrWhiteSpace(appInfo.data.type)
                     ? AppEntity.UnknownType
                     : appInfo.data.type;
 

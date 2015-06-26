@@ -25,6 +25,10 @@ var getOrderedOwnProperties = function(object) {
     return propArr;
 };
 
+var capitalizeFirstLetter = function(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 var getHours = function (minutes, digits) { // jshint ignore:line
     if (digits === undefined) {
         digits = 2;
