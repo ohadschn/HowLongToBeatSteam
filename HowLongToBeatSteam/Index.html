@@ -312,18 +312,29 @@
                         <div class="row">
                             <div class="col-lg-6">
                                 <h4 class="text-center text-nowrap">Playtime by Genre</h4>
-                                <div id="genreChart" class="full-width"></div>
-                                <h1 id="genreChartNoData" class="no-vertical-margin text-center">
-                                    <span class="vertically-centered">No Data</span>
-                                </h1>
+                                <div id="genreChart" class="full-width slice-chart"></div>
+                                <h1 class="no-vertical-margin text-center no-data-indicator"><span class="vertically-centered">No Data</span></h1>
                             </div>
                             <div class="col-lg-6">
                                 <h4 class="text-center text-nowrap">Playtime by <a href="http://www.metacritic.com" target="_blank">Metacritic</a> score</h4>
-                                <div id="metacriticChart" class="full-width"></div>
-                                <h1 id="metacriticChartNoData" class="no-vertical-margin text-center">
-                                    <span class="vertically-centered">No Data</span>
-                                </h1>
+                                <div id="metacriticChart" class="full-width slice-chart"></div>
+                                <h1 class="no-vertical-margin text-center no-data-indicator"><span class="vertically-centered">No Data</span></h1>
                             </div>
+                        </div>
+                    </div>
+                    <div data-bind="css: 'container-fluid' + (medium ? '' : ' lowered-extra')">
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <h4 class="text-center text-nowrap">Playtime by Release Date</h4>
+                                <div id="releaseDateChart" class="full-width slice-chart"></div>
+                                <h1 class="no-vertical-margin text-center no-data-indicator"><span class="vertically-centered">No Data</span></h1>
+                            </div>
+                            <div class="col-lg-4">
+                                <h4 class="text-center text-nowrap">Playtime by Type</h4>
+                                <div id="appTypeChart" class="full-width slice-chart"></div>
+                                <h1 class="no-vertical-margin text-center no-data-indicator"><span class="vertically-centered">No Data</span></h1>
+                            </div>
+                            <div class="col-lg-4 sliceAd"></div>
                         </div>
                     </div>
                 </div>

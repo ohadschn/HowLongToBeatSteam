@@ -72,14 +72,12 @@ namespace HowLongToBeatSteam.Models
         [DataMember]
         public Dictionary<string, int> PlaytimesByAppType { get; private set; }
         [DataMember]
-        public Dictionary<string, int> PlaytimesByPlatform { get; private set; }
-        [DataMember]
         public Dictionary<int, int> PlaytimesByReleaseYear { get; private set; }
 
         public Totals(int playtime, int mainTtb, int extrasTtb, int completionistTtb, int mainRemaining, int extrasRemaining, int completionistRemaining,
             int mainCompleted, int extrasCompleted, int completionistCompleted,
-            Dictionary<string, int> playtimesByGenre, Dictionary<int, int> playtimesByMetacritic, Dictionary<string, int> playtimesByAppType,
-            Dictionary<string, int> playtimesByPlatform, Dictionary<int, int> playtimesByReleaseYear)
+            Dictionary<string, int> playtimesByGenre, Dictionary<int, int> playtimesByMetacritic, 
+            Dictionary<string, int> playtimesByAppType, Dictionary<int, int> playtimesByReleaseYear)
         {
             Playtime = playtime;
             MainTtb = mainTtb;
@@ -94,7 +92,6 @@ namespace HowLongToBeatSteam.Models
             PlaytimesByGenre = playtimesByGenre;
             PlaytimesByMetacritic = playtimesByMetacritic;
             PlaytimesByAppType = playtimesByAppType;
-            PlaytimesByPlatform = playtimesByPlatform;
             PlaytimesByReleaseYear = playtimesByReleaseYear;
         }
     }
@@ -107,7 +104,11 @@ namespace HowLongToBeatSteam.Models
         [DataMember]
         public string SteamName { get; private set; }
         [DataMember]
+        public string AppType { get; private set; }
+        [DataMember]
         public IReadOnlyList<string> Genres { get; private set; }
+        [DataMember]
+        public int ReleaseYear { get; private set; }
         [DataMember]
         public int MetacriticScore { get; private set; }
         [DataMember]
@@ -122,7 +123,9 @@ namespace HowLongToBeatSteam.Models
 
             SteamAppId = appEntity.SteamAppId;
             SteamName = appEntity.SteamName;
+            AppType = appEntity.AppType;
             Genres = appEntity.Genres;
+            ReleaseYear = appEntity.ReleaseDate.Year;
             MetacriticScore = appEntity.MetacriticScore;
             HltbInfo = appEntity.Measured ? new HltbInfo(appEntity) : null;
         }

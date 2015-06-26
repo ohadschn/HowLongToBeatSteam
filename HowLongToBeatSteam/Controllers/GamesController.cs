@@ -139,7 +139,6 @@ namespace HowLongToBeatSteam.Controllers
             Dictionary<string, int> playtimesByGenre = new Dictionary<string, int>();
             Dictionary<int, int> playtimesByMetacritic = new Dictionary<int, int>();
             Dictionary<string, int> playtimesByAppType = new Dictionary<string, int>();
-            Dictionary<string, int> playtimesByPlatform = new Dictionary<string, int>();
             Dictionary<int, int> playtimesByReleaseYear = new Dictionary<int, int>();
 
             foreach (var game in ownedGames)
@@ -177,6 +176,8 @@ namespace HowLongToBeatSteam.Controllers
                 }
                 IncrementDictionaryEntryFromZero(playtimesByGenre, String.Join("/", genres), cachedGameData.HltbInfo.MainTtb);
                 IncrementDictionaryEntryFromZero(playtimesByMetacritic, cachedGameData.MetacriticScore, cachedGameData.HltbInfo.MainTtb);
+                IncrementDictionaryEntryFromZero(playtimesByReleaseYear, cachedGameData.ReleaseYear, cachedGameData.HltbInfo.MainTtb);
+                IncrementDictionaryEntryFromZero(playtimesByAppType, cachedGameData.AppType, cachedGameData.HltbInfo.MainTtb);
 
                 games.Add(new SteamAppUserData(cachedGameData, game.playtime_forever));
             }
@@ -185,7 +186,7 @@ namespace HowLongToBeatSteam.Controllers
             return new PlayerInfo(partialCache, games, new
                 Totals(playtime, mainTtb, extrasTtb, completionistTtb, mainRemaining, extrasRemaining, completionistRemaining,
                 mainCompleted, extrasCompleted, completionistCompleted,
-                playtimesByGenre, playtimesByMetacritic, playtimesByAppType, playtimesByPlatform, playtimesByReleaseYear), personaInfo);
+                playtimesByGenre, playtimesByMetacritic, playtimesByAppType, playtimesByReleaseYear), personaInfo);
         }
 
         private static void IncrementDictionaryEntryFromZero<TKey>(IDictionary<TKey, int> dict, TKey key, int value) 
