@@ -1128,23 +1128,28 @@ function AppViewModel() {
         $("#" + divId).html(adHtml);
     };
 
+    var displayRectangluarAd = function (adUnitId, divId, heightDivId) {
+        var adsenseRectangle = $("#" + divId);
+
+        //we need to set the height so that centering works
+        //we subtract 50 to account for chart axis labels
+        //we make sure that the ad is not too short to be a rectangle ad
+        adsenseRectangle.height(Math.max($("#" + heightDivId).height() - 50, 290));
+
+        //we only set the background now so that we don't see a stripe before this point
+        adsenseRectangle.css("background-color", "#f5f5f5");
+
+        displayAd(divId, adUnitId, "rectangle", true);
+    };
+
     var adsDisplayed = false;
     var displayAds = function () {
         if (adsDisplayed || self.introPage()) { //don't try and display ads if user quickly went back to intro
             return;
         }
 
-        var adsenseRectangle = $("#adsenseRectangle");
-
-        //we need to set the height so that centering works
-        //we subtract 50 to account for chart axis labels
-        //we make sure that the ad is not too short to be a rectangle ad
-        adsenseRectangle.height(Math.max($("#playtimeChart").height() - 50, 290));
-
-        //we only set the background now so that we don't see a stripe before this point
-        adsenseRectangle.css("background-color", "#f5f5f5");
-
-        displayAd("adsenseRectangle", "9687661733", "rectangle", true);
+        displayRectangluarAd("9687661733", "adsensePlaytime", "playtimeChart");
+        displayRectangluarAd("3926671738", "adsenseSlice", "appTypeChart");
 
         //we slightly reduce the internal rectangle width so that we can still see the background
         var adsenseRectangleInternal = $("#adsenseRectangleInternal");

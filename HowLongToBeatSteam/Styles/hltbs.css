@@ -34,13 +34,21 @@
 .push-down-max {
     margin-bottom: 9999px;
 }
-.playtimeAd {
+.rectangularAd {
     margin-top: 74px;
     position: relative;
 }
 @media (max-width: 1199px) {
-    .playtimeAd {
+    .rectangularAd {
         margin-top: 20px;
+    }
+}
+.minor-slice-row {
+    margin-top: 20px
+}
+@media (max-width: 1199px) {
+    .minor-slice-row {
+        margin-top: 0;
     }
 }
 .centered {
