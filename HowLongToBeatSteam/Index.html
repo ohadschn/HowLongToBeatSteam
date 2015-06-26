@@ -410,7 +410,7 @@
                                 <!-- ReSharper disable UnknownCssClass -->
                                 <td class="vcenter">
                                     <!-- ReSharper restore UnknownCssClass -->
-                                    <a data-bind="attr: {href: 'http://store.steampowered.com/app/' + steamAppId, title: 'Type: ' + capitalizeFirstLetter(appType) + '\nGenre: ' + getCombinedGenre() + '\nMetacritic score: ' + (metacriticScore === -1 ? '(unknown)' : metacriticScore)}" target="_blank">
+                                    <a data-bind="attr: {href: 'http://store.steampowered.com/app/' + steamAppId, title: 'Type: ' + capitalizeFirstLetter(appType) + '\nGenre: ' + getCombinedGenre() + '\nRelease Year: ' + (releaseYear < 1900 ? '(unknown)' : releaseYear) + '\nMetacritic score: ' + (metacriticScore === -1 ? '(unknown)' : metacriticScore)}" target="_blank">
                                         <span data-bind="text:steamName, css: (included() ? '' : 'text-muted')"></span>
                                     </a>
                                     <span class="glyphicon glyphicon-time visible-xs-inline pull-right"
