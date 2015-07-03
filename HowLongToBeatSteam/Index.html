@@ -355,7 +355,7 @@
                     <h3 class="overflow-hidden">
                         <input type="text" class="filter-input" data-bind="textInput: filter" />
                         <a href="javascript:;" data-bind="css: 'hidden-xs filter-link' + ($root.advancedFilterApplied() ? ' filter-active' : ''), click: $root.advancedFilterClicked, attr: {title: ($root.advancedFilterApplied() ? 'Advanced filter applied (click to modify)' : '')}">Advanced</a>
-                        <a href="javascript:;" data-bind="visible: $root.advancedFilterApplied, click: $root.clearFilter">
+                        <a href="javascript:;" data-bind="visible: $root.advancedFilterApplied, click: $root.clearAdvancedFilter">
                             <span class="glyphicon glyphicon-remove small filter-clear" title="Advanced filter applied (click to clear)"></span>
                         </a>
                         <span class="text-nowrap hidden-xs pull-right h4 filter-game-count label label-default" data-bind="text: numberWithCommas($root.total().count) + ($root.total().count === 1 ? ' game' : ' games')"></span>

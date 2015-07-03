@@ -346,17 +346,16 @@ function AppViewModel() {
     };
 
     self.applyAdvancedFilter = function () {
-
-        setGenreAppliedFilter(self.genrePossibleFilters(), false, true); //supress valueHasMutated since we're going to change the filter again below
+        self.gameTable.currentPageNumber(1);
+        
+        setGenreAppliedFilter(self.genrePossibleFilters(), false, true); //suppress valueHasMutated since we're going to change the filter again below
         setGenreAppliedFilter(self.genreSelectedFilters(), true);
-
+        
         self.metacriticFromApplied(self.metacriticFrom());
         self.metacriticToApplied(self.metacriticTo());
         self.releaseYearFromApplied(self.releaseYearFrom());
         self.releaseYearToApplied(self.releaseYearTo());
-
-        $("#advancedFilterModal").modal("hide");
-
+        
         appInsights.trackEvent("AdvancedFilterApplied", {}, {
             MetacriticFrom: self.metacriticFrom(),
             MetacriticTo: self.metacriticTo(),
@@ -365,17 +364,18 @@ function AppViewModel() {
             GenresIncluded: self.genreSelectedFilters().length,
             GenresPossible: self.genrePossibleFilters().length
         });
-    };
 
-    self.clearAdvancedFilter = function() {
-        self.clearFilter();
         $("#advancedFilterModal").modal("hide");
     };
 
-    self.clearFilter = function () {
-        appInsights.trackEvent("ClearAdvancedFilter");
+    self.clearAdvancedFilter = function() {
+        self.gameTable.currentPageNumber(1);
 
         resetAdvancedFilters();
+
+        appInsights.trackEvent("ClearAdvancedFilter");
+
+        $("#advancedFilterModal").modal("hide");
     };
 
     self.toggleAllChecked = ko.observable(true);
@@ -1357,8 +1357,13 @@ function AppViewModel() {
         appInsights.trackEvent("UpdateSubmitted", {known: gameToUpdate.known });
     };
 
+    var getHostname = function () {
+        //check against localhost for easy local debugging
+        return (window.location.hostname === "localhost") ? "www.howlongtobeatsteam.com" : window.location.hostname;
+    }
+
     var getOrigin = function() {
-        return window.location.protocol + "//" + window.location.host;
+        return window.location.protocol + "//" + getHostname();
     };
 
     var getCurrentAddress = function () {
@@ -1369,18 +1374,14 @@ function AppViewModel() {
         return "I just found out I have over " + (hours ? hoursWithCommas(self.originalMainRemaining) : (getYears(self.originalMainRemaining) + " of consecutive gameplay")) + " left to beat my entire Steam library!";
     };
 
-    self.getShareText = function() {
-        return self.getShortShareText(false) + " Click to check it out and find out how long you have too :)";
-    };
-
     self.shareOnFacebook = function () {
         appInsights.trackEvent("Shared", {site: "Facebook"});
-        self.openShareWindow("https://www.facebook.com/dialog/feed?app_id=445487558932250&display=popup&caption=HowLongToBeatSteam&description=" + encodeURIComponent(self.getShareText()) + "&link=" + encodeURIComponent(getCurrentAddress()) + "&redirect_uri=" + encodeURIComponent(getOrigin() + "/CloseWindow.html") + "&picture=" + encodeURIComponent(getOrigin() + "/Resources/sk5_0.jpg"));
+        self.openShareWindow("https://www.facebook.com/dialog/feed?app_id=445487558932250&display=popup&caption=HowLongToBeatSteam&description=" + encodeURIComponent(self.getShortShareText(false) + " facebook.com/howlongtobeatsteam") + "&link=" + encodeURIComponent(getCurrentAddress()) + "&redirect_uri=" + encodeURIComponent(getOrigin() + "/CloseWindow.html") + "&picture=" + encodeURIComponent(getOrigin() + "/Resources/sk5_0.jpg"));
     };
 
     self.shareOnTwitter = function () {
         appInsights.trackEvent("Shared", {site: "Twitter"});
-        self.openShareWindow("https://twitter.com/share?url=" + encodeURIComponent(getCurrentAddress()) + "&text=" + self.getShortShareText(true) + "&hashtags=hltbs,steam");
+        self.openShareWindow("https://twitter.com/share?url=" + encodeURIComponent(getCurrentAddress()) + "&text=" + self.getShortShareText(true) + "&hashtags=hltbsteam");
     };
 
     self.shareOnGooglePlus = function () {

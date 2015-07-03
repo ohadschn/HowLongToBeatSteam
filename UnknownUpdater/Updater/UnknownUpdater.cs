@@ -70,7 +70,6 @@ namespace UnknownUpdater.Updater
                 ae => new[] {TableOperation.Delete(appsDict[ae.SteamAppId]), TableOperation.Insert(ae)},
                 StorageHelper.SteamToHltbTableName, "updating previously unknown games", StorageRetries).ConfigureAwait(false);
 
-
             if (ioe != null)
             {
                 throw ioe; //fail job
