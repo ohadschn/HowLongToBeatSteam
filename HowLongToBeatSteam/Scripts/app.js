@@ -6,13 +6,18 @@
 
 "use strict"; // jshint ignore:line
 
-var getOrderedOwnProperties = function(object) {
+var getOwnProperties = function(object) {
     var propArr = [];
     for (var prop in object) {
         if (object.hasOwnProperty(prop)) {
             propArr.push(prop);
         }
     }
+    return propArr;
+};
+
+var getOrderedOwnProperties = function(object) {
+    var propArr = getOwnProperties(object);
     propArr.sort(function (a, b) {
         var aLower = a.toLowerCase();
         var bLower = b.toLowerCase();
@@ -25,9 +30,9 @@ var getOrderedOwnProperties = function(object) {
     return propArr;
 };
 
-var capitalizeFirstLetter = function(str) {
+var capitalizeFirstLetter = function (str) { // jshint ignore:line
     return str.charAt(0).toUpperCase() + str.slice(1);
-}
+};
 
 var getHours = function (minutes, digits) { // jshint ignore:line
     if (digits === undefined) {
@@ -90,6 +95,10 @@ var genreSeparatorReplacer = function(genre) { //avoid creating function objects
     return genre.replace(slashRegex, "-");
 };
 
+var isBetween = function(x, min, max) {
+    return x >= min && x <= max;
+};
+
 //static observables used in initialization for increased performance
 var includedObservable = ko.observable(true);
 var updatePhaseObservable = ko.observable(GameUpdatePhase.None);
@@ -125,13 +134,24 @@ function Game(steamGame) {
 }
 
 Game.prototype.match = function (filter) { //define in prototype to prevent memory footprint on each instance
-    return (this.steamName.toLowerCase().indexOf(filter.toLowerCase()) !== -1) &&
-    (!this.viewModel.advancedFilterApplied() ||
-        (
-            (this.viewModel.allMetacriticCategoriesIncluded || this.viewModel.metacriticAppliedFilter[this.metacriticScore]) &&
-            (this.viewModel.allGenresIncluded || this.viewModel.genreAppliedFilter[this.getCombinedGenre()])
-        )
-    );
+
+    //first create dependency on observables
+    var metacriticFilterApplied = this.viewModel.metacriticFilterApplied();
+    var metacriticFromApplied = this.viewModel.metacriticFromApplied();
+    var metacriticToApplied = this.viewModel.metacriticToApplied();
+
+    var releaseYearFilterApplied = this.viewModel.releaseYearFilterApplied();
+    var releaseYearFromApplied = this.viewModel.releaseYearFromApplied();
+    var releaseYearToApplied = this.viewModel.releaseYearToApplied();
+
+    var genreFilterApplied = this.viewModel.genreFilterApplied();
+    var genreAppliedFilter = this.viewModel.genreAppliedFilter();
+
+    //we need to check whether the filters were applied in order to allow unknown values when they are not
+    return  (this.steamName.toLowerCase().indexOf(filter.toLowerCase()) !== -1) &&
+            (!metacriticFilterApplied || isBetween(this.metacriticScore, metacriticFromApplied, metacriticToApplied)) &&
+            (!releaseYearFilterApplied || isBetween(this.releaseYear, releaseYearFromApplied, releaseYearToApplied)) &&
+            (!genreFilterApplied || genreAppliedFilter[this.getCombinedGenre()]);
 };
 
 Game.prototype.getCombinedGenre = function() {
@@ -219,70 +239,75 @@ function AppViewModel() {
         self.processing(false);
     };
 
-    var metacriticCategories = [
-        { title: "Overwhelming Dislike", min: 0, max: 19 },
-        { title: "Generally Unfavorable", min: 20, max: 49 },
-        { title: "Mixed or Average", min: 50, max: 74 },
-        { title: "Generally Favorable", min: 75, max: 89 },
-        { title: "Universal Acclaim", min: 90, max: 100 }
-    ];
-
     self.gameTable.filter.subscribe(function(val) {
         appInsights.trackEvent("FilterApplied", {}, { length: val.length });
     });
 
-    self.advancedFilterApplied = ko.observable(false);
-    var possibleFiltersCalculated = false;
+    self.metacriticPossibleValues = ko.observableArray();
+    for (var score = 0; score <= 100; score++) {
+        self.metacriticPossibleValues.push(score);
+    }
+    self.metacriticFrom = ko.observable(0);
+    self.metacriticFromApplied = ko.observable(0);
+    self.metacriticTo = ko.observable(100);
+    self.metacriticToApplied = ko.observable(100);
+    self.metacriticRangeValid = ko.pureComputed(function() {
+        return self.metacriticFrom() <= self.metacriticTo();
+    });
+    self.metacriticFilterApplied = ko.pureComputed(function() {
+        return self.metacriticFromApplied() > 0 || self.metacriticToApplied() < 100;
+    });
 
-    self.metacriticPossibleFilters = ko.observableArray();
-    self.metacriticAppliedFilter = [];
-    self.allMetacriticCategoriesIncluded = true;
+    var earliestYear = 1980;
+    var latestYear = new Date().getFullYear();
+    self.releaseYearPossibleValues = ko.observableArray();
+    for (var year = earliestYear; year <= latestYear; year++) {
+        self.releaseYearPossibleValues.push(year);
+    }
+    self.releaseYearFrom = ko.observable(earliestYear);
+    self.releaseYearFromApplied = ko.observable(earliestYear);
+    self.releaseYearTo = ko.observable(latestYear);
+    self.releaseYearToApplied = ko.observable(latestYear);
+    self.releaseYearRangeValid = ko.pureComputed(function() {
+        return self.releaseYearFrom() <= self.releaseYearTo();
+    });
+    self.releaseYearFilterApplied = ko.pureComputed(function() {
+        return self.releaseYearFromApplied() > earliestYear || self.releaseYearToApplied() < latestYear;
+    });
 
     self.genrePossibleFilters = ko.observableArray();
-    self.genreAppliedFilter = {};
-    self.allGenresIncluded = true;
+    self.genreSelectedFilters = ko.observableArray();
+    self.genreAppliedFilter = ko.observable({});
+    self.genreSelectionValid = ko.pureComputed(function() {
+        return self.genrePossibleFilters().length === 0 || self.genreSelectedFilters().length > 0;
+    });
+    self.genreFilterApplied = ko.pureComputed(function () {
+        var firstExcludedGenre = ko.utils.arrayFirst(self.genrePossibleFilters(), function(genre) {
+            return !self.genreAppliedFilter()[genre];
+        });
+        return firstExcludedGenre !== null;
+    });
 
-    var resetAdvancedFilters = function() {
-        self.metacriticPossibleFilters([]);
-        self.genrePossibleFilters([]);
-        self.advancedFilterApplied(false);
-        possibleFiltersCalculated = false;
+    self.advancedFilterApplied = ko.pureComputed(function () {
+        return self.metacriticFilterApplied() || self.releaseYearFilterApplied() || self.genreFilterApplied();
+    });
+
+    var setGenreAppliedFilter = function (genres, include, suppressMutationNotification) {
+        for (var i = 0; i < genres.length; i++) {
+            self.genreAppliedFilter()[genres[i]] = include;
+        }
+
+        if (!suppressMutationNotification) {
+            self.genreAppliedFilter.valueHasMutated();
+        }
     };
 
-    var calculateMetacriticPossibleFilters = function() {
-        var possibleFilters = ko.utils.arrayMap(metacriticCategories, function(category) {
-            return {
-                category: category.title,
-                included: ko.observable(true),
-                min: category.min,
-                max: category.max
-            };
-        });
-        var possibleFiltersHash = [];
-        for (var l = 0; l < possibleFilters.length; l++) {
-            var min = possibleFilters[l].min;
-            var max = possibleFilters[l].max;
-            for (var k = min; k <= max; k++) {
-                possibleFiltersHash[k] = possibleFilters[l];
-            }
-        }
-
-        var visitedCategoriesCounter = 0;
-        var games = self.gameTable.rows();
-        for (var i = 0; i < games.length; i++) {
-            if (visitedCategoriesCounter === possibleFilters.length) {
-                break;
-            }
-            if (games[i].metacriticScore === -1) {
-                continue;
-            }
-            var possibleFilter = possibleFiltersHash[games[i].metacriticScore];
-            if (!possibleFilter.visited) {
-                possibleFilter.visited = true;
-                visitedCategoriesCounter++;
-            }
-        }
-        self.metacriticPossibleFilters(ko.utils.arrayFilter(possibleFilters, function(pf) { return pf.visited; }));
+    var resetAdvancedFilters = function () {
+        self.metacriticFromApplied(0);
+        self.metacriticToApplied(100);
+        self.releaseYearFromApplied(earliestYear);
+        self.releaseYearToApplied(latestYear);
+        setGenreAppliedFilter(self.genrePossibleFilters(), true);
     };
 
     var calculateGenrePossibleFilters = function() {
@@ -292,96 +317,65 @@ function AppViewModel() {
             possibleFilterHash[games[i].getCombinedGenre()] = true;
         }
 
+        self.genrePossibleFilters([]);
         var possibleFilters = getOrderedOwnProperties(possibleFilterHash);
         for (var j = 0; j < possibleFilters.length; j++) {
             if (possibleFilters[j] !== unknownTitle) {
-                self.genrePossibleFilters.push({ genre: possibleFilters[j], included: ko.observable(true) });
+                self.genreAppliedFilter()[possibleFilters[j]] = true; //should come first due to observable dependency order
+                self.genrePossibleFilters.push(possibleFilters[j]);
             }
         }
     };
 
+    var possibleFiltersCalculated = false;
     self.advancedFilterClicked = function () {
         appInsights.trackEvent("advancedFilterClicked");
 
         if (!possibleFiltersCalculated) {
-            calculateMetacriticPossibleFilters();
             calculateGenrePossibleFilters();
             possibleFiltersCalculated = true;
         }
-        $("#filterGenreContainer").height(0.6 * $(window).height());
+
+        self.genreSelectedFilters(ko.utils.arrayFilter(self.genrePossibleFilters(), function (genre) { return self.genreAppliedFilter()[genre]; }));
+        self.metacriticFrom(self.metacriticFromApplied());
+        self.metacriticTo(self.metacriticToApplied());
+        self.releaseYearFrom(self.releaseYearFromApplied());
+        self.releaseYearTo(self.releaseYearToApplied());
+
         $("#advancedFilterModal").modal("show");
     };
 
-    var toggleAllFilters = function(possibleFilters, include) {
-        for (var i = 0; i < possibleFilters.length; i++) {
-            possibleFilters[i].included(include);
-        }
-    };
-
-    self.includeAllMetacriticFilters = function () {
-        appInsights.trackEvent("toggleAdvancedFilter", {filter: "Metacritic", included: "true"});
-        toggleAllFilters(self.metacriticPossibleFilters(), true);
-    };
-
-    self.excludeAllMetacriticFilters = function() {
-        appInsights.trackEvent("toggleAdvancedFilter", { filter: "Metacritic", included: "false" });
-        toggleAllFilters(self.metacriticPossibleFilters(), false);
-    };
-
-    self.includeAllGenreFilters = function() {
-        appInsights.trackEvent("toggleAdvancedFilter", { filter: "Genre", included: "true" });
-        toggleAllFilters(self.genrePossibleFilters(), true);
-    };
-
-    self.excludeAllGenreFilters = function() {
-        appInsights.trackEvent("toggleAdvancedFilter", { filter: "Genre", included: "false" });
-        toggleAllFilters(self.genrePossibleFilters(), false);
-    };
-
     self.applyAdvancedFilter = function () {
-        var metacriticCategoryIncludeCount = 0;
-        var genreIncludeCount = 0;
 
-        self.allMetacriticCategoriesIncluded = true;
-        var metacriticPossibleFilters = self.metacriticPossibleFilters();
-        for (var i = 0; i < metacriticPossibleFilters.length; i++) {
-            var min = metacriticPossibleFilters[i].min;
-            var max = metacriticPossibleFilters[i].max;
-            var categoryIncluded = metacriticPossibleFilters[i].included();
-            for (var j = min; j <= max; j++) {
-                self.metacriticAppliedFilter[j] = categoryIncluded;
-            }
-            self.allMetacriticCategoriesIncluded = self.allMetacriticCategoriesIncluded && categoryIncluded;
-            metacriticCategoryIncludeCount += (categoryIncluded ? 1 : 0);
-        }
+        setGenreAppliedFilter(self.genrePossibleFilters(), false, true); //supress valueHasMutated since we're going to change the filter again below
+        setGenreAppliedFilter(self.genreSelectedFilters(), true);
 
-        self.allGenresIncluded = true;
-        var genrePossibleFilters = self.genrePossibleFilters();
-        for (var k = 0; k < genrePossibleFilters.length; k++) {
-            var genre = genrePossibleFilters[k].genre;
-            var genreIncluded = genrePossibleFilters[k].included();
-            self.genreAppliedFilter[genre] = genreIncluded;
-            self.allGenresIncluded = self.allGenresIncluded && genreIncluded;
-            genreIncludeCount += (genreIncluded ? 1 : 0);
-        }
+        self.metacriticFromApplied(self.metacriticFrom());
+        self.metacriticToApplied(self.metacriticTo());
+        self.releaseYearFromApplied(self.releaseYearFrom());
+        self.releaseYearToApplied(self.releaseYearTo());
 
-        self.advancedFilterApplied(!self.allMetacriticCategoriesIncluded || !self.allGenresIncluded);
-        self.gameTable.triggerFilterCalculation();
         $("#advancedFilterModal").modal("hide");
 
         appInsights.trackEvent("AdvancedFilterApplied", {}, {
-            MetacriticCategoriesIncluded: metacriticCategoryIncludeCount,
-            MetacriticCategoriesPossible: metacriticPossibleFilters.length,
-            GenresIncluded: genreIncludeCount,
-            GenresPossible: genrePossibleFilters.length
+            MetacriticFrom: self.metacriticFrom(),
+            MetacriticTo: self.metacriticTo(),
+            ReleaseYearFrom: self.releaseYearFrom(),
+            ReleaseYearTo: self.releaseYearTo(),
+            GenresIncluded: self.genreSelectedFilters().length,
+            GenresPossible: self.genrePossibleFilters().length
         });
+    };
+
+    self.clearAdvancedFilter = function() {
+        self.clearFilter();
+        $("#advancedFilterModal").modal("hide");
     };
 
     self.clearFilter = function () {
         appInsights.trackEvent("ClearAdvancedFilter");
 
         resetAdvancedFilters();
-        self.gameTable.triggerFilterCalculation();
     };
 
     self.toggleAllChecked = ko.observable(true);
@@ -899,10 +893,13 @@ function AppViewModel() {
     };
 
     var updateMetacriticChart = function(total, clickedSlice) {
-        var categories = ko.utils.arrayMap(metacriticCategories, function(cat) {
-            return { title: cat.title, min: cat.min, max: cat.max }; //create copy as to not alter the original objects
-        });
-        updateContinuousSliceChart(self.metacriticChart, total.playtimesByMetacritic, categories, clickedSlice);
+        updateContinuousSliceChart(self.metacriticChart, total.playtimesByMetacritic, [
+            { title: "Overwhelming Dislike", min: 0, max: 19 },
+            { title: "Generally Unfavorable", min: 20, max: 49 },
+            { title: "Mixed or Average", min: 50, max: 74 },
+            { title: "Generally Favorable", min: 75, max: 89 },
+            { title: "Universal Acclaim", min: 90, max: 100 }
+        ], clickedSlice);
     };
 
     var updateGenreChart = function(total) {
@@ -915,8 +912,7 @@ function AppViewModel() {
 
     var updateReleaseDateChart = function (total, clickedSlice) {
         var decades = [];
-        var currentYear = new Date().getFullYear();
-        for (var year = 1980; year <= currentYear; year += 10) {
+        for (var year = earliestYear; year <= latestYear; year += 10) {
             decades.push({ title: year.toString().substring(2) + "s", min: year, max: year + 9 });
         }
         updateContinuousSliceChart(self.releaseDateChart, total.playtimesByReleaseYear, decades, clickedSlice);
@@ -1266,6 +1262,7 @@ function AppViewModel() {
         self.sliceCompletionLevel(PlaytimeType.Main);
         self.gameTable.filter("");
         resetAdvancedFilters();
+        possibleFiltersCalculated = false;
         self.gameTable.toggleSort("");
         self.bonusLinkVisible(self.steamVanityUrlName().indexOf("cached/") === -1);
 

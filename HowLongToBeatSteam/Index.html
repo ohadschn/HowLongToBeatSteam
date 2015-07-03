@@ -143,42 +143,49 @@
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         <h4 id="AdvancedFilterTitle" class="modal-title">Advanced Filter</h4>
                     </div>
-                    <div class="modal-body">
-                        <form role="form">
-                            <div class="row">
-                                <div class="col-sm-6">
-                                    <h5>
-                                        <strong>Genre</strong>
-                                    </h5>
-                                    <a href="javascript:;" data-bind="click: includeAllGenreFilters">All</a> |
-                                    <a href="javascript:;" data-bind="click: excludeAllGenreFilters">None</a>
-                                    <div id="filterGenreContainer" class="filter-genre-container">
-                                        <ul class="list-without-bullets" data-bind="foreach: genrePossibleFilters">
-                                            <li>
-                                                <input type="checkbox" data-bind="checked: included" />
-                                                <span data-bind="text: genre"></span>
-                                            </li>
-                                        </ul>
-                                    </div>
+                    <div class="modal-body overflow-auto">
+                        <form role="form" class="form-inline form-multiline">
+                            <div data-bind="css: 'form-group col-xs-12' + (releaseYearRangeValid() ? '' : ' has-error has-feedback')" id="releaseYearGroup">
+                                <label for="releaseYearGroup" class="col-xs-3 form-header">Release Year</label>
+                                <div class="col-xs-9">
+                                    <span class="text-nowrap">
+                                        <label for="releaseYearFrom" class="control-label">From</label>
+                                        <select class="form-control" id="releaseYearFrom" data-bind="options:releaseYearPossibleValues, value: releaseYearFrom"></select>
+                                    </span>
+                                    <span class="text-nowrap">
+                                        <label for="releaseYearTo" class="control-label">To</label>
+                                        <select class="form-control" id="releaseYearTo" data-bind="options:releaseYearPossibleValues, value: releaseYearTo"></select>
+                                    </span>
+                                </div>
+                                <span class="help-block" data-bind="visible: !releaseYearRangeValid()">Invalid year range</span>
+                            </div>
+                            <div data-bind="css: 'form-group col-xs-12' + (metacriticRangeValid() ?  '' : ' has-error has-feedback')" id="metacriticGroup">
+                                <label for="metacriticGroup" class="col-xs-3 form-header">Metacritic Score</label>
+                                <div class="col-xs-9">
+                                    <span class="text-nowrap">
+                                        <label for="metacriticFrom" class="control-label">From</label>
+                                        <select class="form-control" id="metacriticFrom" data-bind="options:metacriticPossibleValues, value: metacriticFrom"></select>
+                                    </span>
+                                    <span class="text-nowrap">
+                                        <label for="metacriticTo" class="control-label">To</label>
+                                        <select class="form-control" id="metacriticTo" data-bind="options:metacriticPossibleValues, value: metacriticTo"></select>
+                                    </span>
+                                </div>
+                                <span class="help-block" data-bind="visible: !metacriticRangeValid()">Invalid score range</span>
+                            </div>
+                            <div data-bind="css: 'form-group col-xs-12' + (genreSelectionValid() ? '' : ' has-error has-feedback')" id="genreGroup">
+                                <label for="genreGroup" class="col-xs-3 form-header">Genre</label>
+                                <div class="col-xs-9">
+                                    <select multiple
+                                            class="form-control"
+                                            data-bind="options:genrePossibleFilters, selectedOptions: genreSelectedFilters, attr: { size: Math.min(20, genrePossibleFilters().length) }, visible: genrePossibleFilters().length > 0"></select>
                                     <span data-bind="visible: genrePossibleFilters().length === 0">(unknown)</span>
                                 </div>
-                                <div class="col-sm-6">
-                                    <h5>
-                                        <strong>Metacritic Score</strong>
-                                    </h5>
-                                    <a href="javascript:;" data-bind="click: includeAllMetacriticFilters">All</a> |
-                                    <a href="javascript:;" data-bind="click: excludeAllMetacriticFilters">None</a>
-                                    <ul class="list-without-bullets" data-bind="foreach: metacriticPossibleFilters">
-                                        <li>
-                                            <input type="checkbox" data-bind="checked: included" />
-                                            <span data-bind="text: category + ' (' + min + '-' + max + ')'"></span>
-                                        </li>
-                                    </ul>
-                                    <span data-bind="visible: metacriticPossibleFilters().length === 0">(unknown)</span>
-                                </div>
+                                <span class="help-block" data-bind="visible: !genreSelectionValid()">At least one genre must be selected</span>
                             </div>
-                            <div class="modal-footer">
-                                <button id="filterForum" type="submit" class="btn btn-primary" data-bind="click: applyAdvancedFilter">Apply</button>
+                            <div class="col-xs-12 modal-footer">
+                                <input type="button" value="Clear" class="btn" data-bind="click: clearAdvancedFilter">
+                                <button type="submit" class="btn btn-primary" data-bind="click: applyAdvancedFilter, enable: releaseYearRangeValid() && metacriticRangeValid() && genreSelectionValid()">Apply</button>
                             </div>
                         </form>
                     </div>

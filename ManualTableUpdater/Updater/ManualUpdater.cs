@@ -86,6 +86,7 @@ namespace ManualTableUpdater.Updater
             {
                 //SerializeAllAppsToFile();
                 //LoadAllAppsFromFile();
+                //WriteAllMeasuredToTsv();
                 Console.WriteLine("Done - Press any key to continue...");
                 Console.ReadLine();
             }
@@ -93,6 +94,15 @@ namespace ManualTableUpdater.Updater
             {
                 EventSourceRegistrar.DisposeEventListeners();
             }
+        }
+
+        private static void GetEarliestGame()
+        {
+            var allGames = StorageHelper.GetAllApps().Result;
+            var gamesWithReleaseDates = allGames.Where(a => a.ReleaseDate.Year > 1900).ToArray();
+            var firstReleaseDate = gamesWithReleaseDates.Min(a => a.ReleaseDate);
+            Console.WriteLine("First game:" + firstReleaseDate);
+            Console.WriteLine("Games:" + Environment.NewLine + String.Join(Environment.NewLine, gamesWithReleaseDates.Where(a => a.ReleaseDate == firstReleaseDate).Select(a => a.SteamName)));
         }
 
         private static void SerializeAllAppsToFile()
