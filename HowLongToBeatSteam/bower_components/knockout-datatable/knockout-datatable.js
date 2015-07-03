@@ -150,7 +150,8 @@
       });
       this.triggerFilterCalculation = (function(_this) {
         return function() {
-          return filterTrigger.valueHasMutated();
+          filterTrigger.valueHasMutated();
+          return _this.currentPageNumber(1);
         };
       })(this);
       this.filteredRows = pureComputed((function(_this) {
