@@ -1,7 +1,7 @@
 ﻿{
   "$schema": "http://schemastore.org/schemas/json/webjob-publish-settings.json",
-  "webJobName": "UnknownUpdater",
-  "startTime": "2015-05-30T00:00:00+02:00",
+  "webJobName": "0UnknownUpdater",
+  "startTime": "2015-07-02T05:00:00+02:00",
   "endTime": null,
   "jobRecurrenceFrequency": "Month",
   "interval": 1,

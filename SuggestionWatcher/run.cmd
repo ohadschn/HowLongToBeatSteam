@@ -1,2 +1,2 @@
 ﻿SuggestionWatcher.exe
-echo Return Code: %ERRORLEVEL%
+exit /b %errorlevel%

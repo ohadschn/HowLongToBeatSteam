@@ -8,10 +8,10 @@
       "filePath": "../MissingGamesUpdater/MissingGamesUpdater.csproj"
     },
     {
-      "filePath": "../UnknownUpdater/UnknownUpdater.csproj"
+      "filePath": "../SuggestionWatcher/SuggestionWatcher.csproj"
     },
     {
-      "filePath": "../SuggestionWatcher/SuggestionWatcher.csproj"
+      "filePath": "../UnknownUpdater/0UnknownUpdater.csproj"
     }
   ]
 }

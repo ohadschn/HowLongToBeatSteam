@@ -150,9 +150,9 @@
       <Project>{B84EA4F7-B99A-4360-ADBC-D1CF113B1B9A}</Project>
       <Name>SuggestionWatcher</Name>
     </ProjectReference>
-    <ProjectReference Include="..\UnknownUpdater\UnknownUpdater.csproj">
+    <ProjectReference Include="..\UnknownUpdater\0UnknownUpdater.csproj">
       <Project>{2B5C1778-81EF-41AD-8FA2-3B0FCFEFA039}</Project>
-      <Name>UnknownUpdater</Name>
+      <Name>0UnknownUpdater</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -36,9 +36,9 @@ namespace Common.Util
             second = temp;
         }
 
-        public static string ReplaceNonAlphanumericWithSpaces(string str)
+        public static string ReplaceNonAlphanumericWithSpaces(string text)
         {
-            return Regex.Replace(str, "[^a-zA-Z0-9 ]", " ", RegexOptions.Compiled);
+            return Regex.Replace(text, "[^a-zA-Z0-9 ]", " ", RegexOptions.Compiled);
         }
 
         public static T GetNonpublicInstancePropertyValue<T>([NotNull] object instance, string propName)
