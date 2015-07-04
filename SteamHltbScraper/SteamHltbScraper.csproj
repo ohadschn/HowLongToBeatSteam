@@ -104,7 +104,6 @@
     <None Include="Properties\PublishProfiles\hltbsprod.pubxml" />
     <None Include="Properties\PublishProfiles\howlongtobeatsteam.pubxml" />
     <None Include="Properties\webjob-publish-settings.json" />
-    <None Include="run.cmd" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj">

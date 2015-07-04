@@ -83,7 +83,6 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="Properties\webjob-publish-settings.json" />
-    <None Include="run.cmd" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj">
