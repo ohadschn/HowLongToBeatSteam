@@ -345,9 +345,12 @@ namespace SteamHltbScraper.Scraper
             if (firstResultAnchor == null)
             {
                 var alphanumericName = SiteUtil.ReplaceNonAlphanumericWithSpaces(appName);
-                HltbScraperEventSource.Log.SearchingForAlphanumericName(appName, alphanumericName);
-                doc = await GetHltbSearchResults(alphanumericName);
-                firstResultAnchor = doc.DocumentNode.Descendants("a").FirstOrDefault();
+                if (alphanumericName != appName)
+                {
+                    HltbScraperEventSource.Log.SearchingForAlphanumericName(appName, alphanumericName);
+                    doc = await GetHltbSearchResults(alphanumericName);
+                    firstResultAnchor = doc.DocumentNode.Descendants("a").FirstOrDefault(); 
+                }
 
                 if (firstResultAnchor == null)
                 {
