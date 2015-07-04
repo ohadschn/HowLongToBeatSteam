@@ -26,6 +26,12 @@ namespace HltbTests.Scraping
         }
 
         [TestMethod]
+        public void TestNonAlphanumericName()
+        {
+            TestScraping("Air Conflicts - Secret Wars", 2011, true, true, false, "Air Conflicts: Secret Wars");
+        }
+
+        [TestMethod]
         public void TestSinglePlayerUnifiedStat()
         {
             TestScraping("Commander Keen Collection (Ep. 1-5)", 1990, true, true, false);
@@ -44,9 +50,17 @@ namespace HltbTests.Scraping
             TestScraping("The Walking Dead: Season 2", 2013, true, true, false);
         }
 
-        private static void TestScraping(string name, int releaseYear, bool hasMain, bool hasExtras, bool hasCompletionist)
+        [TestMethod]
+        public void TestGameNotFoundInSearch()
+        {
+            var app = ScrapeApp("{3F883F0C-A91E-4B99-A4E7-F4AA873AA3FF}"); //just a random GUID that won't be found
+            Assert.AreEqual(-1, app.HltbId);
+        }
+
+        private static void TestScraping(string name, int releaseYear, bool hasMain, bool hasExtras, bool hasCompletionist, string hltbName = null)
         {
             var app = ScrapeApp(name);
+            Assert.AreEqual(hltbName ?? name, app.HltbName, "Incorrect HLTB game name");
             Assert.AreEqual(releaseYear, app.ReleaseDate.Year, "Incorrect release year");
             if (hasMain)
             {
@@ -86,7 +100,6 @@ namespace HltbTests.Scraping
         {
             var app = new AppEntity(0, name, AppEntity.GameTypeName);
             HltbScraper.ScrapeHltb(new[] { app }).Wait();
-            Assert.AreEqual(name, app.HltbName, "Incorrect HLTB game name");
             return app;
         }
     }

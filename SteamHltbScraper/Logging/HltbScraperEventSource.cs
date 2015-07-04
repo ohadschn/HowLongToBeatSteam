@@ -188,6 +188,16 @@ namespace SteamHltbScraper.Logging
             WriteEvent(9, game);
         }
 
+        [Event(
+            90,
+            Message = "Could not find exact game name '{0}' - trying alphanumeric version '{1}'",
+            Keywords = Keywords.Scraping,
+            Level = EventLevel.Informational)]
+        public void SearchingForAlphanumericName(string original, string alphanumeric)
+        {
+            WriteEvent(90, original, alphanumeric);
+        }
+
         [NonEvent]
         public void ErrorScrapingHltbId(int current, int steamAppId, string steamName, Exception exception)
         {

@@ -339,30 +339,24 @@ namespace SteamHltbScraper.Scraper
         {
             HltbScraperEventSource.Log.ScrapeHltbIdStart(appName);
 
-            var content = String.Format(SearchHltbPostDataFormat, appName);
-            Func<HttpRequestMessage> requestFactory = () => new HttpRequestMessage(HttpMethod.Post, SearchHltbUrl)
-            {
-                Content = new StringContent(content, Encoding.UTF8, "application/x-www-form-urlencoded")
-            };
+            var doc = await GetHltbSearchResults(appName);
+            var firstResultAnchor = doc.DocumentNode.Descendants("a").FirstOrDefault();
 
-            HltbScraperEventSource.Log.PostHltbSearchStart(SearchHltbUrl, content);
-            var doc = await LoadDocument(() => s_client.SendAsync(requestFactory, SearchHltbUrl)).ConfigureAwait(false);
-            HltbScraperEventSource.Log.PostHltbSearchStop(SearchHltbUrl, content);
-
-            var first = doc.DocumentNode.Descendants("li").FirstOrDefault();
-            if (first == null)
+            if (firstResultAnchor == null)
             {
-                HltbScraperEventSource.Log.GameNotFoundInSearch(appName);
-                return -1;
+                var alphanumericName = SiteUtil.ReplaceNonAlphanumericWithSpaces(appName);
+                HltbScraperEventSource.Log.SearchingForAlphanumericName(appName, alphanumericName);
+                doc = await GetHltbSearchResults(alphanumericName);
+                firstResultAnchor = doc.DocumentNode.Descendants("a").FirstOrDefault();
+
+                if (firstResultAnchor == null)
+                {
+                    HltbScraperEventSource.Log.GameNotFoundInSearch(appName);
+                    return -1;   
+                }
             }
 
-            var anchor = first.Descendants("a").FirstOrDefault();
-            if (anchor == null)
-            {
-                throw GetFormatException("App anchor not found", appName, doc);
-            }
-
-            var link = anchor.GetAttributeValue("href", null);
+            var link = firstResultAnchor.GetAttributeValue("href", null);
             if (link == null)
             {
                 throw GetFormatException("App anchor does not include href attribute", appName, doc);
@@ -377,6 +371,21 @@ namespace SteamHltbScraper.Scraper
 
             HltbScraperEventSource.Log.ScrapeHltbIdStop(appName, hltbId);
             return hltbId;
+        }
+
+        private static async Task<HtmlDocument> GetHltbSearchResults(string appName)
+        {
+            var content = String.Format(SearchHltbPostDataFormat, appName);
+            Func<HttpRequestMessage> requestFactory = () => new HttpRequestMessage(HttpMethod.Post, SearchHltbUrl)
+            {
+                Content = new StringContent(content, Encoding.UTF8, "application/x-www-form-urlencoded")
+            };
+
+            HltbScraperEventSource.Log.PostHltbSearchStart(SearchHltbUrl, content);
+            var doc = await LoadDocument(() => s_client.SendAsync(requestFactory, SearchHltbUrl)).ConfigureAwait(false);
+            HltbScraperEventSource.Log.PostHltbSearchStop(SearchHltbUrl, content);
+            
+            return doc;
         }
 
         private static async Task<HtmlDocument> LoadDocument(Func<Task<HttpResponseMessage>> httpRequester)

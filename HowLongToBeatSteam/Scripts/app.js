@@ -1357,10 +1357,10 @@ function AppViewModel() {
         appInsights.trackEvent("UpdateSubmitted", {known: gameToUpdate.known });
     };
 
-    var getHostname = function () {
+    var getHostname = function() {
         //check against localhost for easy local debugging
         return (window.location.hostname === "localhost") ? "www.howlongtobeatsteam.com" : window.location.hostname;
-    }
+    };
 
     var getOrigin = function() {
         return window.location.protocol + "//" + getHostname();

@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Mail;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Common.Logging;
@@ -27,11 +28,17 @@ namespace Common.Util
         private const string WebjobRunIDEnvironmentVariable = "WEBJOBS_RUN_ID";
         private const string WebsiteNameEnvironmentVariable = "WEBSITE_SITE_NAME";
 
+        [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", MessageId = "0#"), SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", MessageId = "1#")]
         public static void Swap<T>(ref T first, ref T second)
         {
             T temp = first;
             first = second;
             second = temp;
+        }
+
+        public static string ReplaceNonAlphanumericWithSpaces(string str)
+        {
+            return Regex.Replace(str, "[^a-zA-Z0-9 ]", " ", RegexOptions.Compiled);
         }
 
         public static T GetNonpublicInstancePropertyValue<T>([NotNull] object instance, string propName)
