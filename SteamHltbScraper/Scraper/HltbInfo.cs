@@ -4,6 +4,8 @@ namespace SteamHltbScraper.Scraper
 {
     public class HltbInfo
     {
+        public string Name { get; private set; }
+
         public int MainTtb { get; private set; }
 
         public int ExtrasTtb { get; private set; }
@@ -12,10 +14,11 @@ namespace SteamHltbScraper.Scraper
 
         public DateTime ReleaseDate { get; private set; }
 
-        public HltbInfo(int mainTtb, int extrasTtb, int completionistTtb, DateTime releaseDate)
+        public HltbInfo(string name, int mainTtb, int extrasTtb, int completionistTtb, DateTime releaseDate)
         {
             CompletionistTtb = completionistTtb;
             ReleaseDate = releaseDate;
+            Name = name;
             ExtrasTtb = extrasTtb;
             MainTtb = mainTtb;
         }

@@ -44,9 +44,9 @@ namespace HltbTests.Scraping
             TestScraping("The Walking Dead: Season 2", 2013, true, true, false);
         }
 
-        private void TestScraping(string name, int releaseYear, bool hasMain, bool hasExtras, bool hasCompletionist)
+        private static void TestScraping(string name, int releaseYear, bool hasMain, bool hasExtras, bool hasCompletionist)
         {
-            var app = GetApp(name);
+            var app = ScrapeApp(name);
             Assert.AreEqual(releaseYear, app.ReleaseDate.Year, "Incorrect release year");
             if (hasMain)
             {
@@ -82,7 +82,7 @@ namespace HltbTests.Scraping
             }
         }
 
-        private static AppEntity GetApp(string name)
+        private static AppEntity ScrapeApp(string name)
         {
             var app = new AppEntity(0, name, AppEntity.GameTypeName);
             HltbScraper.ScrapeHltb(new[] { app }).Wait();

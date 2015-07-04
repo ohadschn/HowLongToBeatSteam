@@ -27,6 +27,13 @@ namespace Common.Util
         private const string WebjobRunIDEnvironmentVariable = "WEBJOBS_RUN_ID";
         private const string WebsiteNameEnvironmentVariable = "WEBSITE_SITE_NAME";
 
+        public static void Swap<T>(ref T first, ref T second)
+        {
+            T temp = first;
+            first = second;
+            second = temp;
+        }
+
         public static T GetNonpublicInstancePropertyValue<T>([NotNull] object instance, string propName)
         {
             if (instance == null) throw new ArgumentNullException("instance");

@@ -24,7 +24,6 @@ namespace SteamHltbScraper.Scraper
         private const string SearchHltbPostDataFormat = @"queryString={0}";
 
         public const string HltbGamePageFormat = @"http://www.howlongtobeat.com/game.php?id={0}";
-        private const string HltbGameOverviewPageFormat = @"http://howlongtobeat.com/game_main.php?id={0}";
 
         private static readonly int ScrapingLimit = SiteUtil.GetOptionalValueFromConfig("ScrapingLimit", int.MaxValue);
         private static readonly int ScrapingRetries = SiteUtil.GetOptionalValueFromConfig("HltbScraperScrapingRetries", 5);
@@ -102,18 +101,6 @@ namespace SteamHltbScraper.Scraper
                     }
                 }
 
-                try
-                {
-                    app.HltbName = await ScrapeWithExponentialRetries(ScrapeHltbName, app.HltbId).ConfigureAwait(false);
-                }
-                catch (Exception e)
-                {
-                    MakeVerbose(e);
-                    HltbScraperEventSource.Log.ErrorScrapingHltbName(current, app.SteamAppId, app.SteamName, app.HltbId, e);
-                    errorHandler(app, e);
-                    return;
-                }
-
                 HltbInfo hltbInfo;
                 try
                 {
@@ -172,11 +159,23 @@ namespace SteamHltbScraper.Scraper
         {
             HltbScraperEventSource.Log.ScrapeHltbInfoStart(hltbId);
 
-            var gameOverviewUrl = new Uri(String.Format(HltbGameOverviewPageFormat, hltbId));
+            var gamePageUrl = new Uri(String.Format(HltbGamePageFormat, hltbId));
 
-            HltbScraperEventSource.Log.GetGameOverviewPageStart(gameOverviewUrl);
-            var doc = await LoadDocument(() => s_client.GetAsync(gameOverviewUrl)).ConfigureAwait(false);
-            HltbScraperEventSource.Log.GetGameOverviewPageStop(gameOverviewUrl);
+            HltbScraperEventSource.Log.GetHltbGamePageStart(gamePageUrl);
+            var doc = await LoadDocument(() => s_client.GetAsync(gamePageUrl)).ConfigureAwait(false);
+            HltbScraperEventSource.Log.GetHltbGamePageStop(gamePageUrl);
+
+            var headerDiv = doc.DocumentNode.Descendants().FirstOrDefault(n => n.GetAttributeValue("class", null) == "profile_header");
+            if (headerDiv == null)
+            {
+                throw GetFormatException("Can't parse name", hltbId, doc);
+            }
+
+            var hltbName = headerDiv.InnerText.Trim();
+            if (String.IsNullOrWhiteSpace(hltbName))
+            {
+                throw new TransientHltbFaultException("Empty name parsed for HLTB ID " + hltbId, doc);
+            }
 
             int mainTtb, extrasTtb, completionistTtb;
             ScrapeTtbs(hltbId, doc, out mainTtb, out extrasTtb, out completionistTtb);
@@ -184,7 +183,7 @@ namespace SteamHltbScraper.Scraper
             var releaseDate = ScrapeReleaseDate(hltbId, doc);
 
             HltbScraperEventSource.Log.ScrapeHltbInfoStop(hltbId, mainTtb, extrasTtb, completionistTtb, releaseDate.Year);
-            return new HltbInfo(mainTtb, extrasTtb, completionistTtb, releaseDate);
+            return new HltbInfo(hltbName, mainTtb, extrasTtb, completionistTtb, releaseDate);
         }
 
         private static DateTime ScrapeReleaseDate(int hltbId, HtmlDocument doc)
@@ -226,7 +225,7 @@ namespace SteamHltbScraper.Scraper
 
         private static void ScrapeTtbs(int hltbId, HtmlDocument doc, out int mainTtb, out int extrasTtb, out int completionistTtb)
         {
-            var list = doc.DocumentNode.Descendants("div").FirstOrDefault(n => n.GetAttributeValue("class", null) == "gprofile_times");
+            var list = doc.DocumentNode.Descendants("div").FirstOrDefault(n => n.GetAttributeValue("class", null) == "game_times");
             if (list == null)
             {
                 throw GetFormatException("Can't find list element", hltbId, doc);
@@ -251,32 +250,6 @@ namespace SteamHltbScraper.Scraper
 
             mainTtb = Math.Max(mainTtbInitial, Math.Max(singlePlayerMain, soloTtb));
             extrasTtb = (singlePlayerExtras > singlePlayerMain) ? singlePlayerExtras : extrasTtbInitial;
-        }
-
-        public static async Task<string> ScrapeHltbName(int hltbId)
-        {
-            HltbScraperEventSource.Log.ScrapeHltbNameStart(hltbId);
-
-            var gamePageUrl = new Uri(String.Format(HltbGamePageFormat, hltbId));
-
-            HltbScraperEventSource.Log.GetHltbGamePageStart(gamePageUrl);
-            var doc = await LoadDocument(() => s_client.GetAsync(gamePageUrl)).ConfigureAwait(false);
-            HltbScraperEventSource.Log.GetHltbGamePageStop(gamePageUrl);
-
-            var headerDiv = doc.DocumentNode.Descendants().FirstOrDefault(n => n.GetAttributeValue("class", null) == "gprofile_header");
-            if (headerDiv == null)
-            {
-                throw GetFormatException("Can't parse name", hltbId, doc);
-            }
-
-            var hltbName = headerDiv.InnerText.Trim();
-            if (String.IsNullOrWhiteSpace(hltbName))
-            {
-                throw new TransientHltbFaultException("Empty name parsed for HLTB ID " + hltbId, doc);
-            }
-
-            HltbScraperEventSource.Log.ScrapeHltbNameStop(hltbId, hltbName);
-            return hltbName;
         }
 
         private static bool TryGetMinutes(IEnumerable<HtmlNode> listItems, string type, int hltbId, HtmlDocument doc, out int minutesFrom, out int minutesTo)
@@ -309,7 +282,11 @@ namespace SteamHltbScraper.Scraper
             try 
 	        {
                 minutesFrom = GetMinutes(durationTexts[0]);
-                minutesTo = durationTexts.Length == 1 ? minutesFrom : GetMinutes(durationTexts[1]);    
+                minutesTo = durationTexts.Length == 1 ? minutesFrom : GetMinutes(durationTexts[1]);
+	            if (minutesTo < minutesFrom)
+	            {
+	                SiteUtil.Swap(ref minutesFrom, ref minutesTo);
+	            }
 	        }
 	        catch (FormatException e)
 	        {
@@ -415,6 +392,8 @@ namespace SteamHltbScraper.Scraper
 
         private static void PopulateAppEntity(AppEntity app, HltbInfo hltbInfo)
         {
+            app.HltbName = hltbInfo.Name;
+
             var mainTtb = GetTtb(app, "main", app.MainTtb, app.MainTtbImputed, hltbInfo.MainTtb);
             app.SetMainTtb(mainTtb, mainTtb == 0);
 
