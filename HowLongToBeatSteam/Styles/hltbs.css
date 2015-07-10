@@ -173,6 +173,10 @@
 .filter-game-count {
     margin-top: 2px;
 }
+.calculator {
+    margin-right: 4px;
+    vertical-align: 1px;
+}
 .share-title {
     font-size: 70%;
     vertical-align: 3px;

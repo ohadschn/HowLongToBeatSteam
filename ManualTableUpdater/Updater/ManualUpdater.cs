@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using Common.Entities;
 using Common.Logging;
 using Common.Storage;
+using Microsoft.WindowsAzure.Storage.Table;
+
 // ReSharper disable UnusedMember.Local
 
 namespace ManualTableUpdater.Updater
@@ -87,6 +90,8 @@ namespace ManualTableUpdater.Updater
                 //SerializeAllAppsToFile();
                 //LoadAllAppsFromFile();
                 //WriteAllMeasuredToTsv();
+                //InsertManualSuggestions();
+                //DeleteUnknowns();
                 Console.WriteLine("Done - Press any key to continue...");
                 Console.ReadLine();
             }
@@ -94,6 +99,24 @@ namespace ManualTableUpdater.Updater
             {
                 EventSourceRegistrar.DisposeEventListeners();
             }
+        }
+
+        public static void DeleteUnknowns()
+        {
+            var unknowns = StorageHelper.GetAllApps(AppEntity.UnknownFilter).Result;
+            Console.WriteLine(String.Join(Environment.NewLine, unknowns.Select(u => String.Format("{0} / {1}", u.SteamName, u.SteamAppId))));
+            Console.WriteLine("Unknowns: " + unknowns.Count);
+            StorageHelper.ExecuteOperations(unknowns, a => new [] {TableOperation.Delete(a)}, StorageHelper.SteamToHltbTableName, "Deleting unknowns").Wait();
+        }
+
+        private static void InsertManualSuggestions()
+        {
+            Task.WaitAll(
+                StorageHelper.InsertSuggestion(new SuggestionEntity(252750, 19735)), 
+                StorageHelper.InsertSuggestion(new SuggestionEntity(3470, 1264)), 
+                StorageHelper.InsertSuggestion(new SuggestionEntity(41300, 413)), 
+                StorageHelper.InsertSuggestion(new SuggestionEntity(341950, 7849)), 
+                StorageHelper.InsertSuggestion(new SuggestionEntity(221640, 9353)));
         }
 
         private static void GetEarliestGame()

@@ -126,10 +126,10 @@
                 <div data-bind="visible: partialCache">
                     <span class="fa fa-fw fa-database"></span> Some games haven't been processed by the site's engine yet (or they have been removed from the Steam store).
                 </div>
-                <div class="hidden-xs">
+                <div class="hidden-xs" data-bind="visible: !libraryIsEmpty()">
                     <span class="fa fa-fw fa-youtube-play"></span> Want to learn more? Check out the <a href="https://www.youtube.com/watch?v=o_8Rx4Vtyl8" target="_blank">video tutorial</a>!
                 </div>
-                <div class="hidden-xs">
+                <div class="hidden-xs" data-bind="visible: !libraryIsEmpty()">
                     <span class="fa fa-fw fa-desktop"></span> Like playing your games on the TV? Check out <a href="http://www.ohadsoft.com/2014/07/tvgamelaunchergui/" target="_blank">TvGameLauncher</a>!
                 </div>
             </div>
@@ -186,6 +186,60 @@
                             <div class="col-xs-12 modal-footer">
                                 <input type="button" value="Clear" class="btn" data-bind="click: clearAdvancedFilter">
                                 <button type="submit" class="btn btn-primary" data-bind="click: applyAdvancedFilter, enable: releaseYearRangeValid() && metacriticRangeValid() && genreSelectionValid()">Apply</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="steamSurvivalModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="steamSurvivalTitle" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 id="steamSurvivalTitle" class="modal-title"><span class="fa fa-calculator calculator"></span> Steam Survival Calculator</h4>
+                    </div>
+                    <div class="modal-body overflow-auto">
+                        <form role="form" class="form-inline form-multiline">
+                            <div class="col-lg-6">
+                                <div class="row">
+                                    <div class="form-group col-xs-12">
+                                        <label for="genderSelect" class="col-xs-6 form-header">Gender</label>
+                                        <select class="form-control col-xs-6" id="genderSelect" data-bind="value: userGender">
+                                            <option value="male">Male</option>
+                                            <option value="female">Female</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-xs-12">
+                                        <label for="birthYearSelect" class="col-xs-6 form-header">Birth Year</label>
+                                        <select class="form-control col-xs-6" id="birthYearSelect" data-bind="options: birthYearPossibleValues, value: userBirthYear"></select>
+                                    </div>
+                                    <div class="form-group col-xs-12">
+                                        <label for="weeklyPlaytimeSelect" class="col-xs-6 form-header">Weekly Playtime</label>
+                                        <select class="form-control col-xs-6" id="weeklyPlaytimeSelect" data-bind="options: weeklyPlaytimePossibleValues, optionsText: function(hours) {return timeWithCommas(hours, 'hour');}, value: weeklyPlaytime"></select>
+                                    </div>
+                                    <div class="form-group col-xs-12">
+                                        <label for="playStyleSelect" class="col-xs-6 form-header">Play Style</label>
+                                        <select class="form-control col-xs-6" id="playStyleSelect" data-bind="options: playStylePossibleValues, value: userPlayStyle"></select>
+                                    </div>
+                                    <div class="col-xs-12">
+                                        <img class="loader" src="https://cdnjs.cloudflare.com/ajax/libs/owl-carousel/1.3.2/AjaxLoader.gif" alt="Loading..." data-bind="visible: calculatingSurvival"/>
+                                    </div>
+                                    <div class="col-xs-12 lead" data-bind="visible: !calculatingSurvival()">
+                                        <span data-bind="visible: !survivalCalculated()">Will you survive your Steam backlog? Click the button to find out...</span>
+                                        <span data-bind="visible: survivalCalculationError">Error calculating survival, please try again.</span>
+                                        <span data-bind="visible: survivalCalculated() && !survivalCalculationError() && remainingSurvivalMinutes() < 0">You will die a horrible death, with <strong data-bind="text: hoursWithCommas(-remainingSurvivalMinutes())"></strong> of playtime still in your backlog.</span>
+                                        <span data-bind="visible: survivalCalculated() && !survivalCalculationError() && remainingSurvivalMinutes() >= 0">You will die happy, having completed your backlog with <strong data-bind="text: hoursWithCommas(remainingSurvivalMinutes())"></strong> to spare.</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <img data-bind="visible: !survivalCalculated()" src="Resources/GrimFandango296.jpg" alt="Grim Reaper calculating" title="Give it to them straight, Manny" />
+                                <img data-bind="visible: survivalCalculated() && !survivalCalculationError() && remainingSurvivalMinutes() < 0" src="Resources/SkeletonNo296.jpg" alt="Survival failure" title="It's time to reconsider your priorities in life" />
+                                <img data-bind="visible: survivalCalculated() && !survivalCalculationError() && remainingSurvivalMinutes() >= 0" src="Resources/OldLadyYes296.jpg" alt="Survival Success" title="So we hear there's a Steam sale going on..." />
+                            </div>
+                            <div class="col-xs-12 modal-footer">
+                                <button type="submit" class="btn btn-primary" data-bind="click: calculateSurvival">Will You Survive?</button>
                             </div>
                         </form>
                     </div>
@@ -262,6 +316,7 @@
                         <li>Your remaining amount of consecutive <abbr title="Per HowLongToBeat: You take your time, discover and complete additional tasks not required"><strong>extras</strong></abbr> playtime is <span data-bind="text: getYears(total().extrasRemaining) + ' (' + getPercent(total().extrasRemaining, total().extrasTtb)  + ')'"></span>.</li>
                         <li>Your remaining amount of consecutive <abbr title="Per HowLongToBeat: You strive for every achievement, every medal and conquer all that the game has to offer"><strong>completionist</strong></abbr> playtime is <span data-bind="text: getYears(total().completionistRemaining) + ' (' + getPercent(total().completionistRemaining, total().completionistTtb)  + ')'"></span>.</li>
                     </ul>
+                    <h3><span class="label label-default inline-label">Bonus</span> <a href="javascript:;" data-bind="click: survivalCalculatorClicked">Will you survive your Steam backlog?</a></h3>
                     <h1>
                         <span class="share-title">Share</span>
                         <a href="javascript:;" data-bind="click: shareOnFacebook"><span class="fa fa-facebook-official"></span></a>

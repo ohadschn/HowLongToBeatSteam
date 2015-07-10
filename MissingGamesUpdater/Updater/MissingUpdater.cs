@@ -73,8 +73,10 @@ namespace MissingGamesUpdater.Updater
                 ioe = new InvalidOperationException("Could not retrieve store information for all games", e);
             }
 
-            await HltbScraper.ScrapeHltb(updates.ToArray()).ConfigureAwait(false);
-            await Imputer.ImputeFromStats(updates).ConfigureAwait(false);
+            var measuredUpdates = updates.Where(a => a.Measured).ToArray();
+
+            await HltbScraper.ScrapeHltb(measuredUpdates).ConfigureAwait(false);
+            await Imputer.ImputeFromStats(measuredUpdates).ConfigureAwait(false);
 
             //we're inserting new entries, no fear of collisions (even if two jobs overlap the next one will fix it)
             await StorageHelper.Insert(updates, "updating missing games", StorageRetries).ConfigureAwait(false);  

@@ -3,7 +3,7 @@
   "webJobName": "0UnknownUpdater",
   "startTime": "2015-07-02T05:00:00+02:00",
   "endTime": null,
-  "jobRecurrenceFrequency": "Month",
+  "jobRecurrenceFrequency": "Week",
   "interval": 1,
   "runMode": "Scheduled"
 }

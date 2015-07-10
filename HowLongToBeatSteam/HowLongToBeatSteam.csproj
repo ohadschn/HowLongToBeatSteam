@@ -209,7 +209,10 @@
     <None Include="Intellisense\pie.js" />
     <None Include="Intellisense\responsive.js" />
     <Content Include="Privacy.html" />
+    <Content Include="Resources\GrimFandango296.jpg" />
+    <Content Include="Resources\OldLadyYes296.jpg" />
     <Content Include="Resources\sk5_0.jpg" />
+    <Content Include="Resources\SkeletonNo296.jpg" />
     <Content Include="Resources\SteamClock.ico" />
     <Content Include="Resources\SteamClock.svg" />
     <Content Include="Resources\SteamClockWhite.svg" />

@@ -73,10 +73,10 @@ var GameUpdatePhase = {
 };
 
 var PlaytimeType = {
-    Current: "current",
-    Main: "main",
-    Extras: "extras",
-    Completionist: "completionist"
+    Current: "Current",
+    Main: "Main",
+    Extras: "Extras",
+    Completionist: "Completionist"
 };
 
 var AuthenticationStatus = {
@@ -376,6 +376,69 @@ function AppViewModel() {
         appInsights.trackEvent("ClearAdvancedFilter");
 
         $("#advancedFilterModal").modal("hide");
+    };
+
+    self.userGender = ko.observable("male");
+
+    self.userBirthYear = ko.observable(latestYear - 30);
+    self.birthYearPossibleValues = ko.observableArray();
+    for (var birthYear = latestYear - 120; birthYear <= latestYear; birthYear++) {
+        self.birthYearPossibleValues.push(birthYear);
+    }
+
+    self.weeklyPlaytime = ko.observable(10);
+    self.weeklyPlaytimePossibleValues = ko.observableArray();
+    for (var weeklyPlaytime = 1; weeklyPlaytime <= 150; weeklyPlaytime++) {
+        self.weeklyPlaytimePossibleValues.push(weeklyPlaytime);
+    }
+
+    self.userPlayStyle = ko.observable(PlaytimeType.Main);
+    self.playStylePossibleValues = ko.observableArray([PlaytimeType.Main, PlaytimeType.Extras, PlaytimeType.Completionist]);
+
+    self.survivalCalculated = ko.observable(false);
+    self.survivalCalculationError = ko.observable(false);
+    self.calculatingSurvival = ko.observable(false);
+    self.remainingSurvivalMinutes = ko.observable(0);
+
+    self.survivalCalculatorClicked = function() {
+        appInsights.trackEvent("survivalCalculatorClicked");
+
+        self.survivalCalculated(false);
+        self.survivalCalculationError(false);
+        $("#steamSurvivalModal").modal("show");
+    };
+
+    self.calculateSurvival = function () {
+        appInsights.trackEvent("SurvivalCalculated", { gender: self.userGender() }, { birthYear: self.userBirthYear() });
+
+        self.calculatingSurvival(true);
+        $.ajax({
+            url: "https://life-left.p.mashape.com/time-left?birth=" + self.userBirthYear() + "&gender=" + self.userGender(),
+            type: "GET",
+            headers: { "X-Mashape-Authorization": "UTVc9f6A67mshqzNpSyJqUccAIffp1JrXFYjsn85w9cWnElfhy" }
+        }).done(function (data) {
+            if (!data.success) {
+                appInsights.trackException(data.error);
+                self.survivalCalculationError(true);
+                return;
+            }
+            
+            self.survivalCalculationError(false);
+            var weeksLeft = data.data.daysLeft / 7.0;
+            var minutesLeft = weeksLeft * self.weeklyPlaytime() * 60;
+
+            var playstyleRemainingMinutes = (self.userPlayStyle() === PlaytimeType.Completionist) ? self.total().completionistRemaining :
+                ((self.userPlayStyle() === PlaytimeType.Extras) ? self.total().extrasRemaining : self.total().mainRemaining);
+
+            self.remainingSurvivalMinutes(minutesLeft - playstyleRemainingMinutes, 0);
+
+        }).fail(function (error) {
+            appInsights.trackException(error);
+            self.survivalCalculationError(true);
+        }).always(function () {
+            self.calculatingSurvival(false);
+            self.survivalCalculated(true);
+        });
     };
 
     self.toggleAllChecked = ko.observable(true);

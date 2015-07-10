@@ -62,8 +62,10 @@ namespace UnknownUpdater.Updater
 
             UnknownUpdaterEventSource.Log.UpdateNewlyCategorizedApps(updates);
 
-            await HltbScraper.ScrapeHltb(updates.ToArray()).ConfigureAwait(false);
-            await Imputer.ImputeFromStats(updates).ConfigureAwait(false);
+            var measuredUpdates = updates.Where(a => a.Measured).ToArray();
+
+            await HltbScraper.ScrapeHltb(measuredUpdates).ConfigureAwait(false);
+            await Imputer.ImputeFromStats(measuredUpdates).ConfigureAwait(false);
 
             var appsDict = apps.ToDictionary(ae => ae.SteamAppId);
             await StorageHelper.ExecuteOperations(updates,
