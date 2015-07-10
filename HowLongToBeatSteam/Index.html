@@ -222,24 +222,24 @@
                                         <label for="playStyleSelect" class="col-xs-6 form-header">Play Style</label>
                                         <select class="form-control col-xs-6" id="playStyleSelect" data-bind="options: playStylePossibleValues, value: userPlayStyle"></select>
                                     </div>
-                                    <div class="col-xs-12">
-                                        <img class="loader" src="https://cdnjs.cloudflare.com/ajax/libs/owl-carousel/1.3.2/AjaxLoader.gif" alt="Loading..." data-bind="visible: calculatingSurvival"/>
+                                    <div class="col-xs-12" data-bind="visible: calculatingSurvival">
+                                        <img class="loader push-down" src="https://cdnjs.cloudflare.com/ajax/libs/owl-carousel/1.3.2/AjaxLoader.gif" alt="Loading..." />
                                     </div>
                                     <div class="col-xs-12 lead" data-bind="visible: !calculatingSurvival()">
-                                        <span data-bind="visible: !survivalCalculated()">Will you survive your Steam backlog? Click the button to find out...</span>
+                                        <span data-bind="visible: !survivalCalculated()">Will you live long enough to complete your backlog? Click the button to find out...</span>
                                         <span data-bind="visible: survivalCalculationError">Error calculating survival, please try again.</span>
                                         <span data-bind="visible: survivalCalculated() && !survivalCalculationError() && remainingSurvivalMinutes() < 0">You will die a horrible death, with <strong data-bind="text: hoursWithCommas(-remainingSurvivalMinutes())"></strong> of playtime still in your backlog.</span>
                                         <span data-bind="visible: survivalCalculated() && !survivalCalculationError() && remainingSurvivalMinutes() >= 0">You will die happy, having completed your backlog with <strong data-bind="text: hoursWithCommas(remainingSurvivalMinutes())"></strong> to spare.</span>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-lg-6">
+                            <div class="col-lg-6 overflow-hidden">
                                 <img data-bind="visible: !survivalCalculated()" src="Resources/GrimFandango296.jpg" alt="Grim Reaper calculating" title="Give it to them straight, Manny" />
                                 <img data-bind="visible: survivalCalculated() && !survivalCalculationError() && remainingSurvivalMinutes() < 0" src="Resources/SkeletonNo296.jpg" alt="Survival failure" title="It's time to reconsider your priorities in life" />
                                 <img data-bind="visible: survivalCalculated() && !survivalCalculationError() && remainingSurvivalMinutes() >= 0" src="Resources/OldLadyYes296.jpg" alt="Survival Success" title="So we hear there's a Steam sale going on..." />
                             </div>
                             <div class="col-xs-12 modal-footer">
-                                <button type="submit" class="btn btn-primary" data-bind="click: calculateSurvival">Will You Survive?</button>
+                                <button type="submit" class="btn btn-primary" data-bind="click: calculateSurvival, enable: !calculatingSurvival()">Will You Survive?</button>
                             </div>
                         </form>
                     </div>

@@ -31,6 +31,9 @@
     display: block;
     margin: 20px auto 0;
 }
+.push-down {
+    margin-bottom: 25px;
+}
 .push-down-max {
     margin-bottom: 9999px;
 }
