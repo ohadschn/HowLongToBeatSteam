@@ -106,7 +106,7 @@
                     <span class="sr-only">Close</span>
                 </button>
                 <p class="lead">
-                    <span class="fa fa-puzzle-piece"></span> Some of your games could not be found on HowLongToBeat. Click the update links next to missing games in the table below to help!
+                    <span class="fa fa-puzzle-piece"></span> Some of your games could not be found on HowLongToBeat. Click the update links next to missing games in the table below to <abbr title="TIP - sort by HLTB name to examine all missing games">help</abbr>!
                 </p>
             </div>
             <div role="alert" data-bind="visible: !error() && !alertHidden(), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-6' : 'col-md-12')">
@@ -197,7 +197,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h4 id="steamSurvivalTitle" class="modal-title"><span class="fa fa-calculator calculator"></span> Steam Survival Calculator</h4>
+                        <h4 id="steamSurvivalTitle" class="modal-title"><span class="fa fa-calculator calculator"></span> Steam Survival Calculator &#x2122;</h4>
                     </div>
                     <div class="modal-body overflow-auto">
                         <form role="form" class="form-inline form-multiline">
@@ -216,7 +216,7 @@
                                     </div>
                                     <div class="form-group col-xs-12">
                                         <label for="weeklyPlaytimeSelect" class="col-xs-6 form-header">Weekly Playtime</label>
-                                        <select class="form-control col-xs-6" id="weeklyPlaytimeSelect" data-bind="options: weeklyPlaytimePossibleValues, optionsText: function(hours) {return timeWithCommas(hours, 'hour');}, value: weeklyPlaytime"></select>
+                                        <select class="form-control col-xs-6" id="weeklyPlaytimeSelect" data-bind="options: weeklyPlayHoursPossibleValues, optionsText: function(hours) {return timeWithCommas(hours, 'hour');}, value: weeklyPlayHours"></select>
                                     </div>
                                     <div class="form-group col-xs-12">
                                         <label for="playStyleSelect" class="col-xs-6 form-header">Play Style</label>
@@ -228,15 +228,15 @@
                                     <div class="col-xs-12 lead" data-bind="visible: !calculatingSurvival()">
                                         <span data-bind="visible: !survivalCalculated()">Will you live long enough to complete your backlog? Click the button to find out...</span>
                                         <span data-bind="visible: survivalCalculationError">Error calculating survival, please try again.</span>
-                                        <span data-bind="visible: survivalCalculated() && !survivalCalculationError() && remainingSurvivalMinutes() < 0">You will die a horrible death, with <strong data-bind="text: hoursWithCommas(-remainingSurvivalMinutes())"></strong> of playtime still in your backlog.</span>
-                                        <span data-bind="visible: survivalCalculated() && !survivalCalculationError() && remainingSurvivalMinutes() >= 0">You will die happy, having completed your backlog with <strong data-bind="text: hoursWithCommas(remainingSurvivalMinutes())"></strong> to spare.</span>
+                                        <span data-bind="visible: survivalCalculated() && !survivalCalculationError() && timeOfDeath() < timeOfBacklogCompletion()">You will die a horrible death, <strong data-bind="text: getYearsFromDateDiff(timeOfDeath(), timeOfBacklogCompletion())"></strong> before beating your backlog.</span>
+                                        <span data-bind="visible: survivalCalculated() && !survivalCalculationError() && timeOfDeath() >= timeOfBacklogCompletion()">You will die happy, having completed your backlog with <strong data-bind="text: getYearsFromDateDiff(timeOfBacklogCompletion(), timeOfDeath())"></strong> left to live.</span>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-lg-6 overflow-hidden">
                                 <img data-bind="visible: !survivalCalculated()" src="Resources/GrimFandango296.jpg" alt="Grim Reaper calculating" title="Give it to them straight, Manny" />
-                                <img data-bind="visible: survivalCalculated() && !survivalCalculationError() && remainingSurvivalMinutes() < 0" src="Resources/SkeletonNo296.jpg" alt="Survival failure" title="It's time to reconsider your priorities in life" />
-                                <img data-bind="visible: survivalCalculated() && !survivalCalculationError() && remainingSurvivalMinutes() >= 0" src="Resources/OldLadyYes296.jpg" alt="Survival Success" title="So we hear there's a Steam sale going on..." />
+                                <img data-bind="visible: survivalCalculated() && !survivalCalculationError() && timeOfDeath() < timeOfBacklogCompletion()" src="Resources/SkeletonNo296.jpg" alt="Survival failure" title="It's time to reconsider your priorities in life" />
+                                <img data-bind="visible: survivalCalculated() && !survivalCalculationError() && timeOfDeath() >= timeOfBacklogCompletion()" src="Resources/OldLadyYes296.jpg" alt="Survival Success" title="So we hear there's a Steam sale going on..." />
                             </div>
                             <div class="col-xs-12 modal-footer">
                                 <button type="submit" class="btn btn-primary" data-bind="click: calculateSurvival, enable: !calculatingSurvival()">Will You Survive?</button>
@@ -308,15 +308,17 @@
                         </div>
                     </div>
                     <p class="lead lead-lowered">
-                        <strong data-bind="text: numberWithCommas(total().count) + ' single-player ' + (total().count === 1 ? 'game' : 'games') + ' found'"></strong>
+                        If you were a <strong>video gaming zombie</strong> who plays 24/7 without sleeping or eating then:
                     </p>
                     <ul class="lead">
-                        <li>Your total amount of consecutive <strong>current</strong> playtime is <span data-bind="text: getYears(total().playtime)"></span>.</li>
-                        <li>Your remaining amount of consecutive <abbr title="Per HowLongToBeat: You complete the main objectives, just enough to see the credits roll"><strong>main</strong></abbr> playtime is <span data-bind="text: getYears(total().mainRemaining) + ' (' + getPercent(total().mainRemaining, total().mainTtb)  + ')'"></span>.</li>
-                        <li>Your remaining amount of consecutive <abbr title="Per HowLongToBeat: You take your time, discover and complete additional tasks not required"><strong>extras</strong></abbr> playtime is <span data-bind="text: getYears(total().extrasRemaining) + ' (' + getPercent(total().extrasRemaining, total().extrasTtb)  + ')'"></span>.</li>
-                        <li>Your remaining amount of consecutive <abbr title="Per HowLongToBeat: You strive for every achievement, every medal and conquer all that the game has to offer"><strong>completionist</strong></abbr> playtime is <span data-bind="text: getYears(total().completionistRemaining) + ' (' + getPercent(total().completionistRemaining, total().completionistTtb)  + ')'"></span>.</li>
+                        <li>Your total amount of consecutive <strong><abbr title="As measured by Steam">current</abbr></strong> playtime would be <span data-bind="text: getYearsFromMinutes(total().playtime)"></span>.</li>
+                        <li>Your remaining amount of consecutive <strong><abbr title="You complete the main objectives, just enough to see the credits roll">main</abbr></strong> playtime would be <span data-bind="text: getYearsFromMinutes(total().mainRemaining) + ' (' + getPercent(total().mainRemaining, total().mainTtb)  + ')'"></span>.</li>
+                        <li>Your remaining amount of consecutive <strong><abbr title="You take your time, discover and complete additional tasks not required">extras</abbr></strong> playtime would be <span data-bind="text: getYearsFromMinutes(total().extrasRemaining) + ' (' + getPercent(total().extrasRemaining, total().extrasTtb)  + ')'"></span>.</li>
+                        <li>Your remaining amount of consecutive <strong><abbr title="You strive for every achievement and conquer all that the game has to offer">completionist</abbr></strong> playtime would be <span data-bind="text: getYearsFromMinutes(total().completionistRemaining) + ' (' + getPercent(total().completionistRemaining, total().completionistTtb)  + ')'"></span>.</li>
                     </ul>
-                    <h3><span class="label label-default inline-label">Bonus</span> <a href="javascript:;" data-bind="click: survivalCalculatorClicked">Will you survive your Steam backlog?</a></h3>
+                    <p class="lead">
+                       <strong>Not a zombie?</strong> Check out the <a href="javascript:;" data-bind="click: survivalCalculatorClicked">Steam Survival Calculator &#x2122;</a>
+                    </p> 
                     <h1>
                         <span class="share-title">Share</span>
                         <a href="javascript:;" data-bind="click: shareOnFacebook"><span class="fa fa-facebook-official"></span></a>

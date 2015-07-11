@@ -55,10 +55,14 @@ var hoursWithCommas = function(x) { // jshint ignore:line
     return timeWithCommas(hours, "hour");
 };
 
-var getYears = function (minutes) { // jshint ignore:line
+var getYearsFromMinutes = function (minutes) { // jshint ignore:line
     /*jshint bitwise: false*/
     return countdown(null, { minutes: minutes }, countdown.YEARS | countdown.MONTHS | countdown.WEEKS | countdown.DAYS | countdown.HOURS).toString("0 hours");
     /*jshint bitwise: true*/
+};
+
+var getYearsFromDateDiff = function (start, end) { // jshint ignore:line
+    return countdown(start, end, countdown.YEARS, 0, 2, "0 years");
 };
 
 var getPercent = function (portion, total) { // jshint ignore:line
@@ -97,6 +101,12 @@ var genreSeparatorReplacer = function(genre) { //avoid creating function objects
 
 var isBetween = function(x, min, max) {
     return x >= min && x <= max;
+};
+
+var getTimeFromNow = function(hoursFromNow) {
+    var date = new Date();
+    date.setUTCHours(date.getUTCHours() + hoursFromNow);
+    return date;
 };
 
 //static observables used in initialization for increased performance
@@ -386,10 +396,10 @@ function AppViewModel() {
         self.birthYearPossibleValues.push(birthYear);
     }
 
-    self.weeklyPlaytime = ko.observable(10);
-    self.weeklyPlaytimePossibleValues = ko.observableArray();
+    self.weeklyPlayHours = ko.observable(10);
+    self.weeklyPlayHoursPossibleValues = ko.observableArray();
     for (var weeklyPlaytime = 1; weeklyPlaytime <= 150; weeklyPlaytime++) {
-        self.weeklyPlaytimePossibleValues.push(weeklyPlaytime);
+        self.weeklyPlayHoursPossibleValues.push(weeklyPlaytime);
     }
 
     self.userPlayStyle = ko.observable(PlaytimeType.Main);
@@ -398,7 +408,9 @@ function AppViewModel() {
     self.survivalCalculated = ko.observable(false);
     self.survivalCalculationError = ko.observable(false);
     self.calculatingSurvival = ko.observable(false);
-    self.remainingSurvivalMinutes = ko.observable(0);
+    self.remainingWeeksToLiveAfterBacklogCompletion = ko.observable(0);
+    self.timeOfDeath = ko.observable(new Date());
+    self.timeOfBacklogCompletion = ko.observable(new Date());
 
     self.survivalCalculatorClicked = function() {
         appInsights.trackEvent("survivalCalculatorClicked");
@@ -417,6 +429,7 @@ function AppViewModel() {
             type: "GET",
             headers: { "X-Mashape-Authorization": "UTVc9f6A67mshqzNpSyJqUccAIffp1JrXFYjsn85w9cWnElfhy" }
         }).done(function (data) {
+
             if (!data.success) {
                 appInsights.trackException(data.error);
                 self.survivalCalculationError(true);
@@ -424,13 +437,13 @@ function AppViewModel() {
             }
             
             self.survivalCalculationError(false);
-            var weeksLeft = data.data.daysLeft / 7.0;
-            var minutesLeft = weeksLeft * self.weeklyPlaytime() * 60;
+            self.timeOfDeath(getTimeFromNow(data.data.hoursLeft));
 
             var playstyleRemainingMinutes = (self.userPlayStyle() === PlaytimeType.Completionist) ? self.total().completionistRemaining :
                 ((self.userPlayStyle() === PlaytimeType.Extras) ? self.total().extrasRemaining : self.total().mainRemaining);
 
-            self.remainingSurvivalMinutes(minutesLeft - playstyleRemainingMinutes, 0);
+            var weeksLeftForBacklogCompletion = (playstyleRemainingMinutes / 60) / self.weeklyPlayHours();
+            self.timeOfBacklogCompletion(getTimeFromNow(weeksLeftForBacklogCompletion * 7 * 24));
 
         }).fail(function (error) {
             appInsights.trackException(error);
@@ -1434,7 +1447,7 @@ function AppViewModel() {
     };
 
     self.getShortShareText = function (hours) {
-        return "I just found out I have over " + (hours ? hoursWithCommas(self.originalMainRemaining) : (getYears(self.originalMainRemaining) + " of consecutive gameplay")) + " left to beat my entire Steam library!";
+        return "I just found out I have over " + (hours ? hoursWithCommas(self.originalMainRemaining) : (getYearsFromMinutes(self.originalMainRemaining) + " of consecutive gameplay")) + " left to beat my entire Steam library!";
     };
 
     self.shareOnFacebook = function () {
