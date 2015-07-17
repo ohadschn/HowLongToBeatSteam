@@ -228,15 +228,18 @@
                                     <div class="col-xs-12 lead" data-bind="visible: !calculatingSurvival()">
                                         <span data-bind="visible: !survivalCalculated()">Will you live long enough to complete your backlog? Click the button to find out...</span>
                                         <span data-bind="visible: survivalCalculationError">Error calculating survival, please try again.</span>
-                                        <span data-bind="visible: survivalCalculated() && !survivalCalculationError() && timeOfDeath() < timeOfBacklogCompletion()">You will die a horrible death, <strong data-bind="text: getYearsFromDateDiff(timeOfDeath(), timeOfBacklogCompletion())"></strong> before beating your backlog.</span>
-                                        <span data-bind="visible: survivalCalculated() && !survivalCalculationError() && timeOfDeath() >= timeOfBacklogCompletion()">You will die happy, having completed your backlog with <strong data-bind="text: getYearsFromDateDiff(timeOfBacklogCompletion(), timeOfDeath())"></strong> left to live.</span>
+                                        <span data-bind="visible: survivalCalculated() && !survivalCalculationError()">
+                                            <span data-bind="text: survivalPrefix"></span>
+                                            <strong data-bind="text: survivalYears"></strong>
+                                            <span data-bind="text: survivalSuffix"></span>
+                                        </span>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-lg-6 overflow-hidden">
-                                <img data-bind="visible: !survivalCalculated()" src="Resources/GrimFandango296.jpg" alt="Grim Reaper calculating" title="Give it to them straight, Manny"/>
-                                <img data-bind="visible: survivalCalculated() && !survivalCalculationError() && timeOfDeath() < timeOfBacklogCompletion()" src="Resources/SkeletonNo296.jpg" alt="Survival failure" title="It's time to reconsider your priorities in life"/>
-                                <img data-bind="visible: survivalCalculated() && !survivalCalculationError() && timeOfDeath() >= timeOfBacklogCompletion()" src="Resources/OldLadyYes296.jpg" alt="Survival Success" title="So we hear there's a Steam sale going on..."/>
+                                <img data-bind="visible: !survivalCalculated()" src="Resources/GrimFandango296.jpg" alt="Grim Reaper calculating" title="Give it to them straight, Manny" />
+                                <img data-bind="visible: survivalCalculated() && !survivalCalculationError() && timeOfDeath() < timeOfBacklogCompletion()" src="Resources/SkeletonNo296.jpg" alt="Survival failure" title="It's time to reconsider your priorities in life" />
+                                <img data-bind="visible: survivalCalculated() && !survivalCalculationError() && timeOfDeath() >= timeOfBacklogCompletion()" src="Resources/OldLadyYes296.jpg" alt="Survival Success" title="So we hear there's a Steam sale going on..." />
                             </div>
                             <div class="col-xs-12 modal-footer">
                                 <h2 class="no-vertical-margin pull-left" data-bind="visible: survivalCalculated">

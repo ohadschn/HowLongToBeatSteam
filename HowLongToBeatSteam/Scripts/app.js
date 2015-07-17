@@ -405,12 +405,26 @@ function AppViewModel() {
     self.userPlayStyle = ko.observable(PlaytimeType.Main);
     self.playStylePossibleValues = ko.observableArray([PlaytimeType.Main, PlaytimeType.Extras, PlaytimeType.Completionist]);
 
+    var survivalPositiveVerdicts = [
+        { prefix: "You will die happy, having completed your backlog with", suffix: "left to live." },
+        { prefix: "Not only will you complete your backlog, you'll have", suffix: "to relax after." },
+        { prefix: "Now is the time to go buy more games for the barren", suffix: "of post-backlog." }
+    ];
+    var survivalNegativeVerdicts = [
+        { prefix: "You will die a horrible death,", suffix: "before beating your backlog." },
+        { prefix: "Game over. You'd need", suffix: "more to live in order to complete your backlog." },
+        { prefix: "Sorry, looks like the Grim Reaper is going to beat you by", suffix: ":)" }
+    ];
+
     self.survivalCalculated = ko.observable(false);
     self.survivalCalculationError = ko.observable(false);
     self.calculatingSurvival = ko.observable(false);
     self.remainingWeeksToLiveAfterBacklogCompletion = ko.observable(0);
     self.timeOfDeath = ko.observable(new Date());
     self.timeOfBacklogCompletion = ko.observable(new Date());
+    self.survivalPrefix = ko.observable("");
+    self.survivalSuffix = ko.observable("");
+    self.survivalYears = ko.observable("");
 
     self.survivalCalculatorClicked = function() {
         appInsights.trackEvent("survivalCalculatorClicked");
@@ -444,6 +458,19 @@ function AppViewModel() {
 
             var weeksLeftForBacklogCompletion = (playstyleRemainingMinutes / 60) / self.weeklyPlayHours();
             self.timeOfBacklogCompletion(getTimeFromNow(weeksLeftForBacklogCompletion * 7 * 24));
+
+            var verdict, years;
+            if (self.timeOfDeath() < self.timeOfBacklogCompletion()) {
+                verdict = survivalNegativeVerdicts[Math.floor(Math.random() * survivalNegativeVerdicts.length)];
+                years = getYearsFromDateDiff(self.timeOfDeath(), self.timeOfBacklogCompletion());
+            } else {
+                verdict = survivalPositiveVerdicts[Math.floor(Math.random() * survivalPositiveVerdicts.length)];
+                years = getYearsFromDateDiff(self.timeOfBacklogCompletion(), self.timeOfDeath());
+            }
+
+            self.survivalPrefix(verdict.prefix);
+            self.survivalSuffix(verdict.suffix);
+            self.survivalYears(years);
 
         }).fail(function (error) {
             appInsights.trackException(error);
@@ -1452,8 +1479,8 @@ function AppViewModel() {
 
     var getSurvivalText = function() {
         return (self.timeOfDeath() < self.timeOfBacklogCompletion()) ?
-            "Looks like I won't be living long enough to see my Steam backlog completed :)" :
-            "Looks like I'll be able to complete my Steam backlog in this lifetime after all :)";
+            "Looks like I'm missing " + getYearsFromDateDiff(self.timeOfDeath(), self.timeOfBacklogCompletion()) + " from my life to be able to complete my Steam backlog :)" :
+            "Looks like I'll be able to complete my Steam backlog in this lifetime with " + getYearsFromDateDiff(self.timeOfBacklogCompletion(), self.timeOfDeath()) + " to spare:)";
     };
 
     var openShareWindow = function (url, wide) {
