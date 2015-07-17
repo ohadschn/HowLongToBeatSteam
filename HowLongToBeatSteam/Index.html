@@ -234,11 +234,18 @@
                                 </div>
                             </div>
                             <div class="col-lg-6 overflow-hidden">
-                                <img data-bind="visible: !survivalCalculated()" src="Resources/GrimFandango296.jpg" alt="Grim Reaper calculating" title="Give it to them straight, Manny" />
-                                <img data-bind="visible: survivalCalculated() && !survivalCalculationError() && timeOfDeath() < timeOfBacklogCompletion()" src="Resources/SkeletonNo296.jpg" alt="Survival failure" title="It's time to reconsider your priorities in life" />
-                                <img data-bind="visible: survivalCalculated() && !survivalCalculationError() && timeOfDeath() >= timeOfBacklogCompletion()" src="Resources/OldLadyYes296.jpg" alt="Survival Success" title="So we hear there's a Steam sale going on..." />
+                                <img data-bind="visible: !survivalCalculated()" src="Resources/GrimFandango296.jpg" alt="Grim Reaper calculating" title="Give it to them straight, Manny"/>
+                                <img data-bind="visible: survivalCalculated() && !survivalCalculationError() && timeOfDeath() < timeOfBacklogCompletion()" src="Resources/SkeletonNo296.jpg" alt="Survival failure" title="It's time to reconsider your priorities in life"/>
+                                <img data-bind="visible: survivalCalculated() && !survivalCalculationError() && timeOfDeath() >= timeOfBacklogCompletion()" src="Resources/OldLadyYes296.jpg" alt="Survival Success" title="So we hear there's a Steam sale going on..."/>
                             </div>
                             <div class="col-xs-12 modal-footer">
+                                <h2 class="no-vertical-margin pull-left" data-bind="visible: survivalCalculated">
+                                    <span class="share-title">Share</span>
+                                    <a href="javascript:;" data-bind="click: shareSurvivalOnFacebook"><span class="fa fa-facebook-official"></span></a>
+                                    <a href="javascript:;" data-bind="click: shareSurvivalOnTwitter"><span class="fa fa-twitter-square"></span></a>
+                                    <a href="javascript:;" data-bind="click: shareSurvivalOnReddit"><span class="fa fa-reddit-square"></span></a>
+                                    <a href="javascript:;" data-bind="click: shareSurvivalOnGooglePlus"><span class="fa fa-google-plus-square"></span></a>
+                                </h2>
                                 <button type="submit" class="btn btn-primary" data-bind="click: calculateSurvival, enable: !calculatingSurvival()">Will You Survive?</button>
                             </div>
                         </form>
@@ -316,9 +323,9 @@
                         <li>Your remaining amount of consecutive <strong><abbr title="You take your time, discover and complete additional tasks not required">extras</abbr></strong> playtime would be <span data-bind="text: getYearsFromMinutes(total().extrasRemaining) + ' (' + getPercent(total().extrasRemaining, total().extrasTtb)  + ')'"></span>.</li>
                         <li>Your remaining amount of consecutive <strong><abbr title="You strive for every achievement and conquer all that the game has to offer">completionist</abbr></strong> playtime would be <span data-bind="text: getYearsFromMinutes(total().completionistRemaining) + ' (' + getPercent(total().completionistRemaining, total().completionistTtb)  + ')'"></span>.</li>
                     </ul>
-                    <p class="lead">
-                       <strong>Not a zombie?</strong> Check out the <a href="javascript:;" data-bind="click: survivalCalculatorClicked">Steam Survival Calculator &#x2122;</a>
-                    </p> 
+                    <h3>
+                        <span class="fa fa-heartbeat"></span> Not a zombie? Check out the <a href="javascript:;" class="emphasized" data-bind="click: survivalCalculatorClicked"><span class="fa fa-calculator"></span> Steam Survival Calculator &#x2122;</a>
+                    </h3> 
                     <h1>
                         <span class="share-title">Share</span>
                         <a href="javascript:;" data-bind="click: shareOnFacebook"><span class="fa fa-facebook-official"></span></a>

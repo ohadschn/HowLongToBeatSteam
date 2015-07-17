@@ -1446,35 +1446,81 @@ function AppViewModel() {
         return getOrigin() + window.location.pathname + window.location.hash;
     };
 
-    self.getShortShareText = function (hours) {
+    var getShortShareText = function (hours) {
         return "I just found out I have over " + (hours ? hoursWithCommas(self.originalMainRemaining) : (getYearsFromMinutes(self.originalMainRemaining) + " of consecutive gameplay")) + " left to beat my entire Steam library!";
     };
 
-    self.shareOnFacebook = function () {
-        appInsights.trackEvent("Shared", {site: "Facebook"});
-        self.openShareWindow("https://www.facebook.com/dialog/feed?app_id=445487558932250&display=popup&caption=HowLongToBeatSteam&description=" + encodeURIComponent(self.getShortShareText(false) + " facebook.com/howlongtobeatsteam") + "&link=" + encodeURIComponent(getCurrentAddress()) + "&redirect_uri=" + encodeURIComponent(getOrigin() + "/CloseWindow.html") + "&picture=" + encodeURIComponent(getOrigin() + "/Resources/sk5_0.jpg"));
+    var getSurvivalText = function() {
+        return (self.timeOfDeath() < self.timeOfBacklogCompletion()) ?
+            "Looks like I won't be living long enough to see my Steam backlog completed :)" :
+            "Looks like I'll be able to complete my Steam backlog in this lifetime after all :)";
     };
 
-    self.shareOnTwitter = function () {
-        appInsights.trackEvent("Shared", {site: "Twitter"});
-        self.openShareWindow("https://twitter.com/share?url=" + encodeURIComponent(getCurrentAddress()) + "&text=" + self.getShortShareText(true) + "&hashtags=hltbsteam");
-    };
-
-    self.shareOnGooglePlus = function () {
-        appInsights.trackEvent("Shared", {site: "GooglePlus"});
-        self.openShareWindow("https://plus.google.com/share?url=" + encodeURIComponent(getCurrentAddress()));
-    };
-
-    self.shareOnReddit = function () {
-        appInsights.trackEvent("Shared", { site: "Reddit" });
-        self.openShareWindow("http://www.reddit.com/submit?url=" + encodeURIComponent(getCurrentAddress()) + "&title=" + self.getShortShareText(false), true);
-    };
-
-    self.openShareWindow = function (url, wide) {
+    var openShareWindow = function (url, wide) {
         window.open(
             url,
             "share",
             "toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, height=600, width=" + (wide ? "900" : "600"));
+    };
+
+    var shareOnFacebookCore = function(shareEvent, text) {
+        appInsights.trackEvent(shareEvent, { site: "Facebook" });
+        openShareWindow("https://www.facebook.com/dialog/feed?" + $.param({
+            app_id: "445487558932250",
+            display: "popup",
+            caption: "HowLongToBeatSteam",
+            description: text + " facebook.com/howlongtobeatsteam",
+            link: getCurrentAddress(),
+            redirect_uri: getOrigin() + "/CloseWindow.html",
+            picture: getOrigin() + "/Resources/sk5_0.jpg"
+        }));
+    };
+
+    self.shareOnFacebook = function () {
+        shareOnFacebookCore("Shared", getShortShareText(false));
+    };
+
+    self.shareSurvivalOnFacebook = function() {
+        shareOnFacebookCore("SharedSurvival", getSurvivalText());
+    };
+
+    var shareOnTwitterCore = function(shareEvent, text) {
+        appInsights.trackEvent(shareEvent, { site: "Twitter" });
+        openShareWindow("https://twitter.com/share?" + $.param({ url: getCurrentAddress(), text: text, hashtags: "hltbsteam" }));
+    };
+
+    self.shareOnTwitter = function () {
+        shareOnTwitterCore("Shared", getShortShareText(true));
+    };
+
+    self.shareSurvivalOnTwitter = function() {
+        shareOnTwitterCore("SharedSurvival", getSurvivalText());
+    };
+
+    var shareOnGooglePlusCore = function(shareEvent) {
+        appInsights.trackEvent(shareEvent, { site: "GooglePlus" });
+        openShareWindow("https://plus.google.com/share?" + $.param({ url: getCurrentAddress() }));
+    };
+
+    self.shareOnGooglePlus = function () {
+        shareOnGooglePlusCore("Shared");
+    };
+
+    self.shareSurvivalOnGooglePlus = function() {
+        shareOnGooglePlusCore("SharedSurvival");
+    };
+
+    var shareOnRedditCore = function(shareEvent, text) {
+        appInsights.trackEvent(shareEvent, { site: "Reddit" });
+        openShareWindow("https://www.reddit.com/submit?" + $.param({ url: getCurrentAddress(), title: text, resubmit: true }), true);
+    };
+
+    self.shareOnReddit = function () {
+        shareOnRedditCore("Shared", getShortShareText(false));
+    };
+
+    self.shareSurvivalOnReddit = function() {
+        shareOnRedditCore("SharedSurvival", getSurvivalText());
     };
 
     self.authenticate = function() {
