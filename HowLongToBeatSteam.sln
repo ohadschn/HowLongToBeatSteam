@@ -32,7 +32,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuggestionProcessor", "Sugg
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuggestionWatcher", "SuggestionWatcher\SuggestionWatcher.csproj", "{B84EA4F7-B99A-4360-ADBC-D1CF113B1B9A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StorageBackuper", "StorageBackuper\StorageBackuper.csproj", "{FEFF0AE5-0E31-4646-A0A3-85D9CF79A5BC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StorageBackupUploader", "StorageBackupUploader\StorageBackupUploader.csproj", "{FEFF0AE5-0E31-4646-A0A3-85D9CF79A5BC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

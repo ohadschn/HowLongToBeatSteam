@@ -9,9 +9,9 @@ using Common.Storage;
 using Common.Util;
 using Microsoft.WindowsAzure.Storage;
 
-namespace StorageBackuper
+namespace StorageBackupUploader.BackupUploader
 {
-    class Backuper
+    class BackupUploader
     {
         private const string BlobContainerName = "storagebackup";
 
@@ -21,7 +21,7 @@ namespace StorageBackuper
             try
             {
                 SiteUtil.KeepWebJobAlive();
-                SiteUtil.MockWebJobEnvironmentIfMissing("StorageBackuper");
+                SiteUtil.MockWebJobEnvironmentIfMissing("StorageBackupUploader");
                 BackupTableStorage().Wait();
             }
             finally
