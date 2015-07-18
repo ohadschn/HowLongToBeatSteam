@@ -12,6 +12,9 @@
     },
     {
       "filePath": "../UnknownUpdater/0UnknownUpdater.csproj"
+    },
+    {
+      "filePath": "../StorageBackupUploader/StorageBackupUploader.csproj"
     }
   ]
 }

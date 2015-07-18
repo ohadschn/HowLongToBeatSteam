@@ -146,6 +146,10 @@
       <Project>{B6C78316-2C1D-4459-AAAA-84B6F430D88D}</Project>
       <Name>SteamHltbScraper</Name>
     </ProjectReference>
+    <ProjectReference Include="..\StorageBackupUploader\StorageBackupUploader.csproj">
+      <Project>{FEFF0AE5-0E31-4646-A0A3-85D9CF79A5BC}</Project>
+      <Name>StorageBackupUploader</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SuggestionWatcher\SuggestionWatcher.csproj">
       <Project>{B84EA4F7-B99A-4360-ADBC-D1CF113B1B9A}</Project>
       <Name>SuggestionWatcher</Name>

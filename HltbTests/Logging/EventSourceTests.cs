@@ -4,6 +4,7 @@ using Microsoft.Practices.EnterpriseLibrary.SemanticLogging.Utility;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MissingGamesUpdater.Logging;
 using SteamHltbScraper.Logging;
+using StorageBackupUploader.Logging;
 using SuggestionWatcher.Logging;
 using UnknownUpdater.Logging;
 
@@ -46,6 +47,12 @@ namespace HltbTests.Logging
         public void TestSuggestionWatcherEventSource()
         {
             EventSourceAnalyzer.InspectAll(SuggestionWatcherEventSource.Log);
+        }
+
+        [TestMethod]
+        public void TestStorageBackupUploaderEventSource()
+        {
+            EventSourceAnalyzer.InspectAll(StorageBackupUploaderEventSource.Log);
         }
     }
 }
