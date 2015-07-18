@@ -2,16 +2,20 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Mail;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using Common.Logging;
 using JetBrains.Annotations;
 using SendGrid;
@@ -388,6 +392,57 @@ namespace Common.Util
         public static TimeSpan GetTimeElapsedFromTickCount(int tickCount)
         {
             return TimeSpan.FromMilliseconds(Environment.TickCount - tickCount);
+        }
+
+        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
+        public static void DataContractSerializeToFile<T>(T objectToSerialize, string fileName)
+        {
+            using (var fileStream = File.CreateText(fileName))
+            using (var writer = new XmlTextWriter(fileStream))
+            {
+                new DataContractSerializer(typeof(T)).WriteObject(writer, objectToSerialize);
+            }
+        }
+
+        public static async Task<int> RunProcessAsync(string fileName, string args)
+        {
+            using (var process = new Process
+            {
+                StartInfo =
+                {
+                    FileName = fileName,
+                    Arguments = args,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                },
+                EnableRaisingEvents = true
+            })
+            {
+                var exitCode = await RunProcessAsync(process).ConfigureAwait(false);
+                return exitCode;
+            }
+        }
+
+        private static Task<int> RunProcessAsync(Process process)
+        {
+            var tcs = new TaskCompletionSource<int>();
+
+            process.Exited += (s, ea) => tcs.SetResult(process.ExitCode);
+            process.OutputDataReceived += (s, ea) => Console.WriteLine(ea.Data);
+            process.ErrorDataReceived += (s, ea) => Console.WriteLine("ERR: " + ea.Data);
+
+            bool started = process.Start();
+            if (!started)
+            {
+                throw new InvalidOperationException("Could not start process: " + process.StartInfo.FileName + " " + process.StartInfo.Arguments);
+            }
+
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            return tcs.Task;
         }
     }
 }
