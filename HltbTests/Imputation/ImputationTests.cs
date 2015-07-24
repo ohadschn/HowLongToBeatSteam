@@ -36,7 +36,7 @@ namespace HltbTests.Imputation
         private static AppEntity[] GetSampleGames()
         {
             int i = 1;
-            return File.ReadLines("Imputation\\games.csv").Select(row =>
+            return File.ReadLines("games.csv").Select(row =>
             {
                 var gameValues = row.Split(',');
                 Trace.Assert(gameValues.Length == 5, "Invalid CSV row (must contain exactly 5 values) " + row);

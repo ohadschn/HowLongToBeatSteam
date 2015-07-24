@@ -15,6 +15,9 @@
     },
     {
       "filePath": "../StorageBackupUploader/StorageBackupUploader.csproj"
+    },
+    {
+      "filePath": "../TestRunner/TestRunner.csproj"
     }
   ]
 }
