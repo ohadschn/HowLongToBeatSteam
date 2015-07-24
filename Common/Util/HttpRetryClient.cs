@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -121,7 +122,7 @@ namespace Common.Util
                 return response.EnsureSuccessStatusCode();
             },
             (lastException, retryCount, delay) => CommonEventSource.Log.HttpRequestFailed(uri, lastException, retryCount, m_retries, delay),
-            null, m_retries, MinBackoff, MaxBackoff, DefaultClientBackoff, ct);
+            e => e is HttpRequestException || e is WebException, m_retries, MinBackoff, MaxBackoff, DefaultClientBackoff, ct);
         }
 
         public void Dispose()

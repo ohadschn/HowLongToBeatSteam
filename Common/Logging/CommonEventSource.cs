@@ -65,7 +65,8 @@ namespace Common.Logging
                 return;
             }
 
-            HttpRequestFailed(uri.ToString(), exception.Message, attempt, totalRetries, delay.TotalSeconds);
+            HttpRequestFailed(uri.ToString(), String.Format(CultureInfo.InvariantCulture, "{0} / {1}", exception.GetType(), exception.Message), 
+                attempt, totalRetries, delay.TotalSeconds);
         }
 
         [Event(
