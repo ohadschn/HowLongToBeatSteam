@@ -1,6 +1,9 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using System.Globalization;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SteamHltbScraper.Scraper;
 using Common.Entities;
+using JetBrains.Annotations;
 
 namespace HltbTests.Scraping
 {
@@ -28,7 +31,7 @@ namespace HltbTests.Scraping
         [TestMethod]
         public void TestNonAlphanumericName()
         {
-            TestScraping("Air Conflicts - Secret Wars", 2011, true, true, false, "Air Conflicts: Secret Wars");
+            TestScraping("Air Conflicts - Secret Wars", 2011, true, true, true, "Air Conflicts: Secret Wars");
         }
 
         [TestMethod]
@@ -37,7 +40,7 @@ namespace HltbTests.Scraping
             TestScraping("Commander Keen Collection (Ep. 1-5)", 1990, true, true, false);
             TestScraping("A Bird Story", 2014, true, false, false);
             TestScraping("The Secret of Hildegards", 2011, true, false, false);
-            TestScraping("Cognition: An Erica Reed Thriller", 2013, true, false, false);
+            TestScraping("Cognition: An Erica Reed Thriller", 2013, true, true, false);
             TestScraping("Gearcrack Arena", 2014, true, true, false);
             TestScraping("The Plan (2013)", 2013, true, false, false);
             TestScraping("Crystals of Time", 2014, true, true, false);
@@ -54,46 +57,68 @@ namespace HltbTests.Scraping
         public void TestGameNotFoundInSearch()
         {
             var app = ScrapeApp("{3F883F0C-A91E-4B99-A4E7-F4AA873AA3FF}"); //just a random GUID that won't be found
-            Assert.AreEqual(-1, app.HltbId);
+            AppAssertAreEqual(app, -1, app.HltbId, "expected no HLTB ID");
         }
 
         private static void TestScraping(string name, int releaseYear, bool hasMain, bool hasExtras, bool hasCompletionist, string hltbName = null)
         {
             var app = ScrapeApp(name);
-            Assert.AreEqual(hltbName ?? name, app.HltbName, "Incorrect HLTB game name");
-            Assert.AreEqual(releaseYear, app.ReleaseDate.Year, "Incorrect release year");
+            AppAssertAreEqual(app, hltbName ?? name, app.HltbName, "Incorrect HLTB game name");
+            AppAssertAreEqual(app, releaseYear, app.ReleaseDate.Year, "Incorrect release year");
             if (hasMain)
             {
-                Assert.IsTrue(app.MainTtb > 0, "expected positive main TTB");
-                Assert.IsFalse(app.MainTtbImputed, "expected non-imputed main TTB");
+                AppAssertIsTrue(app, app.MainTtb > 0, "expected positive main TTB");
+                AppAssertIsFalse(app, app.MainTtbImputed, "expected non-imputed main TTB");
             }
             else
             {
-                Assert.AreEqual(0, app.MainTtb, "expected zero main TTB");
-                Assert.IsTrue(app.MainTtbImputed, "expected imputed main TTB");
+                AppAssertAreEqual(app, 0, app.MainTtb, "expected zero main TTB");
+                AppAssertIsTrue(app, app.MainTtbImputed, "expected imputed main TTB");
             }
 
             if (hasExtras)
             {
-                Assert.IsTrue(app.ExtrasTtb > 0, "expected positive extras TTB");
-                Assert.IsFalse(app.ExtrasTtbImputed, "expected non-imputed extras TTB");
+                AppAssertIsTrue(app, app.ExtrasTtb > 0, "expected positive extras TTB");
+                AppAssertIsFalse(app, app.ExtrasTtbImputed, "expected non-imputed extras TTB");
             }
             else
             {
-                Assert.AreEqual(0, app.ExtrasTtb, "expected zero extras TTB");
-                Assert.IsTrue(app.ExtrasTtbImputed, "expected imputed extras TTB");
+                AppAssertAreEqual(app, 0, app.ExtrasTtb, "expected zero extras TTB");
+                AppAssertIsTrue(app, app.ExtrasTtbImputed, "expected imputed extras TTB");
             }
 
             if (hasCompletionist)
             {
-                Assert.IsTrue(app.CompletionistTtb > 0, "expected positive completionist TTB");
-                Assert.IsFalse(app.CompletionistTtbImputed, "expected non-imputed completionist TTB");
+                AppAssertIsTrue(app, app.CompletionistTtb > 0, "expected positive completionist TTB");
+                AppAssertIsFalse(app, app.CompletionistTtbImputed, "expected non-imputed completionist TTB");
             }
             else
             {
-                Assert.AreEqual(0, app.CompletionistTtb, "expected zero completionist TTB");
-                Assert.IsTrue(app.CompletionistTtbImputed, "expected imputed completionist TTB");
+                AppAssertAreEqual(app, 0, app.CompletionistTtb, "expected zero completionist TTB");
+                AppAssertIsTrue(app, app.CompletionistTtbImputed, "expected imputed completionist TTB");
             }
+        }
+
+        [AssertionMethod]
+        private static void AppAssertIsFalse(AppEntity app, bool condition, string message)
+        {
+            Assert.IsFalse(condition, AddGameInformationToAssertMessage(message, app));
+        }
+
+        [AssertionMethod]
+        private static void AppAssertIsTrue(AppEntity app, bool condition, string message)
+        {
+            Assert.IsTrue(condition, AddGameInformationToAssertMessage(message, app));
+        }
+
+        private static void AppAssertAreEqual<T>(AppEntity app, T expected, T actual, string message)
+        {
+            Assert.AreEqual(expected, actual, AddGameInformationToAssertMessage(message, app));
+        }
+
+        private static string AddGameInformationToAssertMessage(string message, AppEntity app)
+        {
+            return String.Format(CultureInfo.InvariantCulture, "{0} for game {1} (HLTB ID {2})", message, app.HltbName, app.HltbId);
         }
 
         private static AppEntity ScrapeApp(string name)
