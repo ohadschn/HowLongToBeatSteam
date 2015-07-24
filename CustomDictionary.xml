@@ -14,6 +14,7 @@
            <Word>Overriden</Word>
            <Word>dlc</Word>
            <Word>Keepalive</Word>
+           <Word>Tsv</Word>
          </Recognized>
 		    <Compound>
             <Term CompoundAlternate="CoOp">coop</Term>

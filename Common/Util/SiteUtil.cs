@@ -420,7 +420,10 @@ namespace Common.Util
                 EnableRaisingEvents = true
             })
             {
+                CommonEventSource.Log.RunProcessStart(fileName, args);
                 var exitCode = await RunProcessAsync(process).ConfigureAwait(false);
+                CommonEventSource.Log.RunProcessStop(fileName, args, exitCode);
+
                 return exitCode;
             }
         }

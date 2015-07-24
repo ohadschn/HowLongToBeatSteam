@@ -27,6 +27,7 @@ namespace Common.Logging
             public const EventKeywords StoreApi = (EventKeywords)2;
             public const EventKeywords TableStorage = (EventKeywords)4;
             public const EventKeywords Email = (EventKeywords) 8;
+            public const EventKeywords Shell = (EventKeywords) 16;
         }
 
         [SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
@@ -43,7 +44,8 @@ namespace Common.Logging
             public const EventTask InsertSuggestion = (EventTask)8;
             public const EventTask DeleteSuggestion = (EventTask) 9;
             public const EventTask AcceptSuggestion = (EventTask) 10;
-            public const EventTask SendSuccessMail = (EventTask) 11;
+            public const EventTask SendSuccessMail = (EventTask)11;
+            public const EventTask RunProcess = (EventTask)12;
         }
 // ReSharper restore ConvertToStaticClass
 
@@ -441,6 +443,30 @@ namespace Common.Logging
         public void SendSuccessMailStop(string description)
         {
             WriteEvent(25, description);
+        }
+
+        [Event(
+            26,
+            Message = "Start running process '{0}' with arguments '{1}'",
+            Keywords = Keywords.Shell,
+            Level = EventLevel.Informational,
+            Task = Tasks.RunProcess,
+            Opcode = EventOpcode.Start)]
+        public void RunProcessStart(string fileName, string args)
+        {
+            WriteEvent(26, fileName, args);
+        }
+
+        [Event(
+            27,
+            Message = "Finished running process '{0} with arguments '{1}' (exit code: {2})",
+            Keywords = Keywords.Shell,
+            Level = EventLevel.Informational,
+            Task = Tasks.RunProcess,
+            Opcode = EventOpcode.Stop)]
+        public void RunProcessStop(string fileName, string args, int exitCode)
+        {
+            WriteEvent(27, fileName, args, exitCode);
         }
     }
 }

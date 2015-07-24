@@ -3,6 +3,7 @@ using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
 using Common.Logging;
 using Common.Util;
+using TestRunner.Logging;
 
 namespace TestRunner.Runner
 {
@@ -26,6 +27,7 @@ namespace TestRunner.Runner
         private static async Task RunTests()
         {
             var ticks = Environment.TickCount;
+            TestRunnerEventSource.Log.RunTestsStart();
 
             var exitCode = await SiteUtil.RunProcessAsync("vstest.console.exe", "HltbTests.dll").ConfigureAwait(false);
 
@@ -35,6 +37,8 @@ namespace TestRunner.Runner
             }
 
             await SiteUtil.SendSuccessMail("TestRunner", SiteUtil.GetTimeElapsedFromTickCount(ticks), "All tests passed").ConfigureAwait(false);
+
+            TestRunnerEventSource.Log.RunTestsStop();
         }
     }
 }

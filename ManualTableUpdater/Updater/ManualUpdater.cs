@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -30,7 +31,7 @@ namespace ManualTableUpdater.Updater
         public string[] Genres { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays"), DataMember]
         public string[] Developers { get; set; }
-        [DataMember]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays"), DataMember]
         public string[] Publishers { get; set; }
         [DataMember]
         public DateTime ReleaseDate { get; set; }
@@ -79,9 +80,9 @@ namespace ManualTableUpdater.Updater
             CompletionistTtbImputed = completionistTtbImputed;
         }
     }
-    class ManualUpdater
+    public static class ManualUpdater
     {
-        private const string AppdataXml = "AppData.xml";
+        public const string AppDataXml = "AppData.xml";
 
         static void Main()
         {
@@ -104,12 +105,13 @@ namespace ManualTableUpdater.Updater
         public static void DeleteUnknowns()
         {
             var unknowns = StorageHelper.GetAllApps(AppEntity.UnknownFilter).Result;
-            Console.WriteLine(String.Join(Environment.NewLine, unknowns.Select(u => String.Format("{0} / {1}", u.SteamName, u.SteamAppId))));
+            Console.WriteLine(String.Join(Environment.NewLine, 
+                unknowns.Select(u => String.Format(CultureInfo.InvariantCulture, "{0} / {1}", u.SteamName, u.SteamAppId))));
             Console.WriteLine("Unknowns: " + unknowns.Count);
             StorageHelper.ExecuteOperations(unknowns, a => new [] {TableOperation.Delete(a)}, StorageHelper.SteamToHltbTableName, "Deleting unknowns").Wait();
         }
 
-        private static void InsertManualSuggestions()
+        public static void InsertManualSuggestions()
         {
             Task.WaitAll(
                 StorageHelper.InsertSuggestion(new SuggestionEntity(252750, 19735)), 
@@ -119,7 +121,7 @@ namespace ManualTableUpdater.Updater
                 StorageHelper.InsertSuggestion(new SuggestionEntity(221640, 9353)));
         }
 
-        private static void GetEarliestGame()
+        public static void GetEarliestGame()
         {
             var allGames = StorageHelper.GetAllApps().Result;
             var gamesWithReleaseDates = allGames.Where(a => a.ReleaseDate.Year > 1900).ToArray();
@@ -128,7 +130,7 @@ namespace ManualTableUpdater.Updater
             Console.WriteLine("Games:" + Environment.NewLine + String.Join(Environment.NewLine, gamesWithReleaseDates.Where(a => a.ReleaseDate == firstReleaseDate).Select(a => a.SteamName)));
         }
 
-        private static void SerializeAllAppsToFile()
+        public static void SerializeAllAppsToFile()
         {
             var appData = StorageHelper.GetAllApps().Result.Select(a =>
                 new AppEntityData(a.SteamAppId, a.SteamName, a.AppType, a.Platforms, a.Categories.ToArray(),
@@ -137,16 +139,16 @@ namespace ManualTableUpdater.Updater
                     a.HltbId, a.HltbName, a.MainTtb, a.MainTtbImputed, a.ExtrasTtb, a.ExtrasTtbImputed, a.CompletionistTtb, a.CompletionistTtbImputed))
                     .ToArray();
 
-            using (var stream = File.OpenWrite(AppdataXml))
+            using (var stream = File.OpenWrite(AppDataXml))
             {
                 new DataContractSerializer(typeof(AppEntityData[])).WriteObject(stream, appData);
             }
         }
 
-        private static void LoadAllAppsFromFile()
+        public static void LoadAllAppsFromFile()
         {
             AppEntityData[] appData;
-            using (var stream = File.OpenRead(AppdataXml))
+            using (var stream = File.OpenRead(AppDataXml))
             {
                 appData = (AppEntityData[]) new DataContractSerializer(typeof (AppEntityData[])).ReadObject(stream);
             }
@@ -166,7 +168,7 @@ namespace ManualTableUpdater.Updater
                 }), "updating apps from file").Wait();
         }
 
-        private static void PrintGenres()
+        public static void PrintGenres()
         {
             var measured = StorageHelper.GetAllApps(AppEntity.MeasuredFilter).Result;
             foreach (var genre in measured.Select(a => a.Genres.First()).Distinct())
@@ -196,7 +198,7 @@ namespace ManualTableUpdater.Updater
             }
         }
 
-        private static void WriteAllMeasuredToTsv()
+        public static void WriteAllMeasuredToTsv()
         {
             using (var writer = new StreamWriter("games.tsv"))
             {
@@ -228,6 +230,7 @@ namespace ManualTableUpdater.Updater
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "obj")]
         public static string RemoveTabs(object obj)
         {
             return obj == null ? String.Empty : obj.ToString().Replace('\t', ';');
@@ -245,10 +248,10 @@ namespace ManualTableUpdater.Updater
                 }
 
                 string name = parts[0];
-                int appId = int.Parse(parts[1]);
-                int hltbId = int.Parse(parts[2]);
+                int appId = int.Parse(parts[1], CultureInfo.InvariantCulture);
+                int hltbId = int.Parse(parts[2], CultureInfo.InvariantCulture);
 
-                games.Add(new AppEntity(appId, name, hltbId.ToString()));
+                games.Add(new AppEntity(appId, name, hltbId.ToString(CultureInfo.InvariantCulture)));
             }
 
             StorageHelper.Insert(games, "inserting apps from CSV");
