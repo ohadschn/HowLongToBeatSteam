@@ -34,6 +34,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuggestionWatcher", "Sugges
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StorageBackupUploader", "StorageBackupUploader\StorageBackupUploader.csproj", "{FEFF0AE5-0E31-4646-A0A3-85D9CF79A5BC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestRunner", "TestRunner\TestRunner.csproj", "{5162826C-2887-4042-B8B6-6CABADC098B6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{45A4C82D-FB3F-4F4E-A5B5-01D34AC8F2AF} = {45A4C82D-FB3F-4F4E-A5B5-01D34AC8F2AF}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -80,6 +85,10 @@ Global
 		{FEFF0AE5-0E31-4646-A0A3-85D9CF79A5BC}.Debug|x86.Build.0 = Debug|x86
 		{FEFF0AE5-0E31-4646-A0A3-85D9CF79A5BC}.Release|x86.ActiveCfg = Release|x86
 		{FEFF0AE5-0E31-4646-A0A3-85D9CF79A5BC}.Release|x86.Build.0 = Release|x86
+		{5162826C-2887-4042-B8B6-6CABADC098B6}.Debug|x86.ActiveCfg = Debug|x86
+		{5162826C-2887-4042-B8B6-6CABADC098B6}.Debug|x86.Build.0 = Debug|x86
+		{5162826C-2887-4042-B8B6-6CABADC098B6}.Release|x86.ActiveCfg = Release|x86
+		{5162826C-2887-4042-B8B6-6CABADC098B6}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
