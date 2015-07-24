@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.Tracing;
+using System.IO;
 using System.Threading.Tasks;
 using Common.Logging;
 using Common.Util;
@@ -29,7 +30,7 @@ namespace TestRunner.Runner
             var ticks = Environment.TickCount;
             TestRunnerEventSource.Log.RunTestsStart();
 
-            var exitCode = await SiteUtil.RunProcessAsync("vstest.console.exe", "HltbTests.dll").ConfigureAwait(false);
+            var exitCode = await SiteUtil.RunProcessAsync("vstest.console.exe", "\"" + Path.GetFullPath("HltbTests.dll") + "\"").ConfigureAwait(false);
 
             if (exitCode != 0)
             {

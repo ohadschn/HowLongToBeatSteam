@@ -93,6 +93,7 @@ namespace ManualTableUpdater.Updater
                 //WriteAllMeasuredToTsv();
                 //InsertManualSuggestions();
                 //DeleteUnknowns();
+                //ForceUpdateAppHltbID(207080, 17863);
                 Console.WriteLine("Done - Press any key to continue...");
                 Console.ReadLine();
             }
@@ -100,6 +101,13 @@ namespace ManualTableUpdater.Updater
             {
                 EventSourceRegistrar.DisposeEventListeners();
             }
+        }
+
+        public static void ForceUpdateAppHltbID(int steamId, int hltbId)
+        {
+            var app = StorageHelper.GetAllApps().Result.First(a => a.SteamAppId == steamId);
+            app.HltbId = hltbId;
+            StorageHelper.Replace(new[] {app}, "Force update HLTB ID").Wait();
         }
 
         public static void DeleteUnknowns()
