@@ -6,6 +6,7 @@ using MissingGamesUpdater.Logging;
 using SteamHltbScraper.Logging;
 using StorageBackupUploader.Logging;
 using SuggestionWatcher.Logging;
+using TestRunner.Logging;
 using UnknownUpdater.Logging;
 
 namespace HltbTests.Logging
@@ -53,6 +54,12 @@ namespace HltbTests.Logging
         public void TestStorageBackupUploaderEventSource()
         {
             EventSourceAnalyzer.InspectAll(StorageBackupUploaderEventSource.Log);
+        }
+
+        [TestMethod]
+        public void TestTestRunnerEventSource()
+        {
+            EventSourceAnalyzer.InspectAll(TestRunnerEventSource.Log);
         }
     }
 }

@@ -158,6 +158,10 @@
       <Project>{B84EA4F7-B99A-4360-ADBC-D1CF113B1B9A}</Project>
       <Name>SuggestionWatcher</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TestRunner.Logging\TestRunner.Logging.csproj">
+      <Project>{6E071143-C119-4D29-85ED-CC44DD89335E}</Project>
+      <Name>TestRunner.Logging</Name>
+    </ProjectReference>
     <ProjectReference Include="..\UnknownUpdater\UnknownUpdater.csproj">
       <Project>{2B5C1778-81EF-41AD-8FA2-3B0FCFEFA039}</Project>
       <Name>UnknownUpdater</Name>

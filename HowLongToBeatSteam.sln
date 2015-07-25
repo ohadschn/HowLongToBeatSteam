@@ -39,6 +39,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestRunner", "TestRunner\Te
 		{45A4C82D-FB3F-4F4E-A5B5-01D34AC8F2AF} = {45A4C82D-FB3F-4F4E-A5B5-01D34AC8F2AF}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestRunner.Logging", "TestRunner.Logging\TestRunner.Logging.csproj", "{6E071143-C119-4D29-85ED-CC44DD89335E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -89,6 +91,10 @@ Global
 		{5162826C-2887-4042-B8B6-6CABADC098B6}.Debug|x86.Build.0 = Debug|x86
 		{5162826C-2887-4042-B8B6-6CABADC098B6}.Release|x86.ActiveCfg = Release|x86
 		{5162826C-2887-4042-B8B6-6CABADC098B6}.Release|x86.Build.0 = Release|x86
+		{6E071143-C119-4D29-85ED-CC44DD89335E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6E071143-C119-4D29-85ED-CC44DD89335E}.Debug|x86.Build.0 = Debug|Any CPU
+		{6E071143-C119-4D29-85ED-CC44DD89335E}.Release|x86.ActiveCfg = Release|Any CPU
+		{6E071143-C119-4D29-85ED-CC44DD89335E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

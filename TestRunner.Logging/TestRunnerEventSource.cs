@@ -4,7 +4,7 @@ using Common.Logging;
 
 namespace TestRunner.Logging
 {
-    class TestRunnerEventSource : EventSourceBase
+    public class TestRunnerEventSource : EventSourceBase
     {
         public static readonly TestRunnerEventSource Log = new TestRunnerEventSource();
         private TestRunnerEventSource()
