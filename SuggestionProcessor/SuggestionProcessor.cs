@@ -48,19 +48,19 @@ namespace SuggestionProcessor
         private static async Task ProcessSuggestions()
         {
             Console.WriteLine("Retrieving all apps and suggestions...");
-            var allAppsTask = StorageHelper.GetAllApps(AppEntity.MeasuredFilter);
+            var allMeasuredAppsTask = StorageHelper.GetAllApps(AppEntity.MeasuredFilter);
             var suggestionsTask = StorageHelper.GetAllSuggestions();
 
-            await Task.WhenAll(allAppsTask, suggestionsTask).ConfigureAwait(false);
+            await Task.WhenAll(allMeasuredAppsTask, suggestionsTask).ConfigureAwait(false);
 
             Console.WriteLine("Building app dictionary");
-            var allApps = allAppsTask.Result;
-            var allAppsMapForImputation = allApps.ToDictionary(ae => ae.SteamAppId, ae => ae.ShallowClone()); //good enough for imputation
-            var appsMap = allApps.ToDictionary(a => a.SteamAppId);
+            var allMeasuredApps = allMeasuredAppsTask.Result;
+            var allMeasuredAppsMap = allMeasuredApps.ToDictionary(a => a.SteamAppId);
+            var allMeasuredAppsMapForImputation = allMeasuredApps.ToDictionary(ae => ae.SteamAppId, ae => ae.ShallowClone());
 
             var suggestions = suggestionsTask.Result.Distinct(new SuggestionSteamIdComparer()); //only consider the first suggestion for each app
             var validSuggestions = 
-                new ConcurrentDictionary<int, SuggestionInfo>(GetValidSuggestionsAndPrepApps(appsMap, suggestions).ToDictionary(si => si.App.SteamAppId));
+                new ConcurrentDictionary<int, SuggestionInfo>(GetValidSuggestionsAndPrepApps(allMeasuredAppsMap, suggestions).ToDictionary(si => si.App.SteamAppId));
             var validSuggestedApps = validSuggestions.Values.Select(s => s.App).ToArray();
 
             Console.WriteLine("Scraping HLTB info for suggestions...");
@@ -82,11 +82,11 @@ namespace SuggestionProcessor
             {
                 foreach (var suggestion in acceptedSuggestions)
                 {
-                    allAppsMapForImputation[suggestion.Suggestion.SteamAppId] = suggestion.App;
+                    allMeasuredAppsMapForImputation[suggestion.Suggestion.SteamAppId] = suggestion.App;
                 }
 
                 Console.WriteLine("Imputing missing TTBs from genre stats...");
-                await Imputer.Impute(allAppsMapForImputation.Values.ToArray()).ConfigureAwait(false);
+                await Imputer.Impute(allMeasuredAppsMapForImputation.Values.ToArray()).ConfigureAwait(false);
 
                 Console.Write("Updating... ");
                 foreach (var suggestion in acceptedSuggestions)

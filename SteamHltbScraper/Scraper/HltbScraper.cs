@@ -50,16 +50,16 @@ namespace SteamHltbScraper.Scraper
             var tickCount = Environment.TickCount;
             SiteUtil.SetDefaultConnectionLimit();
 
-            var allApps = (await StorageHelper.GetAllApps(AppEntity.MeasuredFilter, StorageRetries).ConfigureAwait(false)).Take(ScrapingLimit).ToArray();
+            var allMeasuredApps = (await StorageHelper.GetAllApps(AppEntity.MeasuredFilter, StorageRetries).ConfigureAwait(false)).Take(ScrapingLimit).ToArray();
 
-            await ScrapeHltb(allApps);
+            await ScrapeHltb(allMeasuredApps);
 
-            await Imputer.Impute(allApps).ConfigureAwait(false);
+            await Imputer.Impute(allMeasuredApps).ConfigureAwait(false);
 
             //we're using Replace since the only other update to an existing game-typed entity would have to be manual which should take precedence
-            await StorageHelper.Replace(allApps, "updating scraped gametimes", StorageRetries).ConfigureAwait(false);
+            await StorageHelper.Replace(allMeasuredApps, "updating scraped gametimes", StorageRetries).ConfigureAwait(false);
 
-            await SiteUtil.SendSuccessMail("HLTB scraper", SiteUtil.GetTimeElapsedFromTickCount(tickCount), allApps.Length + " game(s) scraped");
+            await SiteUtil.SendSuccessMail("HLTB scraper", SiteUtil.GetTimeElapsedFromTickCount(tickCount), allMeasuredApps.Length + " game(s) scraped");
         }
 
         public static async Task ScrapeHltb(AppEntity[] allApps, Action<AppEntity, Exception> errorHandler = null)

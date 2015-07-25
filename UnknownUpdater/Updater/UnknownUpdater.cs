@@ -9,6 +9,7 @@ using Common.Logging;
 using Common.Storage;
 using Common.Store;
 using Common.Util;
+using JetBrains.Annotations;
 using Microsoft.WindowsAzure.Storage.Table;
 using SteamHltbScraper.Imputation;
 using SteamHltbScraper.Scraper;
@@ -44,13 +45,18 @@ namespace UnknownUpdater.Updater
 
         class AppEntitySteamIdComparer : IEqualityComparer<AppEntity>
         {
-            public bool Equals(AppEntity x, AppEntity y)
+            public bool Equals([NotNull] AppEntity x, [NotNull] AppEntity y)
             {
+                if (x == null) throw new ArgumentNullException("x");
+                if (y == null) throw new ArgumentNullException("y");
+
                 return x.SteamAppId == y.SteamAppId;
             }
 
-            public int GetHashCode(AppEntity appEntity)
+            public int GetHashCode([NotNull] AppEntity appEntity)
             {
+                if (appEntity == null) throw new ArgumentNullException("appEntity");
+
                 return appEntity.SteamAppId;
             }
         }
@@ -61,14 +67,14 @@ namespace UnknownUpdater.Updater
             var tickCount = Environment.TickCount;
             UnknownUpdaterEventSource.Log.UpdateUnknownAppsStart();
 
-            var allApps = (await StorageHelper.GetAllApps(AppEntity.UnknownFilter, StorageRetries).ConfigureAwait(false)).Take(UpdateLimit).ToArray();
+            var allUnknownApps = (await StorageHelper.GetAllApps(AppEntity.UnknownFilter, StorageRetries).ConfigureAwait(false)).Take(UpdateLimit).ToArray();
             
             var updates = new ConcurrentBag<AppEntity>();
             InvalidOperationException ioe = null;
             try
             {
                 await SteamStoreHelper.GetStoreInformationUpdates(
-                    allApps.Select(ae => new BasicStoreInfo(ae.SteamAppId, ae.SteamName, ae.AppType)).ToArray(), Client, updates).ConfigureAwait(false);
+                    allUnknownApps.Select(ae => new BasicStoreInfo(ae.SteamAppId, ae.SteamName, ae.AppType)).ToArray(), Client, updates).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -82,11 +88,12 @@ namespace UnknownUpdater.Updater
             await HltbScraper.ScrapeHltb(measuredUpdates).ConfigureAwait(false);
 
             //re-impute with new scraped values for updated games (Enumberable.Union() guarantees measuredUpdates will be enumerated before allApps!)
-            await Imputer.Impute(measuredUpdates.Union(allApps, new AppEntitySteamIdComparer()).ToArray()).ConfigureAwait(false); 
+            var allMeasuredApps = await StorageHelper.GetAllApps(AppEntity.MeasuredFilter).ConfigureAwait(false);
+            await Imputer.Impute(measuredUpdates.Union(allMeasuredApps, new AppEntitySteamIdComparer()).ToArray()).ConfigureAwait(false); 
 
-            var appsDict = allApps.ToDictionary(ae => ae.SteamAppId);
+            var unknownAppsMap = allUnknownApps.ToDictionary(ae => ae.SteamAppId);
             await StorageHelper.ExecuteOperations(updates,
-                ae => new[] {TableOperation.Delete(appsDict[ae.SteamAppId]), TableOperation.Insert(ae)},
+                ae => new[] {TableOperation.Delete(unknownAppsMap[ae.SteamAppId]), TableOperation.Insert(ae)},
                 StorageHelper.SteamToHltbTableName, "updating previously unknown games", StorageRetries).ConfigureAwait(false);
 
             if (ioe != null)
