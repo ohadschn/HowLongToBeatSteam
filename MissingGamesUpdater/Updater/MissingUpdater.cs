@@ -74,12 +74,16 @@ namespace MissingGamesUpdater.Updater
             }
 
             var measuredUpdates = updates.Where(a => a.Measured).ToArray();
+            if (measuredUpdates.Length > 0)
+            {
+                await HltbScraper.ScrapeHltb(measuredUpdates).ConfigureAwait(false);
 
-            await HltbScraper.ScrapeHltb(measuredUpdates).ConfigureAwait(false);
-            await Imputer.Impute(allKnownApps.Where(a => a.Measured).Concat(measuredUpdates).ToArray()).ConfigureAwait(false); //re-impute for measured updates
+                //re-impute for measured updates
+                await Imputer.Impute(allKnownApps.Where(a => a.Measured).Concat(measuredUpdates).ToArray()).ConfigureAwait(false); 
+            }
 
             //we're inserting new entries, no fear of collisions (even if two jobs overlap the next one will fix it)
-            await StorageHelper.Insert(updates, "updating missing games", StorageRetries).ConfigureAwait(false);  
+            await StorageHelper.Insert(updates, "updating missing games", StorageRetries).ConfigureAwait(false);     
 
             if (ioe != null)
             {

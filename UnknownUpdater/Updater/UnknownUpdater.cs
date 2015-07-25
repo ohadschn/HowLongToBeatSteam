@@ -84,12 +84,14 @@ namespace UnknownUpdater.Updater
             UnknownUpdaterEventSource.Log.UpdateNewlyCategorizedApps(updates);
 
             var measuredUpdates = updates.Where(a => a.Measured).ToArray();
+            if (measuredUpdates.Length > 0)
+            {
+                await HltbScraper.ScrapeHltb(measuredUpdates).ConfigureAwait(false);
 
-            await HltbScraper.ScrapeHltb(measuredUpdates).ConfigureAwait(false);
-
-            //re-impute with new scraped values for updated games (Enumberable.Union() guarantees measuredUpdates will be enumerated before allApps!)
-            var allMeasuredApps = await StorageHelper.GetAllApps(AppEntity.MeasuredFilter).ConfigureAwait(false);
-            await Imputer.Impute(measuredUpdates.Union(allMeasuredApps, new AppEntitySteamIdComparer()).ToArray()).ConfigureAwait(false); 
+                //re-impute with new scraped values for updated games (Enumberable.Union() guarantees measuredUpdates will be enumerated before allApps!)
+                var allMeasuredApps = await StorageHelper.GetAllApps(AppEntity.MeasuredFilter).ConfigureAwait(false);
+                await Imputer.Impute(measuredUpdates.Union(allMeasuredApps, new AppEntitySteamIdComparer()).ToArray()).ConfigureAwait(false);    
+            }
 
             var unknownAppsMap = allUnknownApps.ToDictionary(ae => ae.SteamAppId);
             await StorageHelper.ExecuteOperations(updates,
