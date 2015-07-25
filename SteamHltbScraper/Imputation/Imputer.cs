@@ -151,7 +151,10 @@ namespace SteamHltbScraper.Imputation
                 {
                     throw new InvalidOperationException("All TTBs are missing");
                 }
-                HltbScraperEventSource.Log.GenreHasNoTtbs(genre);
+                if (apps.Count > 40) //reasonable number to expect at least one non completely missing game
+                {
+                    HltbScraperEventSource.Log.GenreHasNoTtbs(genre);                    
+                }
 
                 //all apps are completely missing, so the current value in each of them is the game type average
                 //we want the genre stats to use that average as well, so we'll just take the first (again, they are all the same)
@@ -162,7 +165,10 @@ namespace SteamHltbScraper.Imputation
 
             try
             {
-                await ImputeCore(notCompletelyMissing, ratios).ConfigureAwait(false);
+                if (initial || notCompletelyMissing.Length > 100) //no point in imputing genre with not enough samples
+                {
+                    await ImputeCore(genre, notCompletelyMissing, ratios).ConfigureAwait(false);                    
+                }
             }
             catch (Exception)
             {
@@ -207,9 +213,9 @@ namespace SteamHltbScraper.Imputation
             }
         }
 
-        private static async Task ImputeCore(IReadOnlyList<AppEntity> notCompletelyMissing, TtbRatios ratios)
+        private static async Task ImputeCore(string genre, IReadOnlyList<AppEntity> notCompletelyMissing, TtbRatios ratios)
         {
-            HltbScraperEventSource.Log.CalculateImputationStart(notCompletelyMissing.Count);
+            HltbScraperEventSource.Log.CalculateImputationStart(genre, notCompletelyMissing.Count);
 
             string imputed = await InvokeImputationService(notCompletelyMissing).ConfigureAwait(false);
 
@@ -227,7 +233,7 @@ namespace SteamHltbScraper.Imputation
                 UpdateFromCsvRow(notCompletelyMissing[i], imputedRows[i], ratios);
             }
 
-            HltbScraperEventSource.Log.CalculateImputationStop(notCompletelyMissing.Count);
+            HltbScraperEventSource.Log.CalculateImputationStop(genre, notCompletelyMissing.Count);
         }
 
         private static async Task<string> InvokeImputationService(IReadOnlyList<AppEntity> notCompletelyMissing)

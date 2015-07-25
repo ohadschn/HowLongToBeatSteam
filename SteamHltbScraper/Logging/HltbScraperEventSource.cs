@@ -368,7 +368,7 @@ namespace SteamHltbScraper.Logging
             117,
             Message = "{0} ({1}) - previously recorded {2} TTB of {3} is no longer present in HLTB for matched {4} ({5}). Using previous value...",
             Keywords = Keywords.Scraping,
-            Level = EventLevel.Error)]
+            Level = EventLevel.Warning)]
         public void PreviouslyRecordedTtbNotOnHltb(string steamName, int steamId, string ttbType, int ttbValue, string hltbName, int hltbId)
         {
             WriteEvent(117, steamName, steamId, ttbType, ttbValue, hltbName, hltbId);
@@ -458,26 +458,26 @@ namespace SteamHltbScraper.Logging
 
         [Event(
             21,
-            Message = "Start calculating imputed values ({0} not completely missing games)",
+            Message = "Start calculating imputed values for genre {0} ({1} not completely missing games)",
             Keywords = Keywords.Imputation,
             Level = EventLevel.Informational,
             Task = Tasks.CalculateImputation,
             Opcode = EventOpcode.Start)]
-        public void CalculateImputationStart(int notCompletelyMissingCount)
+        public void CalculateImputationStart(string genre, int notCompletelyMissingCount)
         {
-            WriteEvent(21, notCompletelyMissingCount);   
+            WriteEvent(21, genre, notCompletelyMissingCount);   
         }
 
         [Event(
             22,
-            Message = "Finished calculating imputed values  ({0} not completely missing games)",
+            Message = "Finished calculating imputed values for genre {0} ({1} not completely missing games)",
             Keywords = Keywords.Imputation,
             Level = EventLevel.Informational,
             Task = Tasks.CalculateImputation,
             Opcode = EventOpcode.Stop)]
-        public void CalculateImputationStop(int notCompletelyMissingCount)
+        public void CalculateImputationStop(string genre, int notCompletelyMissingCount)
         {
-            WriteEvent(22, notCompletelyMissingCount);
+            WriteEvent(22, genre, notCompletelyMissingCount);
         }
 
         [Event(
