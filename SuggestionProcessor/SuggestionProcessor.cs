@@ -54,11 +54,13 @@ namespace SuggestionProcessor
             await Task.WhenAll(allAppsTask, suggestionsTask).ConfigureAwait(false);
 
             Console.WriteLine("Building app dictionary");
-            var appsMap = allAppsTask.Result.ToDictionary(a => a.SteamAppId);
+            var allApps = allAppsTask.Result;
+            var allAppsMapForImputation = allApps.ToDictionary(ae => ae.SteamAppId, ae => ae.ShallowClone()); //good enough for imputation
+            var appsMap = allApps.ToDictionary(a => a.SteamAppId);
 
             var suggestions = suggestionsTask.Result.Distinct(new SuggestionSteamIdComparer()); //only consider the first suggestion for each app
             var validSuggestions = 
-                new ConcurrentDictionary<int, SuggestionInfo>(GetValidSuggestions(appsMap, suggestions).ToDictionary(si => si.App.SteamAppId));
+                new ConcurrentDictionary<int, SuggestionInfo>(GetValidSuggestionsAndPrepApps(appsMap, suggestions).ToDictionary(si => si.App.SteamAppId));
             var validSuggestedApps = validSuggestions.Values.Select(s => s.App).ToArray();
 
             Console.WriteLine("Scraping HLTB info for suggestions...");
@@ -69,18 +71,34 @@ namespace SuggestionProcessor
                 bool removed = validSuggestions.TryRemove(a.SteamAppId, out temp);
                 Trace.Assert(removed, "Invalid validSuggestions state");
 
-                //Console.WriteLine("removing suggestion...");
-                //StorageHelper.DeleteSuggestion(temp.Suggestion).Wait();
+                Console.WriteLine("removing suggestion...");
+                StorageHelper.DeleteSuggestion(temp.Suggestion).Wait();
             }).ConfigureAwait(false);
 
-            Console.WriteLine("Imputing missing TTBs from genre stats...");
-            await Imputer.ImputeFromStats(validSuggestedApps).ConfigureAwait(false);
-
             Console.WriteLine("Processing suggestions...");
-            await ProcessSuggestionsByUserInput(validSuggestions.Values).ConfigureAwait(false);
+            var acceptedSuggestions = await ProcessSuggestionsByUserInput(validSuggestions.Values).ConfigureAwait(false);
+
+            if (acceptedSuggestions.Count > 0)
+            {
+                foreach (var suggestion in acceptedSuggestions)
+                {
+                    allAppsMapForImputation[suggestion.Suggestion.SteamAppId] = suggestion.App;
+                }
+
+                Console.WriteLine("Imputing missing TTBs from genre stats...");
+                await Imputer.Impute(allAppsMapForImputation.Values.ToArray()).ConfigureAwait(false);
+
+                Console.Write("Updating... ");
+                foreach (var suggestion in acceptedSuggestions)
+                {
+                    await StorageHelper.AcceptSuggestion(suggestion.App, suggestion.Suggestion);
+                } 
+            }
+
+            Console.WriteLine("All Done!");
         }
 
-        private static List<SuggestionInfo> GetValidSuggestions(IReadOnlyDictionary<int, AppEntity> appsMap, IEnumerable<SuggestionEntity> suggestions)
+        private static List<SuggestionInfo> GetValidSuggestionsAndPrepApps(IReadOnlyDictionary<int, AppEntity> appsMap, IEnumerable<SuggestionEntity> suggestions)
         {
             var existingSuggestions = new List<SuggestionInfo>();
             foreach (var suggestion in suggestions)
@@ -102,8 +120,10 @@ namespace SuggestionProcessor
             return existingSuggestions;
         }
 
-        private static async Task ProcessSuggestionsByUserInput(ICollection<SuggestionInfo> validSuggestions)
+        private static async Task<IList<SuggestionInfo>>  ProcessSuggestionsByUserInput(ICollection<SuggestionInfo> validSuggestions)
         {
+            var acceptedSuggestions = new List<SuggestionInfo>();
+
             int i = 0;
             foreach (var suggestion in validSuggestions)
             {
@@ -121,9 +141,8 @@ namespace SuggestionProcessor
                     Console.WriteLine();
                     if (key.KeyChar == 'a' || key.KeyChar == 'A')
                     {
-                        Console.Write("Updating... ");
-                        await StorageHelper.AcceptSuggestion(app, suggestion.Suggestion);
-                        Console.WriteLine("Done!");
+                        Console.WriteLine();
+                        acceptedSuggestions.Add(suggestion);
                         break;
                     }
                     if (key.KeyChar == 'd' || key.KeyChar == 'D')
@@ -147,6 +166,8 @@ namespace SuggestionProcessor
                     }
                 }
             }
+            
+            return acceptedSuggestions;
         }
 
         class SuggestionSteamIdComparer : IEqualityComparer<SuggestionEntity>

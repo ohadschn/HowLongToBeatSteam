@@ -49,7 +49,7 @@ namespace SteamHltbScraper.Imputation
 
         private static readonly ConcurrentDictionary<string, GenreStatsEntity> s_genreStats = new ConcurrentDictionary<string, GenreStatsEntity>();
 
-        internal static async Task Impute(IReadOnlyList<AppEntity> allApps)
+        public static async Task Impute(IReadOnlyList<AppEntity> allApps)
         {
             HltbScraperEventSource.Log.ImputeStart();
 
@@ -362,57 +362,6 @@ namespace SteamHltbScraper.Imputation
             }
 
             appEntity.FixTtbs(imputedMain, imputedExtras, imputedCompletionist);
-        }
-
-        public static async Task ImputeFromStats(IEnumerable<AppEntity> games)
-        {
-            HltbScraperEventSource.Log.ImputeFromGenreStatsStart();
-
-            var genreStats = await StorageHelper.GetAllGenreStats(String.Empty, GenreStatsStorageRetries);
-            var genreStatDict = genreStats.ToDictionary(gs => GenreStatsEntity.GetDecoratedGenre(gs.Genre, gs.AppType));
-
-            GenreStatsEntity gameStats, dlcModStats;
-            if (!genreStatDict.TryGetValue(GenreStatsEntity.GetDecoratedGenre(AllGenresId, GameTypeGames), out gameStats) ||
-                !genreStatDict.TryGetValue(GenreStatsEntity.GetDecoratedGenre(AllGenresId, GameTypeDlcsMods), out dlcModStats))
-            {
-                throw new InvalidOperationException("No genre stats available - run the scraper job and try again");
-            }
-
-            ImputeFromGenreStats(games, genreStatDict, gameStats, dlcModStats);
-
-            HltbScraperEventSource.Log.ImputeFromGenreStatsStop();
-        }
-
-        private static void ImputeFromGenreStats(IEnumerable<AppEntity> games, 
-            Dictionary<string, GenreStatsEntity> genreStatDict, GenreStatsEntity gameStats, GenreStatsEntity dlcModStats)
-        {
-            foreach (var game in games)
-            {
-                GenreStatsEntity gameGenreStats;
-                if (!genreStatDict.TryGetValue(
-                    GenreStatsEntity.GetDecoratedGenre(game.Genres.First(), game.IsGame ? GameTypeGames : GameTypeDlcsMods),
-                    out gameGenreStats))
-                {
-                    gameGenreStats = game.IsGame ? gameStats : dlcModStats;
-                }
-
-                if (game.MainTtb == 0 && game.ExtrasTtb == 0 && game.CompletionistTtb == 0)
-                {
-                    game.SetMainTtb(gameGenreStats.MainAverage, true);
-                    game.SetExtrasTtb(gameGenreStats.ExtrasAverage, true);
-                    game.SetCompletionistTtb(gameGenreStats.CompletionistAverage, true);
-                    continue;
-                }
-
-                int mainTtb = game.MainTtb;
-                int extrasTtb = game.ExtrasTtb;
-                int completionistTtb = game.CompletionistTtb;
-                var ratios = new TtbRatios(gameGenreStats.MainExtrasRatio, gameGenreStats.ExtrasCompletionistRatio, gameGenreStats.ExtrasPlacementRatio);
-                FixTtbZeroes(ratios, ref mainTtb, ref extrasTtb, ref completionistTtb);
-                FixInvalidTtbs(game, ratios, ref mainTtb, ref extrasTtb, ref completionistTtb);
-
-                game.FixTtbs(mainTtb, extrasTtb, completionistTtb);
-            }
         }
 
         private static void FixImputationZeroes(AppEntity appEntity, TtbRatios ratios, ref int imputedMain, ref int imputedExtras, ref int imputedCompletionist)

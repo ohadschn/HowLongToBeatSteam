@@ -47,16 +47,16 @@ namespace MissingGamesUpdater.Updater
             var tickCount = Environment.TickCount;
             MissingUpdaterEventSource.Log.UpdateMissingGamesStart();
 
-            var steamTask = GetAllSteamApps(s_client);
-            var tableTask = StorageHelper.GetAllApps(null, StorageRetries);
+            var allSteamAppsTask = GetAllSteamApps(s_client);
+            var allKnownAppsTask = StorageHelper.GetAllApps(null, StorageRetries);
             
-            await Task.WhenAll(steamTask, tableTask).ConfigureAwait(false);
+            await Task.WhenAll(allSteamAppsTask, allKnownAppsTask).ConfigureAwait(false);
 
-            var apps = steamTask.Result;
-            var knownSteamIds = tableTask.Result.Select(ae => ae.SteamAppId);
+            var allSteamApps = allSteamAppsTask.Result;
+            var allKnownApps = allKnownAppsTask.Result;
 
-            var knownSteamIdsHash = new HashSet<int>(knownSteamIds);
-            var missingApps = apps.Where(a => !knownSteamIdsHash.Contains(a.appid)).Take(UpdateLimit).ToArray();
+            var knownSteamIdsHash = new HashSet<int>(allKnownApps.Select(ae => ae.SteamAppId));
+            var missingApps = allSteamApps.Where(a => !knownSteamIdsHash.Contains(a.appid)).Take(UpdateLimit).ToArray();
 
             MissingUpdaterEventSource.Log.MissingAppsDetermined(missingApps);
 
@@ -76,7 +76,7 @@ namespace MissingGamesUpdater.Updater
             var measuredUpdates = updates.Where(a => a.Measured).ToArray();
 
             await HltbScraper.ScrapeHltb(measuredUpdates).ConfigureAwait(false);
-            await Imputer.ImputeFromStats(measuredUpdates).ConfigureAwait(false);
+            await Imputer.Impute(allKnownApps.Concat(measuredUpdates).ToArray()).ConfigureAwait(false); //re-impute for measured updates
 
             //we're inserting new entries, no fear of collisions (even if two jobs overlap the next one will fix it)
             await StorageHelper.Insert(updates, "updating missing games", StorageRetries).ConfigureAwait(false);  

@@ -23,16 +23,6 @@ namespace HltbTests.Imputation
             AssertValidTtbs(games);
         }
 
-        [TestMethod]
-        public async Task TestImputationFromGenreStats()
-        {
-            var games = GetSampleGames();
-
-            await Imputer.ImputeFromStats(games).ConfigureAwait(false);
-
-            AssertValidTtbs(games);
-        }
-
         private static AppEntity[] GetSampleGames()
         {
             int i = 1;

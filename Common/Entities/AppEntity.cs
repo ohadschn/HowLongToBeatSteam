@@ -176,6 +176,11 @@ namespace Common.Entities
             MetacriticScore = UnknownScore;
         }
 
+        public AppEntity ShallowClone()
+        {
+            return (AppEntity) MemberwiseClone();
+        }
+
         internal static string GetPartitionKey(int steamAppId)
         {
             return CalculateBucket(steamAppId).ToString(CultureInfo.InvariantCulture);
