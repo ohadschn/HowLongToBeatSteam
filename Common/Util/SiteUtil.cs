@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Common.Logging;
 using JetBrains.Annotations;
+using Microsoft.Practices.EnterpriseLibrary.SemanticLogging.Formatters;
 using SendGrid;
 
 namespace Common.Util
@@ -377,14 +378,28 @@ namespace Common.Util
         {
             if (description == null) throw new ArgumentNullException("description");
 
+            var errors = EventSourceRegistrar.GetSessionErrors();
+            var eventFormatter = new EventTextFormatter();
+            string errorsText;
+            using (var writer = new StringWriter())
+            {
+                foreach (var error in errors)
+                {
+                    eventFormatter.WriteEvent(error, writer);
+                }
+                errorsText = writer.ToString();
+            }
+
             CommonEventSource.Log.SendSuccessMailStart(description);
             await new Web(new NetworkCredential(SendGridUser, SendGridPassword)).DeliverAsync(new SendGridMessage
             {
                 From = new MailAddress("webjobs@howlongtobeatsteam.com", "HLTBS WebJob notifier"),
-                Subject = String.Format(CultureInfo.InvariantCulture, "{0} - Success ({1}) [{2}]", WebJobName, duration, customMessage),
+                Subject = String.Format(CultureInfo.InvariantCulture, "{0} - Success ({1}) [{2}]", 
+                                        WebJobName, duration, customMessage + (errors.Length == 0 ? String.Empty : " (with session errors)")),
                 To = new[] {new MailAddress(NotificationEmailAddress)},
-                Text = String.Format(CultureInfo.InvariantCulture, "{1}{0}Run ID: {2}{0}Start time: {3}{0}End time:{4}{0}Output log file: {5}",
-                        Environment.NewLine, GetTriggeredRunUrl(), WebJobRunId, DateTime.UtcNow - duration, DateTime.UtcNow, GetTriggeredLogUrl())
+                Text = String.Format(CultureInfo.InvariantCulture, "{1}{0}Run ID: {2}{0}Start time: {3}{0}End time:{4}{0}Output log file: {5}{6}",
+                        Environment.NewLine, GetTriggeredRunUrl(), WebJobRunId, DateTime.UtcNow - duration, DateTime.UtcNow, GetTriggeredLogUrl(),
+                        errors.Length == 0 ? String.Empty : String.Format("{0}Session Errors:{0}{1}", Environment.NewLine, errorsText))
             });
             CommonEventSource.Log.SendSuccessMailStop(description);
         }

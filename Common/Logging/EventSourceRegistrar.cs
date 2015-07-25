@@ -8,6 +8,8 @@ namespace Common.Logging
 {
     public static class EventSourceRegistrar
     {
+        private static readonly ConcurrentQueue<EventEntry> s_sessionErrors = new ConcurrentQueue<EventEntry>();
+
         private class EventListenerInfo
         {
             public EventSource EventSource { get; private set; }
@@ -45,6 +47,16 @@ namespace Common.Logging
                 listenerInfo.Listener.DisableEvents(listenerInfo.EventSource);
                 listenerInfo.Listener.Dispose();
             }
+        }
+
+        public static void RecordSessionError(EventEntry error)
+        {
+            s_sessionErrors.Enqueue(error);
+        }
+
+        public static EventEntry[] GetSessionErrors()
+        {
+            return s_sessionErrors.ToArray();
         }
     }
 }

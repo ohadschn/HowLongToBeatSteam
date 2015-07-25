@@ -426,7 +426,6 @@ namespace SteamHltbScraper.Scraper
             if (!currentTtbImputed && scrapedTtb == 0)
             {
                 HltbScraperEventSource.Log.PreviouslyRecordedTtbNotOnHltb(app.SteamName, app.SteamAppId, ttbType, currentTtb, app.HltbName, app.HltbId);
-                return currentTtb;
             }
             
             return scrapedTtb;

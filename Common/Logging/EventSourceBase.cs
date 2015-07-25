@@ -15,6 +15,7 @@ namespace Common.Logging
             listener.EnableEvents(this, EventLevel.LogAlways, Keywords.All);
             listener.LogToWindowsAzureTable("AzureTable", StorageHelper.AzureStorageTablesConnectionString);
             listener.LogToConsole();
+            listener.LogSessionErrors();
             EventSourceRegistrar.RegisterEventListener(this, listener);
         }
     }

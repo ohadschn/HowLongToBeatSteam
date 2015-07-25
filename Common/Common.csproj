@@ -101,6 +101,7 @@
     <Compile Include="Entities\SuggestionEntity.cs" />
     <Compile Include="Logging\EventSourceBase.cs" />
     <Compile Include="Logging\EventSourceRegistrar.cs" />
+    <Compile Include="Logging\SessionErrorSink.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Entities\AppEntity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
