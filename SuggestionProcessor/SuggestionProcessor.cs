@@ -71,8 +71,8 @@ namespace SuggestionProcessor
                 bool removed = validSuggestions.TryRemove(a.SteamAppId, out temp);
                 Trace.Assert(removed, "Invalid validSuggestions state");
 
-                Console.WriteLine("removing suggestion...");
-                StorageHelper.DeleteSuggestion(temp.Suggestion).Wait();
+                //Console.WriteLine("removing suggestion...");
+                //StorageHelper.DeleteSuggestion(temp.Suggestion).Wait();
             }).ConfigureAwait(false);
 
             Console.WriteLine("Processing suggestions...");

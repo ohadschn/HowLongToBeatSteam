@@ -566,12 +566,12 @@ namespace SteamHltbScraper.Logging
 
         [Event(
             127,
-            Message = "Error imputing genre {0} - falling back to unified imputation values",
+            Message = "Error imputing genre {0} - falling back to unified imputation values: {1}",
             Keywords = Keywords.Imputation,
             Level = EventLevel.Warning)]
-        public void ImputationError(string genre)
+        public void ImputationError(string genre, string message)
         {
-            WriteEvent(127, genre);
+            WriteEvent(127, genre, message);
         }
 
         [Event(
@@ -695,6 +695,27 @@ namespace SteamHltbScraper.Logging
         public void UpdateGenreStatsStop(int genreCount)
         {
             WriteEvent(36, genreCount);
+        }
+
+        [Event(
+            37,
+            Message = "Game {0} (HLTB ID {1}) contains invalid TTBs: {2}/{3}/{4} (imputed: {5}/{6}/{7}) Substituted with: {8}/{9}/{10}",
+            Keywords = Keywords.Imputation | Keywords.Scraping,
+            Level = EventLevel.Warning)]
+        public void InvalidTtbsScraped(string name, int hltbId, int main, int extras, int completionist,
+            bool mainImputed, bool extrasImputed, bool completionistImputed, int newMain, int newExtras, int newCompletionist)
+        {
+            WriteEvent(37, name, hltbId, main, extras, completionist, mainImputed, extrasImputed, completionistImputed, newMain, newExtras, newCompletionist);
+        }
+
+        [Event(
+            38,
+            Message = "Too many games contain invalid TTBs: {0} out of {1}",
+            Keywords = Keywords.Imputation | Keywords.Scraping,
+            Level = EventLevel.Error)]
+        public void TooManyInvalidTtbsScraped(int invalidCount, int totalCount)
+        {
+            WriteEvent(38, invalidCount, totalCount);
         }
     }
 }

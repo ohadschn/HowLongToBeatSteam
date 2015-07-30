@@ -43,6 +43,9 @@ namespace SteamHltbScraper.Imputation
         private static readonly int AzureMlImputePollTimeoutMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollTimeoutMs", 120 * 1000);
         private static readonly string BlobContainerName = SiteUtil.GetOptionalValueFromConfig("BlobContainerName", "jobdata");
 
+        private static readonly int NotCompletelyMissingThreshold = SiteUtil.GetOptionalValueFromConfig("NotCompletelyMissingThreshold", 30);
+        private static readonly int ImputationThreshold = SiteUtil.GetOptionalValueFromConfig("ImputationThreshold", 70);
+        private static readonly double InvalidTtbsThreshold = SiteUtil.GetOptionalValueFromConfig("InvalidTtbsThresholdPercent", 10)/100.0;
         private static readonly int GenreStatsStorageRetries = SiteUtil.GetOptionalValueFromConfig("GenreStatsStorageRetries", 100);
         private static readonly int ImputationServiceRetries = SiteUtil.GetOptionalValueFromConfig("ImputationServiceRetries", 100);
         private static HttpRetryClient s_client;
@@ -53,6 +56,18 @@ namespace SteamHltbScraper.Imputation
         {
             HltbScraperEventSource.Log.ImputeStart();
 
+            await ImputeByGenre(allApps).ConfigureAwait(false);
+
+            HltbScraperEventSource.Log.UpdateGenreStatsStart(s_genreStats.Count);
+            await StorageHelper.InsertOrReplace(s_genreStats.Values, "updating genre statistics", GenreStatsStorageRetries, StorageHelper.GenreStatsTableName).ConfigureAwait(false);
+            HltbScraperEventSource.Log.UpdateGenreStatsStop(s_genreStats.Count);
+
+            HltbScraperEventSource.Log.ImputeStop();
+        }
+
+        public static async Task ImputeByGenre(IReadOnlyList<AppEntity> allApps)
+        {
+            Sanitize(allApps);
             using (s_client = new HttpRetryClient(ImputationServiceRetries))
             {
                 s_client.DefaultRequestAuthorization = new AuthenticationHeaderValue("Bearer", ApiKey);
@@ -62,12 +77,62 @@ namespace SteamHltbScraper.Imputation
 
                 await Task.WhenAll(gamesImputationTask, dlcsImputationTask).ConfigureAwait(false);
             }
+        }
 
-            HltbScraperEventSource.Log.UpdateGenreStatsStart(s_genreStats.Count);
-            await StorageHelper.InsertOrReplace(s_genreStats.Values, "updating genre statistics", GenreStatsStorageRetries, StorageHelper.GenreStatsTableName).ConfigureAwait(false);
-            HltbScraperEventSource.Log.UpdateGenreStatsStop(s_genreStats.Count);
+        private static void Sanitize(IReadOnlyList<AppEntity> allApps)
+        {
+            int invalidTtbCount = 0;
+            var ttbs = new List<int>(3);
+            foreach (var app in allApps)
+            {
+                ttbs.Clear();
 
-            HltbScraperEventSource.Log.ImputeStop();
+                if (!app.MainTtbImputed)
+                {
+                    ttbs.Add(app.MainTtb);
+                }
+
+                if (!app.ExtrasTtbImputed)
+                {
+                    ttbs.Add(app.ExtrasTtb);
+                }
+
+                if (!app.CompletionistTtbImputed)
+                {
+                    ttbs.Add(app.CompletionistTtb);
+                }
+
+                var originalTtbs = ttbs.ToArray();
+                ttbs.Sort();
+                if (!originalTtbs.SequenceEqual(ttbs))
+                {
+                    invalidTtbCount++;
+                    int originalMain = app.MainTtb, originalExtras = app.ExtrasTtb, originlCompletionist = app.CompletionistTtb;
+
+                    int i = 0;
+                    if (!app.MainTtbImputed)
+                    {
+                        app.MainTtb = ttbs[i++];
+                    }
+
+                    if (!app.ExtrasTtbImputed)
+                    {
+                        app.ExtrasTtb = ttbs[i++];
+                    }
+
+                    if (!app.CompletionistTtbImputed)
+                    {
+                        app.CompletionistTtb = ttbs[i];
+                    }
+
+                    HltbScraperEventSource.Log.InvalidTtbsScraped(app.SteamName, app.HltbId, originalMain, originalExtras, originlCompletionist, 
+                        app.MainTtbImputed, app.ExtrasTtbImputed, app.CompletionistTtbImputed, app.MainTtb, app.ExtrasTtb, app.CompletionistTtb);
+                }
+            }
+            if (invalidTtbCount / (double)allApps.Count > InvalidTtbsThreshold)
+            {
+                HltbScraperEventSource.Log.TooManyInvalidTtbsScraped(invalidTtbCount, allApps.Count);
+            }
         }
 
         private static async Task ImputeTypeGenres(IReadOnlyList<AppEntity> games, string gameType)
@@ -90,7 +155,7 @@ namespace SteamHltbScraper.Imputation
         {
             HltbScraperEventSource.Log.ImputeGenreStart(genre, apps.Count);
 
-            var ratios = GetTtbRatios(apps, fallbackRatios);
+            var ratios = GetTtbRatios(genre, apps, fallbackRatios);
             
             UpdateGenreStats(genre, ratios);
             await Impute(apps, genre, ratios, initial).ConfigureAwait(false);
@@ -99,7 +164,7 @@ namespace SteamHltbScraper.Imputation
             return ratios;
         }
 
-        private static TtbRatios GetTtbRatios(IReadOnlyCollection<AppEntity> apps, TtbRatios fallback)
+        private static TtbRatios GetTtbRatios(string genre, IReadOnlyCollection<AppEntity> apps, TtbRatios fallback)
         {
             var ratios = GetTtbRatiosCore(apps);
 
@@ -110,7 +175,8 @@ namespace SteamHltbScraper.Imputation
 
             if (fallback == null && (mainExtrasMissing || extrasCompletionistMissing || extrasPlacementMissing))
             {
-                throw new InvalidOperationException("No record exists for which both main and extras (or extras and completionist) are present");
+                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, 
+                    "No record exists for game type '{0}' for which both main and extras (or extras and completionist) are present", genre));
             }
 
             return new TtbRatios(
@@ -145,40 +211,37 @@ namespace SteamHltbScraper.Imputation
         private static async Task Impute(IReadOnlyCollection<AppEntity> apps, string genre, TtbRatios ratios, bool initial)
         {
             var notCompletelyMissing = apps.Where(a => !a.MainTtbImputed || !a.ExtrasTtbImputed || !a.CompletionistTtbImputed).ToArray();
-            if (notCompletelyMissing.Length == 0)
+            if (notCompletelyMissing.Length < ImputationThreshold)
             {
                 if (initial)
                 {
-                    throw new InvalidOperationException("All TTBs are missing");
-                }
-                if (apps.Count > 40) //reasonable number to expect at least one non completely missing game
-                {
-                    HltbScraperEventSource.Log.GenreHasNoTtbs(genre);                    
+                    throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,
+                        "Insufficient amount of not completely missing games in game type '{0}': {1}", genre, notCompletelyMissing.Length));
                 }
 
-                //all apps are completely missing, so the current value in each of them is the game type average
-                //we want the genre stats to use that average as well, so we'll just take the first (again, they are all the same)
-                UpdateGenreStats(genre, apps.First().MainTtb, apps.First().ExtrasTtb, apps.First().CompletionistTtb);
-                
+                if (notCompletelyMissing.Length == 0 && apps.Count > NotCompletelyMissingThreshold) //Detect probable scraping issue
+                {
+                    HltbScraperEventSource.Log.GenreHasNoTtbs(genre);
+                }
+
+                //too few samples to say anything smart, we'll just take the average (there is always at least one app per genre)
+                UpdateGenreStats(genre, (int)apps.Average(a => a.MainTtb), (int)apps.Average(a => a.ExtrasTtb), (int)apps.Average(a => a.CompletionistTtb));
                 return;
             }
-
+            
             try
             {
-                if (initial || notCompletelyMissing.Length > 100) //no point in imputing genre with not enough samples
-                {
-                    await ImputeCore(genre, notCompletelyMissing, ratios).ConfigureAwait(false);                    
-                }
+                await ImputeCore(genre, notCompletelyMissing, ratios).ConfigureAwait(false);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                HltbScraperEventSource.Log.ImputationError(genre);
+                HltbScraperEventSource.Log.ImputationError(genre, e.Message);
                 if (initial)
                 {
                     throw;
                 }
             }
-            
+
             FillCompletelyMissing(genre, apps, notCompletelyMissing);
         }
 
@@ -404,8 +467,9 @@ namespace SteamHltbScraper.Imputation
 
             if (FixInvalidTtbs(appEntity, ratios, ref imputedMain, ref imputedExtras, ref imputedCompletionist))
             {
-                LogImputationMiss(
-                    appEntity, originalImputedMain, originalImputedExtras, originalImputedCompletionist, imputedMain, imputedExtras, imputedCompletionist);
+                HltbScraperEventSource.Log.ImputationMiss(
+                    appEntity.SteamName, appEntity.SteamAppId, originalImputedMain, originalImputedExtras, originalImputedCompletionist, 
+                    imputedMain, imputedExtras, imputedCompletionist, appEntity.MainTtbImputed, appEntity.ExtrasTtbImputed, appEntity.CompletionistTtbImputed);
             }
         }
 
@@ -438,15 +502,6 @@ namespace SteamHltbScraper.Imputation
                 }
             }
             return imputationMiss;
-        }
-
-        private static void LogImputationMiss(
-            AppEntity appEntity, int originalImputedMain, int originalImputedExtras, int originalImputedCompletionist, 
-            int imputedMain, int imputedExtras, int imputedCompletionist)
-        {
-            HltbScraperEventSource.Log.ImputationMiss(
-                appEntity.SteamName, appEntity.SteamAppId, originalImputedMain, originalImputedExtras, originalImputedCompletionist, 
-                imputedMain, imputedExtras, imputedCompletionist, appEntity.MainTtbImputed, appEntity.ExtrasTtbImputed, appEntity.CompletionistTtbImputed);
         }
 
         private static void HandleOverridenTtb(AppEntity appEntity, string ttbType, int currentTtb, bool ttbImputed, ref int imputed)
