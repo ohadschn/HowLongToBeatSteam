@@ -20,6 +20,41 @@ namespace HltbTests.Imputation
             AssertValidTtbs(games);
         }
 
+        [TestMethod]
+        public void TestSanitization()
+        {
+            AssertSanitization(1, 2, 3, 1, 2, 3);
+            AssertSanitization(2, 1, 3, 1, 2, 3);
+            AssertSanitization(1, 3, 2, 1, 2, 3);
+            AssertSanitization(2, 3, 1, 1, 2, 3);
+            AssertSanitization(3, 1, 2, 1, 2, 3);
+            AssertSanitization(3, 2, 1, 1, 2, 3);
+            AssertSanitization(0, 100, 200, 0, 100, 200);
+            AssertSanitization(0, 200, 100, 0, 100, 200);
+            AssertSanitization(15, 0, 150, 15, 0, 150);
+            AssertSanitization(150, 0, 15, 15, 0, 150);
+            AssertSanitization(17, 18, 0, 17, 18, 0);
+            AssertSanitization(18, 17, 0, 17, 18, 0);
+            AssertSanitization(111, 0, 0, 111, 0, 0);
+            AssertSanitization(0, 222, 0, 0, 222, 0);
+            AssertSanitization(0, 0, 123, 0, 0, 123);
+        }
+
+        private static void AssertSanitization(int main, int extras, int completionist, int mainExpected, int extrasExpected, int completionistExpected)
+        {
+            var game = new AppEntity(1, "test", AppEntity.GameTypeName);
+            game.SetMainTtb(main, main == 0);
+            game.SetExtrasTtb(extras, extras == 0);
+            game.SetCompletionistTtb(completionist, completionist == 0);
+            
+            Imputer.Sanitize(new [] {game});
+
+            var ttbs = String.Format("{0}/{1}/{2}", main, extras, completionist);
+            Assert.AreEqual(mainExpected, game.MainTtb, "Invalid Main sanitization for TTBs: " + ttbs);
+            Assert.AreEqual(extrasExpected, game.ExtrasTtb, "Invalid Extras sanitization for TTBs: " + ttbs);
+            Assert.AreEqual(completionistExpected, game.CompletionistTtb, "Invalid Completionist sanitization for TTBs: " + ttbs);
+        }
+
         private static void AssertValidTtbs(AppEntity[] games)
         {
             foreach (var game in games)

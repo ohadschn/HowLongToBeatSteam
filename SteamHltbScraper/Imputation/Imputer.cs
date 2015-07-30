@@ -79,7 +79,7 @@ namespace SteamHltbScraper.Imputation
             }
         }
 
-        private static void Sanitize(IReadOnlyList<AppEntity> allApps)
+        internal static void Sanitize(IReadOnlyList<AppEntity> allApps)
         {
             int invalidTtbCount = 0;
             var ttbs = new List<int>(3);
