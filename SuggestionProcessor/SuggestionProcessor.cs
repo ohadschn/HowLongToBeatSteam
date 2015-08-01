@@ -111,10 +111,15 @@ namespace SuggestionProcessor
 
                 while (true)
                 {
-                    Console.Write("Remove invalid suggestions? Y/N ");
+                    Console.Write("Remove invalid suggestions? (Y)es / (N)o / (I)nspect ");
                     var key = Console.ReadKey();
                     Console.WriteLine();
 
+                    if (key.KeyChar == 'i' || key.KeyChar == 'I')
+                    {
+                        InspectSuggestion(invalidSuggestion);
+                        continue;
+                    }
                     if (key.KeyChar == 'y' || key.KeyChar == 'Y')
                     {
                         Console.WriteLine("removing suggestion...");
@@ -182,9 +187,7 @@ namespace SuggestionProcessor
                     }
                     if (key.KeyChar == 'i' || key.KeyChar == 'I')
                     {
-                        Console.WriteLine("Launching game and suggestion URL...");
-                        Process.Start(String.Format(HltbScraper.HltbGamePageFormat, suggestion.App.HltbId));
-                        Process.Start(String.Format(SteamStoreGamePageTemplate, suggestion.App.SteamAppId));
+                        InspectSuggestion(suggestion);
                         continue;
                     }
                     if (key.KeyChar == 's' || key.KeyChar == 'S')
@@ -196,6 +199,13 @@ namespace SuggestionProcessor
             }
             
             return acceptedSuggestions;
+        }
+
+        private static void InspectSuggestion(SuggestionInfo suggestion)
+        {
+            Console.WriteLine("Launching game and suggestion URL...");
+            Process.Start(String.Format(HltbScraper.HltbGamePageFormat, suggestion.App.HltbId));
+            Process.Start(String.Format(SteamStoreGamePageTemplate, suggestion.App.SteamAppId));
         }
 
         private static void PrintSuggestion(SuggestionInfo suggestion, int index, int count)
