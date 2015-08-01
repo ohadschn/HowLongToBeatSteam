@@ -4,10 +4,11 @@ using Common.Logging;
 
 namespace StorageBackupUploader.Logging
 {
-    public class StorageBackupUploaderEventSource : EventSourceBase
+    [EventSource(Name = "OS-HowLongToBeatSteam-BackupUploader")]
+    public class BackupUploaderEventSource : EventSourceBase
     {
-        public static readonly StorageBackupUploaderEventSource Log = new StorageBackupUploaderEventSource();
-        private StorageBackupUploaderEventSource()
+        public static readonly BackupUploaderEventSource Log = new BackupUploaderEventSource();
+        private BackupUploaderEventSource()
         {
         }
 
@@ -16,8 +17,10 @@ namespace StorageBackupUploader.Logging
         public sealed class Keywords
         {
             private Keywords() { }
-            public const EventKeywords StorageBackup = (EventKeywords)1;
-            public const EventKeywords BlobStorage = (EventKeywords)16; //consistent with HltbScraperEventSource
+            public const EventKeywords StorageBackup = (EventKeywords) 1;
+            public const EventKeywords StorageCleanup = (EventKeywords) 2;
+            public const EventKeywords TableStorage = (EventKeywords) 4; //consistent with SiteEventSource
+            public const EventKeywords BlobStorage = (EventKeywords) 16; //consistent with HltbScraperEventSource
         }
 
         [SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
@@ -28,6 +31,8 @@ namespace StorageBackupUploader.Logging
             public const EventTask SerializeApps = (EventTask) 2;
             public const EventTask CompressAppsData = (EventTask) 3;
             public const EventTask UploadAppBackupToBlobStorage = (EventTask) 4;
+            public const EventTask DeleteOldLogEntries = (EventTask) 5;
+            public const EventTask DeleteOldBlobs = (EventTask) 6;
         }
         // ReSharper restore ConvertToStaticClass
 
@@ -125,6 +130,54 @@ namespace StorageBackupUploader.Logging
         public void UploadAppBackupToBlobStorageStop(string backup, string container)
         {
             WriteEvent(8, backup, container);
+        }
+
+        [Event(
+            9,
+            Message = "Start deleting old log entries",
+            Keywords = Keywords.StorageCleanup | Keywords.TableStorage,
+            Level = EventLevel.Informational,
+            Task = Tasks.DeleteOldLogEntries,
+            Opcode = EventOpcode.Start)]
+        public void DeleteOldLogEntriesStart()
+        {
+            WriteEvent(9);
+        }
+
+        [Event(
+            10,
+            Message = "Finished deleting old log entries ({0} deleted)",
+            Keywords = Keywords.StorageCleanup | Keywords.TableStorage,
+            Level = EventLevel.Informational,
+            Task = Tasks.DeleteOldLogEntries,
+            Opcode = EventOpcode.Stop)]
+        public void DeleteOldLogEntriesStop(int deleteCount)
+        {
+            WriteEvent(10, deleteCount);
+        }
+
+        [Event(
+            11,
+            Message = "Start deleting old blobs",
+            Keywords = Keywords.StorageCleanup | Keywords.BlobStorage,
+            Level = EventLevel.Informational,
+            Task = Tasks.DeleteOldBlobs,
+            Opcode = EventOpcode.Start)]
+        public void DeleteOldBlobsStart()
+        {
+            WriteEvent(11);
+        }
+
+        [Event(
+            12,
+            Message = "Finished deleting old blobs ({0} backup + {1} job data blobs deleted)",
+            Keywords = Keywords.StorageCleanup | Keywords.BlobStorage,
+            Level = EventLevel.Informational,
+            Task = Tasks.DeleteOldBlobs,
+            Opcode = EventOpcode.Stop)]
+        public void DeleteOldBlobsStop(int backupBlobsDeleted, int jobDataBlobsDeleted)
+        {
+            WriteEvent(12, backupBlobsDeleted, jobDataBlobsDeleted);
         }
     }
 }

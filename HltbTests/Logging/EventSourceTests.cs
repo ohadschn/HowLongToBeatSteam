@@ -53,7 +53,7 @@ namespace HltbTests.Logging
         [TestMethod]
         public void TestStorageBackupUploaderEventSource()
         {
-            EventSourceAnalyzer.InspectAll(StorageBackupUploaderEventSource.Log);
+            EventSourceAnalyzer.InspectAll(BackupUploaderEventSource.Log);
         }
 
         [TestMethod]

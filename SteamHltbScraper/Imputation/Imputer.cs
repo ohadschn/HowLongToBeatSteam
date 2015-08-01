@@ -41,7 +41,6 @@ namespace SteamHltbScraper.Imputation
         private static readonly string AzureMlImputeServiceBaseUrl = SiteUtil.GetMandatoryValueFromConfig("AzureMlImputeServiceBaseUrl");
         private static readonly int AzureMlImputePollIntervalMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollIntervalMs", 1000);
         private static readonly int AzureMlImputePollTimeoutMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollTimeoutMs", 120 * 1000);
-        private static readonly string BlobContainerName = SiteUtil.GetOptionalValueFromConfig("BlobContainerName", "jobdata");
 
         private static readonly int NotCompletelyMissingThreshold = SiteUtil.GetOptionalValueFromConfig("NotCompletelyMissingThreshold", 30);
         private static readonly int ImputationThreshold = SiteUtil.GetOptionalValueFromConfig("ImputationThreshold", 70);
@@ -384,7 +383,7 @@ namespace SteamHltbScraper.Imputation
 
             HltbScraperEventSource.Log.UploadTtbToBlobStart(blobName);
 
-            var container = StorageHelper.GetCloudBlobClient(20).GetContainerReference(BlobContainerName);
+            var container = StorageHelper.GetCloudBlobClient(20).GetContainerReference(StorageHelper.JobDataBlobContainerName);
             await container.CreateIfNotExistsAsync().ConfigureAwait(false);
 
             var blob = container.GetBlockBlobReference(blobName);

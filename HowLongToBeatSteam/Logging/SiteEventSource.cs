@@ -24,9 +24,9 @@ namespace HowLongToBeatSteam.Logging
         {
             private Keywords() { }
             public const EventKeywords SteamApi = (EventKeywords)1;
-            public const EventKeywords TableStorage = (EventKeywords) 2;
-            public const EventKeywords GamesController = (EventKeywords) 4;
-            public const EventKeywords OpenId = (EventKeywords) 8;
+            public const EventKeywords GamesController = (EventKeywords) 2;
+            public const EventKeywords TableStorage = (EventKeywords) 4;
+            public const EventKeywords OpenId = (EventKeywords)8;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]

@@ -13,6 +13,9 @@
         <eventSource name="OS-HowLongToBeatSteam-MissingGamesUpdater" level="Verbose"/>
         <eventSource name="OS-HowLongToBeatSteam-UnknownGamesUpdater" level="Verbose"/>
         <eventSource name="OS-HowLongToBeatSteam-Scraper" level="Verbose"/>
+        <eventSource name="OS-HowLongToBeatSteam-BackupUploader" level="Verbose"/>
+        <eventSource name="OS-HowLongToBeatSteam-SuggestionWatcher" level="Verbose"/>
+        <eventSource name="OS-HowLongToBeatSteam-TestRunner" level="Verbose"/>
       </sources>
     </consoleSink>
     
@@ -24,6 +27,9 @@
         <eventSource name="OS-HowLongToBeatSteam-MissingGamesUpdater" level="Verbose"/>
         <eventSource name="OS-HowLongToBeatSteam-UnknownGamesUpdater" level="Verbose"/>
         <eventSource name="OS-HowLongToBeatSteam-Scraper" level="Verbose"/>
+        <eventSource name="OS-HowLongToBeatSteam-SuggestionWatcher" level="Verbose"/>
+        <eventSource name="OS-HowLongToBeatSteam-BackupUploader" level="Verbose"/>
+        <eventSource name="OS-HowLongToBeatSteam-TestRunner" level="Verbose"/>
       </sources>
     </flatFileSink>
 

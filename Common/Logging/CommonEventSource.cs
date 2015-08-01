@@ -27,7 +27,8 @@ namespace Common.Logging
             public const EventKeywords StoreApi = (EventKeywords)2;
             public const EventKeywords TableStorage = (EventKeywords)4;
             public const EventKeywords Email = (EventKeywords) 8;
-            public const EventKeywords Shell = (EventKeywords) 16;
+            public const EventKeywords BlobStorage = (EventKeywords)16; //consistent with HltbScraperEventSource
+            public const EventKeywords Shell = (EventKeywords) 32;
         }
 
         [SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
@@ -47,6 +48,9 @@ namespace Common.Logging
             public const EventTask SendSuccessMail = (EventTask)11;
             public const EventTask RunProcess = (EventTask)12;
             public const EventTask DeleteOldEntities = (EventTask)13;
+            public const EventTask ProcessContainerBlobs = (EventTask) 14;
+            public const EventTask RetrieveContainerBlobBatch = (EventTask)15;
+            public const EventTask ProcessContainerBlobBatch = (EventTask)16;
         }
 // ReSharper restore ConvertToStaticClass
 
@@ -221,7 +225,7 @@ namespace Common.Logging
             10,
             Message = "Start retrieving mappings for partition {0} / batch {1} from table storage",
             Keywords = Keywords.TableStorage,
-            Level = EventLevel.Informational,
+            Level = EventLevel.Verbose,
             Task = Tasks.RetrievePartitionBatchMappings,
             Opcode = EventOpcode.Start)]
         public void RetrievePartitionBatchMappingsStart(string partition, int batch)
@@ -233,7 +237,7 @@ namespace Common.Logging
             11,
             Message = "Finished retrieving mappings for partition {0} / batch {1} from table storage",
             Keywords = Keywords.TableStorage,
-            Level = EventLevel.Informational,
+            Level = EventLevel.Verbose,
             Task = Tasks.RetrievePartitionBatchMappings,
             Opcode = EventOpcode.Stop)]
         public void RetrievePartitionBatchMappingsStop(string partition, int batch)
@@ -269,7 +273,7 @@ namespace Common.Logging
             12,
             Message = "Start retrieving old entities of type {0} (batch {1})",
             Keywords = Keywords.TableStorage,
-            Level = EventLevel.Informational,
+            Level = EventLevel.Verbose,
             Task = Tasks.RetrieveOldLogEntries,
             Opcode = EventOpcode.Start)]
         public void RetrieveOldLogEntriesStart(string description, int batch)
@@ -279,9 +283,9 @@ namespace Common.Logging
 
         [Event(
             13,
-            Message = "Finished retrieving old {0} (batch {1})",
+            Message = "Finished retrieving old entities of type {0} (batch {1})",
             Keywords = Keywords.TableStorage,
-            Level = EventLevel.Informational,
+            Level = EventLevel.Verbose,
             Task = Tasks.RetrieveOldLogEntries,
             Opcode = EventOpcode.Stop)]
         public void RetrieveOldLogEntriesStop(string description, int batch)
@@ -323,7 +327,7 @@ namespace Common.Logging
             16,
             Message = "Start executing batch operation for partition {1} / batch {2} {0}",
             Keywords = Keywords.TableStorage,
-            Level = EventLevel.Informational,
+            Level = EventLevel.Verbose,
             Task = Tasks.ExecutePartitionBatchOperation,
             Opcode = EventOpcode.Start)]
         private void ExecutePartitionBatchOperationStart(string final, string partition, int batch)
@@ -341,7 +345,7 @@ namespace Common.Logging
             17,
             Message = "Finished executing batch operation for partition {1} / batch {2} {0}",
             Keywords = Keywords.TableStorage,
-            Level = EventLevel.Informational,
+            Level = EventLevel.Verbose,
             Task = Tasks.ExecutePartitionBatchOperation,
             Opcode = EventOpcode.Stop)]
         private void ExecutePartitionBatchOperationStop(string final, string partition, int batch)
@@ -492,6 +496,78 @@ namespace Common.Logging
         public void RunProcessStop(string fileName, string args, int exitCode)
         {
             WriteEvent(27, fileName, args, exitCode);
+        }
+
+        [Event(
+            28,
+            Message = "Start processing container blobs: {0}",
+            Keywords = Keywords.BlobStorage,
+            Level = EventLevel.Informational,
+            Task = Tasks.ProcessContainerBlobs,
+            Opcode = EventOpcode.Start)]
+        public void ProcessContainerBlobsStart(string description)
+        {
+            WriteEvent(28, description);
+        }
+
+        [Event(
+            29,
+            Message = "Finished processing container blobs: {0} ({1} blobs processed)",
+            Keywords = Keywords.BlobStorage,
+            Level = EventLevel.Informational,
+            Task = Tasks.ProcessContainerBlobs,
+            Opcode = EventOpcode.Stop)]
+        public void ProcessContainerBlobsStop(string description, int blobsProcessed)
+        {
+            WriteEvent(29, description, blobsProcessed);
+        }
+
+        [Event(
+            30,
+            Message = "Start retrieving blob container batch: {0} (batch {1})",
+            Keywords = Keywords.BlobStorage,
+            Level = EventLevel.Verbose,
+            Task = Tasks.RetrieveContainerBlobBatch,
+            Opcode = EventOpcode.Start)]
+        public void RetrieveContainerBlobBatchStart(string description, int batch)
+        {
+            WriteEvent(30, description, batch);
+        }
+
+        [Event(
+            31,
+            Message = "Finished retrieving blob container batch: {0} (batch {1})",
+            Keywords = Keywords.BlobStorage,
+            Level = EventLevel.Verbose,
+            Task = Tasks.RetrieveContainerBlobBatch,
+            Opcode = EventOpcode.Stop)]
+        public void RetrieveContainerBlobBatchStop(string description, int batch)
+        {
+            WriteEvent(31, description, batch);
+        }
+
+        [Event(
+            32,
+            Message = "Start processing container blob: {0} (batch {1} - {2} blobs)",
+            Keywords = Keywords.BlobStorage,
+            Level = EventLevel.Verbose,
+            Task = Tasks.ProcessContainerBlobBatch,
+            Opcode = EventOpcode.Start)]
+        public void ProcessContainerBlobBatchStart(string description, int batch, int count)
+        {
+            WriteEvent(32, description, batch, count);
+        }
+
+        [Event(
+            33,
+            Message = "Finished processing container blobs: {0} (batch {1} - {2} blobs)",
+            Keywords = Keywords.BlobStorage,
+            Level = EventLevel.Verbose,
+            Task = Tasks.ProcessContainerBlobBatch,
+            Opcode = EventOpcode.Stop)]
+        public void ProcessContainerBlobBatchStop(string description, int batch, int count)
+        {
+            WriteEvent(33, description, batch, count);
         }
     }
 }

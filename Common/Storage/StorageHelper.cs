@@ -24,6 +24,7 @@ namespace Common.Storage
         private const int MaxBatchOperations = 100;
 
         public const string SlabLogsTableName = "SLABLogsTable";
+        public static readonly string JobDataBlobContainerName = SiteUtil.GetOptionalValueFromConfig("JobDataBlobContainerName", "jobdata");
         public static readonly string SteamToHltbTableName = SiteUtil.GetOptionalValueFromConfig("SteamToHltbTableName", "steamToHltb");
         public static readonly string GenreStatsTableName = SiteUtil.GetOptionalValueFromConfig("GenreStatsTableName", "genreStats");
         public static readonly string AzureStorageTablesConnectionString = SiteUtil.GetMandatoryCustomConnectionStringFromConfig("HltbsTables");
@@ -97,7 +98,7 @@ namespace Common.Storage
         }
 
         public static async Task<int> DeleteOldEntities(
-            [NotNull] string tableName, DateTime threshold, [NotNull] string description, int retries = -1, bool logBatchOperations = false)
+            [NotNull] string tableName, DateTime threshold, [NotNull] string description, int retries = -1)
         {
             if (tableName == null) throw new ArgumentNullException("tableName");
             if (description == null) throw new ArgumentNullException("description");
@@ -114,7 +115,7 @@ namespace Common.Storage
                 segment =>
                 {
                     Interlocked.Add(ref deleteCount, segment.Results.Count);
-                    return Delete(segment, "Deleting old entities of type " + description, tableName, retries,logBatchOperations);
+                    return Delete(segment, "Deleting old entities of type " + description, tableName, retries);
                 })
                 .ConfigureAwait(false);
 
@@ -181,41 +182,41 @@ namespace Common.Storage
             }
         }
 
-        public static Task Replace<T>([NotNull] IEnumerable<T> entities, [NotNull] string description, string tableName = null, int retries = -1, bool logBatchOperations = true) 
+        public static Task Replace<T>([NotNull] IEnumerable<T> entities, [NotNull] string description, string tableName = null, int retries = -1) 
             where T : ITableEntity
         {
             if (entities == null) throw new ArgumentNullException("entities");
             if (description == null) throw new ArgumentNullException("description");
 
-            return ExecuteOperations(entities, e => new[] { TableOperation.Replace(e) }, tableName ?? SteamToHltbTableName, description, retries, logBatchOperations);
+            return ExecuteOperations(entities, e => new[] { TableOperation.Replace(e) }, tableName ?? SteamToHltbTableName, description, retries);
         }
 
-        public static Task Insert<T>([NotNull] IEnumerable<T> entities, [NotNull] string description, string tableName = null, int retries = -1, bool logBatchOperations = true) 
+        public static Task Insert<T>([NotNull] IEnumerable<T> entities, [NotNull] string description, string tableName = null, int retries = -1) 
             where T : ITableEntity
         {
             if (entities == null) throw new ArgumentNullException("entities");
             if (description == null) throw new ArgumentNullException("description");
 
-            return ExecuteOperations(entities, e => new[] { TableOperation.Insert(e) }, tableName ?? SteamToHltbTableName, description, retries, logBatchOperations);
+            return ExecuteOperations(entities, e => new[] { TableOperation.Insert(e) }, tableName ?? SteamToHltbTableName, description, retries);
         }
 
-        public static Task InsertOrReplace<T>([NotNull] IEnumerable<T> entities, [NotNull] string description, string tableName = null, int retries = -1, bool logBatchOperations = true) 
+        public static Task InsertOrReplace<T>([NotNull] IEnumerable<T> entities, [NotNull] string description, string tableName = null, int retries = -1) 
             where T : ITableEntity
         {
             if (entities == null) throw new ArgumentNullException("entities");
             if (description == null) throw new ArgumentNullException("description");
 
-            return ExecuteOperations(entities, e => new[] { TableOperation.InsertOrReplace(e) }, tableName ?? SteamToHltbTableName, description, retries, logBatchOperations);
+            return ExecuteOperations(entities, e => new[] { TableOperation.InsertOrReplace(e) }, tableName ?? SteamToHltbTableName, description, retries);
         }
 
-        public static Task Delete<T>([NotNull] IEnumerable<T> entities, [NotNull] string description, [NotNull] string tableName, int retries = -1, bool logBatchOperations = true)
+        public static Task Delete<T>([NotNull] IEnumerable<T> entities, [NotNull] string description, [NotNull] string tableName, int retries = -1)
             where T : ITableEntity
         {
             if (entities == null) throw new ArgumentNullException("entities");
             if (description == null) throw new ArgumentNullException("description");
             if (tableName == null) throw new ArgumentNullException("tableName");
 
-            return ExecuteOperations(entities, e => new[] { TableOperation.Delete(e) }, tableName, description, retries, logBatchOperations);
+            return ExecuteOperations(entities, e => new[] { TableOperation.Delete(e) }, tableName, description, retries);
         }
 
         public static async Task ExecuteOperations<T>(
@@ -223,8 +224,7 @@ namespace Common.Storage
             [NotNull] Func<T, TableOperation[]> operationGenerator, 
             [NotNull] string tableName, 
             [NotNull] string description, 
-            int retries = -1,
-            bool logBatchOperations = true)
+            int retries = -1)
             where T : ITableEntity
         {
             if (entities == null) throw new ArgumentNullException("entities");
@@ -238,11 +238,7 @@ namespace Common.Storage
             await SplitToBatchOperations(entities, operationGenerator).ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, async tboi =>
             {
                 var final = tboi.Final ? "(final)" : String.Empty;
-
-                if (logBatchOperations)
-                {
-                    CommonEventSource.Log.ExecutePartitionBatchOperationStart(tboi.Partition, tboi.Batch, final);                    
-                }
+                CommonEventSource.Log.ExecutePartitionBatchOperationStart(tboi.Partition, tboi.Batch, final);
 
                 try
                 {
@@ -251,18 +247,14 @@ namespace Common.Storage
                 catch (StorageException e)
                 {
                     CommonEventSource.Log.ErrorExecutingPartitionBatchOperation(
-                        e, 
-                        e.RequestInformation.HttpStatusCode, 
+                        e,
+                        e.RequestInformation.HttpStatusCode,
                         e.RequestInformation.ExtendedErrorInformation.ErrorCode,
-                        e.RequestInformation.ExtendedErrorInformation.ErrorMessage, 
+                        e.RequestInformation.ExtendedErrorInformation.ErrorMessage,
                         tboi.Operation);
                     throw;
                 }
-
-                if (logBatchOperations)
-                {
-                    CommonEventSource.Log.ExecutePartitionBatchOperationStop(tboi.Partition, tboi.Batch, final);                    
-                }
+                CommonEventSource.Log.ExecutePartitionBatchOperationStop(tboi.Partition, tboi.Batch, final);
             }, false).ConfigureAwait(false);
             CommonEventSource.Log.ExecuteOperationsStop(description);
         }
@@ -306,7 +298,7 @@ namespace Common.Storage
             IEnumerable<T> entities, Func<T, TableOperation[]> operationGenerator)
             where T: ITableEntity
         {
-            var allOperations = new Dictionary<string, List<TableBatchOperationInfo>> ();
+            var allOperations = new Dictionary<string, List<TableBatchOperationInfo>>();
             foreach (var appGroup in entities.GroupBy(ae => ae.PartitionKey))
             {
                 string partition = appGroup.Key;
@@ -383,6 +375,54 @@ namespace Common.Storage
             var table = GetCloudTableClient(retries).GetTableReference(tableName);
             await table.CreateIfNotExistsAsync().ConfigureAwait(false);
             return table;
+        }
+
+        public static async Task<int> DeleteOldBlobs(string containerName, DateTime threshold, int retries = -1)
+        {
+            int blobsDeleted = 0;
+
+            await ProcessContainerBlobs(containerName, blobs =>
+                blobs.OfType<ICloudBlob>().ForEachAsync(SiteUtil.MaxConcurrentHttpRequests, async blob =>
+                {
+                    await blob.FetchAttributesAsync().ConfigureAwait(false);
+                    if (blob.Properties.LastModified < threshold)
+                    {
+                        await blob.DeleteAsync().ConfigureAwait(false);
+                        Interlocked.Increment(ref blobsDeleted);
+                    }
+                }), "deleting old blobs", retries).ConfigureAwait(false);
+
+            return blobsDeleted;
+        }
+
+        public static async Task ProcessContainerBlobs(string containerName, Func<IEnumerable<IListBlobItem>, Task> processor, string description, int retries = -1)
+        {
+            CommonEventSource.Log.ProcessContainerBlobsStart(description);
+
+            var container = GetCloudBlobClient(retries).GetContainerReference(containerName);
+
+            int blobCount = 0;
+            int batch = 0;
+            BlobContinuationToken continuationToken = null;
+            do
+            {
+                batch++;
+
+                CommonEventSource.Log.RetrieveContainerBlobBatchStart(description, batch);
+                var listingResult = await container.ListBlobsSegmentedAsync(continuationToken).ConfigureAwait(false);
+                CommonEventSource.Log.RetrieveContainerBlobBatchStop(description, batch);
+
+                continuationToken = listingResult.ContinuationToken;
+                var results = listingResult.Results.ToArray();
+                blobCount += results.Length;
+
+                CommonEventSource.Log.ProcessContainerBlobBatchStart(description, batch, results.Length);
+                await processor(results).ConfigureAwait(false);
+                CommonEventSource.Log.ProcessContainerBlobBatchStop(description, batch, results.Length);
+            }
+            while (continuationToken != null);
+
+            CommonEventSource.Log.ProcessContainerBlobsStop(description, blobCount);
         }
 
         public static CloudBlobClient GetCloudBlobClient(int retries = -1)

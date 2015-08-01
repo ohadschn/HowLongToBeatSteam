@@ -72,7 +72,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BackupUploader\BackupUploader.cs" />
-    <Compile Include="Logging\StorageBackupUploaderEventSource.cs" />
+    <Compile Include="Logging\BackupUploaderEventSource.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
