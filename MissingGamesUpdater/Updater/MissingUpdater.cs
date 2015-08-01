@@ -83,14 +83,14 @@ namespace MissingGamesUpdater.Updater
             }
 
             //we're inserting new entries, no fear of collisions (even if two jobs overlap the next one will fix it)
-            await StorageHelper.Insert(updates, "updating missing games", StorageRetries).ConfigureAwait(false);     
+            await StorageHelper.Insert(updates, "updating missing games", StorageHelper.SteamToHltbTableName, StorageRetries).ConfigureAwait(false);     
 
             if (ioe != null)
             {
                 throw ioe; //fail job
             }
 
-            await SiteUtil.SendSuccessMail("Missing updater", SiteUtil.GetTimeElapsedFromTickCount(tickCount), updates.Count + " app(s) added");
+            await SiteUtil.SendSuccessMail("Missing updater", updates.Count + " app(s) added", tickCount).ConfigureAwait(false);
             MissingUpdaterEventSource.Log.UpdateMissingGamesStop();
         }
 

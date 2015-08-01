@@ -94,7 +94,7 @@ namespace SuggestionProcessor
                 Console.Write("Updating... ");
                 foreach (var suggestion in acceptedSuggestions)
                 {
-                    await StorageHelper.AcceptSuggestion(suggestion.App, suggestion.Suggestion);
+                    await StorageHelper.AcceptSuggestion(suggestion.App, suggestion.Suggestion).ConfigureAwait(false);
                 } 
             }
 
@@ -181,7 +181,7 @@ namespace SuggestionProcessor
                     if (key.KeyChar == 'd' || key.KeyChar == 'D')
                     {
                         Console.Write("Deleting suggestion... ");
-                        await StorageHelper.DeleteSuggestion(suggestion.Suggestion);
+                        await StorageHelper.DeleteSuggestion(suggestion.Suggestion).ConfigureAwait(false);
                         Console.WriteLine("Done!");
                         break;
                     }

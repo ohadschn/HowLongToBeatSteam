@@ -25,15 +25,15 @@ namespace SuggestionWatcher.Watcher
 
         private static async Task WatchForSuggestions()
         {
-            var tickCount = Environment.TickCount;
+            var ticks = Environment.TickCount;
             SuggestionWatcherEventSource.Log.WatchSuggestionsStart();
 
-            var suggestions = await StorageHelper.GetAllSuggestions();
+            var suggestions = await StorageHelper.GetAllSuggestions().ConfigureAwait(false);
             var pendingSuggestions = suggestions.Count;
 
             await SiteUtil.SendSuccessMail(
-                "Suggestion Watcher", SiteUtil.GetTimeElapsedFromTickCount(tickCount),
-                pendingSuggestions > 0 ? pendingSuggestions + " suggestion(s) pending" : "no pending suggestions");
+                "Suggestion Watcher",
+                pendingSuggestions > 0 ? pendingSuggestions + " suggestion(s) pending" : "no pending suggestions", ticks).ConfigureAwait(false);
 
             SuggestionWatcherEventSource.Log.WatchSuggestionsStop(pendingSuggestions);
         }

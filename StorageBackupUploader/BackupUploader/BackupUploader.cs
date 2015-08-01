@@ -15,7 +15,9 @@ namespace StorageBackupUploader.BackupUploader
 {
     class BackupUploader
     {
-        private const string BlobContainerName = "storagebackup";
+        private static readonly int LogRetentionDays = SiteUtil.GetOptionalValueFromConfig("LogRetentionDays", 14);
+        private static readonly string BackupBlobContainerName = SiteUtil.GetOptionalValueFromConfig("BackupBlobContainerName", "storagebackup");
+        private static readonly int BackupUploaderStorageRetries = SiteUtil.GetOptionalValueFromConfig("BackupUploaderStorageRetries", 10);
 
         static void Main()
         {
@@ -25,6 +27,7 @@ namespace StorageBackupUploader.BackupUploader
                 SiteUtil.KeepWebJobAlive();
                 SiteUtil.MockWebJobEnvironmentIfMissing("StorageBackupUploader");
                 BackupTableStorage().Wait();
+                DeleteOldLogEntries().Wait();
             }
             finally
             {
@@ -32,12 +35,22 @@ namespace StorageBackupUploader.BackupUploader
             }
         }
 
+        private static async Task DeleteOldLogEntries()
+        {
+            var ticks = Environment.TickCount;
+
+            int deleteCount = await StorageHelper.DeleteOldEntities(StorageHelper.SlabLogsTableName, DateTime.UtcNow.AddDays(-LogRetentionDays), "log entries", BackupUploaderStorageRetries)
+                .ConfigureAwait(false);
+
+            await SiteUtil.SendSuccessMail("Old log deleter", deleteCount + " old logs deleted", ticks).ConfigureAwait(false);
+        }
+
         private static async Task BackupTableStorage()
         {
             var ticks = Environment.TickCount;
             StorageBackupUploaderEventSource.Log.BackupTableStorageStart();
 
-            var apps = await StorageHelper.GetAllApps();
+            var apps = await StorageHelper.GetAllApps().ConfigureAwait(false);
             
             var context = new OperationContext();            
             var appsSerialized = apps.Select(a => a.WriteEntity(context).ToDictionary(kvp => kvp.Key, kvp => kvp.Value.PropertyAsObject));
@@ -56,7 +69,7 @@ namespace StorageBackupUploader.BackupUploader
 
             await UploadAppBackupToBlobStorage(sevenzipFilename, baseFilename).ConfigureAwait(false);
 
-            await SiteUtil.SendSuccessMail("Storage Backup Uploader", SiteUtil.GetTimeElapsedFromTickCount(ticks), apps.Count + " app(s) backed up")
+            await SiteUtil.SendSuccessMail("Storage Backup Uploader", apps.Count + " app(s) backed up", ticks)
                 .ConfigureAwait(false);
 
             StorageBackupUploaderEventSource.Log.BackupTableStorageStop(apps.Count);
@@ -85,15 +98,15 @@ namespace StorageBackupUploader.BackupUploader
 
         private static async Task UploadAppBackupToBlobStorage(string sevenzipFilename, string baseFilename)
         {
-            StorageBackupUploaderEventSource.Log.UploadAppBackupToBlobStorageStart(sevenzipFilename, BlobContainerName);
+            StorageBackupUploaderEventSource.Log.UploadAppBackupToBlobStorageStart(sevenzipFilename, BackupBlobContainerName);
 
-            var container = StorageHelper.GetCloudBlobClient(20).GetContainerReference(BlobContainerName);
+            var container = StorageHelper.GetCloudBlobClient(20).GetContainerReference(BackupBlobContainerName);
             await container.CreateIfNotExistsAsync().ConfigureAwait(false);
 
             var blob = container.GetBlockBlobReference(baseFilename);
             await blob.UploadFromFileAsync(sevenzipFilename, FileMode.Open).ConfigureAwait(false);
 
-            StorageBackupUploaderEventSource.Log.UploadAppBackupToBlobStorageStop(sevenzipFilename, BlobContainerName);
+            StorageBackupUploaderEventSource.Log.UploadAppBackupToBlobStorageStop(sevenzipFilename, BackupBlobContainerName);
         }
     }
 }

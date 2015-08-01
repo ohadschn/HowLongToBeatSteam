@@ -38,7 +38,7 @@ namespace Common.Logging
             public const EventTask RetrieveStoreInformation = (EventTask)2;
             public const EventTask QueryAllEntities = (EventTask)3;
             public const EventTask RetrievePartitionBatchMappings = (EventTask)4;
-            public const EventTask ProcessPartitionBatch = (EventTask)5;
+            public const EventTask RetrieveOldLogEntries = (EventTask)5;
             public const EventTask ExecuteOperations = (EventTask)6;
             public const EventTask ExecutePartitionBatchOperation = (EventTask)7;
             public const EventTask InsertSuggestion = (EventTask)8;
@@ -46,6 +46,7 @@ namespace Common.Logging
             public const EventTask AcceptSuggestion = (EventTask) 10;
             public const EventTask SendSuccessMail = (EventTask)11;
             public const EventTask RunProcess = (EventTask)12;
+            public const EventTask DeleteOldEntities = (EventTask)13;
         }
 // ReSharper restore ConvertToStaticClass
 
@@ -194,7 +195,7 @@ namespace Common.Logging
 
         [Event(
             8,
-            Message = "Querying table storage for all {0} with filter: [{1}]",
+            Message = "Start querying table storage for all {0} with filter: [{1}]",
             Keywords = Keywords.TableStorage,
             Level = EventLevel.Informational,
             Task = Tasks.QueryAllEntities,
@@ -241,27 +242,51 @@ namespace Common.Logging
         }
 
         [Event(
-            12,
-            Message = "Start processing app entity partition {0} / batch {1}",
+            100,
+            Message = "Start deleting old entities of type {0}",
             Keywords = Keywords.TableStorage,
             Level = EventLevel.Informational,
-            Task = Tasks.ProcessPartitionBatch,
+            Task = Tasks.DeleteOldEntities,
             Opcode = EventOpcode.Start)]
-        public void ProcessPartitionBatchStart(string partition, int batch)
+        public void DeleteOldEntitiesStart(string description)
         {
-            WriteEvent(12, partition, batch);
+            WriteEvent(100, description);
+        }
+
+        [Event(
+            110,
+            Message = "Finished deleting old entities of type {0}",
+            Keywords = Keywords.TableStorage,
+            Level = EventLevel.Informational,
+            Task = Tasks.DeleteOldEntities,
+            Opcode = EventOpcode.Stop)]
+        public void DeleteOldEntitiesStop(string description)
+        {
+            WriteEvent(110, description);
+        }
+
+        [Event(
+            12,
+            Message = "Start retrieving old entities of type {0} (batch {1})",
+            Keywords = Keywords.TableStorage,
+            Level = EventLevel.Informational,
+            Task = Tasks.RetrieveOldLogEntries,
+            Opcode = EventOpcode.Start)]
+        public void RetrieveOldLogEntriesStart(string description, int batch)
+        {
+            WriteEvent(12, description, batch);
         }
 
         [Event(
             13,
-            Message = "Finished processing app entity partition {0} / batch {1}",
+            Message = "Finished retrieving old {0} (batch {1})",
             Keywords = Keywords.TableStorage,
             Level = EventLevel.Informational,
-            Task = Tasks.ProcessPartitionBatch,
+            Task = Tasks.RetrieveOldLogEntries,
             Opcode = EventOpcode.Stop)]
-        public void ProcessPartitionBatchStop(string partition, int batch)
+        public void RetrieveOldLogEntriesStop(string description, int batch)
         {
-            WriteEvent(13, partition, batch);
+            WriteEvent(13, description, batch);
         }
 
         [Event(
@@ -351,13 +376,13 @@ namespace Common.Logging
         }
 
         [Event(
-            100,
+            180,
             Message = "Error executing batch operation: {0}. Status code: {1}. Error code: {2}. Error message: {3}. Batch contents: {4}",
             Keywords = Keywords.TableStorage,
             Level = EventLevel.Error)]
         private void ErrorExecutingPartitionBatchOperation(string exception, int statusCode, string errorCode, string errorMessage, string batchContents)
         {
-            WriteEvent(100, exception, statusCode, errorCode, errorMessage, batchContents);
+            WriteEvent(180, exception, statusCode, errorCode, errorMessage, batchContents);
         }
 
         [Event(

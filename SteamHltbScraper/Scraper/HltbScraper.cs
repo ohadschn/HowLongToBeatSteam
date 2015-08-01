@@ -52,14 +52,14 @@ namespace SteamHltbScraper.Scraper
 
             var allMeasuredApps = (await StorageHelper.GetAllApps(AppEntity.MeasuredFilter, StorageRetries).ConfigureAwait(false)).Take(ScrapingLimit).ToArray();
 
-            await ScrapeHltb(allMeasuredApps);
+            await ScrapeHltb(allMeasuredApps).ConfigureAwait(false);
 
             await Imputer.Impute(allMeasuredApps).ConfigureAwait(false);
 
             //we're using Replace since the only other update to an existing game-typed entity would have to be manual which should take precedence
-            await StorageHelper.Replace(allMeasuredApps, "updating scraped gametimes", StorageRetries).ConfigureAwait(false);
+            await StorageHelper.Replace(allMeasuredApps, "updating scraped gametimes", StorageHelper.SteamToHltbTableName, StorageRetries).ConfigureAwait(false);
 
-            await SiteUtil.SendSuccessMail("HLTB scraper", SiteUtil.GetTimeElapsedFromTickCount(tickCount), allMeasuredApps.Length + " game(s) scraped");
+            await SiteUtil.SendSuccessMail("HLTB scraper", allMeasuredApps.Length + " game(s) scraped", tickCount).ConfigureAwait(false);
         }
 
         public static async Task ScrapeHltb(AppEntity[] allApps, Action<AppEntity, Exception> errorHandler = null)
@@ -339,7 +339,7 @@ namespace SteamHltbScraper.Scraper
         {
             HltbScraperEventSource.Log.ScrapeHltbIdStart(appName);
 
-            var doc = await GetHltbSearchResults(appName);
+            var doc = await GetHltbSearchResults(appName).ConfigureAwait(false);
             var firstResultAnchor = doc.DocumentNode.Descendants("a").FirstOrDefault();
 
             if (firstResultAnchor == null)
@@ -348,7 +348,7 @@ namespace SteamHltbScraper.Scraper
                 if (alphanumericName != appName)
                 {
                     HltbScraperEventSource.Log.SearchingForAlphanumericName(appName, alphanumericName);
-                    doc = await GetHltbSearchResults(alphanumericName);
+                    doc = await GetHltbSearchResults(alphanumericName).ConfigureAwait(false);
                     firstResultAnchor = doc.DocumentNode.Descendants("a").FirstOrDefault(); 
                 }
 

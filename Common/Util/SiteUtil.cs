@@ -82,29 +82,29 @@ namespace Common.Util
             var exceptions = new ConcurrentBag<Exception>();
 
             await Task.WhenAll(Partitioner.Create(collection).GetPartitions(maxDegreeOfConcurrency).Select(partition => Task.Run(async delegate
+            {
+                using (partition)
+                {
+                    while (partition.MoveNext())
                     {
-                        using (partition)
+                        cts.Token.ThrowIfCancellationRequested();
+                        try
                         {
-                            while (partition.MoveNext())
-                            {
-                                cts.Token.ThrowIfCancellationRequested();
-                                try
-                                {
-                                    await taskFactory(partition.Current).ConfigureAwait(false);
-                                }
-                                catch (Exception e)
-                                {
-                                    if (failEarly)
-                                    {
-                                        cts.Cancel();
-                                        throw;
-                                    }
-
-                                    exceptions.Add(e);
-                                }
-                            }
+                            await taskFactory(partition.Current).ConfigureAwait(false);
                         }
-                    }, cts.Token)));
+                        catch (Exception e)
+                        {
+                            if (failEarly)
+                            {
+                                cts.Cancel();
+                                throw;
+                            }
+
+                            exceptions.Add(e);
+                        }
+                    }
+                }
+            }, cts.Token))).ConfigureAwait(false);
 
             if (exceptions.Count > 0)
             {
@@ -374,9 +374,18 @@ namespace Common.Util
                 "https://{0}.scm.azurewebsites.net/vfs/data/jobs/triggered/{1}/{2}/output_log.txt", WebsiteName, WebJobName, WebJobRunId);
         }
 
-        public static async Task SendSuccessMail([NotNull] string description, TimeSpan duration, string customMessage)
+        public static Task SendSuccessMail([NotNull] string description, [NotNull] string message, int ticks)
         {
             if (description == null) throw new ArgumentNullException("description");
+            if (message == null) throw new ArgumentNullException("message");
+
+            return SendSuccessMail(description, message, GetTimeElapsedFromTickCount(ticks));
+        }
+
+        public static async Task SendSuccessMail([NotNull] string description, [NotNull] string message, TimeSpan duration)
+        {
+            if (description == null) throw new ArgumentNullException("description");
+            if (message == null) throw new ArgumentNullException("message");
 
             var errors = EventSourceRegistrar.GetSessionErrors();
             var eventFormatter = new EventTextFormatter();
@@ -395,12 +404,12 @@ namespace Common.Util
             {
                 From = new MailAddress("webjobs@howlongtobeatsteam.com", "HLTBS WebJob notifier"),
                 Subject = String.Format(CultureInfo.InvariantCulture, "{0} - Success ({1}) [{2}]", 
-                                        WebJobName, duration, customMessage + (errors.Length == 0 ? String.Empty : " (with session errors)")),
+                    WebJobName, duration, message + (errors.Length == 0 ? String.Empty : " (with session errors)")),
                 To = new[] {new MailAddress(NotificationEmailAddress)},
                 Text = String.Format(CultureInfo.InvariantCulture, "{1}{0}Run ID: {2}{0}Start time: {3}{0}End time:{4}{0}Output log file: {5}{6}",
-                        Environment.NewLine, GetTriggeredRunUrl(), WebJobRunId, DateTime.UtcNow - duration, DateTime.UtcNow, GetTriggeredLogUrl(),
-                        errors.Length == 0 ? String.Empty : String.Format("{0}Session Errors:{0}{1}", Environment.NewLine, errorsText))
-            });
+                    Environment.NewLine, GetTriggeredRunUrl(), WebJobRunId, DateTime.UtcNow - duration, DateTime.UtcNow, GetTriggeredLogUrl(),
+                    errors.Length == 0 ? String.Empty : String.Format("{0}Session Errors:{0}{1}", Environment.NewLine, errorsText))
+            }).ConfigureAwait(false);
             CommonEventSource.Log.SendSuccessMailStop(description);
         }
 

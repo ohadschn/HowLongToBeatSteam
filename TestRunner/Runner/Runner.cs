@@ -37,7 +37,7 @@ namespace TestRunner.Runner
                 throw new InvalidOperationException("vstest returned error code: " + exitCode);
             }
 
-            await SiteUtil.SendSuccessMail("TestRunner", SiteUtil.GetTimeElapsedFromTickCount(ticks), "All tests passed").ConfigureAwait(false);
+            await SiteUtil.SendSuccessMail("TestRunner", "All tests passed", ticks).ConfigureAwait(false);
 
             TestRunnerEventSource.Log.RunTestsStop();
         }

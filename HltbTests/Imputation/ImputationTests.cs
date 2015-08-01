@@ -14,7 +14,7 @@ namespace HltbTests.Imputation
         [TestMethod]
         public async Task TestImputation()
         {
-            var games = (await StorageHelper.GetAllApps(AppEntity.MeasuredFilter)).ToArray();
+            var games = (await StorageHelper.GetAllApps(AppEntity.MeasuredFilter).ConfigureAwait(true)).ToArray();
 
             await Imputer.ImputeByGenre(games).ConfigureAwait(false);
             AssertValidTtbs(games);

@@ -64,7 +64,7 @@ namespace UnknownUpdater.Updater
 
         private async static Task UpdateUnknownApps()
         {
-            var tickCount = Environment.TickCount;
+            var ticks = Environment.TickCount;
             UnknownUpdaterEventSource.Log.UpdateUnknownAppsStart();
 
             var allUnknownApps = (await StorageHelper.GetAllApps(AppEntity.UnknownFilter, StorageRetries).ConfigureAwait(false)).Take(UpdateLimit).ToArray();
@@ -103,7 +103,9 @@ namespace UnknownUpdater.Updater
                 throw ioe; //fail job
             }
 
-            await SiteUtil.SendSuccessMail("Unknown updater", SiteUtil.GetTimeElapsedFromTickCount(tickCount), updates.Count + " previously unknown game(s) updated");
+            await SiteUtil.SendSuccessMail("Unknown updater", 
+                updates.Count + " previously unknown game(s) updated", ticks).ConfigureAwait(false);
+
             UnknownUpdaterEventSource.Log.UpdateUnknownAppsStop();
         }
     }
