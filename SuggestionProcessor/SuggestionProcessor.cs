@@ -47,6 +47,7 @@ namespace SuggestionProcessor
 
         private static async Task ProcessSuggestions()
         {
+
             Console.WriteLine("Retrieving all apps and suggestions...");
             var allMeasuredAppsTask = StorageHelper.GetAllApps(AppEntity.MeasuredFilter);
             var suggestionsTask = StorageHelper.GetAllSuggestions();
@@ -63,17 +64,19 @@ namespace SuggestionProcessor
                 new ConcurrentDictionary<int, SuggestionInfo>(GetValidSuggestionsAndPrepApps(allMeasuredAppsMap, suggestions).ToDictionary(si => si.App.SteamAppId));
             var validSuggestedApps = validSuggestions.Values.Select(s => s.App).ToArray();
 
+            var invalidSuggestions = new ConcurrentBag<SuggestionInfo>();
             Console.WriteLine("Scraping HLTB info for suggestions...");
-            SuggestionInfo temp;
             await HltbScraper.ScrapeHltb(validSuggestedApps, (a,e) =>
             {
                 Console.WriteLine("Can't parse HLTB ID {0} suggested for {1} ({2}): {3}", a.HltbId, a.SteamName, a.SteamAppId, e);
-                bool removed = validSuggestions.TryRemove(a.SteamAppId, out temp);
+                SuggestionInfo invalidSuggestion;
+                bool removed = validSuggestions.TryRemove(a.SteamAppId, out invalidSuggestion);
                 Trace.Assert(removed, "Invalid validSuggestions state");
-
-                //Console.WriteLine("removing suggestion...");
-                //StorageHelper.DeleteSuggestion(temp.Suggestion).Wait();
+                invalidSuggestions.Add(invalidSuggestion);
             }).ConfigureAwait(false);
+
+            Console.WriteLine("Removing invalid suggestions...");
+            RemoveInvalidSuggestions(invalidSuggestions);
 
             Console.WriteLine("Processing suggestions...");
             var acceptedSuggestions = await ProcessSuggestionsByUserInput(validSuggestions.Values).ConfigureAwait(false);
@@ -96,6 +99,35 @@ namespace SuggestionProcessor
             }
 
             Console.WriteLine("All Done!");
+        }
+
+        private static void RemoveInvalidSuggestions(ConcurrentBag<SuggestionInfo> invalidSuggestions)
+        {
+            int i = 0;
+            foreach (var invalidSuggestion in invalidSuggestions)
+            {
+                i++;
+                PrintSuggestion(invalidSuggestion, i, invalidSuggestions.Count);
+
+                while (true)
+                {
+                    Console.Write("Remove invalid suggestions? Y/N ");
+                    var key = Console.ReadKey();
+                    Console.WriteLine();
+
+                    if (key.KeyChar == 'y' || key.KeyChar == 'Y')
+                    {
+                        Console.WriteLine("removing suggestion...");
+                        StorageHelper.DeleteSuggestion(invalidSuggestion.Suggestion).Wait();
+                        break;
+                    }
+                    if (key.KeyChar == 'n' || key.KeyChar == 'N')
+                    {
+                        Console.WriteLine("Keeping invalid suggestions");
+                        break;
+                    }
+                }
+            }
         }
 
         private static List<SuggestionInfo> GetValidSuggestionsAndPrepApps(IReadOnlyDictionary<int, AppEntity> appsMap, IEnumerable<SuggestionEntity> suggestions)
@@ -127,12 +159,8 @@ namespace SuggestionProcessor
             int i = 0;
             foreach (var suggestion in validSuggestions)
             {
-                var app = suggestion.App;
-                Console.WriteLine("[#{0}/{1}] {2} ({3}) | Current: {4} ({5}) | Suggested: {6} ({7})",
-                    ++i, validSuggestions.Count,
-                    app.SteamName, app.SteamAppId,
-                    suggestion.OriginalHltbName, suggestion.OriginalHltbId,
-                    app.HltbName, app.HltbId);
+                i++;
+                PrintSuggestion(suggestion, i, validSuggestions.Count);
 
                 while (true)
                 {
@@ -141,7 +169,7 @@ namespace SuggestionProcessor
                     Console.WriteLine();
                     if (key.KeyChar == 'a' || key.KeyChar == 'A')
                     {
-                        Console.WriteLine();
+                        Console.WriteLine("Marking suggestion as accepted...");
                         acceptedSuggestions.Add(suggestion);
                         break;
                     }
@@ -155,8 +183,8 @@ namespace SuggestionProcessor
                     if (key.KeyChar == 'i' || key.KeyChar == 'I')
                     {
                         Console.WriteLine("Launching game and suggestion URL...");
-                        Process.Start(String.Format(HltbScraper.HltbGamePageFormat, app.HltbId));
-                        Process.Start(String.Format(SteamStoreGamePageTemplate, app.SteamAppId));
+                        Process.Start(String.Format(HltbScraper.HltbGamePageFormat, suggestion.App.HltbId));
+                        Process.Start(String.Format(SteamStoreGamePageTemplate, suggestion.App.SteamAppId));
                         continue;
                     }
                     if (key.KeyChar == 's' || key.KeyChar == 'S')
@@ -168,6 +196,15 @@ namespace SuggestionProcessor
             }
             
             return acceptedSuggestions;
+        }
+
+        private static void PrintSuggestion(SuggestionInfo suggestion, int index, int count)
+        {
+            Console.WriteLine("[#{0}/{1}] {2} ({3}) | Current: {4} ({5}) | Suggested: {6} ({7})",
+                index, count,
+                suggestion.App.SteamName, suggestion.App.SteamAppId,
+                suggestion.OriginalHltbName, suggestion.OriginalHltbId,
+                suggestion.App.HltbName, suggestion.App.HltbId);
         }
 
         class SuggestionSteamIdComparer : IEqualityComparer<SuggestionEntity>

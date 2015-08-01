@@ -49,7 +49,7 @@ namespace HltbTests.Imputation
             
             Imputer.Sanitize(new [] {game});
 
-            var ttbs = String.Format("{0}/{1}/{2}", main, extras, completionist);
+            var ttbs = String.Format(CultureInfo.InvariantCulture, "{0}/{1}/{2}", main, extras, completionist);
             Assert.AreEqual(mainExpected, game.MainTtb, "Invalid Main sanitization for TTBs: " + ttbs);
             Assert.AreEqual(extrasExpected, game.ExtrasTtb, "Invalid Extras sanitization for TTBs: " + ttbs);
             Assert.AreEqual(completionistExpected, game.CompletionistTtb, "Invalid Completionist sanitization for TTBs: " + ttbs);
