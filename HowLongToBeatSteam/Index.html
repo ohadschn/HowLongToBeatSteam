@@ -146,7 +146,7 @@
                     <div class="modal-body overflow-auto">
                         <form role="form" class="form-inline form-multiline">
                             <div data-bind="css: 'form-group col-xs-12' + (releaseYearRangeValid() ? '' : ' has-error has-feedback')" id="releaseYearGroup">
-                                <label for="releaseYearGroup" class="col-xs-3 form-header">Release Year</label>
+                                <label for="releaseYearGroup" class="col-xs-3">Release Year</label>
                                 <div class="col-xs-9">
                                     <span class="text-nowrap">
                                         <label for="releaseYearFrom" class="control-label">From</label>
@@ -160,7 +160,7 @@
                                 <span class="help-block" data-bind="visible: !releaseYearRangeValid()">Invalid year range</span>
                             </div>
                             <div data-bind="css: 'form-group col-xs-12' + (metacriticRangeValid() ?  '' : ' has-error has-feedback')" id="metacriticGroup">
-                                <label for="metacriticGroup" class="col-xs-3 form-header">Metacritic Score</label>
+                                <label for="metacriticGroup" class="col-xs-3">Metacritic Score</label>
                                 <div class="col-xs-9">
                                     <span class="text-nowrap">
                                         <label for="metacriticFrom" class="control-label">From</label>
@@ -174,7 +174,7 @@
                                 <span class="help-block" data-bind="visible: !metacriticRangeValid()">Invalid score range</span>
                             </div>
                             <div data-bind="css: 'form-group col-xs-12' + (genreSelectionValid() ? '' : ' has-error has-feedback')" id="genreGroup">
-                                <label for="genreGroup" class="col-xs-3 form-header">Genre</label>
+                                <label for="genreGroup" class="col-xs-3">Genre</label>
                                 <div class="col-xs-9">
                                     <select multiple
                                             class="form-control"
@@ -204,23 +204,31 @@
                             <div class="col-lg-6">
                                 <div class="row">
                                     <div class="form-group col-xs-12">
-                                        <label for="genderSelect" class="col-xs-6 form-header">Gender</label>
+                                        <label for="genderSelect" class="col-xs-6">Gender</label>
                                         <select class="form-control col-xs-6" id="genderSelect" data-bind="value: userGender">
                                             <option value="male">Male</option>
                                             <option value="female">Female</option>
                                         </select>
                                     </div>
                                     <div class="form-group col-xs-12">
-                                        <label for="birthYearSelect" class="col-xs-6 form-header">Birth Year</label>
+                                        <label for="birthYearSelect" class="col-xs-6">Birth Year</label>
                                         <select class="form-control col-xs-6" id="birthYearSelect" data-bind="options: birthYearPossibleValues, value: userBirthYear"></select>
                                     </div>
                                     <div class="form-group col-xs-12">
-                                        <label for="weeklyPlaytimeSelect" class="col-xs-6 form-header">Weekly Playtime</label>
+                                        <label for="weeklyPlaytimeSelect" class="col-xs-6">Weekly Playtime</label>
                                         <select class="form-control col-xs-6" id="weeklyPlaytimeSelect" data-bind="options: weeklyPlayHoursPossibleValues, optionsText: function(hours) {return timeWithCommas(hours, 'hour');}, value: weeklyPlayHours"></select>
                                     </div>
                                     <div class="form-group col-xs-12">
-                                        <label for="playStyleSelect" class="col-xs-6 form-header">Play Style</label>
+                                        <label for="playStyleSelect" class="col-xs-6">Play Style</label>
                                         <select class="form-control col-xs-6" id="playStyleSelect" data-bind="options: playStylePossibleValues, value: userPlayStyle"></select>
+                                    </div>
+                                    <div class="form-group col-xs-12">
+                                        <label for="backlogCompletionLabel" class="col-xs-6">Backlog Completion</label>
+                                        <label id="backlogCompletionLabel" data-bind="text: survivalCalculated() ? timeOfBacklogCompletion().toLocaleDateString() : '???'"></label>
+                                    </div>
+                                    <div class="form-group col-xs-12">
+                                        <label for="timeOfDeathLabel" class="col-xs-6">Time of Death</label>
+                                        <label id="timeOfDeathLabel" data-bind="text: survivalCalculated() ? timeOfDeath().toLocaleDateString() : '???'"></label>
                                     </div>
                                     <div class="col-xs-12" data-bind="visible: calculatingSurvival">
                                         <img class="loader push-down" src="https://cdnjs.cloudflare.com/ajax/libs/owl-carousel/1.3.2/AjaxLoader.gif" alt="Loading..." />
@@ -237,9 +245,9 @@
                                 </div>
                             </div>
                             <div class="col-lg-6 overflow-hidden">
-                                <img data-bind="visible: !survivalCalculated()" src="Resources/GrimFandango296.jpg" alt="Grim Reaper calculating" title="Give it to them straight, Manny" />
-                                <img data-bind="visible: survivalCalculated() && !survivalCalculationError() && timeOfDeath() < timeOfBacklogCompletion()" src="Resources/SkeletonNo296.jpg" alt="Survival failure" title="It's time to reconsider your priorities in life" />
-                                <img data-bind="visible: survivalCalculated() && !survivalCalculationError() && timeOfDeath() >= timeOfBacklogCompletion()" src="Resources/OldLadyYes296.jpg" alt="Survival Success" title="So we hear there's a Steam sale going on..." />
+                                <img data-bind="visible: !survivalCalculated()" src="Resources/abacus.jpg" alt="abacus"/>
+                                <img data-bind="visible: survivalCalculated() && !survivalCalculationError() && timeOfDeath() < timeOfBacklogCompletion()" src="Resources/skull.jpg" alt="Survival failure" title="It's time to reconsider your priorities in life" />
+                                <img data-bind="visible: survivalCalculated() && !survivalCalculationError() && timeOfDeath() >= timeOfBacklogCompletion()" src="Resources/success.jpg" alt="Survival Success" title="So we hear there's a Steam sale going on..." />
                             </div>
                             <div class="col-xs-12 modal-footer">
                                 <h2 class="no-vertical-margin pull-left" data-bind="visible: survivalCalculated">

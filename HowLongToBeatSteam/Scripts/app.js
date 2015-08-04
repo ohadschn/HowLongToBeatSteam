@@ -409,7 +409,7 @@ function AppViewModel() {
     var survivalPositiveVerdicts = [
         { prefix: "You will die happy, having completed your backlog with", suffix: "left to live." },
         { prefix: "Not only will you complete your backlog, you'll have", suffix: "to relax after." },
-        { prefix: "Now is the time to go buy more games for the barren", suffix: "of post-backlog." }
+        { prefix: "Now is the time to go buy more games for your barren", suffix: "of post-backlog." }
     ];
     var survivalNegativeVerdicts = [
         { prefix: "You will die a horrible death,", suffix: "before beating your backlog." },
