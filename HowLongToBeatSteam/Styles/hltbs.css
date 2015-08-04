@@ -180,6 +180,9 @@
     margin-right: 4px;
     vertical-align: 1px;
 }
+.inline-info {
+    font-size: 78%;
+}
 .share-title {
     font-size: 70%;
     vertical-align: 3px;

@@ -183,7 +183,7 @@ namespace HowLongToBeatSteam.Controllers
             }
             SiteEventSource.Log.PrepareResponseStop();
 
-            return new PlayerInfo(partialCache, games, new
+            return new PlayerInfo(partialCache, games, ownedGames.Length - games.Count, new
                 Totals(playtime, mainTtb, extrasTtb, completionistTtb, mainRemaining, extrasRemaining, completionistRemaining,
                 mainCompleted, extrasCompleted, completionistCompleted,
                 playtimesByGenre, playtimesByMetacritic, playtimesByAppType, playtimesByReleaseYear), personaInfo);

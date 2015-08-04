@@ -222,6 +222,7 @@ function AppViewModel() {
     self.sliceCompletionLevel = ko.observable();
 
     self.partialCache = ko.observable(false);
+    self.excludedGameCount = ko.observable(0);
     self.imputedTtbs = ko.observable(false);
     self.missingHltbIds = ko.observable(false);
     self.libraryIsEmpty = ko.observable(false);
@@ -1358,6 +1359,7 @@ function AppViewModel() {
 
         self.error(false);
         self.partialCache(false);
+        self.excludedGameCount(0);
         self.imputedTtbs(false);
         self.missingHltbIds(false);
         self.libraryIsEmpty(false);
@@ -1374,6 +1376,7 @@ function AppViewModel() {
                 afterRequest = true;
                 includedObservable(true);
                 self.partialCache(data.PartialCache);
+                self.excludedGameCount(data.ExcludedCount);
                 self.personaName(data.PersonaInfo.PersonaName);
                 self.avatarUrl(data.PersonaInfo.Avatar);
                 self.initialTotal = {

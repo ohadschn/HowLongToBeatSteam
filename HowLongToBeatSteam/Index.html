@@ -302,13 +302,11 @@
                                 <h3 class="text-center">
                                     Playtime
                                     <small class="text-info">
-                                        <span>
-                                            <span class=" glyphicon glyphicon-info-sign"
-                                                  data-placement="bottom"
-                                                  data-toggle="tooltip"
-                                                  data-container="body"
-                                                  title="As recorded by Steam and estimated by HLTB. To calculate the remaining playtime in the different completion levels, the expected time to beat each game was subtracted from the time played (to a minimum of zero). Completed playtimes were calculated similarly, which is why they may be different for each completion level - each game's contribution is bounded by the HLTB estimated time to beat it for that level (except for the 'current' row where it is unbounded).">
-                                            </span>
+                                        <span class=" glyphicon glyphicon-info-sign"
+                                              data-placement="bottom"
+                                              data-toggle="tooltip"
+                                              data-container="body"
+                                              title="As recorded by Steam and estimated by HLTB. To calculate the remaining playtime in the different completion levels, the expected time to beat each game was subtracted from the time played (to a minimum of zero). Completed playtimes were calculated similarly, which is why they may be different for each completion level - each game's contribution is bounded by the HLTB estimated time to beat it for that level (except for the 'current' row where it is unbounded).">
                                         </span>
                                     </small>
                                 </h3>
@@ -318,7 +316,17 @@
                         </div>
                     </div>
                     <p class="lead lead-lowered">
-                        If you were a <strong>video gaming zombie</strong> who plays 24/7 without sleeping or eating then:
+                        <strong data-bind="text: numberWithCommas(total().count) + ' single-player ' + (total().count === 1 ? 'game' : 'games') + ' found'"></strong>
+                        <span data-bind="visible: excludedGameCount() > 0" class="text-nowrap">
+                            (<span data-bind="text:numberWithCommas(excludedGameCount())"></span> excluded
+                            <span class=" glyphicon glyphicon-info-sign inline-info"
+                                  data-placement="bottom"
+                                  data-toggle="tooltip"
+                                  data-container="body"
+                                  title="Games with no single-player campaign, games removed from the Steam store, and non-game apps are excluded.">
+                            </span>)
+                        </span><br/>
+                        If you were a video gaming <em>zombie</em> who plays 24/7 without sleeping or eating then:
                     </p>
                     <ul class="lead">
                         <li>Your total amount of consecutive <strong><abbr title="As measured by Steam">current</abbr></strong> playtime would be <span data-bind="text: getYearsFromMinutes(total().playtime)"></span>.</li>
@@ -328,7 +336,7 @@
                     </ul>
                     <h3>
                         <span class="fa fa-heartbeat"></span> Not a zombie? Check out the <a href="javascript:;" class="emphasized" data-bind="click: survivalCalculatorClicked"><span class="fa fa-calculator"></span> Steam Survival Calculator &#x2122;</a>
-                    </h3> 
+                    </h3>
                     <h1>
                         <span class="share-title">Share</span>
                         <a href="javascript:;" data-bind="click: shareOnFacebook"><span class="fa fa-facebook-official"></span></a>

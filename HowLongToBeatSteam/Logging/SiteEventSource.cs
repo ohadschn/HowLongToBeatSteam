@@ -150,7 +150,7 @@ namespace HowLongToBeatSteam.Logging
 
         [Event(
             12,
-            Message = "Skipping non-game: {0} / {1}",
+            Message = "Skipping non single-player game: {0} / {1}",
             Keywords = Keywords.GamesController,
             Level = EventLevel.Verbose)]
         private void SkipNonGame(string name, int appId)

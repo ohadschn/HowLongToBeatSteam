@@ -14,14 +14,17 @@ namespace HowLongToBeatSteam.Models
         [DataMember]
         public IList<SteamAppUserData> Games { get; private set; }
         [DataMember]
+        public int ExcludedCount { get; private set; }
+        [DataMember]
         public Totals Totals { get; private set; }
         [DataMember]
         public PersonaInfo PersonaInfo { get; private set; }
 
-        public PlayerInfo(bool partialCache, IList<SteamAppUserData> games, Totals totals, PersonaInfo personaInfo)
+        public PlayerInfo(bool partialCache, IList<SteamAppUserData> games, int excludedCount, Totals totals, PersonaInfo personaInfo)
         {
-            Games = games;
             PartialCache = partialCache;
+            Games = games;
+            ExcludedCount = excludedCount;
             Totals = totals;
             PersonaInfo = personaInfo;
         }
