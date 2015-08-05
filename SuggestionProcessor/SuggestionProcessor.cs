@@ -68,7 +68,7 @@ namespace SuggestionProcessor
 
             var invalidSuggestions = new ConcurrentBag<SuggestionInfo>(
                 suggestions.Where(s => !validSuggestions.ContainsKey(s.SteamAppId))
-                    .Select(s => new SuggestionInfo(s, new AppEntity(-1, "[Unknown]", "[Unknown]"), -1, "[Unknown]")));
+                    .Select(s => new SuggestionInfo(s, new AppEntity(-1, "[Unknown]", "[Unknown]"), SuggestionEntity.NonGameHltbId, "[Unknown]")));
 
             Console.WriteLine("Scraping HLTB info for suggestions...");
             await HltbScraper.ScrapeHltb(validSuggestions.Values.Select(s => s.App).Where(a => a.HltbId != SuggestionEntity.NonGameHltbId).ToArray(), 
@@ -131,7 +131,14 @@ namespace SuggestionProcessor
 
                     if (key.KeyChar == 'i' || key.KeyChar == 'I')
                     {
-                        InspectSuggestion(invalidSuggestion);
+                        if (invalidSuggestion.App.SteamAppId == -1)
+                        {
+                            Console.WriteLine("Unknown Steam ID - nothing to inspect");
+                        }
+                        else
+                        {
+                            InspectSuggestion(invalidSuggestion);                            
+                        }
                         continue;
                     }
                     if (key.KeyChar == 'y' || key.KeyChar == 'Y')
@@ -218,9 +225,14 @@ namespace SuggestionProcessor
 
         private static void InspectSuggestion(SuggestionInfo suggestion)
         {
-            Console.WriteLine("Launching game and suggestion URL...");
-            Process.Start(String.Format(HltbScraper.HltbGamePageFormat, suggestion.App.HltbId));
+            Console.WriteLine("Launching Steam game page...");
             Process.Start(String.Format(SteamStoreGamePageTemplate, suggestion.App.SteamAppId));
+
+            if (suggestion.App.HltbId != SuggestionEntity.NonGameHltbId)
+            {
+                Console.WriteLine("Launching HLTB game page...");
+                Process.Start(String.Format(HltbScraper.HltbGamePageFormat, suggestion.App.HltbId));   
+            }
         }
 
         private static void PrintSuggestion(SuggestionInfo suggestion, int index, int count)
