@@ -1433,6 +1433,12 @@ function AppViewModel() {
         animate = true;
     };
 
+    self.displayNonGameDialog = function(game) {
+        appInsights.trackEvent("UpdateNonGameClicked");
+        self.gameToUpdate(game);
+        $("#NonGameUpdateModal").modal("show");
+    };
+
     self.displayUpdateDialog = function (game) {
         appInsights.trackEvent("UpdateClicked", {known: game.known});
         self.gameToUpdate(game);
@@ -1446,21 +1452,30 @@ function AppViewModel() {
         $("#privacyModal").modal("show");
     };
 
-    self.updateHltb = function() {
-        var gameToUpdate = self.gameToUpdate();
-
+    var updateGameCore = function(gameToUpdate) {
         gameToUpdate.updatePhase(GameUpdatePhase.InProgress);
         $.post("api/games/update/" + gameToUpdate.steamAppId + "/" + gameToUpdate.suggestedHltbId())
             .done(function() {
                 gameToUpdate.updatePhase(GameUpdatePhase.Success);
             })
-            .fail(function (error) {
+            .fail(function(error) {
                 appInsights.trackException(error);
                 gameToUpdate.updatePhase(GameUpdatePhase.Failure);
             });
+    };
 
-        $('#HltbUpdateModal').modal('hide');
-        appInsights.trackEvent("UpdateSubmitted", {known: gameToUpdate.known });
+    self.updateNonGame = function() {
+        self.gameToUpdate().suggestedHltbId(-1);
+
+        updateGameCore(self.gameToUpdate());
+        $("#NonGameUpdateModal").modal("hide");
+        appInsights.trackEvent("NonGameUpdateSubmitted");
+    };
+
+    self.updateHltb = function() {
+        updateGameCore(self.gameToUpdate());
+        $("#HltbUpdateModal").modal("hide");
+        appInsights.trackEvent("UpdateSubmitted", {known: self.gameToUpdate().known });
     };
 
     var getHostname = function() {

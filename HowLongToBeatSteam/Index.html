@@ -245,7 +245,7 @@
                                 </div>
                             </div>
                             <div class="col-lg-6 overflow-hidden">
-                                <img data-bind="visible: !survivalCalculated()" src="Resources/abacus.jpg" alt="abacus"/>
+                                <img data-bind="visible: !survivalCalculated()" src="Resources/abacus.jpg" alt="abacus" />
                                 <img data-bind="visible: survivalCalculated() && !survivalCalculationError() && timeOfDeath() < timeOfBacklogCompletion()" src="Resources/skull.jpg" alt="Survival failure" title="It's time to reconsider your priorities in life" />
                                 <img data-bind="visible: survivalCalculated() && !survivalCalculationError() && timeOfDeath() >= timeOfBacklogCompletion()" src="Resources/success.jpg" alt="Survival Success" title="So we hear there's a Steam sale going on..." />
                             </div>
@@ -296,6 +296,22 @@
                 </div>
             </div>
         </div>
+        <div id="NonGameUpdateModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="NonGameUpdateTitle" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 id="NonGameUpdateTitle" class="modal-title" data-bind="text: 'Update ' + gameToUpdate().steamName"></h4>
+                    </div>
+                    <div class="modal-body">
+                        <form class="form-inline">
+                            Flag <em data-bind="text: gameToUpdate().steamName"></em> as a non-game?
+                            <button type="submit" class="btn btn-primary pull-right" data-bind="click: $root.updateNonGame">Yes</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div data-bind="css: !processing() && gameTable.rows().length>0 ? '' : 'invisible'">
             <div class="panel panel-default">
                 <div class="panel-heading">
@@ -335,7 +351,7 @@
                                   data-container="body"
                                   title="Games with no single-player campaign, games removed from the Steam store, and non-game apps are excluded.">
                             </span>)
-                        </span><br/>
+                        </span><br />
                         If you were a <em>video gaming zombie</em> who plays 24/7 without sleeping or eating then:
                     </p>
                     <ul class="lead">
@@ -505,6 +521,7 @@
                                     <a data-bind="attr: {href: 'http://store.steampowered.com/app/' + steamAppId, title: 'Type: ' + capitalizeFirstLetter(appType) + '\nGenre: ' + getCombinedGenre() + '\nRelease Year: ' + (releaseYear < 1900 ? '(unknown)' : releaseYear) + '\nMetacritic score: ' + (metacriticScore === -1 ? '(unknown)' : metacriticScore)}" target="_blank">
                                         <span data-bind="text:steamName, css: (included() ? '' : 'text-muted')"></span>
                                     </a>
+                                    <a data-bind="visible: updatePhase() === GameUpdatePhase.None, click: $root.displayNonGameDialog, css: 'hidden-xs emphasized' + (included() ? '' : ' text-muted')" href="javascript:;">(not a game?)</a>
                                     <span class="glyphicon glyphicon-time visible-xs-inline pull-right"
                                           data-placement="top"
                                           data-toggle="tooltip"
@@ -529,7 +546,7 @@
                                     <span data-bind="visible: updatePhase() === GameUpdatePhase.Success, css: (included() ? '' : 'text-muted')">
                                         <span class="fa fa-check"></span> Update submitted for approval
                                     </span>
-                                    <a data-bind="visible: updatePhase() === GameUpdatePhase.Failure, click: $root.displayUpdateDialog, css: (included() ? '' : 'text-muted')" href="javascript:;">
+                                    <a data-bind="visible: updatePhase() === GameUpdatePhase.Failure, click: suggestedHltbId() === -1 ? $root.displayNonGameDialog : $root.displayUpdateDialog, css: (included() ? '' : 'text-muted')" href="javascript:;">
                                         <span class="fa fa-warning"></span> Update failed (click to retry)
                                     </a>
                                 </td>
