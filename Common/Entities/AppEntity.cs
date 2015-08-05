@@ -30,6 +30,9 @@ namespace Common.Entities
         public const string GameTypeName = "game";
         public const string DlcTypeName = "dlc";
         public const string ModTypeName = "mod";
+        public const string AppTypeName = "app";
+        public const string MultiplayerOnlyTypeName = "multiplayerOnlyGame";
+        public const string NonGameTypeName = "NonGame";
 
         public static readonly IReadOnlyList<string> UnknownList = new ReadOnlyCollection<string>(new[] { "Unknown" });
         public static readonly DateTime UnknownDate = new DateTime(1800, 01, 01); //has to be later than 1600 for Windows file time compatibility

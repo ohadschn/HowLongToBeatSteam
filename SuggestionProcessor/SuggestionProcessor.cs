@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Common.Entities;
@@ -15,6 +16,7 @@ namespace SuggestionProcessor
     class SuggestionProcessor
     {
         private const string SteamStoreGamePageTemplate = "http://store.steampowered.com/app/{0}";
+        
         static void Main()
         {
             try
@@ -69,14 +71,15 @@ namespace SuggestionProcessor
                     .Select(s => new SuggestionInfo(s, new AppEntity(-1, "[Unknown]", "[Unknown]"), -1, "[Unknown]")));
 
             Console.WriteLine("Scraping HLTB info for suggestions...");
-            await HltbScraper.ScrapeHltb(validSuggestions.Values.Select(s => s.App).ToArray(), (a,e) =>
-            {
-                Console.WriteLine("Can't parse HLTB ID {0} suggested for {1} ({2}): {3}", a.HltbId, a.SteamName, a.SteamAppId, e);
-                SuggestionInfo invalidSuggestion;
-                bool removed = validSuggestions.TryRemove(a.SteamAppId, out invalidSuggestion);
-                Trace.Assert(removed, "Invalid validSuggestions state");
-                invalidSuggestions.Add(invalidSuggestion);
-            }).ConfigureAwait(false);
+            await HltbScraper.ScrapeHltb(validSuggestions.Values.Select(s => s.App).Where(a => a.HltbId != SuggestionEntity.NonGameHltbId).ToArray(), 
+                (a, e) =>
+                {
+                    Console.WriteLine("Can't parse HLTB ID {0} suggested for {1} ({2}): {3}", a.HltbId, a.SteamName, a.SteamAppId, e);
+                    SuggestionInfo invalidSuggestion;
+                    bool removed = validSuggestions.TryRemove(a.SteamAppId, out invalidSuggestion);
+                    Trace.Assert(removed, "Invalid validSuggestions state");
+                    invalidSuggestions.Add(invalidSuggestion);
+                }).ConfigureAwait(false);
 
             Console.WriteLine("Removing invalid suggestions...");
             RemoveInvalidSuggestions(invalidSuggestions);
@@ -84,9 +87,17 @@ namespace SuggestionProcessor
             Console.WriteLine("Processing suggestions...");
             var acceptedSuggestions = await ProcessSuggestionsByUserInput(validSuggestions.Values).ConfigureAwait(false);
 
-            if (acceptedSuggestions.Count > 0)
+            Console.WriteLine("Updating non-games...");
+            var nonGameSuggestions = acceptedSuggestions.Where(si => si.App.HltbId == SuggestionEntity.NonGameHltbId);
+            foreach (var suggestion in nonGameSuggestions)
             {
-                foreach (var suggestion in acceptedSuggestions)
+                await StorageHelper.AcceptSuggestion(suggestion.App, suggestion.Suggestion).ConfigureAwait(false);
+            }
+
+            var acceptedHltbSuggestions = acceptedSuggestions.Where(si => si.App.HltbId != SuggestionEntity.NonGameHltbId).ToArray();
+            if (acceptedHltbSuggestions.Length > 0)
+            {
+                foreach (var suggestion in acceptedHltbSuggestions)
                 {
                     allMeasuredAppsMapForImputation[suggestion.Suggestion.SteamAppId] = suggestion.App;
                 }
@@ -94,8 +105,8 @@ namespace SuggestionProcessor
                 Console.WriteLine("Imputing missing TTBs from genre stats...");
                 await Imputer.Impute(allMeasuredAppsMapForImputation.Values.ToArray()).ConfigureAwait(false);
 
-                Console.Write("Updating... ");
-                foreach (var suggestion in acceptedSuggestions)
+                Console.Write("Updating HLTB suggestions... ");
+                foreach (var suggestion in acceptedHltbSuggestions)
                 {
                     await StorageHelper.AcceptSuggestion(suggestion.App, suggestion.Suggestion).ConfigureAwait(false);
                 } 
@@ -153,6 +164,7 @@ namespace SuggestionProcessor
                 suggestionsForKnownApps.Add(new SuggestionInfo(suggestion, app, app.HltbId, app.HltbName));
                 
                 app.HltbId = suggestion.HltbId; //scarping will now take place for the suggested ID
+                app.HltbName = "[Unknown]";
                 app.SetMainTtb(0, true);
                 app.SetExtrasTtb(0, true);
                 app.SetCompletionistTtb(0, true);
@@ -213,11 +225,13 @@ namespace SuggestionProcessor
 
         private static void PrintSuggestion(SuggestionInfo suggestion, int index, int count)
         {
-            Console.WriteLine("[#{0}/{1}] {2} ({3}) | Current: {4} ({5}) | Suggested: {6} ({7})",
+            Console.WriteLine("[#{0}/{1}] {2} ({3}) | Current: {4} ({5}) | Suggested: {6}",
                 index, count,
                 suggestion.App.SteamName, suggestion.App.SteamAppId,
                 suggestion.OriginalHltbName, suggestion.OriginalHltbId,
-                suggestion.App.HltbName, suggestion.App.HltbId);
+                suggestion.App.HltbId == SuggestionEntity.NonGameHltbId
+                    ? "[non-game]"
+                    : String.Format(CultureInfo.InvariantCulture, "{0} ({1})", suggestion.App.HltbName, suggestion.App.HltbId));
         }
 
         class SuggestionSteamIdComparer : IEqualityComparer<SuggestionEntity>

@@ -80,11 +80,11 @@ namespace Common.Store
 
             if (ContainsAppGenre(genres))
             {
-                type = "app";
+                type = AppEntity.AppTypeName;
             }
             else if (!categories.Contains("Single-player", StringComparer.OrdinalIgnoreCase))
             {
-                type = "multiplayerOnlyGame";
+                type = AppEntity.MultiplayerOnlyTypeName;
             }
 
             CommonEventSource.Log.PopulateApp(

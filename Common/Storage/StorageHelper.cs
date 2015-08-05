@@ -290,7 +290,21 @@ namespace Common.Storage
             var table = await GetTable(SteamToHltbTableName, retries).ConfigureAwait(false);
 
             CommonEventSource.Log.AcceptSuggestionStart(suggestion.SteamAppId, suggestion.HltbId);
-            await table.ExecuteBatchAsync(new TableBatchOperation {TableOperation.Replace(app), TableOperation.Delete(suggestion)}).ConfigureAwait(false);
+            if (suggestion.HltbId != SuggestionEntity.NonGameHltbId)
+            {
+                await table.ExecuteBatchAsync(new TableBatchOperation {TableOperation.Replace(app), TableOperation.Delete(suggestion)})
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                var nonGameApp = new AppEntity(app.SteamAppId, app.SteamName, AppEntity.NonGameTypeName);
+                await table.ExecuteBatchAsync(new TableBatchOperation
+                {
+                    TableOperation.Insert(nonGameApp),
+                    TableOperation.Delete(app),
+                    TableOperation.Delete(suggestion)
+                }).ConfigureAwait(false);
+            }
             CommonEventSource.Log.AcceptSuggestionStop(suggestion.SteamAppId, suggestion.HltbId);
         }
 

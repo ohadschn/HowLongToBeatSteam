@@ -8,6 +8,7 @@ namespace Common.Entities
     public class SuggestionEntity : TableEntity
     {
         public const string SuggestionPrefix = "Suggestion";
+        public const int NonGameHltbId = -1;
         public int SteamAppId { get; set; }
         public int HltbId { get; set; }
 
