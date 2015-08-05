@@ -112,7 +112,7 @@ var getTimeFromNow = function(hoursFromNow) {
 //static observables used in initialization for increased performance
 var includedObservable = ko.observable(true);
 var updatePhaseObservable = ko.observable(GameUpdatePhase.None);
-var zeroObservable = ko.observable(0);
+var emptyObservable = ko.observable("");
 
 function Game(steamGame) {
 
@@ -133,7 +133,7 @@ function Game(steamGame) {
     var hltbInfo = steamAppData.HltbInfo;
     self.known = hltbInfo.Id !== -1;
     self.hltbId = self.known ? hltbInfo.Id : "";
-    self.suggestedHltbId = zeroObservable;
+    self.suggestedHltbId = emptyObservable;
     self.hltbName = self.known ? hltbInfo.Name : "";
     self.hltbMainTtb = hltbInfo.MainTtb;
     self.hltbMainTtbImputed = hltbInfo.MainTtbImputed;
@@ -414,7 +414,7 @@ function AppViewModel() {
     var survivalNegativeVerdicts = [
         { prefix: "You will die a horrible death,", suffix: "before beating your backlog." },
         { prefix: "Game over. You'd need", suffix: "more to live in order to complete your backlog." },
-        { prefix: "Sorry, looks like the Grim Reaper is going to beat you by", suffix: ":)" }
+        { prefix: "Looks like the Grim Reaper is going to beat you by", suffix: ":(" }
     ];
 
     self.survivalCalculated = ko.observable(false);
@@ -730,7 +730,7 @@ function AppViewModel() {
                 game.included = ko.observable(includedObservable.peek());
                 game.included.subscribe(trackGameIncluded);
                 game.updatePhase = ko.observable(updatePhaseObservable());
-                game.suggestedHltbId = ko.observable(game.hltbId);
+                game.suggestedHltbId = ko.observable("");
                 replaced = true;
             }
         }

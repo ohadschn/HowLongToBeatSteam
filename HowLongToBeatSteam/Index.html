@@ -145,7 +145,7 @@
                     </div>
                     <div class="modal-body overflow-auto">
                         <form role="form" class="form-inline form-multiline">
-                            <div data-bind="css: 'form-group col-xs-12' + (releaseYearRangeValid() ? '' : ' has-error has-feedback')" id="releaseYearGroup">
+                            <div data-bind="css: 'form-group col-xs-12' + (releaseYearRangeValid() ? '' : ' has-error')" id="releaseYearGroup">
                                 <label for="releaseYearGroup" class="col-xs-3">Release Year</label>
                                 <div class="col-xs-9">
                                     <span class="text-nowrap">
@@ -159,7 +159,7 @@
                                 </div>
                                 <span class="help-block" data-bind="visible: !releaseYearRangeValid()">Invalid year range</span>
                             </div>
-                            <div data-bind="css: 'form-group col-xs-12' + (metacriticRangeValid() ?  '' : ' has-error has-feedback')" id="metacriticGroup">
+                            <div data-bind="css: 'form-group col-xs-12' + (metacriticRangeValid() ?  '' : ' has-error')" id="metacriticGroup">
                                 <label for="metacriticGroup" class="col-xs-3">Metacritic Score</label>
                                 <div class="col-xs-9">
                                     <span class="text-nowrap">
@@ -173,7 +173,7 @@
                                 </div>
                                 <span class="help-block" data-bind="visible: !metacriticRangeValid()">Invalid score range</span>
                             </div>
-                            <div data-bind="css: 'form-group col-xs-12' + (genreSelectionValid() ? '' : ' has-error has-feedback')" id="genreGroup">
+                            <div data-bind="css: 'form-group col-xs-12' + (genreSelectionValid() ? '' : ' has-error')" id="genreGroup">
                                 <label for="genreGroup" class="col-xs-3">Genre</label>
                                 <div class="col-xs-9">
                                     <select multiple
@@ -279,15 +279,17 @@
                         </ol>
                         <br />
                         <form role="form" class="form-horizontal">
-                            <div class="row form-group">
+                            <div data-bind="css: 'row form-group' + (gameToUpdate().suggestedHltbId() == gameToUpdate().hltbId || gameToUpdate().suggestedHltbId() == gameToUpdate().steamAppId ? ' has-error' : '')">
                                 <span class="col-sm-9">
-                                    <input type="text" class="form-control " data-bind="textInput:gameToUpdate().suggestedHltbId" placeholder="HLTB ID" />
+                                    <input type="text" class="form-control" data-bind="textInput:gameToUpdate().suggestedHltbId" placeholder="HLTB ID" />
                                 </span>
                                 <button type="submit"
                                         class="btn btn-primary col-sm-2"
-                                        data-bind="enable: (gameToUpdate().suggestedHltbId() != gameToUpdate().hltbId) && (gameToUpdate().suggestedHltbId() !== ''), click: $root.updateHltb">
+                                        data-bind="enable: (gameToUpdate().suggestedHltbId() !== '') && (gameToUpdate().suggestedHltbId() != gameToUpdate().hltbId) && (gameToUpdate().suggestedHltbId() != gameToUpdate().steamAppId), click: $root.updateHltb">
                                     Update
                                 </button>
+                                <span class="help-block col-sm-12" data-bind="visible: gameToUpdate().suggestedHltbId() == gameToUpdate().hltbId">The game is already correlated to this HLTB ID</span>
+                                <span class="help-block col-sm-12" data-bind="visible: gameToUpdate().suggestedHltbId() == gameToUpdate().steamAppId">You have entered the game's <em>Steam</em> app ID - please enter its <a href="http://howlongtobeat.com" target="_blank">HLTB</a> ID instead</span>
                             </div>
                         </form>
                     </div>
@@ -334,7 +336,7 @@
                                   title="Games with no single-player campaign, games removed from the Steam store, and non-game apps are excluded.">
                             </span>)
                         </span><br/>
-                        If you were a video gaming <em>zombie</em> who plays 24/7 without sleeping or eating then:
+                        If you were a <em>video gaming zombie</em> who plays 24/7 without sleeping or eating then:
                     </p>
                     <ul class="lead">
                         <li>Your total amount of consecutive <strong><abbr title="As measured by Steam">current</abbr></strong> playtime would be <span data-bind="text: getYearsFromMinutes(total().playtime)"></span>.</li>
