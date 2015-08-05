@@ -47,7 +47,6 @@ namespace SuggestionProcessor
 
         private static async Task ProcessSuggestions()
         {
-
             Console.WriteLine("Retrieving all apps and suggestions...");
             var allMeasuredAppsTask = StorageHelper.GetAllApps(AppEntity.MeasuredFilter);
             var suggestionsTask = StorageHelper.GetAllSuggestions();
@@ -59,14 +58,18 @@ namespace SuggestionProcessor
             var allMeasuredAppsMap = allMeasuredApps.ToDictionary(a => a.SteamAppId);
             var allMeasuredAppsMapForImputation = allMeasuredApps.ToDictionary(ae => ae.SteamAppId, ae => ae.ShallowClone());
 
-            var suggestions = suggestionsTask.Result.Distinct(new SuggestionSteamIdComparer()); //only consider the first suggestion for each app
-            var validSuggestions = 
-                new ConcurrentDictionary<int, SuggestionInfo>(GetValidSuggestionsAndPrepApps(allMeasuredAppsMap, suggestions).ToDictionary(si => si.App.SteamAppId));
-            var validSuggestedApps = validSuggestions.Values.Select(s => s.App).ToArray();
+            //only consider the first suggestion for each app per run
+            var suggestions = suggestionsTask.Result.Distinct(new SuggestionSteamIdComparer()).ToArray(); 
 
-            var invalidSuggestions = new ConcurrentBag<SuggestionInfo>();
+            var validSuggestions = new ConcurrentDictionary<int, SuggestionInfo>(
+                GetSuggestionsForKnownAndPrepareApps(allMeasuredAppsMap, suggestions).ToDictionary(si => si.App.SteamAppId));
+
+            var invalidSuggestions = new ConcurrentBag<SuggestionInfo>(
+                suggestions.Where(s => !validSuggestions.ContainsKey(s.SteamAppId))
+                    .Select(s => new SuggestionInfo(s, new AppEntity(-1, "[Unknown]", "[Unknown]"), -1, "[Unknown]")));
+
             Console.WriteLine("Scraping HLTB info for suggestions...");
-            await HltbScraper.ScrapeHltb(validSuggestedApps, (a,e) =>
+            await HltbScraper.ScrapeHltb(validSuggestions.Values.Select(s => s.App).ToArray(), (a,e) =>
             {
                 Console.WriteLine("Can't parse HLTB ID {0} suggested for {1} ({2}): {3}", a.HltbId, a.SteamName, a.SteamAppId, e);
                 SuggestionInfo invalidSuggestion;
@@ -122,7 +125,7 @@ namespace SuggestionProcessor
                     }
                     if (key.KeyChar == 'y' || key.KeyChar == 'Y')
                     {
-                        Console.WriteLine("removing suggestion...");
+                        Console.WriteLine("Removing suggestion...");
                         StorageHelper.DeleteSuggestion(invalidSuggestion.Suggestion).Wait();
                         break;
                     }
@@ -135,9 +138,9 @@ namespace SuggestionProcessor
             }
         }
 
-        private static List<SuggestionInfo> GetValidSuggestionsAndPrepApps(IReadOnlyDictionary<int, AppEntity> appsMap, IEnumerable<SuggestionEntity> suggestions)
+        private static List<SuggestionInfo> GetSuggestionsForKnownAndPrepareApps(IReadOnlyDictionary<int, AppEntity> appsMap, IEnumerable<SuggestionEntity> suggestions)
         {
-            var existingSuggestions = new List<SuggestionInfo>();
+            var suggestionsForKnownApps = new List<SuggestionInfo>();
             foreach (var suggestion in suggestions)
             {
                 AppEntity app;
@@ -147,14 +150,14 @@ namespace SuggestionProcessor
                     continue;
                 }
 
-                existingSuggestions.Add(new SuggestionInfo(suggestion, app, app.HltbId, app.HltbName));
+                suggestionsForKnownApps.Add(new SuggestionInfo(suggestion, app, app.HltbId, app.HltbName));
                 
                 app.HltbId = suggestion.HltbId; //scarping will now take place for the suggested ID
                 app.SetMainTtb(0, true);
                 app.SetExtrasTtb(0, true);
                 app.SetCompletionistTtb(0, true);
             }
-            return existingSuggestions;
+            return suggestionsForKnownApps;
         }
 
         private static async Task<IList<SuggestionInfo>>  ProcessSuggestionsByUserInput(ICollection<SuggestionInfo> validSuggestions)
