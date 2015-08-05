@@ -413,7 +413,7 @@ function AppViewModel() {
     ];
     var survivalNegativeVerdicts = [
         { prefix: "You will die a horrible death,", suffix: "before beating your backlog." },
-        { prefix: "Game over. You'd need", suffix: "more to live in order to complete your backlog." },
+        { prefix: "You'd need", suffix: "more to live in order to complete your backlog." },
         { prefix: "Looks like the Grim Reaper is going to beat you by", suffix: ":(" }
     ];
 
@@ -1466,6 +1466,7 @@ function AppViewModel() {
 
     self.updateNonGame = function() {
         self.gameToUpdate().suggestedHltbId(-1);
+        self.gameToUpdate().included(false);
 
         updateGameCore(self.gameToUpdate());
         $("#NonGameUpdateModal").modal("hide");
