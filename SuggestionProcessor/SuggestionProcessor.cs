@@ -115,6 +115,29 @@ namespace SuggestionProcessor
             Console.WriteLine("All Done!");
         }
 
+        private static List<SuggestionInfo> GetSuggestionsForKnownAndPrepareApps(IReadOnlyDictionary<int, AppEntity> appsMap, IEnumerable<SuggestionEntity> suggestions)
+        {
+            var suggestionsForKnownApps = new List<SuggestionInfo>();
+            foreach (var suggestion in suggestions)
+            {
+                AppEntity app;
+                if (!appsMap.TryGetValue(suggestion.SteamAppId, out app))
+                {
+                    Console.WriteLine("ERROR: suggestion for unknown Steam ID {0} (Suggested HLTB ID {1})", suggestion.SteamAppId, suggestion.HltbId);
+                    continue;
+                }
+
+                suggestionsForKnownApps.Add(new SuggestionInfo(suggestion, app, app.HltbId, app.HltbName));
+
+                app.HltbId = suggestion.HltbId; //scarping will now take place for the suggested ID
+                app.HltbName = "[Unknown]";
+                app.SetMainTtb(0, true);
+                app.SetExtrasTtb(0, true);
+                app.SetCompletionistTtb(0, true);
+            }
+            return suggestionsForKnownApps;
+        }
+
         private static void RemoveInvalidSuggestions(ConcurrentBag<SuggestionInfo> invalidSuggestions)
         {
             int i = 0;
@@ -154,29 +177,6 @@ namespace SuggestionProcessor
                     }
                 }
             }
-        }
-
-        private static List<SuggestionInfo> GetSuggestionsForKnownAndPrepareApps(IReadOnlyDictionary<int, AppEntity> appsMap, IEnumerable<SuggestionEntity> suggestions)
-        {
-            var suggestionsForKnownApps = new List<SuggestionInfo>();
-            foreach (var suggestion in suggestions)
-            {
-                AppEntity app;
-                if (!appsMap.TryGetValue(suggestion.SteamAppId, out app))
-                {
-                    Console.WriteLine("ERROR: suggestion for unknown Steam ID {0} (Suggested HLTB ID {1})", suggestion.SteamAppId, suggestion.HltbId);
-                    continue;
-                }
-
-                suggestionsForKnownApps.Add(new SuggestionInfo(suggestion, app, app.HltbId, app.HltbName));
-                
-                app.HltbId = suggestion.HltbId; //scarping will now take place for the suggested ID
-                app.HltbName = "[Unknown]";
-                app.SetMainTtb(0, true);
-                app.SetExtrasTtb(0, true);
-                app.SetCompletionistTtb(0, true);
-            }
-            return suggestionsForKnownApps;
         }
 
         private static async Task<IList<SuggestionInfo>>  ProcessSuggestionsByUserInput(ICollection<SuggestionInfo> validSuggestions)
