@@ -104,9 +104,6 @@
     <None Include="Properties\PublishProfiles\hltbsprod.pubxml" />
     <None Include="Properties\PublishProfiles\howlongtobeatsteam.pubxml" />
     <None Include="Properties\webjob-publish-settings.json" />
-    <None Include="run.cmd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj">
@@ -121,8 +118,9 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>cd $(TargetDir)
+echo $(TargetFileName) &gt; run.cmd
+echo exit /b %25%25errorlevel%25%25 &gt;&gt; run.cmd</PostBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\Microsoft.Web.WebJobs.Publish.1.0.3\tools\webjobs.targets" Condition="Exists('..\packages\Microsoft.Web.WebJobs.Publish.1.0.3\tools\webjobs.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
