@@ -1,0 +1,119 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>How Long To Beat Steam - FAQ</title>
+    <meta name="description" content="FAQ for HowLongToBeatSteam.com" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <h4>How does HowLongToBeatSteam work?</h4>
+        <p>
+            HowLongToBeatSteam retrieves completion playtimes from <a href="http://www.howlongtobeat.com" target="_blank">HowLongToBeat</a>
+            and applies them to your Steam library in order to get an aggregated view of how long it would take to complete all (included and unfiltered)
+            single-player games in your account.
+        </p>
+        <h4>Give me the technical version</h4>
+        <p>
+            HowLongToBeatSteam uses the <a href="http://steamcommunity.com/dev" target="_blank">Steam Web API</a> for game metadata
+            and user playtime. As for HowLongToBeat, unfortunately they have no API, so their HTML pages are parsed (scraped) directly.
+        </p>
+        <h4>Why are you asking for my password when I sign in through Steam? Are you trying to steal it?</h4>
+        <p>
+            When you sign-in through Steam, you are not actually supplying your credentials to HowLongToBeatSteam.
+            Rather, you are signing in to Steam/Valve itself (look at the URL - it says <em>https://steamcommunity.com/..</em>).
+            Steam then passes on a token to HowLongToBeatSteam that merely verifies you are who you say you are,
+            and even that is only in terms of your profile ID (which is public anyway).
+            Besides, you don't even need to supply your credentials - your public Steam profile ID works too.
+            For more information on the login process, see the <a href="https://www.youtube.com/watch?v=07q4XgMgoPc" target="_blank">login tutorial</a>.
+        </p>
+        <h4>What makes HowLongToBeatSteam different from other sites that claim to do the same thing?</h4>
+        <p>
+            At the time of writing, no other site is even remotely as robust, accurate, up-to-date, feature-rich, and detailed as HowLongToBeatSteam.
+            And it wasn't easy - it took over a year's worth of weekends to build (other sites were built in a few weekends at most).
+            As a small example, consider how HowLongToBeat playtimes are retrieved.
+            Since they have no official API from HowLongToBeat, their HTML pages must be parsed (scraped) directly.
+            But that's easier said than done, seeing as how the statistics come in highly inconsistent formats -
+            Sometimes they say "Main", sometimes "Solo". Sometimes they are specified in hours, sometimes in minutes.
+            Sometimes all completion levels are reported, sometimes only some (or even none). And so on, and so forth.
+            We can't speak for other sites (especially considering how quickly they were built),
+            but this is the attention to detail you can expect from HowLongToBeatSteam.
+            The only other site that attempted to dive into this level of detail eventually
+            <a href="https://web.archive.org/web/20141029091210/http://steamplaytime.appspot.com/?" target="_blank">closed down, realizing the amount of effort required</a>.
+            Continue reading to learn more about some of the stuff we do to set us apart.
+        </p>
+        <h4>Why are some of my games excluded?</h4>
+        <p>
+            HowLongToBeatSteam only works for Steam games that have a single-player campaign and are still in the Steam store.
+            After all, multiplayer-only games cannot be "completed" so there would be little point in trying to measure them in this context.
+            As for games removed from the Steam store, they don't participate in the Steam API and so no metadata can be gathered for them.
+        </p>
+        <h4>Why do some of the apps in my Steam account that aren't actually games show up?</h4>
+        <p>
+            HowLongToBeatSteam takes great care to filter out Steam apps that aren't single-player games, but the Steam API is not perfect and
+            sometime incorrect game metadata is reported.
+            If you spot such apps, please report them by clicking the <em>not a game?</em> link.
+            They will be marked as such in the database and excluded from future calculations once your submission is approved.
+            It is important to note that the opposite also happens some times, where single-player games aren't properly reported by the Steam API.
+            We have an automatic job that scans for these cases and fixes them on a weekly basis.
+        </p>
+        <h4>Why does HowLongToBeatSteam match some of my games to incorrect HowLongToBeat entries?</h4>
+        <p>
+            The sad truth is that there is no central repository correlating between Steam games and their corresponding HowLongToBeat entries
+            (worse, some games/editions may not even exist on HowLongToBeat). We are therefore forced to rely on simple textual search to make the matches,
+            which may fail even for games that do exist on HowLongToBeat due to different naming schemes and search quirks
+            (for example Steam may have "GOTY" where HowLongToBeat has "Game of The Year Edition").
+        </p>
+        <h4>So are we forever doomed to rely on incorrect Steam/HoLongToBeat correlations?</h4>
+        <p>
+            Not at all! This is where the suggestion mechanism of the site comes into play - the power of <em>community</em> is on our side.
+            Whenever you see a game that's not correlated correctly (or at all), simply find that game on HowLongToBeat (assuming it's there of course)
+            and update the connection. Hundreds of updates have already been submitted, reviewed, and applied. Game correlations are backed up, too,
+            so you don't need to worry about data center disasters wiping out your hard correlation work.
+        </p>
+        <h4>What about games that aren't on HowLongToBeat at all? Or games with partial playtime stats?</h4>
+        <p>
+            Good question.
+            This is where we harness the power of <a href="https://en.wikipedia.org/wiki/Imputation_(statistics)"><em>statistical imputation</em></a>.
+            Basically it's an advanced statistical method for substituting missing samples with probably values,
+            so that the total dataset closely resembles one where no values are missing. We even fix HowLongToBeat values that don't make sense
+            (such as "Main" taking longer than "Completionist").
+        </p>
+        <h4>How up-to-date is HowLongToBeatSteam?</h4>
+        <p>
+            New Steam games are updated every 1-2 hours. HowLongToBeat Playtime statistics for existing games are updated weekly.
+            Suggestions are typically reviewed and accepted (or rejected, as the case may be) within a couple of days.
+        </p>
+        <h4>How does the Steam Survival Calculator know when I'll die?</h4>
+        <p>
+            It's more of an educated guess really :) We use the following service:
+            <a href="https://www.mashape.com/bechllc/life-expectancy" target="_blank">https://www.mashape.com/bechllc/life-expectancy</a>.
+        </p>
+        <h4>What if HowLongToBeat change their HTML format, breaking your scraping ? What if ...?</h4>
+        <p>
+            HowLongToBeatSteam is fully tested, automated, and audited. All jobs are monitored and a full test suite runs every day.
+            If anything goes wrong we will find out about it very quickly, identify the root cause (we have comprehensive traces and events),
+            and fix it to make sure HowLongToBeatSteam is properly functioning.
+        </p>
+        <h4>What technologies were used to build HowLongToBeatSteam?</h4>
+        <p>
+            HowLongToBeatSteam was built with ASP.NET Web API and is hosted on Microsoft Azure (as a Web App).
+            It utilizes the following server-side technologies: WebJobs, Table and Blob storage, AzureML (running R code),
+            Application Insights, Enterprise Library (SLAB, TOPAZ), ETW, SendGrid, Zapier, and DotNetOpenAuth.
+            The client-side was built on top of the following technologies: Knockout, JQuery, Sammy, Bootstrap, Google Analytics, Application Insights,
+            Countdown.js, amCharts (contributed to the responsive plugin), and knockout-datatable (contributed to add and improve some features).
+            The source code is hosted on Visual Studio Online (git)
+            and it was fully developed in Visual Studio 2013 (update 4 with the Web Essentials extension).
+        </p>
+        <h4>Are there any plans to open-source this site?</h4>
+        <p>
+            Not at the moment, but it is something we may consider in the future.
+        </p>
+        <h4>Why do you keep saying "we"? The footer suggests you are just one guy!</h4>
+        <p>
+            It's fun to start sentences with "we". Try it.
+        </p>
+    </div>
+</body>
+</html>

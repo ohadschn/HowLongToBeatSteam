@@ -209,7 +209,8 @@ function AppViewModel() {
     };
 
     self.introPage = ko.observable(true);
-    self.privacyPolicyPage = ko.observable("");
+    self.externalPageTitle = ko.observable("");
+    self.externalPageUrl = ko.observable("");
     self.authenticated = ko.observable(AuthenticationStatus.None);
 
     self.gameTable = new DataTable([], tableOptions);
@@ -1445,11 +1446,23 @@ function AppViewModel() {
         $("#HltbUpdateModal").modal("show");
     };
 
+    var displayExternalPage = function(url, title) {
+        self.externalPageUrl(url);
+        self.externalPageTitle(title);
+        var height = $(window).height();
+        var heightFactor = (height <= 320) ? 0.6 : ((height <= 480) ? 0.7 : 0.8);
+        $("#externalModalBody").height(heightFactor * height);
+        $("#externalModal").modal("show");
+    };
+
     self.displayPrivacyPolicy = function() {
         appInsights.trackEvent("PrivacyPolicyClicked");
-        self.privacyPolicyPage("Privacy.html");
-        $("#privacyModalBody").height(0.6 * $(window).height());
-        $("#privacyModal").modal("show");
+        displayExternalPage("Pages/Privacy.html", "Privacy Policy");
+    };
+
+    self.displayFaq = function() {
+        appInsights.trackEvent("FaqClicked");
+        displayExternalPage("Pages/FAQ.html", "FAQ");
     };
 
     var updateGameCore = function(gameToUpdate) {

@@ -208,7 +208,8 @@
     <None Include="Intellisense\light.js" />
     <None Include="Intellisense\pie.js" />
     <None Include="Intellisense\responsive.js" />
-    <Content Include="Privacy.html" />
+    <Content Include="Pages\FAQ.html" />
+    <Content Include="Pages\Privacy.html" />
     <Content Include="Resources\abacus.jpg" />
     <Content Include="Resources\sk5_0.jpg" />
     <Content Include="Resources\skull.jpg" />

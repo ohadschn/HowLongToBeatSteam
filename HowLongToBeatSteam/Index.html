@@ -41,15 +41,15 @@
         <a href="http://opengameart.org/content/kujasa-the-beginning" target="_blank" class="attribution-link"><i>Kujasa - The Beginning</i></a> by Sergei Churbanov<br />
         Licensed by <a href="http://williamthompsonj.blogspot.de" target="_blank" class="attribution-link">William Thompson</a> under <a href="http://creativecommons.org/licenses/by/3.0/" target="_blank" class="attribution-link">CC BY 3.0</a>
     </div>
-    <div id="privacyModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="privacyTitle" aria-hidden="true">
+    <div id="externalModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="externalTitle" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 id="privacyTitle" class="modal-title">Privacy Policy</h4>
+                    <h4 id="externalTitle" class="modal-title" data-bind="text: externalPageTitle"></h4>
                 </div>
-                <div id="privacyModalBody" class="modal-body">
-                    <iframe class="full-width full-height" data-bind="attr: {src: privacyPolicyPage}"></iframe>
+                <div id="externalModalBody" class="modal-body">
+                    <iframe class="full-width full-height" data-bind="attr: {src: externalPageUrl}"></iframe>
                 </div>
             </div>
         </div>
@@ -122,9 +122,6 @@
                 </div>
                 <div data-bind="visible: imputedTtbs" class="hidden-xs">
                     <span class="fa fa-fw fa-bar-chart"></span> Values missing from HowLongToBeat were <abbr title="Replaced with statistically probable values (italicized in the playtime table below)">statistically imputed</abbr>.
-                </div>
-                <div data-bind="visible: partialCache">
-                    <span class="fa fa-fw fa-database"></span> Some games haven't been processed by the site's engine yet (or they have been removed from the Steam store).
                 </div>
                 <div class="hidden-xs" data-bind="visible: !libraryIsEmpty()">
                     <span class="fa fa-fw fa-youtube-play"></span> Want to learn more? Check out the <a href="https://www.youtube.com/watch?v=o_8Rx4Vtyl8" target="_blank">video tutorial</a>!
@@ -307,7 +304,7 @@
                         <form class="form-inline">
                             Flag <em data-bind="text: gameToUpdate().steamName"></em> as a non-game (or without a single-player campaign)?
                             <div class="overflow-hidden">
-                                <button type="submit" class="btn btn-primary pull-right lowered" data-bind="click: $root.updateNonGame">Yes</button> 
+                                <button type="submit" class="btn btn-primary pull-right lowered" data-bind="click: $root.updateNonGame">Yes</button>
                             </div>
                         </form>
                     </div>
@@ -614,7 +611,8 @@
     <div class="footer" data-bind="visible: !introPage()" style="display: none">
         <div class="pull-left">
             <a href="mailto:info@howlongtobeatsteam.com">Feedback</a> |
-            <a href="javascript:;" data-bind="click: displayPrivacyPolicy">Privacy Policy</a>
+            <a href="javascript:;" data-bind="click: displayPrivacyPolicy">Privacy</a> |
+            <a href="javascript:;" data-bind="click: displayFaq">FAQ</a>
             <br />
             <a href="http://steampowered.com" target="_blank">Powered by Steam</a> & <a href="http://howlongtobeat.com" target="_blank">HowLongToBeat</a>
             <br />
