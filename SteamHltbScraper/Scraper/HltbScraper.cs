@@ -177,10 +177,11 @@ namespace SteamHltbScraper.Scraper
                 throw new TransientHltbFaultException("Empty name parsed for HLTB ID " + hltbId, doc);
             }
 
+            var releaseDate = ScrapeReleaseDate(hltbId, doc);
+
             int mainTtb, extrasTtb, completionistTtb;
             ScrapeTtbs(hltbId, doc, out mainTtb, out extrasTtb, out completionistTtb);
 
-            var releaseDate = ScrapeReleaseDate(hltbId, doc);
 
             HltbScraperEventSource.Log.ScrapeHltbInfoStop(hltbId, mainTtb, extrasTtb, completionistTtb, releaseDate.Year);
             return new HltbInfo(hltbName, mainTtb, extrasTtb, completionistTtb, releaseDate);
@@ -273,7 +274,7 @@ namespace SteamHltbScraper.Scraper
                 throw GetFormatException("Hours div inner text is null", hltbId, doc);
             }
 
-            var durationTexts = durationText.Split('-');
+            var durationTexts = durationText.Split(new [] {" - "}, StringSplitOptions.RemoveEmptyEntries);
             if (durationTexts.Length > 2)
             {
                 throw GetFormatException("Cannot parse duration (invalid range) from list item with text: " + durationListItem.InnerText, hltbId, doc);                                        
@@ -302,7 +303,7 @@ namespace SteamHltbScraper.Scraper
 
         private static int GetMinutes(string durationText)
         {
-            if (durationText.Contains("N/A", StringComparison.OrdinalIgnoreCase))
+            if (durationText.Contains("--") || durationText.Contains("N/A", StringComparison.OrdinalIgnoreCase))
             {
                 return 0;
             }

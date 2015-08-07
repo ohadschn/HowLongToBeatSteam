@@ -41,8 +41,8 @@ namespace HltbTests.Scraping
             TestScraping("A Bird Story", 2014, true, false, false);
             TestScraping("The Secret of Hildegards", 2011, true, false, false);
             TestScraping("Cognition: An Erica Reed Thriller", 2013, true, true, false);
-            TestScraping("Gearcrack Arena", 2014, true, true, false);
-            TestScraping("The Plan (2013)", 2013, true, false, false);
+            TestScraping("Gearcrack Arena", 2014, false, false, false);
+            TestScraping("The Plan (2013)", 2013, false, false, false);
             TestScraping("Crystals of Time", 2014, true, true, false);
             TestScraping("The Wolf Among Us", 2013, true, true, false);
         }
