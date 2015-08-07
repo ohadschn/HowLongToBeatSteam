@@ -32,6 +32,7 @@ namespace Common.Entities
         public const string ModTypeName = "mod";
         public const string AppTypeName = "app";
         public const string MultiplayerOnlyTypeName = "multiplayerOnlyGame";
+        public const string EndlessTitleTypeName = "endless";
         public const string NonGameTypeName = "NonGame";
 
         public static readonly IReadOnlyList<string> UnknownList = new ReadOnlyCollection<string>(new[] { "Unknown" });

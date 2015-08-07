@@ -8,19 +8,20 @@ namespace Common.Entities
     public class SuggestionEntity : TableEntity
     {
         public const string SuggestionPrefix = "Suggestion";
-        public const int NonGameHltbId = -1;
         public int SteamAppId { get; set; }
         public int HltbId { get; set; }
+        public string AppType { get; set; }
 
         public SuggestionEntity() //required by azure storage client library
         {
         }
 
-        public SuggestionEntity(int steamAppId, int hltbId) :
+        public SuggestionEntity(int steamAppId, int hltbId, string appType = null) :
             base(AppEntity.GetPartitionKey(steamAppId), GetRowKey(steamAppId, hltbId))
         {
             SteamAppId = steamAppId;
             HltbId = hltbId;
+            AppType = appType;
         }
 
         private static string GetRowKey(int steamAppId, int hltbId)

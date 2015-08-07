@@ -1,8 +1,13 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SteamHltbScraper.Scraper;
 using Common.Entities;
+using Common.Storage;
 using JetBrains.Annotations;
 
 namespace HltbTests.Scraping
@@ -23,9 +28,33 @@ namespace HltbTests.Scraping
         }
 
         [TestMethod]
-        public void TestEndlessTitle()
+        public async Task TestEndlessTitle()
         {
+            //delete existing suggestions for game - the Steam app ID will be 0
+            await DrainAllSuggestionsForSteamApp().ConfigureAwait(false);
+
             TestScraping("World of Guns: Gun Disassembly", 2014, false, false, false);
+
+            //verify a new endless suggestion was auto-generated for it
+            var suggestions = await DrainAllSuggestionsForSteamApp().ConfigureAwait(false);
+            Assert.AreEqual(1, suggestions.Count, "expected automatic suggestion for endless title");
+            Assert.AreEqual(0, suggestions.First().SteamAppId, "incorrect Steam App ID in automatic endless title suggestions");
+            Assert.AreEqual(20228, suggestions.First().HltbId, "incorrect HLTB ID in automatic endless title suggestions");
+            Assert.AreEqual(AppEntity.EndlessTitleTypeName, suggestions.First().AppType, "incorrect type in automatic endless title suggestions");
+        }
+
+        private static async Task<ConcurrentBag<SuggestionEntity>> DrainAllSuggestionsForSteamApp()
+        {
+            var suggestions = await StorageHelper.GetAllSuggestions(
+                StorageHelper.StartsWithFilter(StorageHelper.RowKey, SuggestionEntity.SuggestionPrefix + "_0")).ConfigureAwait(false);
+
+            foreach (var suggestion in suggestions)
+            {
+                Trace.Assert(suggestion.SteamAppId == 0);
+                await StorageHelper.DeleteSuggestion(suggestion).ConfigureAwait(false);
+            }
+
+            return suggestions;
         }
 
         [TestMethod]

@@ -199,7 +199,10 @@ namespace HowLongToBeatSteam.Controllers
         public async Task<string> UpdateGameMapping(int steamAppId, int hltbId)
         {
             EventSource.SetCurrentThreadActivityId(Guid.NewGuid());
-            await StorageHelper.InsertSuggestion(new SuggestionEntity(steamAppId, hltbId)).ConfigureAwait(true);
+            
+            await StorageHelper.InsertSuggestion(new SuggestionEntity(steamAppId, hltbId, hltbId < 0 ? AppEntity.NonGameTypeName : null))
+                .ConfigureAwait(true);
+            
             return "success";
         }
 

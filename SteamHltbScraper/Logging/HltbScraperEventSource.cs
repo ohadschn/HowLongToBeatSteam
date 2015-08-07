@@ -717,5 +717,15 @@ namespace SteamHltbScraper.Logging
         {
             WriteEvent(38, invalidCount, totalCount);
         }
+
+        [Event(
+            39,
+            Message = "Game {0} (HLTB ID {1}) flagged as endless - generating exclusion suggestion",
+            Keywords = Keywords.Scraping,
+            Level = EventLevel.Informational)]
+        public void GameFlaggedAsEndless(string name, int hltbId)
+        {
+            WriteEvent(39, name, hltbId);
+        }
     }
 }

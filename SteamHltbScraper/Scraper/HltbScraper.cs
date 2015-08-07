@@ -104,7 +104,7 @@ namespace SteamHltbScraper.Scraper
                 HltbInfo hltbInfo;
                 try
                 {
-                    hltbInfo = await ScrapeWithExponentialRetries(ScrapeHltbInfo, app.HltbId).ConfigureAwait(false);
+                    hltbInfo = await ScrapeWithExponentialRetries(hltbId => ScrapeHltbInfo(app.SteamAppId, hltbId), app.HltbId).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
@@ -155,7 +155,7 @@ namespace SteamHltbScraper.Scraper
             return new FormatException(String.Format(CultureInfo.InvariantCulture, "{0}. {1}. Document: {2}", message, id, doc.DocumentNode.OuterHtml), inner);
         }
 
-        private static async Task<HltbInfo> ScrapeHltbInfo(int hltbId)
+        private static async Task<HltbInfo> ScrapeHltbInfo(int steamAppId, int hltbId)
         {
             HltbScraperEventSource.Log.ScrapeHltbInfoStart(hltbId);
 
@@ -182,6 +182,11 @@ namespace SteamHltbScraper.Scraper
             int mainTtb, extrasTtb, completionistTtb;
             ScrapeTtbs(hltbId, doc, out mainTtb, out extrasTtb, out completionistTtb);
 
+            if (doc.DocumentNode.InnerHtml.Contains("This game has been flagged as an endless title"))
+            {
+                HltbScraperEventSource.Log.GameFlaggedAsEndless(hltbName, hltbId);
+                await StorageHelper.InsertSuggestion(new SuggestionEntity(steamAppId, hltbId, AppEntity.EndlessTitleTypeName)).ConfigureAwait(false);
+            }
 
             HltbScraperEventSource.Log.ScrapeHltbInfoStop(hltbId, mainTtb, extrasTtb, completionistTtb, releaseDate.Year);
             return new HltbInfo(hltbName, mainTtb, extrasTtb, completionistTtb, releaseDate);
