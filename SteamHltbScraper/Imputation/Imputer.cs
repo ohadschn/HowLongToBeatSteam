@@ -42,7 +42,7 @@ namespace SteamHltbScraper.Imputation
         private static readonly int AzureMlImputePollIntervalMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollIntervalMs", 1000);
         private static readonly int AzureMlImputePollTimeoutMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollTimeoutMs", 120 * 1000);
 
-        private static readonly int NotCompletelyMissingThreshold = SiteUtil.GetOptionalValueFromConfig("NotCompletelyMissingThreshold", 30);
+        private static readonly int NotCompletelyMissingThreshold = SiteUtil.GetOptionalValueFromConfig("NotCompletelyMissingThreshold", 100);
         private static readonly int ImputationThreshold = SiteUtil.GetOptionalValueFromConfig("ImputationThreshold", 70);
         private static readonly double InvalidTtbsThreshold = SiteUtil.GetOptionalValueFromConfig("InvalidTtbsThresholdPercent", 10)/100.0;
         private static readonly int GenreStatsStorageRetries = SiteUtil.GetOptionalValueFromConfig("GenreStatsStorageRetries", 100);

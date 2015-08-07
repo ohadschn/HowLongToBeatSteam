@@ -28,6 +28,10 @@ namespace SteamHltbScraper.Scraper
         private static readonly int ScrapingLimit = SiteUtil.GetOptionalValueFromConfig("ScrapingLimit", int.MaxValue);
         private static readonly int ScrapingRetries = SiteUtil.GetOptionalValueFromConfig("HltbScraperScrapingRetries", 5);
         private static readonly int StorageRetries = SiteUtil.GetOptionalValueFromConfig("HltbScraperStorageRetries", 20);
+
+        private static readonly HashSet<int> NoTtbGames =
+            new HashSet<int>(SiteUtil.GetOptionalValueFromConfig("NoTtbGames", "27859,27913").Split(',').Select(Int32.Parse));
+
         private static HttpRetryClient s_client;
 
         private static void Main()
@@ -179,8 +183,11 @@ namespace SteamHltbScraper.Scraper
 
             var releaseDate = ScrapeReleaseDate(hltbId, doc);
 
-            int mainTtb, extrasTtb, completionistTtb;
-            ScrapeTtbs(hltbId, doc, out mainTtb, out extrasTtb, out completionistTtb);
+            int mainTtb = 0, extrasTtb = 0, completionistTtb = 0;
+            if (!NoTtbGames.Contains(hltbId))
+            {
+                ScrapeTtbs(hltbId, doc, out mainTtb, out extrasTtb, out completionistTtb);                
+            }
 
             if (doc.DocumentNode.InnerHtml.Contains("This game has been flagged as an endless title"))
             {

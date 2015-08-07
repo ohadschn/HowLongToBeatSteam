@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -88,6 +89,7 @@ namespace ManualTableUpdater.Updater
         {
             try
             {
+                //PrintGenres();
                 //SerializeAllAppsToFile();
                 //LoadAllAppsFromFile();
                 //WriteAllMeasuredToTsv();
@@ -181,31 +183,41 @@ namespace ManualTableUpdater.Updater
         public static void PrintGenres()
         {
             var measured = StorageHelper.GetAllApps(AppEntity.MeasuredFilter).Result;
-            foreach (var genre in measured.Select(a => a.Genres.First()).Distinct())
+            foreach (var game in measured.Where(a => !a.IsGame && a.Genres.First()== "Racing"))
             {
-                Console.WriteLine(genre);
+                PrintGame(game);
             }
 
-            foreach (var app in measured.Where(a =>
-                a.Genres.Contains("Unknown", StringComparer.Ordinal) ||
-                a.Genres.Contains("Audio Production", StringComparer.Ordinal) ||
-                a.Genres.Contains("Animation & Modeling", StringComparer.Ordinal) ||
-                a.Genres.Contains("Design & Illustration", StringComparer.Ordinal) ||
-                a.Genres.Contains("Utilities", StringComparer.Ordinal) ||
-                a.Genres.Contains("Web Publishing", StringComparer.Ordinal) ||
-                a.Genres.Contains("Video Production", StringComparer.Ordinal)).OrderBy(a => a.Genres.First()))
-            {
-                Console.WriteLine("{0}: {1} | {2}", app.SteamName, app.GenresFlat, app.CategoriesFlat);
-            }
+            //foreach (var genre in measured.Select(a => a.Genres.First()).Distinct())
+            //{
+            //    Console.WriteLine(genre);
+            //}
 
-            foreach (var app in StorageHelper.GetAllApps().Result
-                .Where(a => a.Genres.Contains("Massively Multiplayer", StringComparer.OrdinalIgnoreCase) && a.Measured && a.Categories.Contains("Single-player", StringComparer.OrdinalIgnoreCase)))
-            {
-                Console.WriteLine("{10} / {0} ({9}): {1}/{2}/{3} ({4}/{5}/{6}) | {7} | {8}",
-                    app.SteamName, app.MainTtb, app.ExtrasTtb, app.CompletionistTtb,
-                    app.MainTtbImputed, app.ExtrasTtbImputed, app.CompletionistTtbImputed,
-                    app.GenresFlat, app.CategoriesFlat, app.AppType, app.SteamAppId);
-            }
+            //foreach (var app in measured.Where(a =>
+            //    a.Genres.Contains("Unknown", StringComparer.Ordinal) ||
+            //    a.Genres.Contains("Audio Production", StringComparer.Ordinal) ||
+            //    a.Genres.Contains("Animation & Modeling", StringComparer.Ordinal) ||
+            //    a.Genres.Contains("Design & Illustration", StringComparer.Ordinal) ||
+            //    a.Genres.Contains("Utilities", StringComparer.Ordinal) ||
+            //    a.Genres.Contains("Web Publishing", StringComparer.Ordinal) ||
+            //    a.Genres.Contains("Video Production", StringComparer.Ordinal)).OrderBy(a => a.Genres.First()))
+            //{
+            //    PrintGame(app);
+            //}
+
+            //foreach (var app in StorageHelper.GetAllApps().Result
+            //    .Where(a => a.Genres.Contains("Massively Multiplayer", StringComparer.OrdinalIgnoreCase) && a.Measured && a.Categories.Contains("Single-player", StringComparer.OrdinalIgnoreCase)))
+            //{
+            //    PrintGame(app);
+            //}
+        }
+
+        private static void PrintGame(AppEntity app)
+        {
+            Console.WriteLine("{10} ({11}) / {0} ({9}): {1}/{2}/{3} ({4}/{5}/{6}) | {7} | {8}",
+                app.SteamName, app.MainTtb, app.ExtrasTtb, app.CompletionistTtb,
+                app.MainTtbImputed, app.ExtrasTtbImputed, app.CompletionistTtbImputed,
+                app.GenresFlat, app.CategoriesFlat, app.AppType, app.SteamAppId, app.HltbId);
         }
 
         public static void WriteAllMeasuredToTsv()
@@ -240,7 +252,7 @@ namespace ManualTableUpdater.Updater
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "obj")]
+        [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "obj")]
         public static string RemoveTabs(object obj)
         {
             return obj == null ? String.Empty : obj.ToString().Replace('\t', ';');
