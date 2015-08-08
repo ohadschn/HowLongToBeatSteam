@@ -11,6 +11,7 @@ namespace Common.Entities
         public int SteamAppId { get; set; }
         public int HltbId { get; set; }
         public string AppType { get; set; }
+        public bool IsRetype { get { return AppType != null; } }
 
         public SuggestionEntity() //required by azure storage client library
         {

@@ -192,6 +192,8 @@ namespace SteamHltbScraper.Scraper
             if (doc.DocumentNode.InnerHtml.Contains("This game has been flagged as an endless title"))
             {
                 HltbScraperEventSource.Log.GameFlaggedAsEndless(hltbName, hltbId);
+
+                //we only submit a suggestion because we can't be sure this game has been correlated correctly to begin with
                 await StorageHelper.InsertSuggestion(new SuggestionEntity(steamAppId, hltbId, AppEntity.EndlessTitleTypeName)).ConfigureAwait(false);
             }
 

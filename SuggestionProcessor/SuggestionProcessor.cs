@@ -71,7 +71,7 @@ namespace SuggestionProcessor
                     .Select(s => new SuggestionInfo(s, new AppEntity(-1, "[Unknown]", "[Unknown]"), -1, "[Unknown]")));
 
             Console.WriteLine("Scraping HLTB info for suggestions...");
-            await HltbScraper.ScrapeHltb(validSuggestions.Values.Where(s => s.Suggestion.AppType == null).Select(s => s.App).ToArray(), 
+            await HltbScraper.ScrapeHltb(validSuggestions.Values.Where(s => !s.Suggestion.IsRetype).Select(s => s.App).ToArray(), 
                 (a, e) =>
                 {
                     Console.WriteLine("Can't parse HLTB ID {0} suggested for {1} ({2}): {3}", a.HltbId, a.SteamName, a.SteamAppId, e);
@@ -85,17 +85,9 @@ namespace SuggestionProcessor
             RemoveInvalidSuggestions(invalidSuggestions);
 
             Console.WriteLine("Processing suggestions...");
-            var acceptedSuggestions = await ProcessSuggestionsByUserInput(validSuggestions.Values).ConfigureAwait(false);
 
-            Console.WriteLine("Updating non-games...");
-            var acceptedRetypeSuggestions = acceptedSuggestions.Where(si => si.Suggestion.AppType != null);
-            foreach (var suggestion in acceptedRetypeSuggestions)
-            {
-                await StorageHelper.AcceptSuggestion(suggestion.App, suggestion.Suggestion).ConfigureAwait(false);
-            }
-
-            var acceptedHltbSuggestions = acceptedSuggestions.Where(si => si.Suggestion.AppType == null).ToArray();
-            if (acceptedHltbSuggestions.Length > 0)
+            var acceptedHltbSuggestions = await ProcessSuggestionsByUserInput(validSuggestions.Values).ConfigureAwait(false);
+            if (acceptedHltbSuggestions.Count > 0)
             {
                 foreach (var suggestion in acceptedHltbSuggestions)
                 {
@@ -181,7 +173,7 @@ namespace SuggestionProcessor
 
         private static async Task<IList<SuggestionInfo>>  ProcessSuggestionsByUserInput(ICollection<SuggestionInfo> validSuggestions)
         {
-            var acceptedSuggestions = new List<SuggestionInfo>();
+            var acceptedHltbSuggestions = new List<SuggestionInfo>();
 
             int i = 0;
             foreach (var suggestion in validSuggestions)
@@ -196,8 +188,16 @@ namespace SuggestionProcessor
                     Console.WriteLine();
                     if (key.KeyChar == 'a' || key.KeyChar == 'A')
                     {
-                        Console.WriteLine("Marking suggestion as accepted...");
-                        acceptedSuggestions.Add(suggestion);
+                        if (suggestion.Suggestion.IsRetype)
+                        {
+                            Console.WriteLine("Accepting retype suggestion...");
+                            await StorageHelper.AcceptSuggestion(suggestion.App, suggestion.Suggestion).ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Marking suggestion as accepted (will accept after imputation)...");
+                            acceptedHltbSuggestions.Add(suggestion);
+                        }
                         break;
                     }
                     if (key.KeyChar == 'd' || key.KeyChar == 'D')
@@ -220,7 +220,7 @@ namespace SuggestionProcessor
                 }
             }
             
-            return acceptedSuggestions;
+            return acceptedHltbSuggestions;
         }
 
         private static void InspectSuggestion(SuggestionInfo suggestion)
@@ -244,9 +244,9 @@ namespace SuggestionProcessor
                 suggestion.Suggestion.AppType == AppEntity.NonGameTypeName
                     ? "[non-game]"
                     : (String.Format(CultureInfo.InvariantCulture, "{0} ({1})", suggestion.App.HltbName, suggestion.App.HltbId)) +
-                      (suggestion.Suggestion.AppType == null 
-                          ? String.Empty
-                          : String.Format(CultureInfo.InvariantCulture, " [{0}]", suggestion.Suggestion.AppType)));
+                      (suggestion.Suggestion.IsRetype
+                          ? String.Format(CultureInfo.InvariantCulture, " [{0}]", suggestion.Suggestion.AppType)
+                          : String.Empty));
         }
 
         class SuggestionSteamIdComparer : IEqualityComparer<SuggestionEntity>
