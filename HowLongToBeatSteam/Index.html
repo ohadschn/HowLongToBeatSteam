@@ -115,7 +115,7 @@
                     <span class="sr-only">Close</span>
                 </button>
                 <div data-bind="visible: libraryIsEmpty()">
-                    <span class="fa fa-fw fa-ban"></span> You have no single-player games in your library. What kind of a sick person are you?
+                    <span class="fa fa-fw fa-ban"></span> You have no finite single-player games in your library. What kind of a sick person are you?
                 </div>
                 <div data-bind="visible: missingHltbIds() || imputedTtbs()" class="hidden-sm hidden-md hidden-lg">
                     <span class="fa fa-puzzle-piece"></span> Some playtimes could not be found on HowLongToBeat and were therefore <abbr title="Replaced with statistically probable values">statistically imputed</abbr>.
@@ -302,7 +302,7 @@
                     </div>
                     <div class="modal-body">
                         <form class="form-inline">
-                            Flag <em data-bind="text: gameToUpdate().steamName"></em> as a non-game (or without a single-player campaign)?
+                            Flag <em data-bind="text: gameToUpdate().steamName"></em> as a non-game (or without a finite single-player campaign)?
                             <div class="overflow-hidden">
                                 <button type="submit" class="btn btn-primary pull-right lowered" data-bind="click: $root.updateNonGame">Yes</button>
                             </div>
@@ -341,7 +341,7 @@
                         </div>
                     </div>
                     <p class="lead lead-lowered">
-                        <strong data-bind="text: numberWithCommas(total().count) + ' single-player ' + (total().count === 1 ? 'game' : 'games') + ' found'"></strong>
+                        <strong data-bind="text: numberWithCommas(total().count) + ' finite single-player ' + (total().count === 1 ? 'game' : 'games') + ' found'"></strong>
                         <span data-bind="visible: excludedGameCount() > 0" class="text-nowrap">
                             (<span data-bind="text:numberWithCommas(excludedGameCount())"></span> excluded
                             <span class=" glyphicon glyphicon-info-sign inline-info"
