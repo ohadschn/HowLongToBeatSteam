@@ -264,7 +264,7 @@ namespace SteamHltbScraper.Scraper
             }
 
             mainTtb = Math.Max(mainTtbInitial, Math.Max(singlePlayerMain, soloTtb));
-            extrasTtb = (singlePlayerExtras > singlePlayerMain) ? singlePlayerExtras : extrasTtbInitial;
+            extrasTtb = (singlePlayerExtras >= singlePlayerMain) ? singlePlayerExtras : extrasTtbInitial;
         }
 
         private static bool TryGetMinutes(IEnumerable<HtmlNode> listItems, string type, int hltbId, HtmlDocument doc, out int minutesFrom, out int minutesTo)
@@ -272,7 +272,8 @@ namespace SteamHltbScraper.Scraper
             var durationListItem = listItems.FirstOrDefault(hn => hn.InnerText != null && hn.InnerText.Contains(type, StringComparison.OrdinalIgnoreCase));
             if (durationListItem == null)
             {
-                minutesFrom = minutesTo = 0;
+                minutesFrom = 0;
+                minutesTo = -1;
                 return false;
             }
 
@@ -297,10 +298,17 @@ namespace SteamHltbScraper.Scraper
             try 
 	        {
                 minutesFrom = GetMinutes(durationTexts[0]);
-                minutesTo = durationTexts.Length == 1 ? minutesFrom : GetMinutes(durationTexts[1]);
-	            if (minutesTo < minutesFrom)
+	            if (durationTexts.Length == 1)
 	            {
-	                SiteUtil.Swap(ref minutesFrom, ref minutesTo);
+	                minutesTo = -1;
+	            }
+	            else
+	            {
+                    minutesTo = GetMinutes(durationTexts[1]);
+                    if (minutesTo < minutesFrom)
+                    {
+                        SiteUtil.Swap(ref minutesFrom, ref minutesTo);
+                    }  
 	            }
 	        }
 	        catch (FormatException e)

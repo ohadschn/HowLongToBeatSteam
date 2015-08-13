@@ -60,18 +60,18 @@ namespace HltbTests.Scraping
         [TestMethod]
         public void TestNonAlphanumericName()
         {
-            TestScraping("Air Conflicts - Secret Wars", 2011, true, true, true, "Air Conflicts: Secret Wars");
+            TestScraping("Air Conflicts - Secret Wars", 2011, true, true, false, "Air Conflicts: Secret Wars");
         }
 
         [TestMethod]
         public void TestSinglePlayerUnifiedStat()
         {
             TestScraping("Commander Keen Collection (Ep. 1-5)", 1990, true, true, false);
-            TestScraping("A Bird Story", 2014, true, false, false);
+            TestScraping("A Bird Story", 2014, true, true, false);
             TestScraping("The Secret of Hildegards", 2011, true, false, false);
             TestScraping("Cognition: An Erica Reed Thriller", 2013, true, true, false);
-            TestScraping("Gearcrack Arena", 2014, false, false, false);
-            TestScraping("The Plan (2013)", 2013, false, false, false);
+            TestScraping("Gearcrack Arena", 2014, true, true, false);
+            TestScraping("The Plan (2013)", 2013, true, true, false);
             TestScraping("Crystals of Time", 2014, true, true, false);
             TestScraping("The Wolf Among Us", 2013, true, true, false);
         }
