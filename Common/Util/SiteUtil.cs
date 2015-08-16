@@ -48,7 +48,7 @@ namespace Common.Util
 
         public static T GetNonpublicInstancePropertyValue<T>([NotNull] object instance, string propName)
         {
-            if (instance == null) throw new ArgumentNullException("instance");
+            if (instance == null) throw new ArgumentNullException(nameof(instance));
 
             return (T)instance.GetType().GetProperty(propName, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(instance, null);
         }
@@ -63,7 +63,7 @@ namespace Common.Util
         {
             if (dictionary == null)
             {
-                throw new ArgumentNullException("dictionary");
+                throw new ArgumentNullException(nameof(dictionary));
             }
 
             TValue ret;
@@ -118,7 +118,7 @@ namespace Common.Util
         {
             if (strings == null)
             {
-                throw new ArgumentNullException("strings");
+                throw new ArgumentNullException(nameof(strings));
             }
             return String.Join(ListSeparator.ToString(CultureInfo.InvariantCulture),
                 strings.Select(s => s.Replace(ListSeparator, ListSeparatorReplacement)));
@@ -128,7 +128,7 @@ namespace Common.Util
         {
             if (flatList == null)
             {
-                throw new ArgumentNullException("flatList");
+                throw new ArgumentNullException(nameof(flatList));
             }
             return flatList.Split(ListSeparator);
         }
@@ -204,8 +204,8 @@ namespace Common.Util
 
         public static void AddRange<T>([NotNull] this ConcurrentBag<T> bag, [NotNull] IEnumerable<T> range)
         {
-            if (bag == null) throw new ArgumentNullException("bag");
-            if (range == null) throw new ArgumentNullException("range");
+            if (bag == null) throw new ArgumentNullException(nameof(bag));
+            if (range == null) throw new ArgumentNullException(nameof(range));
 
             foreach (var item in range)
             {
@@ -217,7 +217,7 @@ namespace Common.Util
         {
             if (source == null)
             {
-                throw new ArgumentNullException("source");
+                throw new ArgumentNullException(nameof(source));
             }
 
             return source.IndexOf(toCheck, comp) >= 0;
@@ -231,10 +231,7 @@ namespace Common.Util
         private static readonly Lazy<int> s_maxConcurrentHttpRequests = new Lazy<int>(() =>
             Environment.ProcessorCount*GetOptionalValueFromConfig("MaxDegreeOfConcurrencyFactor", 12));
 
-        public static int MaxConcurrentHttpRequests
-        {
-            get { return s_maxConcurrentHttpRequests.Value; }
-        }
+        public static int MaxConcurrentHttpRequests => s_maxConcurrentHttpRequests.Value;
 
         [SuppressMessage("Microsoft.Design", "CA1057:StringUriOverloadsCallSystemUriOverloads")]
         public static Task<T> GetAsync<T>(HttpRetryClient client, string url)
@@ -335,20 +332,11 @@ namespace Common.Util
             Task.Delay(KeepAliveIntervalSeconds*1000).ContinueWith(t => KeepWebJobAlive());
         }
 
-        public static string WebJobName
-        {
-            get { return Environment.GetEnvironmentVariable(WebjobNameEnvironmentVariable); }
-        }
+        public static string WebJobName => Environment.GetEnvironmentVariable(WebjobNameEnvironmentVariable);
 
-        public static string WebJobRunId
-        {
-            get { return Environment.GetEnvironmentVariable(WebjobRunIDEnvironmentVariable); }
-        }
+        public static string WebJobRunId => Environment.GetEnvironmentVariable(WebjobRunIDEnvironmentVariable);
 
-        public static string WebsiteName
-        {
-            get { return Environment.GetEnvironmentVariable(WebsiteNameEnvironmentVariable); }
-        }
+        public static string WebsiteName => Environment.GetEnvironmentVariable(WebsiteNameEnvironmentVariable);
 
         public static void MockWebJobEnvironmentIfMissing(string name)
         {
@@ -376,16 +364,16 @@ namespace Common.Util
 
         public static Task SendSuccessMail([NotNull] string description, [NotNull] string message, int ticks)
         {
-            if (description == null) throw new ArgumentNullException("description");
-            if (message == null) throw new ArgumentNullException("message");
+            if (description == null) throw new ArgumentNullException(nameof(description));
+            if (message == null) throw new ArgumentNullException(nameof(message));
 
             return SendSuccessMail(description, message, GetTimeElapsedFromTickCount(ticks));
         }
 
         public static async Task SendSuccessMail([NotNull] string description, [NotNull] string message, TimeSpan duration)
         {
-            if (description == null) throw new ArgumentNullException("description");
-            if (message == null) throw new ArgumentNullException("message");
+            if (description == null) throw new ArgumentNullException(nameof(description));
+            if (message == null) throw new ArgumentNullException(nameof(message));
 
             var errors = EventSourceRegistrar.GetSessionErrors();
             var eventFormatter = new EventTextFormatter();

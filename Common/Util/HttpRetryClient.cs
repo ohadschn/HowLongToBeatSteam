@@ -48,7 +48,7 @@ namespace Common.Util
         {
             if (url == null)
             {
-                throw new ArgumentNullException("url");
+                throw new ArgumentNullException(nameof(url));
             }
 
             return RequestAsync(url, () => m_client.SendAsync(requestFactory(), ct), ct); 
@@ -73,7 +73,7 @@ namespace Common.Util
         {
             if (url == null)
             {
-                throw new ArgumentNullException("url");
+                throw new ArgumentNullException(nameof(url));
             }
 
             return RequestAsync(url, () => m_client.GetAsync(url, ct), ct);
@@ -100,7 +100,7 @@ namespace Common.Util
         {
             if (requestUri == null)
             {
-                throw new ArgumentNullException("requestUri");
+                throw new ArgumentNullException(nameof(requestUri));
             }
 
             return RequestAsync(requestUri, () => m_client.PostAsJsonAsync(requestUri, value, ct), ct);

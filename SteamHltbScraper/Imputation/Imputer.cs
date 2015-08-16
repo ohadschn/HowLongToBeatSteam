@@ -18,9 +18,9 @@ namespace SteamHltbScraper.Imputation
 {
     public class TtbRatios
     {
-        public double MainExtras { get; private set; }
-        public double ExtrasCompletionist { get; private set; }
-        public double ExtrasPlacement { get; private set; }
+        public double MainExtras { get; }
+        public double ExtrasCompletionist { get; }
+        public double ExtrasPlacement { get; }
 
         public TtbRatios(double mainExtras, double extrasCompletionist, double extrasPlacement)
         {
@@ -35,7 +35,7 @@ namespace SteamHltbScraper.Imputation
         internal const string ImputedCsvFileName = "imputed.csv";
         private const string GameTypeGames = "games";
         private const string GameTypeDlcsMods = "dlcs/mods";
-        public static string AllGenresId { get { return "All"; } }
+        public static string AllGenresId => "All";
 
         private static readonly string ApiKey = SiteUtil.GetMandatoryValueFromConfig("AzureMlImputeApiKey");
         private static readonly string AzureMlImputeServiceBaseUrl = SiteUtil.GetMandatoryValueFromConfig("AzureMlImputeServiceBaseUrl");
@@ -45,6 +45,8 @@ namespace SteamHltbScraper.Imputation
         private static readonly int NotCompletelyMissingThreshold = SiteUtil.GetOptionalValueFromConfig("NotCompletelyMissingThreshold", 100);
         private static readonly int ImputationThreshold = SiteUtil.GetOptionalValueFromConfig("ImputationThreshold", 70);
         private static readonly double InvalidTtbsThreshold = SiteUtil.GetOptionalValueFromConfig("InvalidTtbsThresholdPercent", 10)/100.0;
+        private static readonly double ImputationMissThreshold = SiteUtil.GetOptionalValueFromConfig("ImputationMissThreshold", 5)/100.0;
+        private static readonly double ImputationZerosThreshold = SiteUtil.GetOptionalValueFromConfig("ImputationZerosThreshold", 1)/100.0;
         private static readonly int GenreStatsStorageRetries = SiteUtil.GetOptionalValueFromConfig("GenreStatsStorageRetries", 100);
         private static readonly int ImputationServiceRetries = SiteUtil.GetOptionalValueFromConfig("ImputationServiceRetries", 100);
         private static HttpRetryClient s_client;
@@ -289,10 +291,30 @@ namespace SteamHltbScraper.Imputation
             Trace.Assert(notCompletelyMissing.Count == imputedRows.Length,
                 String.Format(CultureInfo.InvariantCulture, "imputation count mismatch: expected {0}, actual {1}",
                     notCompletelyMissing.Count, imputedRows.Length));
-            
+
+            int imputationZeroes = 0;
+            int imputationMisses = 0;
             for (int i = 0; i < notCompletelyMissing.Count; i++)
             {
-                UpdateFromCsvRow(notCompletelyMissing[i], imputedRows[i], ratios);
+                bool imputationZero, imputationMiss;
+                UpdateFromCsvRow(notCompletelyMissing[i], imputedRows[i], ratios, out imputationZero, out imputationMiss);
+                if (imputationMiss)
+                {
+                    imputationMisses++;
+                }
+                if (imputationZero)
+                {
+                    imputationZeroes++;
+                }
+            }
+
+            if ((double) imputationZeroes/notCompletelyMissing.Count > ImputationZerosThreshold)
+            {
+                HltbScraperEventSource.Log.ImputationProducedTooManyZeroTtbs(genre, imputationZeroes, notCompletelyMissing.Count);
+            }
+            if ((double) imputationMisses/notCompletelyMissing.Count > ImputationMissThreshold)
+            {
+                HltbScraperEventSource.Log.ImputationProducedTooManyMisses(genre, imputationMisses, notCompletelyMissing.Count);
             }
 
             HltbScraperEventSource.Log.CalculateImputationStop(genre, notCompletelyMissing.Count);
@@ -394,7 +416,7 @@ namespace SteamHltbScraper.Imputation
             return blob.Uri.LocalPath;
         }
 
-        internal static void UpdateFromCsvRow(AppEntity appEntity, string row, TtbRatios ratios)
+        internal static void UpdateFromCsvRow(AppEntity appEntity, string row, TtbRatios ratios, out bool imputationZero, out bool imputationMiss)
         {
             var ttbs = row.Split(',');
             Trace.Assert(ttbs.Length == 3, "Invalid CSV row, contains more than 3 values: " + row);
@@ -403,11 +425,11 @@ namespace SteamHltbScraper.Imputation
             var imputedExtras = GetRoundedValue(ttbs[1]);
             var imputedCompletionist = GetRoundedValue(ttbs[2]);
 
-            UpdateFromImputedValues(appEntity, imputedMain, imputedExtras, imputedCompletionist, ratios);
+            UpdateFromImputedValues(appEntity, imputedMain, imputedExtras, imputedCompletionist, ratios, out imputationZero, out imputationMiss);
         }
 
         private static void UpdateFromImputedValues(
-            AppEntity appEntity, int imputedMain, int imputedExtras, int imputedCompletionist, TtbRatios ratios)
+            AppEntity appEntity, int imputedMain, int imputedExtras, int imputedCompletionist, TtbRatios ratios, out bool imputationZero, out bool imputationMiss)
         {
             HandleOverridenTtb(appEntity, "main", appEntity.MainTtb, appEntity.MainTtbImputed, ref imputedMain);
             HandleOverridenTtb(appEntity, "extras", appEntity.ExtrasTtb, appEntity.ExtrasTtbImputed, ref imputedExtras);
@@ -415,12 +437,22 @@ namespace SteamHltbScraper.Imputation
 
             if (imputedMain == 0 || imputedExtras == 0 || imputedCompletionist == 0)
             {
+                imputationZero = true;
                 FixImputationZeroes(appEntity, ratios, ref imputedMain, ref imputedExtras, ref imputedCompletionist);
+            }
+            else
+            {
+                imputationZero = false;
             }
 
             if (imputedMain > imputedExtras || imputedExtras > imputedCompletionist)
             {
+                imputationMiss = true;
                 FixImputationMiss(appEntity, ratios, ref imputedMain, ref imputedExtras, ref imputedCompletionist);
+            }
+            else
+            {
+                imputationMiss = false;
             }
 
             appEntity.FixTtbs(imputedMain, imputedExtras, imputedCompletionist);

@@ -61,7 +61,7 @@ namespace HowLongToBeatSteam.Controllers
             // ReSharper disable once PossibleNullReferenceException
             return Redirect(String.Format(CultureInfo.InvariantCulture, "{0}/#/auth/{1}",
                 Request.Url.GetLeftPart(UriPartial.Authority),
-                steam64Id == null ? "failed" : steam64Id.ToString()));
+                steam64Id?.ToString(CultureInfo.InvariantCulture) ?? "failed"));
         }
 
         private static string GetSteam64IdFromClaimedId(Identifier claimedId)

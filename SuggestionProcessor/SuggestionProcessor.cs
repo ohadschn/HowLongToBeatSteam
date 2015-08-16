@@ -33,10 +33,10 @@ namespace SuggestionProcessor
 
         class SuggestionInfo
         {
-            public SuggestionEntity Suggestion { get; private set; }
-            public AppEntity App { get; private set; }
-            public int OriginalHltbId { get; private set; }
-            public string OriginalHltbName { get; private set; }
+            public SuggestionEntity Suggestion { get; }
+            public AppEntity App { get; }
+            public int OriginalHltbId { get; }
+            public string OriginalHltbName { get; }
 
             public SuggestionInfo(SuggestionEntity suggestion, AppEntity app, int originalHltbId, string originalHltbName)
             {

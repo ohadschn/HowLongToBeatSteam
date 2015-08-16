@@ -11,7 +11,7 @@ namespace Common.Entities
         public int SteamAppId { get; set; }
         public int HltbId { get; set; }
         public string AppType { get; set; }
-        public bool IsRetype { get { return AppType != null; } }
+        public bool IsRetype => AppType != null;
 
         public SuggestionEntity() //required by azure storage client library
         {
@@ -30,15 +30,9 @@ namespace Common.Entities
             return String.Format(CultureInfo.InvariantCulture, "{0}_{1}_{2}", SuggestionPrefix, steamAppId, hltbId);
         }
 
-        public static string SuggestionFilter
-        {
-            get { return StorageHelper.StartsWithFilter(StorageHelper.RowKey, SuggestionPrefix); }
-        }
+        public static string SuggestionFilter => StorageHelper.StartsWithFilter(StorageHelper.RowKey, SuggestionPrefix);
 
-        public static string NonSuggestionFilter
-        {
-            get { return StorageHelper.DoesNotStartWithFilter(StorageHelper.RowKey, SuggestionPrefix); }
-        }
+        public static string NonSuggestionFilter => StorageHelper.DoesNotStartWithFilter(StorageHelper.RowKey, SuggestionPrefix);
 
         public static string[] GetPartitions()
         {

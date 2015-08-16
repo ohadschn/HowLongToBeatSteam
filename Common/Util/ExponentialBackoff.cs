@@ -64,24 +64,24 @@ namespace Common.Util
         {
             if (retryCount < 0)
             {
-                throw new ArgumentOutOfRangeException("retryCount");
+                throw new ArgumentOutOfRangeException(nameof(retryCount));
             }
             if (minBackoff.Ticks < 0)
             {
-                throw new ArgumentOutOfRangeException("minBackoff");
+                throw new ArgumentOutOfRangeException(nameof(minBackoff));
             }
 
             if (maxBackoff.Ticks < 0)
             {
-                throw new ArgumentOutOfRangeException("maxBackoff");
+                throw new ArgumentOutOfRangeException(nameof(maxBackoff));
             }
             if (deltaBackoff.Ticks < 0)
             {
-                throw new ArgumentOutOfRangeException("deltaBackoff");
+                throw new ArgumentOutOfRangeException(nameof(deltaBackoff));
             }
             if (minBackoff.TotalMilliseconds > maxBackoff.TotalMilliseconds)
             {
-                throw new ArgumentOutOfRangeException("minBackoff",
+                throw new ArgumentOutOfRangeException(nameof(minBackoff),
                     String.Format(CultureInfo.InvariantCulture, "min backoff {0} larger than max backoff {1}", minBackoff.TotalMilliseconds, maxBackoff.TotalMilliseconds));
             }
 

@@ -51,7 +51,7 @@ namespace Common.Storage
 
         public static string GetAppSummary([NotNull] IEnumerable<AppEntity> apps)
         {
-            if (apps == null) throw new ArgumentNullException("apps");
+            if (apps == null) throw new ArgumentNullException(nameof(apps));
 
             return String.Join(Environment.NewLine,
                 apps.Select(ae => String.Format(CultureInfo.InvariantCulture, "{0} ({1})", ae.SteamName, ae.SteamAppId)));
@@ -100,8 +100,8 @@ namespace Common.Storage
         public static async Task<int> DeleteOldEntities(
             [NotNull] string tableName, DateTime threshold, [NotNull] string description, int retries = -1)
         {
-            if (tableName == null) throw new ArgumentNullException("tableName");
-            if (description == null) throw new ArgumentNullException("description");
+            if (tableName == null) throw new ArgumentNullException(nameof(tableName));
+            if (description == null) throw new ArgumentNullException(nameof(description));
 
             CommonEventSource.Log.DeleteOldEntitiesStart(description);
 
@@ -174,7 +174,7 @@ namespace Common.Storage
             while (currentSegment == null || currentSegment.ContinuationToken != null)
             {
                 segmentStartLogger(batch);
-                currentSegment = await table.ExecuteQuerySegmentedAsync(query, currentSegment != null ? currentSegment.ContinuationToken : null)
+                currentSegment = await table.ExecuteQuerySegmentedAsync(query, currentSegment?.ContinuationToken)
                         .ConfigureAwait(false);
                 segmentStopLogger(batch);
 
@@ -185,8 +185,8 @@ namespace Common.Storage
         public static Task Replace<T>([NotNull] IEnumerable<T> entities, [NotNull] string description, string tableName = null, int retries = -1) 
             where T : ITableEntity
         {
-            if (entities == null) throw new ArgumentNullException("entities");
-            if (description == null) throw new ArgumentNullException("description");
+            if (entities == null) throw new ArgumentNullException(nameof(entities));
+            if (description == null) throw new ArgumentNullException(nameof(description));
 
             return ExecuteOperations(entities, e => new[] { TableOperation.Replace(e) }, tableName ?? SteamToHltbTableName, description, retries);
         }
@@ -194,8 +194,8 @@ namespace Common.Storage
         public static Task Insert<T>([NotNull] IEnumerable<T> entities, [NotNull] string description, string tableName = null, int retries = -1) 
             where T : ITableEntity
         {
-            if (entities == null) throw new ArgumentNullException("entities");
-            if (description == null) throw new ArgumentNullException("description");
+            if (entities == null) throw new ArgumentNullException(nameof(entities));
+            if (description == null) throw new ArgumentNullException(nameof(description));
 
             return ExecuteOperations(entities, e => new[] { TableOperation.Insert(e) }, tableName ?? SteamToHltbTableName, description, retries);
         }
@@ -203,8 +203,8 @@ namespace Common.Storage
         public static Task InsertOrReplace<T>([NotNull] IEnumerable<T> entities, [NotNull] string description, string tableName = null, int retries = -1) 
             where T : ITableEntity
         {
-            if (entities == null) throw new ArgumentNullException("entities");
-            if (description == null) throw new ArgumentNullException("description");
+            if (entities == null) throw new ArgumentNullException(nameof(entities));
+            if (description == null) throw new ArgumentNullException(nameof(description));
 
             return ExecuteOperations(entities, e => new[] { TableOperation.InsertOrReplace(e) }, tableName ?? SteamToHltbTableName, description, retries);
         }
@@ -212,9 +212,9 @@ namespace Common.Storage
         public static Task Delete<T>([NotNull] IEnumerable<T> entities, [NotNull] string description, [NotNull] string tableName, int retries = -1)
             where T : ITableEntity
         {
-            if (entities == null) throw new ArgumentNullException("entities");
-            if (description == null) throw new ArgumentNullException("description");
-            if (tableName == null) throw new ArgumentNullException("tableName");
+            if (entities == null) throw new ArgumentNullException(nameof(entities));
+            if (description == null) throw new ArgumentNullException(nameof(description));
+            if (tableName == null) throw new ArgumentNullException(nameof(tableName));
 
             return ExecuteOperations(entities, e => new[] { TableOperation.Delete(e) }, tableName, description, retries);
         }
@@ -227,10 +227,10 @@ namespace Common.Storage
             int retries = -1)
             where T : ITableEntity
         {
-            if (entities == null) throw new ArgumentNullException("entities");
-            if (operationGenerator == null) throw new ArgumentNullException("operationGenerator");
-            if (tableName == null) throw new ArgumentNullException("tableName");
-            if (description == null) throw new ArgumentNullException("description");
+            if (entities == null) throw new ArgumentNullException(nameof(entities));
+            if (operationGenerator == null) throw new ArgumentNullException(nameof(operationGenerator));
+            if (tableName == null) throw new ArgumentNullException(nameof(tableName));
+            if (description == null) throw new ArgumentNullException(nameof(description));
 
             CommonEventSource.Log.ExecuteOperationsStart(description);
             var table = await GetTable(tableName, retries).ConfigureAwait(false);
@@ -261,7 +261,7 @@ namespace Common.Storage
 
         public static async Task InsertSuggestion(SuggestionEntity suggestion, int retries = -1)
         {
-            if (suggestion == null) throw new ArgumentNullException("suggestion");
+            if (suggestion == null) throw new ArgumentNullException(nameof(suggestion));
 
             var table = await GetTable(SteamToHltbTableName, retries).ConfigureAwait(false);
 
@@ -272,7 +272,7 @@ namespace Common.Storage
 
         public static async Task DeleteSuggestion([NotNull] SuggestionEntity suggestion, int retries = -1)
         {
-            if (suggestion == null) throw new ArgumentNullException("suggestion");
+            if (suggestion == null) throw new ArgumentNullException(nameof(suggestion));
 
             var table = await GetTable(SteamToHltbTableName, retries).ConfigureAwait(false);
 
@@ -284,8 +284,8 @@ namespace Common.Storage
         //assumes app has been already modified to contain the updated HLTB info
         public static async Task AcceptSuggestion([NotNull] AppEntity app, [NotNull] SuggestionEntity suggestion, int retries = -1)
         {
-            if (app == null) throw new ArgumentNullException("app");
-            if (suggestion == null) throw new ArgumentNullException("suggestion");
+            if (app == null) throw new ArgumentNullException(nameof(app));
+            if (suggestion == null) throw new ArgumentNullException(nameof(suggestion));
 
             var table = await GetTable(SteamToHltbTableName, retries).ConfigureAwait(false);
 
@@ -325,7 +325,7 @@ namespace Common.Storage
                     var operations = operationGenerator(appEntity);
                     if (operations.Length > MaxBatchOperations)
                     {
-                        throw new ArgumentOutOfRangeException("operationGenerator",
+                        throw new ArgumentOutOfRangeException(nameof(operationGenerator),
                             String.Format(CultureInfo.InvariantCulture, "The operationGenerator func must return at most {0} operations", MaxBatchOperations));
                     }
 
@@ -351,8 +351,8 @@ namespace Common.Storage
 
         public static string StartsWithFilter([NotNull] string propertyName, [NotNull] string value)
         {
-            if (propertyName == null) throw new ArgumentNullException("propertyName");
-            if (value == null) throw new ArgumentNullException("value");
+            if (propertyName == null) throw new ArgumentNullException(nameof(propertyName));
+            if (value == null) throw new ArgumentNullException(nameof(value));
 
             return TableQuery.CombineFilters(
                 TableQuery.GenerateFilterCondition(propertyName, QueryComparisons.GreaterThanOrEqual, value),
@@ -362,8 +362,8 @@ namespace Common.Storage
 
         public static string DoesNotStartWithFilter([NotNull] string propertyName, [NotNull] string value)
         {
-            if (propertyName == null) throw new ArgumentNullException("propertyName");
-            if (value == null) throw new ArgumentNullException("value");
+            if (propertyName == null) throw new ArgumentNullException(nameof(propertyName));
+            if (value == null) throw new ArgumentNullException(nameof(value));
 
             return TableQuery.CombineFilters(
                 TableQuery.GenerateFilterCondition(propertyName, QueryComparisons.LessThan, value),
@@ -461,10 +461,10 @@ namespace Common.Storage
 
         class TableBatchOperationInfo
         {
-            public string Partition { get; private set; }
-            public int Batch { get; private set; }
-            public bool Final { get; private set; }
-            public TableBatchOperation Operation { get; private set; }
+            public string Partition { get; }
+            public int Batch { get; }
+            public bool Final { get; }
+            public TableBatchOperation Operation { get; }
 
             public TableBatchOperationInfo(string partition, int batch, bool final, TableBatchOperation operation)
             {

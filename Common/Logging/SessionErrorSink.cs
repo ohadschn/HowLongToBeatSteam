@@ -20,8 +20,9 @@ namespace Common.Logging
         [SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "OnError")]
         public void OnError(Exception error)
         {
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            SemanticLoggingEventSource.Log.CustomSinkUnhandledFault(error == null ? "null exception in SessionErrorSink::OnError()" : error.ToString());
+            // ReSharper disable once ConstantNullCoalescingCondition
+            // ReSharper disable once ConstantConditionalAccessQualifier
+            SemanticLoggingEventSource.Log.CustomSinkUnhandledFault(error?.ToString() ?? "null exception in SessionErrorSink::OnError()");
         }
 
         public void OnCompleted()
@@ -34,7 +35,7 @@ namespace Common.Logging
     {
         public static SinkSubscription<SessionErrorSink> LogSessionErrors([NotNull] this IObservable<EventEntry> eventStream)
         {
-            if (eventStream == null) throw new ArgumentNullException("eventStream");
+            if (eventStream == null) throw new ArgumentNullException(nameof(eventStream));
 
             var sink = new SessionErrorSink();
             return new SinkSubscription<SessionErrorSink>(eventStream.Subscribe(sink), sink);

@@ -102,7 +102,7 @@ namespace MissingGamesUpdater.Updater
 
             MissingUpdaterEventSource.Log.RetrieveAllSteamAppsStop(GetSteamAppListUrl);
 
-            if (allGamesRoot == null || allGamesRoot.applist == null || allGamesRoot.applist.apps == null || allGamesRoot.applist.apps.app == null)
+            if (allGamesRoot?.applist?.apps?.app == null)
             {
                 MissingUpdaterEventSource.Log.ErrorRetrievingAllSteamApps(GetSteamAppListUrl);
                 throw new InvalidOperationException("Invalid response from " + GetSteamAppListUrl);

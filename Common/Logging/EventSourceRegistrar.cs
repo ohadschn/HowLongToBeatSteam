@@ -12,8 +12,8 @@ namespace Common.Logging
 
         private class EventListenerInfo
         {
-            public EventSource EventSource { get; private set; }
-            public ObservableEventListener Listener { get; private set; }
+            public EventSource EventSource { get; }
+            public ObservableEventListener Listener { get; }
 
             public EventListenerInfo(EventSource eventSource, ObservableEventListener listener)
             {
@@ -28,7 +28,7 @@ namespace Common.Logging
         {
             if (listener == null)
             {
-                throw new ArgumentNullException("listener");
+                throw new ArgumentNullException(nameof(listener));
             }
 
             s_listeners.Add(new EventListenerInfo(source, listener));

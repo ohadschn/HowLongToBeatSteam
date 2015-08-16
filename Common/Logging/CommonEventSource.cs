@@ -59,12 +59,12 @@ namespace Common.Logging
         {
             if (uri == null)
             {
-                throw new ArgumentNullException("uri");
+                throw new ArgumentNullException(nameof(uri));
             }
 
             if (exception == null)
             {
-                throw new ArgumentNullException("exception");
+                throw new ArgumentNullException(nameof(exception));
             }
 
             if (!IsEnabled())
@@ -115,7 +115,7 @@ namespace Common.Logging
         {
             if (uri == null)
             {
-                throw new ArgumentNullException("uri");
+                throw new ArgumentNullException(nameof(uri));
             }
 
             if (!IsEnabled())
@@ -143,7 +143,7 @@ namespace Common.Logging
         {
             if (uri == null)
             {
-                throw new ArgumentNullException("uri");
+                throw new ArgumentNullException(nameof(uri));
             }
 
             if (!IsEnabled())
@@ -371,8 +371,8 @@ namespace Common.Logging
             int statusCode, string errorCode, string errorMessage,
             [NotNull] TableBatchOperation batchOperation)
         {
-            if (exception == null) throw new ArgumentNullException("exception");
-            if (batchOperation == null) throw new ArgumentNullException("batchOperation");
+            if (exception == null) throw new ArgumentNullException(nameof(exception));
+            if (batchOperation == null) throw new ArgumentNullException(nameof(batchOperation));
 
             ErrorExecutingPartitionBatchOperation(exception.ToString(), statusCode, errorCode, errorMessage, String.Join(Environment.NewLine,
                     batchOperation.Select((o, i) => String.Format(CultureInfo.InvariantCulture, 

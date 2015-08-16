@@ -20,7 +20,7 @@
     </consoleSink>
     
     <!--update connection string before deployment-->
-    <flatFileSink name="flatFile" fileName="E:\\HLTBS.log">
+    <flatFileSink name="flatFile" fileName="D:\\SkyDrive\\HowLongToBeat\\HLTBS.log">
       <sources>
         <eventSource name="OS-HowLongToBeatSteam-Common" level="Verbose"/>
         <eventSource name="OS-HowLongToBeatSteam-Site" level="Verbose"/>

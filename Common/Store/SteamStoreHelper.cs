@@ -45,7 +45,7 @@ namespace Common.Store
             {
                 var appInfo = jObject[app.AppId.ToString(CultureInfo.InvariantCulture)].ToObject<StoreAppInfo>();
 
-                string type = !appInfo.success || appInfo.data == null || String.IsNullOrWhiteSpace(appInfo.data.type)
+                string type = !appInfo.success || String.IsNullOrWhiteSpace(appInfo.data?.type)
                     ? AppEntity.UnknownType
                     : appInfo.data.type;
 
@@ -151,9 +151,7 @@ namespace Common.Store
 
         private static int GetMetaCriticScore(Metacritic metacritic)
         {
-            return metacritic == null
-                ? AppEntity.UnknownScore
-                : metacritic.score;
+            return metacritic?.score ?? AppEntity.UnknownScore;
         }
 
         private static Entities.Platforms GetPlatforms(StoreAppInfo appInfo)
@@ -171,9 +169,9 @@ namespace Common.Store
 
     public class BasicStoreInfo
     {
-        public int AppId { get; private set; }
-        public string Name { get; private set; }
-        public string AppType { get; private set; }
+        public int AppId { get; }
+        public string Name { get; }
+        public string AppType { get; }
 
         public BasicStoreInfo(int appId, string name, string appType)
         {

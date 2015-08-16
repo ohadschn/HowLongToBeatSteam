@@ -47,15 +47,15 @@ namespace UnknownUpdater.Updater
         {
             public bool Equals([NotNull] AppEntity x, [NotNull] AppEntity y)
             {
-                if (x == null) throw new ArgumentNullException("x");
-                if (y == null) throw new ArgumentNullException("y");
+                if (x == null) throw new ArgumentNullException(nameof(x));
+                if (y == null) throw new ArgumentNullException(nameof(y));
 
                 return x.SteamAppId == y.SteamAppId;
             }
 
             public int GetHashCode([NotNull] AppEntity appEntity)
             {
-                if (appEntity == null) throw new ArgumentNullException("appEntity");
+                if (appEntity == null) throw new ArgumentNullException(nameof(appEntity));
 
                 return appEntity.SteamAppId;
             }

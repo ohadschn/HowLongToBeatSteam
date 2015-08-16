@@ -255,7 +255,7 @@ namespace ManualTableUpdater.Updater
         [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "obj")]
         public static string RemoveTabs(object obj)
         {
-            return obj == null ? String.Empty : obj.ToString().Replace('\t', ';');
+            return obj?.ToString().Replace('\t', ';') ?? String.Empty;
         }
 
         public static void GetAppsFromCsv()

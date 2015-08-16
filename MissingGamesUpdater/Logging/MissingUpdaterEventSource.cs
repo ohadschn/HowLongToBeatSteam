@@ -41,7 +41,7 @@ namespace MissingGamesUpdater.Logging
         {
             if (uri == null)
             {
-                throw new ArgumentNullException("uri");
+                throw new ArgumentNullException(nameof(uri));
             }
 
             if (!IsEnabled())
@@ -69,7 +69,7 @@ namespace MissingGamesUpdater.Logging
         {
             if (uri == null)
             {
-                throw new ArgumentNullException("uri");
+                throw new ArgumentNullException(nameof(uri));
             }
 
             if (!IsEnabled())
@@ -97,7 +97,7 @@ namespace MissingGamesUpdater.Logging
         {
             if (uri == null)
             {
-                throw new ArgumentNullException("uri");
+                throw new ArgumentNullException(nameof(uri));
             }
 
             if (!IsEnabled())
@@ -123,7 +123,7 @@ namespace MissingGamesUpdater.Logging
         {
             if (uri == null)
             {
-                throw new ArgumentNullException("uri");
+                throw new ArgumentNullException(nameof(uri));
             }
 
             if (!IsEnabled())
@@ -171,7 +171,7 @@ namespace MissingGamesUpdater.Logging
         [NonEvent]
         public void MissingAppsDetermined([NotNull] App[] missingApps)
         {
-            if (missingApps == null) throw new ArgumentNullException("missingApps");
+            if (missingApps == null) throw new ArgumentNullException(nameof(missingApps));
 
             MissingAppsDetermined(missingApps.Length, StorageHelper.GetAppSummary(missingApps.Select(a => new AppEntity(a.appid, a.name, ""))));
         }

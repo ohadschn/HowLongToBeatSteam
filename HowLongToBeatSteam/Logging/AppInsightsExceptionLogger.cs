@@ -1,4 +1,5 @@
-﻿using System.Web.Http.ExceptionHandling;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Web.Http.ExceptionHandling;
 using Microsoft.ApplicationInsights;
 
 namespace HowLongToBeatSteam.Logging
@@ -7,9 +8,10 @@ namespace HowLongToBeatSteam.Logging
     {
         private readonly TelemetryClient m_appInsightsClient = new TelemetryClient();
 
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
         public override void Log(ExceptionLoggerContext context)
         {
-            if (context != null && context.Exception != null)
+            if (context?.Exception != null)
             {
                 m_appInsightsClient.TrackException(context.Exception);
             }

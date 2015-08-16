@@ -457,7 +457,7 @@ namespace SteamHltbScraper.Scraper
 
     public class TransientHltbFaultException : Exception
     {
-        public HtmlDocument Document { get; private set; }
+        public HtmlDocument Document { get; }
         public bool PrintDocument { get; set; }
 
         public TransientHltbFaultException(string message, HtmlDocument doc) : base(message)

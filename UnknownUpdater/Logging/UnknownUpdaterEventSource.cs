@@ -61,7 +61,7 @@ namespace UnknownUpdater.Logging
         {
             if (updates == null)
             {
-                throw new ArgumentNullException("updates");
+                throw new ArgumentNullException(nameof(updates));
             }
             if (!IsEnabled())
             {

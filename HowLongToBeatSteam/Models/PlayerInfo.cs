@@ -121,7 +121,7 @@ namespace HowLongToBeatSteam.Models
         {
             if (appEntity == null)
             {
-                throw new ArgumentNullException("appEntity");
+                throw new ArgumentNullException(nameof(appEntity));
             }
 
             SteamAppId = appEntity.SteamAppId;

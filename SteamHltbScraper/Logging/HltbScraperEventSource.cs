@@ -125,7 +125,7 @@ namespace SteamHltbScraper.Logging
         {
             if (uri == null)
             {
-                throw new ArgumentNullException("uri");
+                throw new ArgumentNullException(nameof(uri));
             }
 
             if (!IsEnabled())
@@ -153,7 +153,7 @@ namespace SteamHltbScraper.Logging
         {
             if (uri == null)
             {
-                throw new ArgumentNullException("uri");
+                throw new ArgumentNullException(nameof(uri));
             }
 
             if (!IsEnabled())
@@ -202,7 +202,7 @@ namespace SteamHltbScraper.Logging
         {
             if (exception == null)
             {
-                throw new ArgumentNullException("exception");
+                throw new ArgumentNullException(nameof(exception));
             }
 
             if (!IsEnabled())
@@ -252,7 +252,7 @@ namespace SteamHltbScraper.Logging
         {
             if (uri == null)
             {
-                throw new ArgumentNullException("uri");
+                throw new ArgumentNullException(nameof(uri));
             }
 
             if (!IsEnabled())
@@ -280,7 +280,7 @@ namespace SteamHltbScraper.Logging
         {
             if (uri == null)
             {
-                throw new ArgumentNullException("uri");
+                throw new ArgumentNullException(nameof(uri));
             }
 
             if (!IsEnabled())
@@ -318,7 +318,7 @@ namespace SteamHltbScraper.Logging
         {
             if (exception == null)
             {
-                throw new ArgumentNullException("exception");
+                throw new ArgumentNullException(nameof(exception));
             }
 
             if (!IsEnabled())
@@ -378,7 +378,7 @@ namespace SteamHltbScraper.Logging
         {
             if (uri == null)
             {
-                throw new ArgumentNullException("uri");
+                throw new ArgumentNullException(nameof(uri));
             }
 
             if (!IsEnabled())
@@ -406,7 +406,7 @@ namespace SteamHltbScraper.Logging
         {
             if (uri == null)
             {
-                throw new ArgumentNullException("uri");
+                throw new ArgumentNullException(nameof(uri));
             }
 
             if (!IsEnabled())
@@ -434,7 +434,7 @@ namespace SteamHltbScraper.Logging
         {
             if (exception == null)
             {
-                throw new ArgumentNullException("exception");
+                throw new ArgumentNullException(nameof(exception));
             }
 
             if (!IsEnabled())
@@ -565,6 +565,16 @@ namespace SteamHltbScraper.Logging
         }
 
         [Event(
+            270,
+            Message = "Imputation produced too many zero TTBs for genre {0}: {1}/{2}",
+            Keywords = Keywords.Imputation,
+            Level = EventLevel.Error)]
+        public void ImputationProducedTooManyMisses(string genre, int misses, int genreCount)
+        {
+            WriteEvent(270, genre, misses, genreCount);
+        }
+
+        [Event(
             127,
             Message = "Error imputing genre {0} - falling back to unified imputation values: {1}",
             Keywords = Keywords.Imputation,
@@ -598,11 +608,21 @@ namespace SteamHltbScraper.Logging
             427,
             Message = "Imputation produced zero TTB for game {0} ({1}) : {2}/{3}/{4} ({5}/{6}/{7})",
             Keywords = Keywords.Imputation,
-            Level = EventLevel.Error)]
+            Level = EventLevel.Warning)]
         public void ImputationProducedZeroTtb(string steamName, int steamId, 
             int mainTtb, int extrasTtb, int completionistTtb, bool mainImputed, bool extrasImputed, bool completionistImputed)
         {
             WriteEvent(427, steamName, steamId, mainTtb, extrasTtb, completionistTtb, mainImputed, extrasImputed, completionistImputed);
+        }
+
+        [Event(
+            428,
+            Message = "Imputation produced too many zero TTBs for genre {0}: {1}/{2}",
+            Keywords = Keywords.Imputation,
+            Level = EventLevel.Error)]
+        public void ImputationProducedTooManyZeroTtbs(string genre, int zeros, int genreCount)
+        {
+            WriteEvent(428, genre, zeros, genreCount);
         }
 
         [Event(

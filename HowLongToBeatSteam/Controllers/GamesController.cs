@@ -259,7 +259,7 @@ namespace HowLongToBeatSteam.Controllers
             
             SiteEventSource.Log.RetrieveOwnedGamesStop(steamId);
 
-            if (ownedGamesResponse == null || ownedGamesResponse.response == null || ownedGamesResponse.response.games == null)
+            if (ownedGamesResponse?.response?.games == null)
             {
                 SiteEventSource.Log.ErrorRetrievingOwnedGames(steamId);
                 throw new HttpResponseException(HttpStatusCode.BadRequest);
@@ -282,11 +282,9 @@ namespace HowLongToBeatSteam.Controllers
             var playerSummariesResponse = await
                 SiteUtil.GetAsync<PlayerSummariesResponse>(Client, String.Format(GetPlayerSummariesUrlFormat, SteamApiKey, steamId), ct).ConfigureAwait(false);
 
-            if (playerSummariesResponse == null || 
-                playerSummariesResponse.response == null ||
-                playerSummariesResponse.response.players == null || 
-                playerSummariesResponse.response.players.Length != 1 ||
-                String.IsNullOrWhiteSpace(playerSummariesResponse.response.players[0].avatarmedium) ||
+            if (playerSummariesResponse?.response?.players == null || 
+                playerSummariesResponse.response.players.Length != 1 || 
+                String.IsNullOrWhiteSpace(playerSummariesResponse.response.players[0].avatarmedium) || 
                 String.IsNullOrWhiteSpace(playerSummariesResponse.response.players[0].personaname))
             {
                 SiteEventSource.Log.ErrorRetrievingPersonaInfo(steamId);

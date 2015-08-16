@@ -72,9 +72,9 @@ namespace Common.Entities
             CompletionistTtb = completionistTtb;
         }
         public string AppType { get; set; }
-        public bool IsGame { get { return String.Equals(AppType, GameTypeName, StringComparison.OrdinalIgnoreCase); }}
-        public bool IsDlc { get { return String.Equals(AppType, DlcTypeName, StringComparison.OrdinalIgnoreCase); } }
-        public bool IsMod { get { return String.Equals(AppType, ModTypeName, StringComparison.OrdinalIgnoreCase); } }
+        public bool IsGame => String.Equals(AppType, GameTypeName, StringComparison.OrdinalIgnoreCase);
+        public bool IsDlc => String.Equals(AppType, DlcTypeName, StringComparison.OrdinalIgnoreCase);
+        public bool IsMod => String.Equals(AppType, ModTypeName, StringComparison.OrdinalIgnoreCase);
         public int PlatformsValue { get; set; } //for use by the Azure client libraries only
         [IgnoreProperty] public Platforms Platforms
         {
@@ -110,17 +110,11 @@ namespace Common.Entities
         public DateTime ReleaseDate { get; set; }
         public int MetacriticScore { get; set; }
 
-        [IgnoreProperty] public bool Measured { get { return RowKey.StartsWith(MeasuredKey, StringComparison.Ordinal); } }
+        [IgnoreProperty] public bool Measured => RowKey.StartsWith(MeasuredKey, StringComparison.Ordinal);
 
-        public static string MeasuredFilter
-        {
-            get { return StorageHelper.StartsWithFilter(StorageHelper.RowKey, MeasuredKey); }
-        }
+        public static string MeasuredFilter => StorageHelper.StartsWithFilter(StorageHelper.RowKey, MeasuredKey);
 
-        public static string UnknownFilter
-        {
-            get { return StorageHelper.StartsWithFilter(StorageHelper.RowKey, String.Format(CultureInfo.InvariantCulture, "{0}_{1}", UnmeasuredKey, UnknownType)); }
-        }
+        public static string UnknownFilter => StorageHelper.StartsWithFilter(StorageHelper.RowKey, Format(CultureInfo.InvariantCulture, "{0}_{1}", UnmeasuredKey, UnknownType));
 
         public AppEntity() //required by azure storage client library
         {
@@ -134,19 +128,19 @@ namespace Common.Entities
         {
             if (categories == null)
             {
-                throw new ArgumentNullException("categories");
+                throw new ArgumentNullException(nameof(categories));
             }
             if (genres == null)
             {
-                throw new ArgumentNullException("genres");
+                throw new ArgumentNullException(nameof(genres));
             }
             if (publishers == null)
             {
-                throw new ArgumentNullException("publishers");
+                throw new ArgumentNullException(nameof(publishers));
             }
             if (developers == null)
             {
-                throw new ArgumentNullException("developers");
+                throw new ArgumentNullException(nameof(developers));
             }
             Platforms = platforms;
             Categories = categories;
@@ -215,7 +209,7 @@ namespace Common.Entities
 
         public override string ToString()
         {
-            return string.Format(CultureInfo.InvariantCulture, "SteamAppId: {0}, SteamName: {1}, HltbId: {2}, HltbName: {3}, MainTtb: {4}, MainTtbImputed: {5}, ExtrasTtb: {6}, ExtrasTtbImputed: {7}, CompletionistTtb: {8}, CompletionistTtbImputed: {9}, AppType: {10}, Platforms: {11}, Categories: {12}, Genres: {13}, Developers: {14}, Publishers: {15}, ReleaseDate: {16}, MetacriticScore: {17}", SteamAppId, SteamName, HltbId, HltbName, MainTtb, MainTtbImputed, ExtrasTtb, ExtrasTtbImputed, CompletionistTtb, CompletionistTtbImputed, AppType, Platforms, CategoriesFlat, GenresFlat, DevelopersFlat, PublishersFlat, ReleaseDate, MetacriticScore);
+            return String.Format(CultureInfo.InvariantCulture, "SteamAppId: {0}, SteamName: {1}, HltbId: {2}, HltbName: {3}, MainTtb: {4}, MainTtbImputed: {5}, ExtrasTtb: {6}, ExtrasTtbImputed: {7}, CompletionistTtb: {8}, CompletionistTtbImputed: {9}, AppType: {10}, Platforms: {11}, Categories: {12}, Genres: {13}, Developers: {14}, Publishers: {15}, ReleaseDate: {16}, MetacriticScore: {17}", SteamAppId, SteamName, HltbId, HltbName, MainTtb, MainTtbImputed, ExtrasTtb, ExtrasTtbImputed, CompletionistTtb, CompletionistTtbImputed, AppType, Platforms, CategoriesFlat, GenresFlat, DevelopersFlat, PublishersFlat, ReleaseDate, MetacriticScore);
         }
 
         public static string[] GetPartitions()
