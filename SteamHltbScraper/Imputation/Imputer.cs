@@ -45,8 +45,8 @@ namespace SteamHltbScraper.Imputation
         private static readonly int NotCompletelyMissingThreshold = SiteUtil.GetOptionalValueFromConfig("NotCompletelyMissingThreshold", 100);
         private static readonly int ImputationThreshold = SiteUtil.GetOptionalValueFromConfig("ImputationThreshold", 70);
         private static readonly double InvalidTtbsThreshold = SiteUtil.GetOptionalValueFromConfig("InvalidTtbsThresholdPercent", 10)/100.0;
-        private static readonly double ImputationMissThreshold = SiteUtil.GetOptionalValueFromConfig("ImputationMissThreshold", 5)/100.0;
-        private static readonly double ImputationZerosThreshold = SiteUtil.GetOptionalValueFromConfig("ImputationZerosThreshold", 1)/100.0;
+        private static readonly double ImputationMissThreshold = SiteUtil.GetOptionalValueFromConfig("ImputationMissThreshold", 10)/100.0;
+        private static readonly double ImputationZerosThreshold = SiteUtil.GetOptionalValueFromConfig("ImputationZerosThreshold", 10)/100.0;
         private static readonly int GenreStatsStorageRetries = SiteUtil.GetOptionalValueFromConfig("GenreStatsStorageRetries", 100);
         private static readonly int ImputationServiceRetries = SiteUtil.GetOptionalValueFromConfig("ImputationServiceRetries", 100);
         private static HttpRetryClient s_client;

@@ -114,7 +114,7 @@ namespace Common.Entities
 
         public static string MeasuredFilter => StorageHelper.StartsWithFilter(StorageHelper.RowKey, MeasuredKey);
 
-        public static string UnknownFilter => StorageHelper.StartsWithFilter(StorageHelper.RowKey, Format(CultureInfo.InvariantCulture, "{0}_{1}", UnmeasuredKey, UnknownType));
+        public static string UnknownFilter => StorageHelper.StartsWithFilter(StorageHelper.RowKey, String.Format(CultureInfo.InvariantCulture, "{0}_{1}", UnmeasuredKey, UnknownType));
 
         public AppEntity() //required by azure storage client library
         {

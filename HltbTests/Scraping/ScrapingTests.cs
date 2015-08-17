@@ -60,7 +60,7 @@ namespace HltbTests.Scraping
         [TestMethod]
         public void TestNonAlphanumericName()
         {
-            TestScraping("Air Conflicts - Secret Wars", 2011, true, true, false, "Air Conflicts: Secret Wars");
+            TestScraping("Air Conflicts - Secret Wars", 2011, true, true, true, "Air Conflicts: Secret Wars");
         }
 
         [TestMethod]

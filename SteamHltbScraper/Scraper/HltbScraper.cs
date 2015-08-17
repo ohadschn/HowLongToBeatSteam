@@ -172,7 +172,7 @@ namespace SteamHltbScraper.Scraper
             var headerDiv = doc.DocumentNode.Descendants().FirstOrDefault(n => n.GetAttributeValue("class", null) == "profile_header");
             if (headerDiv == null)
             {
-                throw GetFormatException("Can't parse name", hltbId, doc);
+                throw new TransientHltbFaultException("Can't parse name for HLTB ID" + hltbId, doc);
             }
 
             var hltbName = headerDiv.InnerText.Trim();
