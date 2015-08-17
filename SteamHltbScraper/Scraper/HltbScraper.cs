@@ -189,7 +189,8 @@ namespace SteamHltbScraper.Scraper
                 ScrapeTtbs(hltbId, doc, out mainTtb, out extrasTtb, out completionistTtb);                
             }
 
-            if (doc.DocumentNode.InnerHtml.Contains("This game has been flagged as an endless title"))
+            if (doc.DocumentNode.InnerHtml.Contains("This game has been flagged as an endless title")
+                || doc.DocumentNode.InnerHtml.Contains("This game has been flagged as sports/unbeatable"))
             {
                 HltbScraperEventSource.Log.GameFlaggedAsEndless(hltbName, hltbId);
 

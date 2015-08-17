@@ -230,8 +230,13 @@ namespace SuggestionProcessor
 
             if (suggestion.App.HltbId >= 0)
             {
+                Console.WriteLine("Launching suggested HLTB game page...");
+                Process.Start(String.Format(CultureInfo.InvariantCulture, HltbScraper.HltbGamePageFormat, suggestion.App.HltbId));   
+            }
+            else if (suggestion.Suggestion.IsRetype && suggestion.OriginalHltbId >= 0)
+            {
                 Console.WriteLine("Launching HLTB game page...");
-                Process.Start(String.Format(HltbScraper.HltbGamePageFormat, suggestion.App.HltbId));   
+                Process.Start(String.Format(CultureInfo.InvariantCulture, HltbScraper.HltbGamePageFormat, suggestion.OriginalHltbId));
             }
         }
 
@@ -242,7 +247,7 @@ namespace SuggestionProcessor
                 suggestion.App.SteamName, suggestion.App.SteamAppId,
                 suggestion.OriginalHltbName, suggestion.OriginalHltbId,
                 suggestion.Suggestion.AppType == AppEntity.NonGameTypeName
-                    ? "[non-game]"
+                    ? "[non-finite game/app]"
                     : (String.Format(CultureInfo.InvariantCulture, "{0} ({1})", suggestion.App.HltbName, suggestion.App.HltbId)) +
                       (suggestion.Suggestion.IsRetype
                           ? String.Format(CultureInfo.InvariantCulture, " [{0}]", suggestion.Suggestion.AppType)
