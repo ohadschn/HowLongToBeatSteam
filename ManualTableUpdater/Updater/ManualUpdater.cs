@@ -95,8 +95,8 @@ namespace ManualTableUpdater.Updater
                 //WriteAllMeasuredToTsv();
                 //InsertManualSuggestions();
                 //DeleteUnknowns();
-                //ForceUpdateAppHltbID(213350, 5752);
-                //ForceUpdateAppHltbID(344500, 19848);
+                ForceUpdateAppHltbID(342630, 26322);
+                ForceUpdateAppHltbID(346810, 29325);
                 //ForceUpdateAppHltbID(266310, 27913);
                 Console.WriteLine("Done - Press any key to continue...");
                 Console.ReadLine();
