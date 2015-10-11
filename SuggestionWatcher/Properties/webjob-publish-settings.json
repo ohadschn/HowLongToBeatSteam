@@ -3,7 +3,7 @@
   "webJobName": "SuggestionWatcher",
   "startTime": "2015-06-20T20:00:00+02:00",
   "endTime": null,
-  "jobRecurrenceFrequency": "Day",
+  "jobRecurrenceFrequency": "Week",
   "interval": 1,
   "runMode": "Scheduled"
 }
