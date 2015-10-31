@@ -461,6 +461,16 @@ namespace Common.Logging
             WriteEvent(24, description);
         }
 
+        [Event(
+            240,
+            Message = "Error sending success mail for {0} ({1}) - retrying attempt #{2} / {3} will take place in {4} seconds",
+            Keywords = Keywords.Email,
+            Level = EventLevel.Warning)]
+        public void ErrorSendingSuccessMail(string description, string error, int retryCount, int totalRetries, int delaySeconds)
+        {
+            WriteEvent(240, description, error, retryCount, totalRetries, delaySeconds);
+        }
+
         [SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "MailStop")]
         [Event(
             25,

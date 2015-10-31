@@ -308,9 +308,9 @@ namespace SteamHltbScraper.Logging
             Message = "Encountered transient HLTB fault while parsing HLTB ID {0} ({1}) - retrying attempt #{2} / {3} will take place in {4} seconds",
             Keywords=Keywords.Scraping,
             Level=EventLevel.Warning)]
-        public void TransientHltbFault(int hltbId, string message, int retryCount, int totalRetries, int delaySeconds)
+        public void TransientHltbFault(int hltbId, string error, int retryCount, int totalRetries, int delaySeconds)
         {
-            WriteEvent(140, hltbId, message, retryCount, totalRetries, delaySeconds);
+            WriteEvent(140, hltbId, error, retryCount, totalRetries, delaySeconds);
         }
 
         [NonEvent]

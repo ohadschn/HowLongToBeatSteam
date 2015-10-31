@@ -28,6 +28,7 @@ namespace Common.Util
         private static readonly string SendGridUser = GetMandatoryValueFromConfig("SendGridUser");
         private static readonly string SendGridPassword = GetMandatoryValueFromConfig("SendGridPassword");
         private static readonly string NotificationEmailAddress = GetMandatoryValueFromConfig("NotificationEmailAddress");
+        private static readonly int SendGridRetries = GetOptionalValueFromConfig("SendGridRetries", 10);
 
         private const string WebjobNameEnvironmentVariable = "WEBJOBS_NAME";
         private const string WebjobRunIDEnvironmentVariable = "WEBJOBS_RUN_ID";
@@ -388,16 +389,27 @@ namespace Common.Util
             }
 
             CommonEventSource.Log.SendSuccessMailStart(description);
-            await new Web(new NetworkCredential(SendGridUser, SendGridPassword)).DeliverAsync(new SendGridMessage
+
+            await ExponentialBackoff.ExecuteAsyncWithExponentialRetries(async () =>
             {
-                From = new MailAddress("webjobs@howlongtobeatsteam.com", "HLTBS WebJob notifier"),
-                Subject = String.Format(CultureInfo.InvariantCulture, "{0} - Success ({1}) [{2}]", 
-                    WebJobName, duration, message + (errors.Length == 0 ? String.Empty : " (with session errors)")),
-                To = new[] {new MailAddress(NotificationEmailAddress)},
-                Text = String.Format(CultureInfo.InvariantCulture, "{1}{0}Run ID: {2}{0}Start time: {3}{0}End time:{4}{0}Output log file: {5}{6}",
-                    Environment.NewLine, GetTriggeredRunUrl(), WebJobRunId, DateTime.UtcNow - duration, DateTime.UtcNow, GetTriggeredLogUrl(),
-                    errors.Length == 0 ? String.Empty : String.Format("{0}Session Errors:{0}{1}", Environment.NewLine, errorsText))
-            }).ConfigureAwait(false);
+                await new Web(new NetworkCredential(SendGridUser, SendGridPassword)).DeliverAsync(new SendGridMessage
+                {
+                    From = new MailAddress("webjobs@howlongtobeatsteam.com", "HLTBS WebJob notifier"),
+                    Subject = String.Format(CultureInfo.InvariantCulture, "{0} - Success ({1}) [{2}]", 
+                        WebJobName, duration, message + (errors.Length == 0 ? String.Empty : " (with session errors)")),
+                    To = new[] {new MailAddress(NotificationEmailAddress)},
+                    Text = String.Format(CultureInfo.InvariantCulture, "{1}{0}Run ID: {2}{0}Start time: {3}{0}End time:{4}{0}Output log file: {5}{6}",
+                        Environment.NewLine, GetTriggeredRunUrl(), WebJobRunId, DateTime.UtcNow - duration, DateTime.UtcNow, GetTriggeredLogUrl(),
+                        errors.Length == 0 ? String.Empty : String.Format("{0}Session Errors:{0}{1}", Environment.NewLine, errorsText))
+                }).ConfigureAwait(false);
+                return true;
+            }, 
+            (exception, count, delay) => 
+                CommonEventSource.Log.ErrorSendingSuccessMail(description, exception.Message, count, SendGridRetries, (int)delay.TotalSeconds), 
+            e => e is ArgumentException, // "Unknown element: html"
+            SendGridRetries, HttpRetryClient.MinBackoff, HttpRetryClient.MaxBackoff, HttpRetryClient.DefaultClientBackoff, CancellationToken.None)
+                .ConfigureAwait(false);
+
             CommonEventSource.Log.SendSuccessMailStop(description);
         }
 
