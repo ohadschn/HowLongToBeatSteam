@@ -193,12 +193,9 @@ namespace SteamHltbScraper.Scraper
                 || doc.DocumentNode.InnerHtml.Contains("This game has been flagged as sports/unbeatable"))
             {
                 HltbScraperEventSource.Log.GameFlaggedAsEndless(hltbName, hltbId);
-
-                if (steamAppId != 0) //no need to submit suggestion from test cycles
-                {
-                    //we only submit a suggestion because we can't be sure this game has been correlated correctly to begin with
-                    await StorageHelper.InsertSuggestion(new SuggestionEntity(steamAppId, hltbId, AppEntity.EndlessTitleTypeName)).ConfigureAwait(false);
-                }
+                
+                //we only submit a suggestion because we can't be sure this game has been correlated correctly to begin with
+                await StorageHelper.InsertSuggestion(new SuggestionEntity(steamAppId, hltbId, AppEntity.EndlessTitleTypeName)).ConfigureAwait(false);
             }
 
             HltbScraperEventSource.Log.ScrapeHltbInfoStop(hltbId, mainTtb, extrasTtb, completionistTtb, releaseDate.Year);
