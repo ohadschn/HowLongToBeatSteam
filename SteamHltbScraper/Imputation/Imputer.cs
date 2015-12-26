@@ -288,9 +288,11 @@ namespace SteamHltbScraper.Imputation
                 .Skip(1) //skip header row
                 .Where(s => !String.IsNullOrWhiteSpace(s)).ToArray();
 
-            Trace.Assert(notCompletelyMissing.Count == imputedRows.Length,
-                String.Format(CultureInfo.InvariantCulture, "imputation count mismatch: expected {0}, actual {1}",
+            if (imputedRows.Length != notCompletelyMissing.Count)
+            {
+                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "imputation count mismatch: expected {0}, actual {1}",
                     notCompletelyMissing.Count, imputedRows.Length));
+            }
 
             int imputationZeroes = 0;
             int imputationMisses = 0;
@@ -419,7 +421,10 @@ namespace SteamHltbScraper.Imputation
         internal static void UpdateFromCsvRow(AppEntity appEntity, string row, TtbRatios ratios, out bool imputationZero, out bool imputationMiss)
         {
             var ttbs = row.Split(',');
-            Trace.Assert(ttbs.Length == 3, "Invalid CSV row, contains more than 3 values: " + row);
+            if (ttbs.Length != 3)
+            {
+                throw new InvalidOperationException("Invalid CSV row, contains more than 3 values: " + row);
+            }
 
             var imputedMain = GetRoundedValue(ttbs[0]);
             var imputedExtras = GetRoundedValue(ttbs[1]);
@@ -464,7 +469,10 @@ namespace SteamHltbScraper.Imputation
                 appEntity.SteamName, appEntity.SteamAppId, imputedMain, imputedExtras, imputedCompletionist,
                 appEntity.MainTtbImputed, appEntity.ExtrasTtbImputed, appEntity.CompletionistTtbImputed);
 
-            Trace.Assert(imputedMain > 0 || imputedExtras > 0 || imputedCompletionist > 0, "all TTBs of a not completely missing app are zeroes");
+            if (imputedMain == 0 && imputedExtras == 0 && imputedCompletionist == 0)
+            {
+                throw new InvalidOperationException("all TTBs of a not completely missing app are zeroes: " + appEntity.SteamAppId);
+            }
 
             FixTtbZeroes(ratios, ref imputedMain, ref imputedExtras, ref imputedCompletionist);
         }

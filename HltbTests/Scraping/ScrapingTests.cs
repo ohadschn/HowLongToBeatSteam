@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SteamHltbScraper.Scraper;
 using Common.Entities;
 using Common.Storage;
 using JetBrains.Annotations;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SteamHltbScraper.Scraper;
 
 namespace HltbTests.Scraping
 {
@@ -50,7 +49,7 @@ namespace HltbTests.Scraping
 
             foreach (var suggestion in suggestions)
             {
-                Trace.Assert(suggestion.SteamAppId == 0);
+                Assert.AreEqual(0, suggestion.SteamAppId, "Unexpected Steam app ID for test suggestion:");
                 await StorageHelper.DeleteSuggestion(suggestion).ConfigureAwait(false);
             }
 
