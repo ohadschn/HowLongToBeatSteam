@@ -68,7 +68,7 @@ namespace HltbTests.Scraping
             TestScraping("Commander Keen Collection (Ep. 1-5)", 1990, true, true, false);
             TestScraping("A Bird Story", 2014, true, true, false);
             TestScraping("The Secret of Hildegards", 2011, true, false, false);
-            TestScraping("Cognition: An Erica Reed Thriller", 2013, true, true, false);
+            TestScraping("Cognition: An Erica Reed Thriller", 2012, true, true, false);
             TestScraping("Gearcrack Arena", 2014, true, true, false);
             TestScraping("The Plan (2013)", 2013, true, true, false);
             TestScraping("Crystals of Time", 2014, true, true, false);

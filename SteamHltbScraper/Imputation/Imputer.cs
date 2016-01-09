@@ -42,6 +42,9 @@ namespace SteamHltbScraper.Imputation
         private static readonly int AzureMlImputePollIntervalMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollIntervalMs", 1000);
         private static readonly int AzureMlImputePollTimeoutMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollTimeoutMs", 300 * 1000);
 
+        private static readonly HashSet<string> KnownMissingGenres = 
+            new HashSet<string>(SiteUtil.GetOptionalValueFromConfig("KnownMissingGenres", "Racing (dlcs/mods)").Split(',').Select(g => g.Trim()));
+
         private static readonly int NotCompletelyMissingThreshold = SiteUtil.GetOptionalValueFromConfig("NotCompletelyMissingThreshold", 100);
         private static readonly int ImputationThreshold = SiteUtil.GetOptionalValueFromConfig("ImputationThreshold", 70);
         private static readonly double InvalidTtbsThreshold = SiteUtil.GetOptionalValueFromConfig("InvalidTtbsThresholdPercent", 10)/100.0;
@@ -220,8 +223,9 @@ namespace SteamHltbScraper.Imputation
                         "Insufficient amount of not completely missing games in game type '{0}': {1}", genre, notCompletelyMissing.Length));
                 }
 
-                if (notCompletelyMissing.Length == 0 && apps.Count > NotCompletelyMissingThreshold) //Detect probable scraping issue
+                if (notCompletelyMissing.Length == 0 && apps.Count > NotCompletelyMissingThreshold && !KnownMissingGenres.Contains(genre)) 
                 {
+                    //Detected probable scraping issue
                     HltbScraperEventSource.Log.GenreHasNoTtbs(genre);
                 }
 
@@ -281,7 +285,7 @@ namespace SteamHltbScraper.Imputation
         {
             HltbScraperEventSource.Log.CalculateImputationStart(genre, notCompletelyMissing.Count);
 
-            string imputed = await InvokeImputationService(notCompletelyMissing).ConfigureAwait(false);
+            string imputed = await InvokeImputationService(genre, notCompletelyMissing).ConfigureAwait(false);
 
             var imputedRows = imputed
                 .Split(new [] {Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries)
@@ -322,9 +326,9 @@ namespace SteamHltbScraper.Imputation
             HltbScraperEventSource.Log.CalculateImputationStop(genre, notCompletelyMissing.Count);
         }
 
-        private static async Task<string> InvokeImputationService(IReadOnlyList<AppEntity> notCompletelyMissing)
+        private static async Task<string> InvokeImputationService(string genre, IReadOnlyList<AppEntity> notCompletelyMissing)
         {
-            var blobPath = await UploadTtbInputToBlob(notCompletelyMissing).ConfigureAwait(false);
+            var blobPath = await UploadTtbInputToBlob(genre, notCompletelyMissing).ConfigureAwait(false);
             string jobId = await SubmitImputationJob(blobPath).ConfigureAwait(false);
             return await PollForImputeJobCompletion(AzureMlImputeServiceBaseUrl + "/" + jobId).ConfigureAwait(false);
         }
@@ -393,7 +397,7 @@ namespace SteamHltbScraper.Imputation
             return jobId;
         }
 
-        private static async Task<string> UploadTtbInputToBlob(IReadOnlyList<AppEntity> notMissing)
+        private static async Task<string> UploadTtbInputToBlob(string genre, IReadOnlyList<AppEntity> notMissing)
         {
             var csvString = "Game,Main,Extras,Complete" + Environment.NewLine + string.Join(Environment.NewLine,
                 notMissing.Select(a => string.Format(CultureInfo.InvariantCulture, "{0} ({1}),{2},{3},{4}",
@@ -403,7 +407,7 @@ namespace SteamHltbScraper.Imputation
                     a.ExtrasTtbImputed ? 0 : a.ExtrasTtb,
                     a.CompletionistTtbImputed ? 0 : a.CompletionistTtb)));
 
-            var blobName = String.Format(CultureInfo.InvariantCulture, "ttb-{0}-{1}.csv", SiteUtil.CurrentTimestamp, Guid.NewGuid());
+            var blobName = $"{genre}-{SiteUtil.CurrentTimestamp}-{Guid.NewGuid()}.csv";
 
             HltbScraperEventSource.Log.UploadTtbToBlobStart(blobName);
 

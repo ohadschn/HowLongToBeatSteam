@@ -89,13 +89,13 @@ namespace ManualTableUpdater.Updater
         {
             try
             {
-                //PrintGenres();
+                PrintGenres();
                 //SerializeAllAppsToFile();
                 //LoadAllAppsFromFile();
                 //WriteAllMeasuredToTsv();
                 //InsertManualSuggestions();
                 //DeleteUnknowns();
-                ForceUpdateAppHltbID(390730, -1);
+                //ForceUpdateAppHltbID(390730, -1);
                 //ForceUpdateAppHltbID(346810, 29325);
                 //ForceUpdateAppHltbID(266310, 27913);
                 Console.WriteLine("Done - Press any key to continue...");
@@ -183,10 +183,22 @@ namespace ManualTableUpdater.Updater
         public static void PrintGenres()
         {
             var measured = StorageHelper.GetAllApps(AppEntity.MeasuredFilter).Result;
+            int count = 0;
             foreach (var game in measured.Where(a => !a.IsGame && a.Genres.First()== "Racing"))
             {
                 PrintGame(game);
+                count++;
             }
+            Console.WriteLine($"Total: {count}");
+
+            count = 0;
+            foreach (var game in measured.Where(a => !a.IsGame && a.Genres.First() == "Racing" 
+                && (!a.MainTtbImputed || !a.ExtrasTtbImputed || !a.CompletionistTtbImputed)))
+            {
+                PrintGame(game);
+                count++;
+            }
+            Console.WriteLine($"Total (non imputed): {count}");
 
             //foreach (var genre in measured.Select(a => a.Genres.First()).Distinct())
             //{
