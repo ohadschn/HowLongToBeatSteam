@@ -270,14 +270,21 @@ namespace Common.Storage
             CommonEventSource.Log.InsertSuggestionStop(suggestion.SteamAppId, suggestion.HltbId);
         }
 
-        public static async Task DeleteSuggestion([NotNull] SuggestionEntity suggestion, int retries = -1)
+        public static async Task DeleteSuggestion([NotNull] SuggestionEntity suggestion, AppEntity app = null, int retries = -1)
         {
             if (suggestion == null) throw new ArgumentNullException(nameof(suggestion));
+
+            var batchOperation = new TableBatchOperation { TableOperation.Delete(suggestion) };
+            if (app != null)
+            {
+                app.VerifiedGame = true;
+                batchOperation.Add(TableOperation.Replace(app));
+            }
 
             var table = await GetTable(SteamToHltbTableName, retries).ConfigureAwait(false);
 
             CommonEventSource.Log.DeleteSuggestionStart(suggestion.SteamAppId, suggestion.HltbId);
-            await table.ExecuteAsync(TableOperation.Delete(suggestion)).ConfigureAwait(false);
+            await table.ExecuteBatchAsync(batchOperation).ConfigureAwait(false);
             CommonEventSource.Log.DeleteSuggestionStop(suggestion.SteamAppId, suggestion.HltbId);
         }
 

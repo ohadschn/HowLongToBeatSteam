@@ -121,11 +121,14 @@ namespace SuggestionProcessor
 
                 suggestionsForKnownApps.Add(new SuggestionInfo(suggestion, app, app.HltbId, app.HltbName));
 
-                app.HltbId = suggestion.HltbId; //scarping will now take place for the suggested ID
-                app.HltbName = "[Unknown]";
-                app.SetMainTtb(0, true);
-                app.SetExtrasTtb(0, true);
-                app.SetCompletionistTtb(0, true);
+                if (!suggestion.IsRetype)
+                {
+                    app.HltbId = suggestion.HltbId; //scarping will now take place for the suggested ID
+                    app.HltbName = "[Unknown]";
+                    app.SetMainTtb(0, true);
+                    app.SetExtrasTtb(0, true);
+                    app.SetCompletionistTtb(0, true);
+                }
             }
             return suggestionsForKnownApps;
         }
@@ -183,7 +186,7 @@ namespace SuggestionProcessor
 
                 while (true)
                 {
-                    Console.Write("Accept suggestion? (A)ccept / (D)elete / (I)nspect / (S)kip ");
+                    Console.Write("Accept suggestion? (A)ccept / (D)elete {0}/ (I)nspect / (S)kip ", suggestion.Suggestion.IsRetype ? "/ (V)erify game and delete " : String.Empty);
                     var key = Console.ReadKey();
                     Console.WriteLine();
                     if (key.KeyChar == 'a' || key.KeyChar == 'A')
@@ -205,6 +208,13 @@ namespace SuggestionProcessor
                         Console.Write("Deleting suggestion... ");
                         await StorageHelper.DeleteSuggestion(suggestion.Suggestion).ConfigureAwait(false);
                         Console.WriteLine("Done!");
+                        break;
+                    }
+                    if (suggestion.Suggestion.IsRetype && (key.KeyChar == 'v' || key.KeyChar == 'V'))
+                    {
+                        Console.WriteLine("Verifying game and deleting suggestion...");
+                        await StorageHelper.DeleteSuggestion(suggestion.Suggestion, suggestion.App).ConfigureAwait(false);
+                        Console.WriteLine("Done");
                         break;
                     }
                     if (key.KeyChar == 'i' || key.KeyChar == 'I')

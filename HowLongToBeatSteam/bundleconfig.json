@@ -1,0 +1,16 @@
+[
+  {
+    "outputFileName": "Scripts/app.js",
+    "inputFiles": [
+      "Scripts/app.js"
+    ],
+    "sourceMap": true
+  },
+  {
+    "outputFileName": "Scripts/responsive.js",
+    "inputFiles": [
+      "Scripts/responsive.js"
+    ],
+    "sourceMap": true
+  }
+]

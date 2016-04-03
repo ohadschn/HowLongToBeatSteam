@@ -109,6 +109,8 @@ namespace HowLongToBeatSteam.Models
         [DataMember]
         public string AppType { get; private set; }
         [DataMember]
+        public bool VerifiedGame { get; set; }
+        [DataMember]
         public IReadOnlyList<string> Genres { get; private set; }
         [DataMember]
         public int ReleaseYear { get; private set; }
@@ -127,6 +129,7 @@ namespace HowLongToBeatSteam.Models
             SteamAppId = appEntity.SteamAppId;
             SteamName = appEntity.SteamName;
             AppType = appEntity.AppType;
+            VerifiedGame = appEntity.VerifiedGame;
             Genres = appEntity.Genres;
             ReleaseYear = appEntity.ReleaseDate.Year;
             MetacriticScore = appEntity.MetacriticScore;

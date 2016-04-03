@@ -39,6 +39,7 @@ namespace Common.Entities
         public static readonly DateTime UnknownDate = new DateTime(1800, 01, 01); //has to be later than 1600 for Windows file time compatibility
         public static readonly int UnknownScore = -1;
 
+        public bool VerifiedGame { get; set; }
         public int SteamAppId { get; set; }
         public string SteamName { get; set; }
         public int HltbId { get; set; }

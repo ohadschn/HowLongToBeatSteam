@@ -61,7 +61,7 @@
         </a>
         <form data-bind="submit: vanityUrlSubmitted, attr: { action: '#/' + steamVanityUrlName() }" role="form" class="form-inline">
             <div class="form-group lowered" data-bind="visible: introPage() || error()" style="display: none">
-                <span class="glyphicon glyphicon glyphicon-question-sign"
+                <span class="glyphicon glyphicon glyphicon-question-sign cursor-default"
                       data-placement="bottom"
                       data-toggle="tooltip"
                       data-container="body"
@@ -106,7 +106,7 @@
                     <span class="sr-only">Close</span>
                 </button>
                 <p class="lead">
-                    <span class="fa fa-puzzle-piece"></span> Some of your games could not be found on HowLongToBeat. Click the update links next to missing games in the table below to <abbr title="TIP - sort by HLTB name to examine all missing games">help</abbr>!
+                    <span class="fa fa-puzzle-piece cursor-default"></span> Some of your games could not be found on HowLongToBeat. Click the update links next to missing games in the table below to <abbr title="TIP - sort by HLTB name to examine all missing games">help</abbr>!
                 </p>
             </div>
             <div role="alert" data-bind="visible: !error() && !alertHidden(), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-6' : 'col-md-12')">
@@ -115,19 +115,19 @@
                     <span class="sr-only">Close</span>
                 </button>
                 <div data-bind="visible: libraryIsEmpty()">
-                    <span class="fa fa-fw fa-ban"></span> You have no finite single-player games in your library. What kind of a sick person are you?
+                    <span class="fa fa-fw fa-ban cursor-default"></span> You have no finite single-player games in your library. What kind of a sick person are you?
                 </div>
                 <div data-bind="visible: missingHltbIds() || imputedTtbs()" class="hidden-sm hidden-md hidden-lg">
-                    <span class="fa fa-puzzle-piece"></span> Some playtimes could not be found on HowLongToBeat and were therefore <abbr title="Replaced with statistically probable values">statistically imputed</abbr>.
+                    <span class="fa fa-puzzle-piece cursor-default"></span> Some playtimes could not be found on HowLongToBeat and were therefore <abbr title="Replaced with statistically probable values">statistically imputed</abbr>.
                 </div>
                 <div data-bind="visible: imputedTtbs" class="hidden-xs">
-                    <span class="fa fa-fw fa-bar-chart"></span> Values missing from HowLongToBeat were <abbr title="Replaced with statistically probable values (italicized in the playtime table below)">statistically imputed</abbr>.
+                    <span class="fa fa-fw fa-bar-chart cursor-default"></span> Values missing from HowLongToBeat were <abbr title="Replaced with statistically probable values (italicized in the playtime table below)">statistically imputed</abbr>.
                 </div>
                 <div class="hidden-xs" data-bind="visible: !libraryIsEmpty()">
-                    <span class="fa fa-fw fa-youtube-play"></span> Want to learn more? Check out the <a href="https://www.youtube.com/watch?v=o_8Rx4Vtyl8" target="_blank">video tutorial</a>!
+                    <span class="fa fa-fw fa-youtube-play cursor-default"></span> Want to learn more? Check out the <a href="https://www.youtube.com/watch?v=o_8Rx4Vtyl8" target="_blank">video tutorial</a>!
                 </div>
                 <div class="hidden-xs" data-bind="visible: !libraryIsEmpty()">
-                    <span class="fa fa-fw fa-desktop"></span> Like playing your games on the TV? Check out <a href="http://www.ohadsoft.com/2014/07/tvgamelaunchergui/" target="_blank">TvGameLauncher</a>!
+                    <span class="fa fa-fw fa-desktop cursor-default"></span> Like playing your games on the TV? Check out <a href="http://www.ohadsoft.com/2014/07/tvgamelaunchergui/" target="_blank">TvGameLauncher</a>!
                 </div>
             </div>
         </div>
@@ -194,7 +194,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h4 id="steamSurvivalTitle" class="modal-title"><span class="fa fa-calculator calculator"></span> Steam Survival Calculator &#x2122;</h4>
+                        <h4 id="steamSurvivalTitle" class="modal-title"><span class="fa fa-calculator calculator cursor-default"></span> Steam Survival Calculator &#x2122;</h4>
                     </div>
                     <div class="modal-body overflow-auto">
                         <form role="form" class="form-inline form-multiline">
@@ -327,7 +327,7 @@
                                 <h3 class="text-center">
                                     Playtime
                                     <small class="text-info">
-                                        <span class=" glyphicon glyphicon-info-sign"
+                                        <span class="glyphicon glyphicon-info-sign cursor-default"
                                               data-placement="bottom"
                                               data-toggle="tooltip"
                                               data-container="body"
@@ -344,7 +344,7 @@
                         <strong data-bind="text: numberWithCommas(total().count) + ' finite single-player ' + (total().count === 1 ? 'game' : 'games') + ' found'"></strong>
                         <span data-bind="visible: excludedGameCount() > 0" class="text-nowrap">
                             (<span data-bind="text:numberWithCommas(excludedGameCount())"></span> excluded
-                            <span class=" glyphicon glyphicon-info-sign inline-info"
+                            <span class="glyphicon glyphicon-info-sign inline-info cursor-default"
                                   data-placement="bottom"
                                   data-toggle="tooltip"
                                   data-container="body"
@@ -360,7 +360,7 @@
                         <li>Your remaining amount of consecutive <strong><abbr title="You strive for every achievement and conquer all that the game has to offer">completionist</abbr></strong> playtime would be <span data-bind="text: getYearsFromMinutes(total().completionistRemaining) + ' (' + getPercent(total().completionistRemaining, total().completionistTtb)  + ')'"></span>.</li>
                     </ul>
                     <h3>
-                        <span class="fa fa-heartbeat"></span> Not a zombie? Check out the <a href="javascript:;" class="emphasized" data-bind="click: survivalCalculatorClicked"><span class="fa fa-calculator"></span> Steam Survival Calculator &#x2122;</a>
+                        <span class="fa fa-heartbeat cursor-default"></span> Not a zombie? Check out the <a href="javascript:;" class="emphasized" data-bind="click: survivalCalculatorClicked"><span class="fa fa-calculator"></span> Steam Survival Calculator &#x2122;</a>
                     </h3>
                     <h1>
                         <span class="share-title">Share</span>
@@ -520,8 +520,11 @@
                                     <a data-bind="attr: {href: 'http://store.steampowered.com/app/' + steamAppId, title: 'Type: ' + capitalizeFirstLetter(appType) + '\nGenre: ' + getCombinedGenre() + '\nRelease Year: ' + (releaseYear < 1900 ? '(unknown)' : releaseYear) + '\nMetacritic score: ' + (metacriticScore === -1 ? '(unknown)' : metacriticScore)}" target="_blank">
                                         <span data-bind="text:steamName, css: (included() ? '' : 'text-muted')"></span>
                                     </a>
-                                    <a data-bind="visible: updatePhase() === GameUpdatePhase.None, click: $root.displayNonGameDialog, css: 'hidden-xs emphasized' + (included() ? '' : ' text-muted')" href="javascript:;">(nongame/endless?)</a>
-                                    <span class="glyphicon glyphicon-time visible-xs-inline pull-right"
+                                    <a data-bind="visible: !verifiedGame && updatePhase() === GameUpdatePhase.None, click: $root.displayNonGameDialog, css: 'hidden-xs emphasized' + (included() ? '' : ' text-muted')" href="javascript:;">(nongame/endless?)</a>
+                                    <span data-bind="visible: verifiedGame, css: 'hidden-xs' + (included() ? '' : ' text-muted')">
+                                        <span class="fa fa-check-circle-o cursor-default" title="Verified finite single-player game/DLC/mod"></span>
+                                    </span>
+                                    <span class="glyphicon glyphicon-time visible-xs-inline pull-right cursor-default"
                                           data-placement="top"
                                           data-toggle="tooltip"
                                           data-container="body"
@@ -540,10 +543,10 @@
                                         <a data-bind="click: $root.displayUpdateDialog, css: 'emphasized' + (included() ? '' : ' text-muted')" href="javascript:;">(wrong game?)</a>
                                     </span>
                                     <span data-bind="visible: updatePhase() === GameUpdatePhase.InProgress, css: (included() ? '' : 'text-muted')">
-                                        <span class="fa fa-spinner fa-spin"></span> Updating...
+                                        <span class="fa fa-spinner fa-spin cursor-default"></span> Updating...
                                     </span>
                                     <span data-bind="visible: updatePhase() === GameUpdatePhase.Success, css: (included() ? '' : 'text-muted')">
-                                        <span class="fa fa-check"></span> Update submitted for approval
+                                        <span class="fa fa-check cursor-default"></span> Update submitted for approval
                                     </span>
                                     <a data-bind="visible: updatePhase() === GameUpdatePhase.Failure, click: suggestedHltbId() === -1 ? $root.displayNonGameDialog : $root.displayUpdateDialog, css: (included() ? '' : 'text-muted')" href="javascript:;">
                                         <span class="fa fa-warning"></span> Update failed (click to retry)
@@ -581,7 +584,7 @@
                         </li>
                         <!-- /ko -->
                         <li data-bind="css: rightPagerClass, click: $root.gotoNextPage ">
-                            <a href="#" title="Next page" data-bind="css: currentPageNumber() === pages().length ? 'cursor-default' : ''"><span class=" fa fa-fw fa-angle-right"></span></a>
+                            <a href="#" title="Next page" data-bind="css: currentPageNumber() === pages().length ? 'cursor-default' : ''"><span class="fa fa-fw fa-angle-right"></span></a>
                         </li>
                         <li data-bind="css: rightPagerClass() + ' hidden-xs', click: $root.gotoLastPage">
                             <a href="#" title="Last page" data-bind="css: currentPageNumber() === pages().length ? 'cursor-default' : ''"><span class="fa fa-fw fa-angle-double-right"></span></a>

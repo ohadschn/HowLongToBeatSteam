@@ -125,6 +125,7 @@ function Game(steamGame) {
     var steamAppData = steamGame.SteamAppData;
     self.steamAppId = steamAppData.SteamAppId;
     self.steamName = steamAppData.SteamName;
+    self.verifiedGame = steamAppData.VerifiedGame;
     self.appType = steamAppData.AppType;
     self.genres = ko.utils.arrayMap(steamAppData.Genres, genreSeparatorReplacer);
     self.releaseYear = steamAppData.ReleaseYear;
