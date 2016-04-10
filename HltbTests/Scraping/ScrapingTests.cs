@@ -33,13 +33,14 @@ namespace HltbTests.Scraping
             await DrainAllSuggestionsForSteamApp().ConfigureAwait(false);
 
             TestScraping("World of Guns: Gun Disassembly", 2014, false, false, false);
+            TestScraping("Gearcrack Arena", 2014, true, true, false);
 
             //verify a new endless suggestion was auto-generated for it
             var suggestions = await DrainAllSuggestionsForSteamApp().ConfigureAwait(false);
-            Assert.AreEqual(1, suggestions.Count, "expected automatic suggestion for endless title");
-            Assert.AreEqual(0, suggestions.First().SteamAppId, "incorrect Steam App ID in automatic endless title suggestions");
-            Assert.AreEqual(20228, suggestions.First().HltbId, "incorrect HLTB ID in automatic endless title suggestions");
-            Assert.AreEqual(AppEntity.EndlessTitleTypeName, suggestions.First().AppType, "incorrect type in automatic endless title suggestions");
+            Assert.AreEqual(2, suggestions.Count, "expected automatic suggestion for endless title");
+            Assert.IsFalse(new [] {20228, 18966}.Except(suggestions.Select(s => s.HltbId)).Any(), "incorrect HLTB ID in automatic endless title suggestions");
+            Assert.IsTrue(suggestions.All(s => s.SteamAppId == 0), "incorrect Steam App ID in automatic endless title suggestions");
+            Assert.IsTrue(suggestions.All(s => s.AppType == AppEntity.EndlessTitleTypeName), "incorrect type in automatic endless title suggestions");
         }
 
         private static async Task<ConcurrentBag<SuggestionEntity>> DrainAllSuggestionsForSteamApp()
@@ -69,7 +70,6 @@ namespace HltbTests.Scraping
             TestScraping("A Bird Story", 2014, true, true, false);
             TestScraping("The Secret of Hildegards", 2011, true, false, false);
             TestScraping("Cognition: An Erica Reed Thriller", 2012, true, true, false);
-            TestScraping("Gearcrack Arena", 2014, true, true, false);
             TestScraping("The Plan (2013)", 2013, true, true, false);
             TestScraping("Crystals of Time", 2014, true, true, false);
             TestScraping("The Wolf Among Us", 2013, true, true, false);

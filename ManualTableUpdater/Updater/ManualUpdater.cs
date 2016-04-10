@@ -89,10 +89,11 @@ namespace ManualTableUpdater.Updater
         {
             try
             {
-                PrintGenres();
+                //PrintGenres();
                 //SerializeAllAppsToFile();
                 //LoadAllAppsFromFile();
                 //WriteAllMeasuredToTsv();
+                DeleteInvalidSuggestions();
                 //InsertManualSuggestions();
                 //DeleteUnknowns();
                 //ForceUpdateAppHltbID(390730, -1);
@@ -105,6 +106,12 @@ namespace ManualTableUpdater.Updater
             {
                 EventSourceRegistrar.DisposeEventListeners();
             }
+        }
+
+        public static void DeleteInvalidSuggestions()
+        {
+            var suggestions = StorageHelper.GetAllSuggestions().Result;
+            Console.WriteLine(String.Join(Environment.NewLine, suggestions));
         }
 
         public static void ForceUpdateAppHltbID(int steamId, int hltbId)

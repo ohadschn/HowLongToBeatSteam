@@ -38,5 +38,10 @@ namespace Common.Entities
         {
             return AppEntity.GetPartitions();
         }
+
+        public override string ToString()
+        {
+            return $"SteamAppId: {SteamAppId}, HltbId: {HltbId}, AppType: {AppType}, IsRetype: {IsRetype}";
+        }
     }
 }
