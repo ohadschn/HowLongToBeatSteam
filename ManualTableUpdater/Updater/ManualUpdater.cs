@@ -54,12 +54,15 @@ namespace ManualTableUpdater.Updater
         public int CompletionistTtb { get; set; }
         [DataMember]
         public bool CompletionistTtbImputed { get; set; }
+        [DataMember]
+        public bool VerifiedGame { get; set; }
 
         public AppEntityData(int steamAppId, string steamName, string appType, Platforms platforms,
             string[] categories, string[] genres, string[] developers,
             string[] publishers, DateTime releaseDate, int metacriticScore,
             int hltbId, string hltbName, 
-            int mainTtb, bool mainTtbImputed, int extrasTtb, bool extrasTtbImputed, int completionistTtb, bool completionistTtbImputed)
+            int mainTtb, bool mainTtbImputed, int extrasTtb, bool extrasTtbImputed, int completionistTtb, bool completionistTtbImputed,
+            bool verifiedGame)
         {
             SteamAppId = steamAppId;
             SteamName = steamName;
@@ -79,6 +82,7 @@ namespace ManualTableUpdater.Updater
             ExtrasTtbImputed = extrasTtbImputed;
             CompletionistTtb = completionistTtb;
             CompletionistTtbImputed = completionistTtbImputed;
+            VerifiedGame = verifiedGame;
         }
     }
     public static class ManualUpdater
@@ -93,8 +97,8 @@ namespace ManualTableUpdater.Updater
                 //SerializeAllAppsToFile();
                 //LoadAllAppsFromFile();
                 //WriteAllMeasuredToTsv();
-                DeleteInvalidSuggestions();
-                //InsertManualSuggestions();
+                //DeleteInvalidSuggestions();
+                InsertManualSuggestions();
                 //DeleteUnknowns();
                 //ForceUpdateAppHltbID(390730, -1);
                 //ForceUpdateAppHltbID(346810, 29325);
@@ -133,11 +137,9 @@ namespace ManualTableUpdater.Updater
         public static void InsertManualSuggestions()
         {
             Task.WaitAll(
-                StorageHelper.InsertSuggestion(new SuggestionEntity(252750, 19735)), 
-                StorageHelper.InsertSuggestion(new SuggestionEntity(3470, 1264)), 
-                StorageHelper.InsertSuggestion(new SuggestionEntity(41300, 413)), 
-                StorageHelper.InsertSuggestion(new SuggestionEntity(341950, 7849)), 
-                StorageHelper.InsertSuggestion(new SuggestionEntity(221640, 9353)));
+                StorageHelper.InsertSuggestion(new SuggestionEntity(3830, 1, AppEntity.EndlessTitleTypeName)),
+                StorageHelper.InsertSuggestion(new SuggestionEntity(9050, 1, AppEntity.EndlessTitleTypeName))
+                );
         }
 
         public static void GetEarliestGame()
@@ -155,7 +157,7 @@ namespace ManualTableUpdater.Updater
                 new AppEntityData(a.SteamAppId, a.SteamName, a.AppType, a.Platforms, a.Categories.ToArray(),
                     a.Genres.ToArray(),
                     a.Developers.ToArray(), a.Publishers.ToArray(), a.ReleaseDate, a.MetacriticScore, 
-                    a.HltbId, a.HltbName, a.MainTtb, a.MainTtbImputed, a.ExtrasTtb, a.ExtrasTtbImputed, a.CompletionistTtb, a.CompletionistTtbImputed))
+                    a.HltbId, a.HltbName, a.MainTtb, a.MainTtbImputed, a.ExtrasTtb, a.ExtrasTtbImputed, a.CompletionistTtb, a.CompletionistTtbImputed, a.VerifiedGame))
                     .ToArray();
 
             using (var stream = File.OpenWrite(AppDataXml))
