@@ -1,0 +1,43 @@
+﻿using System;
+using System.Globalization;
+using OpenQA.Selenium;
+using UITests.Constants;
+using UITests.Util;
+
+namespace UITests.Helpers
+{
+    public class GameSummaryHelper
+    {
+        public static int GetGameCount(IWebDriver driver)
+        {
+            Console.WriteLine("Locating game summary title...");
+
+            int gameCount = Int32.MaxValue;
+            driver.WaitUntil(d =>
+                Int32.TryParse(driver.FindElement(By.Id(SiteConstants.GamesFoundTitleId)).Text, NumberStyles.Number, CultureInfo.InvariantCulture, out gameCount) &&
+                FilterHelper.GetFilterGameCount(driver) == gameCount);
+
+            return gameCount;
+        }
+
+        private static TimeSpan GetPlaytime(IWebDriver driver, By by)
+        {
+            return TestUtil.FreetextDurationToTimespan(driver.FindElement(by).Text);
+        }
+
+        public static TimeSpan GetRemainingMainPlaytime(IWebDriver driver)
+        {
+            return GetPlaytime(driver, By.Id(SiteConstants.MainPlaytimeRemainingSpan));
+        }
+
+        public static TimeSpan GetRemainingExtrasPlaytime(IWebDriver driver)
+        {
+            return GetPlaytime(driver, By.Id(SiteConstants.ExtrasPlaytimeRemainingSpan));
+        }
+
+        public static TimeSpan GetRemainingCompletionistPlaytime(IWebDriver driver)
+        {
+            return GetPlaytime(driver, By.Id(SiteConstants.CompletionistPlaytimeRemainingSpan));
+        }
+    }
+}

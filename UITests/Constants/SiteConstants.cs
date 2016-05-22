@@ -41,6 +41,7 @@ namespace UITests.Constants
         public const string GplusShareAnchorId = "gplus-share";
 
         public const string SurvivalCalculatorAnchorId = "survival-calculator";
+        public const string SurvivalModalId = "steam-survival-modal";
         public const string SurvivalGenderSelectId = "gender-select";
         public const string SurvivalBirthYearSelectId = "birth-year-select";
         public const string SurvivalWeeklyPlaytimeSelectId = "weekly-playtime-select";
@@ -130,6 +131,9 @@ namespace UITests.Constants
         public const string SteamAnchorId = "steam-link";
         public const string HltbAnchorId = "hltb-link";
         public const string OhadSoftAnchorId = "ohadsoft-link";
+
+        public const string FaqTitle = "Frequently Asked Questions";
+        public const string PrivacyPolicyTitle = "Privacy Policy";
 
         public const string ExternalModalBodyDivId = "external-modal-body";
         public const string ExternalPageTitleHeaderId = "external-title";

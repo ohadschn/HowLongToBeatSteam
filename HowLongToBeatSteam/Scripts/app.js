@@ -434,7 +434,7 @@ function AppViewModel() {
 
         self.survivalCalculated(false);
         self.survivalCalculationError(false);
-        $("#steamSurvivalModal").modal("show");
+        $("#steam-survival-modal").modal("show");
     };
 
     self.calculateSurvival = function () {

@@ -24,9 +24,9 @@ namespace UITests.Tests
         [TestMethod]
         public void TestDirectSignIn()
         {
-            TestUtil.ExecuteOnAllBrowsers(driver =>
+            SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SiteHelper.SignInWithId(driver, UserConstants.SampleSteamId, WaitType.PageLoad);
+                SignInHelper.SignInWithId(driver, UserConstants.SampleSteamId, WaitType.PageLoad);
                 AssertPersonaDetails(driver, UserConstants.SamplePersonaName, UserConstants.SamplePersonaAvatarUUID);
             });
         }
@@ -34,9 +34,9 @@ namespace UITests.Tests
         [TestMethod]
         public void TestSignInWithSteamId64()
         {
-            TestUtil.ExecuteOnAllBrowsers(driver =>
+            SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SiteHelper.SignInWithId(driver, UserConstants.SampleSteam64Id.ToString(), WaitType.PageLoad);
+                SignInHelper.SignInWithId(driver, UserConstants.SampleSteam64Id.ToString(), WaitType.PageLoad);
                 AssertPersonaDetails(driver, UserConstants.SamplePersonaName, UserConstants.SamplePersonaAvatarUUID);
             });
         }
@@ -44,13 +44,13 @@ namespace UITests.Tests
         [TestMethod]
         public void TestSignInThroughSteam()
         {
-            TestUtil.ExecuteOnAllBrowsers(driver =>
+            SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
                 Console.WriteLine("Retrieving Steam password from environment variable...");
                 string steamPassword = Environment.GetEnvironmentVariable("STEAM_PASSWORD");
                 Assert.IsNotNull(steamPassword, "The STEAM_PASSWORD environment variable must be set for Steam sign-in test (make sure to restart VS after you set it)");
 
-                SiteHelper.SignInThroughSteam(driver, UserConstants.HltbsUser, steamPassword, WaitType.PageLoad);
+                SignInHelper.SignInThroughSteam(driver, UserConstants.HltbsUser, steamPassword, WaitType.PageLoad);
                 AssertPersonaDetails(driver, UserConstants.HltbsPersonaName, UserConstants.HltbsPersonaAvatarUUID);
             });
         }
@@ -58,9 +58,9 @@ namespace UITests.Tests
         [TestMethod]
         public void TestSignInWithNoGames()
         {
-            TestUtil.ExecuteOnAllBrowsers(driver =>
+            SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SiteHelper.SignInWithId(driver, UserConstants.SampleNoGamesUserId.ToString(), WaitType.None);
+                SignInHelper.SignInWithId(driver, UserConstants.SampleNoGamesUserId.ToString(), WaitType.None);
                 driver.WaitUntilElementIsVisible(By.Id(SiteConstants.EmptyLibraryDivId));
             });
         }
@@ -68,9 +68,9 @@ namespace UITests.Tests
         [TestMethod]
         public void TestSignInWithInvalidUsername()
         {
-            TestUtil.ExecuteOnAllBrowsers(driver =>
+            SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SiteHelper.SignInWithId(driver, Guid.NewGuid().ToString(), WaitType.None);
+                SignInHelper.SignInWithId(driver, Guid.NewGuid().ToString(), WaitType.None);
                 driver.WaitUntilElementIsVisible(By.Id(SiteConstants.LoginErrorDivId));
             });
         }
@@ -78,9 +78,9 @@ namespace UITests.Tests
         [TestMethod]
         public void TestCachedGamesPage()
         {
-            TestUtil.ExecuteOnAllBrowsers(driver =>
+            SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SiteHelper.GoToCachedGamesPage(driver, WaitType.PageLoad);
+                SignInHelper.GoToCachedGamesPage(driver, WaitType.PageLoad);
                 AssertPersonaDetails(driver, String.Empty, UserConstants.SamplePersonaAvatarUUID);
             });
         }

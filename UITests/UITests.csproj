@@ -61,17 +61,27 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Constants\GameConstants.cs" />
+    <Compile Include="Helpers\DialogHelper.cs" />
+    <Compile Include="Helpers\FilterHelper.cs" />
+    <Compile Include="Helpers\GameSummaryHelper.cs" />
+    <Compile Include="Helpers\LinkHelper.cs" />
+    <Compile Include="Helpers\SurvivalHelper.cs" />
+    <Compile Include="Helpers\TableGameInfo.cs" />
+    <Compile Include="Helpers\TableHelper.cs" />
     <Compile Include="Tests\ChartTests.cs" />
     <Compile Include="Tests\GameTests.cs" />
     <Compile Include="Constants\SiteConstants.cs" />
     <Compile Include="Tests\LoginTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Helpers\SiteHelper.cs" />
+    <Compile Include="Helpers\SignInHelper.cs" />
     <Compile Include="Tests\NotificationTests.cs" />
     <Compile Include="Tests\SurvivalTests.cs" />
     <Compile Include="Tests\SharingTests.cs" />
     <Compile Include="Tests\LinkTests.cs" />
     <Compile Include="Tests\TableTests.cs" />
+    <Compile Include="Util\AssertExtentions.cs" />
+    <Compile Include="Util\SeleniumExtensions.cs" />
     <Compile Include="Util\TestUtil.cs" />
     <Compile Include="Constants\UserConstants.cs" />
   </ItemGroup>

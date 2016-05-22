@@ -27,9 +27,9 @@ namespace UITests.Tests
             Assert.AreEqual("0 hours", currentPlaytimeSpan.Text);
 
             Console.WriteLine("Parsing remaining playtimes...");
-            var mainRemainingPlaytime = SiteHelper.GetRemainingMainPlaytime(driver);
-            var extrasRemainingPlaytime = SiteHelper.GetRemainingExtrasPlaytime(driver);
-            var completionistRemainingPlaytime = SiteHelper.GetRemainingCompletionistPlaytime(driver);
+            var mainRemainingPlaytime = GameSummaryHelper.GetRemainingMainPlaytime(driver);
+            var extrasRemainingPlaytime = GameSummaryHelper.GetRemainingExtrasPlaytime(driver);
+            var completionistRemainingPlaytime = GameSummaryHelper.GetRemainingCompletionistPlaytime(driver);
 
             Assert.IsTrue(completionistRemainingPlaytime > extrasRemainingPlaytime, "completionist playtime does not exceed extras playtime");
             Assert.IsTrue(extrasRemainingPlaytime > mainRemainingPlaytime, "extras playtime does not exceed completionist playtime");
@@ -52,11 +52,11 @@ namespace UITests.Tests
         [TestMethod]
         public void TestGameSummary()
         {
-            TestUtil.ExecuteOnAllBrowsers(driver =>
+            SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SiteHelper.SignInWithId(driver, UserConstants.HltbsUser, WaitType.PageLoad);
+                SignInHelper.SignInWithId(driver, UserConstants.HltbsUser, WaitType.PageLoad);
 
-                Assert.AreEqual(UserConstants.HltbUserGameCount, SiteHelper.GetGameCount(driver), "incorrect game count");
+                Assert.AreEqual(UserConstants.HltbUserGameCount, GameSummaryHelper.GetGameCount(driver), "incorrect game count");
                 Assert.AreEqual(UserConstants.HltbUserExludedGameCount, GetExcludedGameCount(driver), "incorrect excluded game count");
 
                 AssertValidPlaytimes(driver);
@@ -67,11 +67,11 @@ namespace UITests.Tests
         [TestMethod]
         public void TestCachedGameSummary()
         {
-            TestUtil.ExecuteOnAllBrowsers(driver =>
+            SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SiteHelper.GoToCachedGamesPage(driver);
+                SignInHelper.GoToCachedGamesPage(driver);
 
-                var gameCount = SiteHelper.GetGameCount(driver);
+                var gameCount = GameSummaryHelper.GetGameCount(driver);
                 Assert.IsTrue(gameCount > 10000, $"too few games in cache: {gameCount}");
                 Assert.AreEqual(0, GetExcludedGameCount(driver), "incorrect excluded game count");
 

@@ -12,8 +12,8 @@ namespace UITests.Tests
     {
         private static void AssertSurvival(IWebDriver driver, Gender gender, int birthYear, int weeklyPlaytime, PlayStyle playStyle, bool expectSurvival)
         {
-            SiteHelper.SignInWithId(driver, UserConstants.SampleSteamId);
-            SiteHelper.CalculateSurvival(driver, gender, birthYear, weeklyPlaytime, playStyle);
+            SignInHelper.SignInWithId(driver, UserConstants.SampleSteamId);
+            SurvivalHelper.CalculateSurvival(driver, gender, birthYear, weeklyPlaytime, playStyle);
 
             Console.WriteLine("Parsing backlog completion date...");
             var backlogCompletion = TestUtil.ParseBrowserDate(driver, driver.FindElement(By.Id(SiteConstants.SurvivalBacklogCompletionLabelId)).Text);
@@ -38,7 +38,7 @@ namespace UITests.Tests
         [TestMethod]
         public void TestSurvival()
         {
-            TestUtil.ExecuteOnAllBrowsers(driver =>
+            SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
                 Console.WriteLine("Asserting the survival of a 20 year old female who plays 100 hours a week in Main style...");
                 AssertSurvival(driver, Gender.Female, DateTime.Now.Year - 20, 100, PlayStyle.Main, true);
@@ -48,7 +48,7 @@ namespace UITests.Tests
         [TestMethod]
         public void TestNonSurvival()
         {
-            TestUtil.ExecuteOnAllBrowsers(driver =>
+            SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
                 Console.WriteLine("Asserting the non-survival of a 70 year old make who plays 1 hour a wekk in Completionist style...");
                 AssertSurvival(driver, Gender.Male, DateTime.Now.Year - 70, 1, PlayStyle.Completionist, false);

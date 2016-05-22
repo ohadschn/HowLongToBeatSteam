@@ -13,9 +13,9 @@ namespace UITests.Tests
         [TestMethod]
         public void TestMissingHltbNotification()
         {
-            TestUtil.ExecuteOnAllBrowsers(driver =>
+            SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SiteHelper.GoToCachedGamesPage(driver, WaitType.PageLoad);
+                SignInHelper.GoToCachedGamesPage(driver, WaitType.PageLoad);
 
                 Console.WriteLine("Asserting the missing HLTB games alert is displayed...");
                 driver.FindElement(By.Id(SiteConstants.MissingHltbGamesAlertDivID));
@@ -25,9 +25,9 @@ namespace UITests.Tests
         [TestMethod]
         public void TestImputedValuesNotification()
         {
-            TestUtil.ExecuteOnAllBrowsers(driver =>
+            SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SiteHelper.SignInWithId(driver, UserConstants.SampleSteamId, WaitType.PageLoad);
+                SignInHelper.SignInWithId(driver, UserConstants.SampleSteamId, WaitType.PageLoad);
 
                 Console.WriteLine("Asserting the imputed values notification is displayed...");
                 driver.FindElement(By.Id(SiteConstants.ImputedValuesNotificationDivId));

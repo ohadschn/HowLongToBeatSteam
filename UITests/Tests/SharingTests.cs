@@ -18,34 +18,34 @@ namespace UITests.Tests
         [TestMethod]
         public void TestShareLinks()
         {
-            TestUtil.ExecuteOnAllBrowsers(driver =>
+            SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SiteHelper.SignInWithId(driver, UserConstants.SampleSteamId);
+                SignInHelper.SignInWithId(driver, UserConstants.SampleSteamId);
 
-                TestUtil.AssertExternalLink(driver, SiteConstants.FacebookShareAnchorId, FacebookShareTitle);
-                TestUtil.AssertExternalLink(driver, SiteConstants.TwitterShareAnchorId, TwitterShareTitle);
-                TestUtil.AssertExternalLink(driver, SiteConstants.RedditShareAnchorId, RedditShareTitle);
-                TestUtil.AssertExternalLink(driver, SiteConstants.GplusShareAnchorId, GooglePlusShareTitle);
+                LinkHelper.AssertExternalLink(driver, SiteConstants.FacebookShareAnchorId, FacebookShareTitle);
+                LinkHelper.AssertExternalLink(driver, SiteConstants.TwitterShareAnchorId, TwitterShareTitle);
+                LinkHelper.AssertExternalLink(driver, SiteConstants.RedditShareAnchorId, RedditShareTitle);
+                LinkHelper.AssertExternalLink(driver, SiteConstants.GplusShareAnchorId, GooglePlusShareTitle);
 
-                SiteHelper.CalculateSurvival(driver, Gender.Female, DateTime.Now.Year - 20, 10, PlayStyle.Extras);
+                SurvivalHelper.CalculateSurvival(driver, Gender.Female, DateTime.Now.Year - 20, 10, PlayStyle.Extras);
 
-                TestUtil.AssertExternalLink(driver, SiteConstants.SurvivalFacebookShareAnchorId, FacebookShareTitle);
-                TestUtil.AssertExternalLink(driver, SiteConstants.SurvivalTwitterShareAnchorId, TwitterShareTitle);
-                TestUtil.AssertExternalLink(driver, SiteConstants.SurvivalRedditShareAnchorId, RedditShareTitle);
-                TestUtil.AssertExternalLink(driver, SiteConstants.SurvivalGplusShareAnchorId, GooglePlusShareTitle);
+                LinkHelper.AssertExternalLink(driver, SiteConstants.SurvivalFacebookShareAnchorId, FacebookShareTitle);
+                LinkHelper.AssertExternalLink(driver, SiteConstants.SurvivalTwitterShareAnchorId, TwitterShareTitle);
+                LinkHelper.AssertExternalLink(driver, SiteConstants.SurvivalRedditShareAnchorId, RedditShareTitle);
+                LinkHelper.AssertExternalLink(driver, SiteConstants.SurvivalGplusShareAnchorId, GooglePlusShareTitle);
             });
         }
 
         [TestMethod]
         public void TestNoShareLinksOnCachePage()
         {
-            TestUtil.ExecuteOnAllBrowsers(driver =>
+            SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SiteHelper.GoToCachedGamesPage(driver);
+                SignInHelper.GoToCachedGamesPage(driver);
                 Assert.IsFalse(driver.FindElement(By.Id(SiteConstants.SocialSharingHeaderId)).Displayed, "Expected hidden social sharing section in cached games page");
 
-                SiteHelper.CalculateSurvival(driver, Gender.Female, DateTime.Now.Year - 20, 10, PlayStyle.Extras);
-                Assert.IsFalse(driver.FindElement(By.Id(SiteConstants.SurvivalSocialSharingHeaderId)).Displayed, "Expected hidden survival social sharing in cached games page");
+                SurvivalHelper.CalculateSurvival(driver, Gender.Female, DateTime.Now.Year - 20, 10, PlayStyle.Extras);
+                Assert.IsFalse(driver.FindElement(By.Id(SiteConstants.SurvivalSocialSharingHeaderId)).Displayed, "Expected hidden survival social sharing section in cached games page");
             });
         }
     }

@@ -59,9 +59,9 @@ namespace UITests.Tests
         [TestMethod]
         public void TestRenderedCharts()
         {
-            TestUtil.ExecuteOnAllBrowsers(driver =>
+            SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SiteHelper.SignInWithId(driver, UserConstants.HltbsUser);
+                SignInHelper.SignInWithId(driver, UserConstants.HltbsUser);
 
                 TestRenderedCharts(driver);
                 TestSlicers(driver);
@@ -71,9 +71,9 @@ namespace UITests.Tests
         [TestMethod]
         public void TestCachedRenderedCharts()
         {
-            TestUtil.ExecuteOnAllBrowsers(driver =>
+            SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SiteHelper.GoToCachedGamesPage(driver);
+                SignInHelper.GoToCachedGamesPage(driver);
 
                 TestRenderedCharts(driver);
                 TestSlicers(driver);
