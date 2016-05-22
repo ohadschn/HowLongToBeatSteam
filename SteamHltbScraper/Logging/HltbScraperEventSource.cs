@@ -566,7 +566,7 @@ namespace SteamHltbScraper.Logging
 
         [Event(
             270,
-            Message = "Imputation produced too many zero TTBs for genre {0}: {1}/{2}",
+            Message = "Imputation produced too many TTBs misses for genre {0}: {1}/{2}",
             Keywords = Keywords.Imputation,
             Level = EventLevel.Error)]
         public void ImputationProducedTooManyMisses(string genre, int misses, int genreCount)
