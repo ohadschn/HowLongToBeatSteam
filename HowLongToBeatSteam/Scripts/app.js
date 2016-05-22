@@ -234,7 +234,7 @@ function AppViewModel() {
     self.processing = ko.observable(false);
     self.status = ko.observable("");
     self.error = ko.observable(false);
-    self.bonusLinkVisible = ko.observable(true);
+    self.realUser = ko.observable(true);
 
     self.alertHidden = ko.observable(false);
     self.missingAlertHidden = ko.observable(false);
@@ -355,7 +355,7 @@ function AppViewModel() {
         self.releaseYearFrom(self.releaseYearFromApplied());
         self.releaseYearTo(self.releaseYearToApplied());
 
-        $("#advancedFilterModal").modal("show");
+        $("#advanced-filter-modal").modal("show");
     };
 
     self.applyAdvancedFilter = function () {
@@ -378,7 +378,7 @@ function AppViewModel() {
             GenresPossible: self.genrePossibleFilters().length
         });
 
-        $("#advancedFilterModal").modal("hide");
+        $("#advanced-filter-modal").modal("hide");
     };
 
     self.clearAdvancedFilter = function() {
@@ -388,7 +388,7 @@ function AppViewModel() {
 
         appInsights.trackEvent("ClearAdvancedFilter");
 
-        $("#advancedFilterModal").modal("hide");
+        $("#advanced-filter-modal").modal("hide");
     };
 
     self.userGender = ko.observable("male");
@@ -442,7 +442,7 @@ function AppViewModel() {
 
         self.calculatingSurvival(true);
         $.ajax({
-            url: "https://life-left.p.mashape.com/time-left?birth=" + self.userBirthYear() + "&gender=" + self.userGender(),
+            url: "https://life-left.p.mashape.com/time-left?birth=" + self.userBirthYear() + "&gender=" + self.userGender().toLowerCase(),
             type: "GET",
             headers: { "X-Mashape-Authorization": "UTVc9f6A67mshqzNpSyJqUccAIffp1JrXFYjsn85w9cWnElfhy" }
         }).done(function (data) {
@@ -543,7 +543,7 @@ function AppViewModel() {
     };
 
     self.toggleNameSort = function() {
-        toggleSort("steamName")();
+        toggleSort("steamName");
     };
 
     self.togglePlaytimeSort = function() {
@@ -1254,8 +1254,8 @@ function AppViewModel() {
             return;
         }
 
-        displayRectangluarAd("9687661733", "adsensePlaytime", "playtimeChart");
-        displayRectangluarAd("3926671738", "adsenseSlice", "appTypeChart");
+        displayRectangluarAd("9687661733", "adsense-playtime", "playtimeChart");
+        displayRectangluarAd("3926671738", "adsense-slice", "appTypeChart");
 
         //we slightly reduce the internal rectangle width so that we can still see the background
         var adsenseRectangleInternal = $("#adsenseRectangleInternal");
@@ -1323,7 +1323,7 @@ function AppViewModel() {
                 $(this).css("width", $(this).width() + 10 + "px");
             });
 
-            $("#gameTable").css('table-layout', "fixed");
+            $("#game-table").css('table-layout', "fixed");
 
             firstTableRender = false;
         }
@@ -1371,7 +1371,7 @@ function AppViewModel() {
         resetAdvancedFilters();
         possibleFiltersCalculated = false;
         self.gameTable.toggleSort("");
-        self.bonusLinkVisible(self.steamVanityUrlName().indexOf("cached/") === -1);
+        self.realUser(self.steamVanityUrlName().indexOf("cached/") === -1);
 
         self.currentRequest = $.get("api/games/library/" + self.steamVanityUrlName())
             .done(function(data) {
@@ -1438,13 +1438,13 @@ function AppViewModel() {
     self.displayNonGameDialog = function(game) {
         appInsights.trackEvent("UpdateNonGameClicked");
         self.gameToUpdate(game);
-        $("#NonGameUpdateModal").modal("show");
+        $("#non-game-update-modal").modal("show");
     };
 
     self.displayUpdateDialog = function (game) {
         appInsights.trackEvent("UpdateClicked", {known: game.known});
         self.gameToUpdate(game);
-        $("#HltbUpdateModal").modal("show");
+        $("#hltb-update-modal").modal("show");
     };
 
     var displayExternalPage = function(url, title) {
@@ -1452,8 +1452,8 @@ function AppViewModel() {
         self.externalPageTitle(title);
         var height = $(window).height();
         var heightFactor = (height <= 320) ? 0.6 : ((height <= 480) ? 0.7 : 0.8);
-        $("#externalModalBody").height(heightFactor * height);
-        $("#externalModal").modal("show");
+        $("#external-modal-body").height(heightFactor * height);
+        $("#external-modal").modal("show");
     };
 
     self.displayPrivacyPolicy = function() {
@@ -1463,7 +1463,7 @@ function AppViewModel() {
 
     self.displayFaq = function() {
         appInsights.trackEvent("FaqClicked");
-        displayExternalPage("Pages/FAQ.html", "FAQ");
+        displayExternalPage("Pages/FAQ.html", "Frequently Asked Questions");
     };
 
     var updateGameCore = function(gameToUpdate) {
@@ -1483,13 +1483,13 @@ function AppViewModel() {
         self.gameToUpdate().included(false);
 
         updateGameCore(self.gameToUpdate());
-        $("#NonGameUpdateModal").modal("hide");
+        $("#non-game-update-modal").modal("hide");
         appInsights.trackEvent("NonGameUpdateSubmitted");
     };
 
     self.updateHltb = function() {
         updateGameCore(self.gameToUpdate());
-        $("#HltbUpdateModal").modal("hide");
+        $("#hltb-update-modal").modal("hide");
         appInsights.trackEvent("UpdateSubmitted", {known: self.gameToUpdate().known });
     };
 
@@ -1611,7 +1611,7 @@ $(document).ready(function () {
             viewModel.steamVanityUrlName("");
             viewModel.introPage(true);
             setTimeout(function () {
-                $("#steamIdText").focus(); //workaround for FF
+                $("#steam-id-text").focus(); //workaround for FF
             }, 0);
         });
 
