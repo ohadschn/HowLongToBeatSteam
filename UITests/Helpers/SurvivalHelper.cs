@@ -34,7 +34,8 @@ namespace UITests.Helpers
                 driver.FindElement(By.Id(SiteConstants.SurvivalCalculatorButtonId)).Click();
 
                 Console.WriteLine("Waiting for calculation to complete...");
-                driver.WaitUntilElementCondition(By.Id(SiteConstants.SurvivalBacklogCompletionLabelId), e => e.Text != SiteConstants.SurvivalNotCalculatedText);
+                driver.WaitUntilElementCondition(By.Id(SiteConstants.SurvivalBacklogCompletionLabelId), e => e.Text != SiteConstants.SurvivalNotCalculatedText, 
+                    "Could not verify survival calculation completion");
             }, false);
         }
     }

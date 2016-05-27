@@ -45,64 +45,65 @@ namespace UITests.Util
             //TODO mobile
         }
 
-        public static TResult WaitUntil<TResult>([NotNull] this IWebDriver driver, [NotNull] Func<IWebDriver, TResult> condition)
+        public static TResult WaitUntil<TResult>([NotNull] this IWebDriver driver, [NotNull] Func<IWebDriver, TResult> condition, [NotNull] string message)
         {
             if (driver == null) throw new ArgumentNullException(nameof(driver));
             if (condition == null) throw new ArgumentNullException(nameof(condition));
 
-            return WaitUntil(driver, condition, TimeSpan.FromSeconds(10));
+            return WaitUntil(driver, condition, message, TimeSpan.FromSeconds(10));
         }
 
-        public static TResult WaitUntil<TResult>([NotNull] this IWebDriver driver, [NotNull] Func<IWebDriver, TResult> condition, TimeSpan timeout)
+        public static TResult WaitUntil<TResult>([NotNull] this IWebDriver driver, [NotNull] Func<IWebDriver, TResult> condition, [NotNull] string message, TimeSpan timeout)
         {
             if (driver == null) throw new ArgumentNullException(nameof(driver));
             if (condition == null) throw new ArgumentNullException(nameof(condition));
 
-            return new WebDriverWait(driver, timeout).Until(condition);
+            return new WebDriverWait(driver, timeout) {Message = message}.Until(condition);
         }
 
-        public static IWebElement WaitUntilElementIsAvailable([NotNull] this IWebDriver driver, [NotNull] By by)
+        public static IWebElement WaitUntilElementIsAvailable([NotNull] this IWebDriver driver, [NotNull] By by, [NotNull] string message)
         {
             if (driver == null) throw new ArgumentNullException(nameof(driver));
             if (by == null) throw new ArgumentNullException(nameof(by));
 
-            return WaitUntilElementCondition(driver, @by, e => true);
+            return WaitUntilElementCondition(driver, by, e => true, message);
         }
 
-        public static IWebElement WaitUntilElementIsAvailable([NotNull] this IWebDriver driver, [NotNull] By by, TimeSpan timeout)
-        {
-            if (driver == null) throw new ArgumentNullException(nameof(driver));
-            if (@by == null) throw new ArgumentNullException(nameof(@by));
-
-            return WaitUntilElementCondition(driver, by, e => true, timeout);
-        }
-
-        public static IWebElement WaitUntilElementIsVisible([NotNull] this IWebDriver driver, [NotNull] By by)
+        public static IWebElement WaitUntilElementIsAvailable([NotNull] this IWebDriver driver, [NotNull] By by, [NotNull] string message, TimeSpan timeout)
         {
             if (driver == null) throw new ArgumentNullException(nameof(driver));
             if (by == null) throw new ArgumentNullException(nameof(by));
 
-            return WaitUntilElementCondition(driver, by, e => e.Displayed);
+            return WaitUntilElementCondition(driver, by, e => true, message, timeout);
         }
 
-        public static IWebElement WaitUntilElementIsVisible([NotNull] this IWebDriver driver, [NotNull] By by, TimeSpan timeout)
+        public static IWebElement WaitUntilElementIsVisible([NotNull] this IWebDriver driver, [NotNull] By by, [NotNull] string message)
         {
             if (driver == null) throw new ArgumentNullException(nameof(driver));
             if (by == null) throw new ArgumentNullException(nameof(by));
 
-            return WaitUntilElementCondition(driver, by, e => e.Displayed, timeout);
+            return WaitUntilElementCondition(driver, by, e => e.Displayed, message);
         }
 
-        public static IWebElement WaitUntilElementCondition([NotNull] this IWebDriver driver, [NotNull] By by, [NotNull] Predicate<IWebElement> condition)
+        public static IWebElement WaitUntilElementIsVisible([NotNull] this IWebDriver driver, [NotNull] By by, [NotNull] string message, TimeSpan timeout)
+        {
+            if (driver == null) throw new ArgumentNullException(nameof(driver));
+            if (by == null) throw new ArgumentNullException(nameof(by));
+
+            return WaitUntilElementCondition(driver, by, e => e.Displayed, message, timeout);
+        }
+
+        public static IWebElement WaitUntilElementCondition([NotNull] this IWebDriver driver, [NotNull] By by, [NotNull] Predicate<IWebElement> condition, [NotNull] string message)
         {
             if (driver == null) throw new ArgumentNullException(nameof(driver));
             if (by == null) throw new ArgumentNullException(nameof(by));
             if (condition == null) throw new ArgumentNullException(nameof(condition));
 
-            return  WaitUntilElementCondition(driver, by, condition, TimeSpan.FromSeconds(10));
+            return  WaitUntilElementCondition(driver, by, condition, message, TimeSpan.FromSeconds(10));
         }
 
-        public static IWebElement WaitUntilElementCondition([NotNull] this IWebDriver driver, [NotNull] By by, [NotNull] Predicate<IWebElement> condition, TimeSpan timeout)
+        public static IWebElement WaitUntilElementCondition(
+            [NotNull] this IWebDriver driver, [NotNull] By by, [NotNull] Predicate<IWebElement> condition, [NotNull] string message, TimeSpan timeout)
         {
             if (driver == null) throw new ArgumentNullException(nameof(driver));
             if (by == null) throw new ArgumentNullException(nameof(by));
@@ -112,18 +113,19 @@ namespace UITests.Util
             {
                 var element = driver.FindElement(by);
                 return element == null || !condition(element) ? null : element;
-            }, timeout);
+            }, message, timeout);
         }
 
-        public static IWebElement WaitUntilElementIsStationary([NotNull] this IWebDriver driver, [NotNull] By by, int desiredStationarySamples)
+        public static IWebElement WaitUntilElementIsStationary([NotNull] this IWebDriver driver, [NotNull] By by, int desiredStationarySamples, [NotNull] string message)
         {
             if (driver == null) throw new ArgumentNullException(nameof(driver));
             if (by == null) throw new ArgumentNullException(nameof(by));
 
-            return WaitUntilElementIsStationary(driver, by, desiredStationarySamples, TimeSpan.FromSeconds(10));
+            return WaitUntilElementIsStationary(driver, by, desiredStationarySamples, message, TimeSpan.FromSeconds(10));
         }
 
-        public static IWebElement WaitUntilElementIsStationary([NotNull] this IWebDriver driver, [NotNull] By by, int desiredStationarySamples, TimeSpan timeout)
+        public static IWebElement WaitUntilElementIsStationary(
+            [NotNull] this IWebDriver driver, [NotNull] By by, int desiredStationarySamples, [NotNull] string message, TimeSpan timeout)
         {
             if (driver == null) throw new ArgumentNullException(nameof(driver));
             if (by == null) throw new ArgumentNullException(nameof(by));
@@ -141,7 +143,7 @@ namespace UITests.Util
                 prevLocation = element.Location;
                 stationaryCount = 0;
                 return false;
-            });
+            }, message);
         }
 
         public static void SetText([NotNull] this IWebElement element, [NotNull] string text)

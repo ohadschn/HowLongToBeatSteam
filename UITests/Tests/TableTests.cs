@@ -95,7 +95,7 @@ namespace UITests.Tests
                 sortedGames = TableHelper.ParseGameTable(driver);
                 var sortedValues = sortedGames.Select(selector).ToArray();
                 return (reverse ? sortedValues.OrderBy(n => n).Reverse() : sortedValues.OrderBy(n => n)).SequenceEqual(sortedValues);
-            });
+            }, $"Could not verify column sort: {headerId}");
             CollectionAssert.AssertEqualSets(originalGames, sortedGames);
         }
 
@@ -131,7 +131,7 @@ namespace UITests.Tests
         {
             var firstGameRow = TableHelper.FindGameRows(driver).First();
             driver.FindElement(By.Id(navigationElementId)).Click();
-            driver.WaitUntil(ExpectedConditions.StalenessOf(firstGameRow));
+            driver.WaitUntil(ExpectedConditions.StalenessOf(firstGameRow), $"Could not verify navigation by staleness of element: {firstGameRow}");
         }
 
         private static bool NavigationEnabled(IWebElement element)
@@ -203,7 +203,7 @@ namespace UITests.Tests
                 });
 
                 Console.WriteLine("Waiting for correlation suggestion to be submitted...");
-                driver.WaitUntil(d => TableHelper.ParseGameRow(gameRows[0]).UpdateState == UpdateState.Submitted);
+                driver.WaitUntil(d => TableHelper.ParseGameRow(gameRows[0]).UpdateState == UpdateState.Submitted, "Could not verify successful correlation submission");
 
                 Console.WriteLine("Suggesting non-game...");
                 DialogHelper.TestDialog(driver, gameRows[1].FindElement(By.ClassName(SiteConstants.RowVerifyGameAnchorId)), SiteConstants.NonGameUpdateModalId, () =>
@@ -216,7 +216,7 @@ namespace UITests.Tests
                 {
                     var gameInfo = TableHelper.ParseGameRow(gameRows[1]);
                     return gameInfo.UpdateState == UpdateState.Submitted && !gameInfo.Included;
-                });
+                }, "Could not verify successful non-game submission");
             });
         }
 
@@ -234,20 +234,22 @@ namespace UITests.Tests
                 SignInHelper.SignInWithId(driver, UserConstants.HltbsUser);
 
                 Console.WriteLine("Setting filter to include two games...");
-                FilterHelper.SetTextFilter(driver, "in");
-                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 2);
+                var filter = "in";
+                FilterHelper.SetTextFilter(driver, filter);
+                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 2, $"Could not verify filter {filter}");
                 AssertActiveFilterNotifications(driver, true);
                 CollectionAssert.AssertEqualSets(new[] {GameConstants.RoninSteamName, GameConstants.GodsWillBeWatchingSteamName},
                     TableHelper.ParseGameTable(driver).Select(g => g.SteamName));
 
                 Console.WriteLine("Setting filter to exclude all games...");
-                FilterHelper.SetTextFilter(driver, Guid.NewGuid().ToString());
-                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 0);
+                filter = Guid.NewGuid().ToString();
+                FilterHelper.SetTextFilter(driver, filter);
+                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 0, $"Could not verify filter {filter}");
                 AssertActiveFilterNotifications(driver, true);
 
                 Console.WriteLine("Clearing filter...");
                 FilterHelper.ClearTextFilter(driver);
-                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 3);
+                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 3, "Could not verify cleared filter");
                 AssertActiveFilterNotifications(driver, false);
             });
         }
@@ -261,36 +263,36 @@ namespace UITests.Tests
 
                 Console.WriteLine("Setting advanced filter by release year...");
                 FilterHelper.SetAdvancedFilter(driver, 2015, 2016);
-                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 2);
+                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 2, "Could not verify release year advanced filter");
                 CollectionAssert.AssertEqualSets(new[] {GameConstants.RoninSteamName, GameConstants.AFistfulOfGunSteamName},
                     TableHelper.ParseGameTable(driver).Select(g => g.SteamName));
                 AssertActiveFilterNotifications(driver, true);
 
                 FilterHelper.ClearAdvancedFilter(driver);
-                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 3);
+                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 3, "Could not verify cleared advanced filter");
                 AssertActiveFilterNotifications(driver, false);
 
                 Console.WriteLine("Setting advanced filter by Metacritic score...");
                 FilterHelper.SetAdvancedFilter(driver, 2014, -1, 60, 70);
-                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 1);
+                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 1, "Could not verify metacritic advanced filter");
                 CollectionAssert.AssertEqualSets(new[] {GameConstants.GodsWillBeWatchingSteamName }, TableHelper.ParseGameTable(driver).Select(g => g.SteamName));
                 AssertActiveFilterNotifications(driver, true);
 
                 Console.WriteLine("Setting advanced filter by genre...");
                 FilterHelper.SetAdvancedFilter(driver, -1, -1, -1, -1, new [] { GameConstants.ActionGenre });
-                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 0);
+                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 0, "Could not verify metacritic+genre advanced filter");
                 AssertActiveFilterNotifications(driver, true);
 
                 Console.WriteLine("Clearing filter (externally)...");
                 FilterHelper.ClearAdvancedFilterExternally(driver);
-                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 3);
+                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 3, "Could not verify externally cleared advanced filter");
                 AssertActiveFilterNotifications(driver, false);
 
                 Console.WriteLine("Setting combined filter and advanced filter...");
                 FilterHelper.SetAdvancedFilter(driver, -1, -1, -1, -1, new[] { GameConstants.ActionGenre });
-                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 2);
+                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 2, "Could not verify genre advanced filter");
                 FilterHelper.SetTextFilter(driver, "gun");
-                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 1);
+                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 1, "Could not verify combined filter and advanced filter");
                 CollectionAssert.AssertEqualSets(new[] {GameConstants.AFistfulOfGunSteamName }, TableHelper.ParseGameTable(driver).Select(g => g.SteamName));
             });
         }

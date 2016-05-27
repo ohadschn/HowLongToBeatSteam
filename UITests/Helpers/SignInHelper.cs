@@ -21,7 +21,7 @@ namespace UITests.Helpers
         {
             Console.WriteLine("Waiting for ads to display so that elements below them are not moved and can therefore be clicked reliably...");
             driver.WaitUntil(d => d.FindElement(By.Id(SiteConstants.AdsensePlaytimeDivId)).Size.Height > MinAdHeight &&
-                                  d.FindElement(By.Id(SiteConstants.AdsenseSliceDivId)).Size.Height > MinAdHeight);
+                                  d.FindElement(By.Id(SiteConstants.AdsenseSliceDivId)).Size.Height > MinAdHeight, "Could not verify ad expansion");
         }
 
         private static void WaitForLoad(IWebDriver driver, WaitType waitType)
@@ -32,7 +32,7 @@ namespace UITests.Helpers
             }
 
             Console.WriteLine("Waiting for user page to load...");
-            driver.WaitUntilElementIsVisible(By.Id(SiteConstants.PersonaAvatarImgId));
+            driver.WaitUntilElementIsVisible(By.Id(SiteConstants.PersonaAvatarImgId), "Could not locate persona avatar image");
             Console.WriteLine("User page loaded");
 
             if (waitType == WaitType.SafeClicking)
@@ -68,7 +68,7 @@ namespace UITests.Helpers
 
             try
             {
-                driver.WaitUntil(ExpectedConditions.UrlContains("Authentication"), TimeSpan.FromSeconds(3));
+                driver.WaitUntil(ExpectedConditions.UrlContains("Authentication"), "Could not verify authentication URL", TimeSpan.FromSeconds(3));
             }
             catch (WebDriverTimeoutException)
             {
@@ -77,7 +77,7 @@ namespace UITests.Helpers
             }
 
             Console.WriteLine("Waiting for Valve's Steam login button...");
-            driver.WaitUntil(ExpectedConditions.ElementExists(By.Id(SiteConstants.ValveSteamLoginButtonId)), TimeSpan.FromSeconds(30));
+            driver.WaitUntil(ExpectedConditions.ElementExists(By.Id(SiteConstants.ValveSteamLoginButtonId)), "Could not find Valve's Steam login button", TimeSpan.FromSeconds(30));
 
             Console.WriteLine("Typing in Valve Steam user name..");
             var steamUsernameText = driver.FindElement(By.Id(SiteConstants.ValveSteamUsername));

@@ -15,7 +15,8 @@ namespace UITests.Tests
         {
             DialogHelper.TestDialog(driver, pageAnchorId, SiteConstants.ExternalModalId, () =>
             {
-                driver.WaitUntil(ExpectedConditions.TextToBePresentInElementLocated(By.Id(SiteConstants.ExternalPageTitleHeaderId), expectedTitle));
+                driver.WaitUntil(ExpectedConditions.TextToBePresentInElementLocated(By.Id(SiteConstants.ExternalPageTitleHeaderId), expectedTitle),
+                    $"Could not verify external page title: {expectedTitle}");
 
                 Console.WriteLine("Dismissing external page modal dialog...");
                 //we can't click the close button directly because it's covered in a bootstrap overlay

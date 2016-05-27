@@ -15,7 +15,7 @@ namespace UITests.Helpers
             int gameCount = Int32.MaxValue;
             driver.WaitUntil(d =>
                 Int32.TryParse(driver.FindElement(By.Id(SiteConstants.GamesFoundTitleId)).Text, NumberStyles.Number, CultureInfo.InvariantCulture, out gameCount) &&
-                FilterHelper.GetFilterGameCount(driver) == gameCount);
+                FilterHelper.GetFilterGameCount(driver) == gameCount, "Could not determine game count");
 
             return gameCount;
         }

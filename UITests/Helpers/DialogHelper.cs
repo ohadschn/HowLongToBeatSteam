@@ -12,7 +12,7 @@ namespace UITests.Helpers
             dialogButton.Click();
 
             Console.WriteLine($"Waiting for dialog to load (by waiting for {modalId} to be stationary)...");
-            driver.WaitUntilElementIsStationary(By.Id(modalId), 3);
+            driver.WaitUntilElementIsStationary(By.Id(modalId), 3, $"Could not verify dialog {modalId} is stationary");
 
             Console.WriteLine("Executing dialog test...");
             test();
@@ -20,7 +20,7 @@ namespace UITests.Helpers
             if (waitForDismissal)
             {
                 Console.WriteLine($"Waiting until dialog is dismissed (by waiting for {modalId} to be invisible)...");
-                driver.WaitUntil(d => !d.FindElement(By.Id(modalId)).Displayed);
+                driver.WaitUntil(d => !d.FindElement(By.Id(modalId)).Displayed, $"Could not verify dialog {modalId} is dismissed");
             }
         }
 

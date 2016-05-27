@@ -61,7 +61,7 @@ namespace UITests.Tests
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
                 SignInHelper.SignInWithId(driver, UserConstants.SampleNoGamesUserId.ToString(), WaitType.None);
-                driver.WaitUntilElementIsVisible(By.Id(SiteConstants.EmptyLibraryDivId));
+                driver.WaitUntilElementIsVisible(By.Id(SiteConstants.EmptyLibraryDivId), "Could not locate empty library notification");
             });
         }
 
@@ -71,7 +71,7 @@ namespace UITests.Tests
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
                 SignInHelper.SignInWithId(driver, Guid.NewGuid().ToString(), WaitType.None);
-                driver.WaitUntilElementIsVisible(By.Id(SiteConstants.LoginErrorDivId));
+                driver.WaitUntilElementIsVisible(By.Id(SiteConstants.LoginErrorDivId), "Could not locate login error notification");
             });
         }
 
