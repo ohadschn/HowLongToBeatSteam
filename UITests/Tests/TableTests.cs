@@ -6,6 +6,7 @@ using OpenQA.Selenium.Support.UI;
 using UITests.Constants;
 using UITests.Helpers;
 using UITests.Util;
+using CollectionAssert = UITests.Util.CollectionAssert;
 
 namespace UITests.Tests
 {
@@ -43,7 +44,7 @@ namespace UITests.Tests
                     new {SteamName = GameConstants.RoninSteamName, HltbName = GameConstants.RoninHltbName}
                 };
 
-                AssertExtentions.AssertEqualSets(expectedGames, games.Select(g => new { g.SteamName, g.HltbName }));
+                CollectionAssert.AssertEqualSets(expectedGames, games.Select(g => new { g.SteamName, g.HltbName }));
             });
         }
 
@@ -95,7 +96,7 @@ namespace UITests.Tests
                 var sortedValues = sortedGames.Select(selector).ToArray();
                 return (reverse ? sortedValues.OrderBy(n => n).Reverse() : sortedValues.OrderBy(n => n)).SequenceEqual(sortedValues);
             });
-            AssertExtentions.AssertEqualSets(originalGames, sortedGames);
+            CollectionAssert.AssertEqualSets(originalGames, sortedGames);
         }
 
         private static void TestColumnSort<T>(IWebDriver driver, string headerId, Func<TableGameInfo, T> selector)
@@ -151,31 +152,31 @@ namespace UITests.Tests
 
                 Navigate(driver, SiteConstants.NextPageAnchorId);
                 var secondPageGames = TableHelper.ParseGameTable(driver);
-                AssertExtentions.AssertDistinctSets(firstPageGames, secondPageGames);
+                CollectionAssert.AssertDistinctSets(firstPageGames, secondPageGames);
 
                 Navigate(driver, SiteConstants.FixedPageAnchorIdPrefix + "4");
                 var fourthPageGames = TableHelper.ParseGameTable(driver);
-                AssertExtentions.AssertDistinctSets(firstPageGames, fourthPageGames);
-                AssertExtentions.AssertDistinctSets(secondPageGames, fourthPageGames);
+                CollectionAssert.AssertDistinctSets(firstPageGames, fourthPageGames);
+                CollectionAssert.AssertDistinctSets(secondPageGames, fourthPageGames);
 
                 Navigate(driver, SiteConstants.LastPageAnchorId);
                 var lastPageGames = TableHelper.ParseGameTable(driver);
-                AssertExtentions.AssertDistinctSets(firstPageGames, lastPageGames);
-                AssertExtentions.AssertDistinctSets(secondPageGames, lastPageGames);
-                AssertExtentions.AssertDistinctSets(fourthPageGames, lastPageGames);
+                CollectionAssert.AssertDistinctSets(firstPageGames, lastPageGames);
+                CollectionAssert.AssertDistinctSets(secondPageGames, lastPageGames);
+                CollectionAssert.AssertDistinctSets(fourthPageGames, lastPageGames);
 
                 Assert.IsFalse(NavigationEnabled(driver.FindElement(By.Id(SiteConstants.NextPageAnchorId))), "Expected last page button to be disabled");
                 Assert.IsFalse(NavigationEnabled(driver.FindElement(By.Id(SiteConstants.LastPageAnchorId))), "Expected next page button to be disabled");
 
                 Navigate(driver, SiteConstants.PreviousPageAnchorId);
                 var secondLastPageGames = TableHelper.ParseGameTable(driver);
-                AssertExtentions.AssertDistinctSets(firstPageGames, secondLastPageGames);
-                AssertExtentions.AssertDistinctSets(secondPageGames, secondLastPageGames);
-                AssertExtentions.AssertDistinctSets(fourthPageGames, secondLastPageGames);
-                AssertExtentions.AssertDistinctSets(lastPageGames, secondLastPageGames);
+                CollectionAssert.AssertDistinctSets(firstPageGames, secondLastPageGames);
+                CollectionAssert.AssertDistinctSets(secondPageGames, secondLastPageGames);
+                CollectionAssert.AssertDistinctSets(fourthPageGames, secondLastPageGames);
+                CollectionAssert.AssertDistinctSets(lastPageGames, secondLastPageGames);
 
                 Navigate(driver, SiteConstants.FirstPageAnchorId);
-                AssertExtentions.AssertEqualSequences(firstPageGames, TableHelper.ParseGameTable(driver));
+                CollectionAssert.AssertEqualSequences(firstPageGames, TableHelper.ParseGameTable(driver));
 
                 foreach (var gamesPerPage in SiteConstants.GamesPerPageOptions)
                 {
@@ -236,7 +237,7 @@ namespace UITests.Tests
                 FilterHelper.SetTextFilter(driver, "in");
                 driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 2);
                 AssertActiveFilterNotifications(driver, true);
-                AssertExtentions.AssertEqualSets(new[] {GameConstants.RoninSteamName, GameConstants.GodsWillBeWatchingSteamName},
+                CollectionAssert.AssertEqualSets(new[] {GameConstants.RoninSteamName, GameConstants.GodsWillBeWatchingSteamName},
                     TableHelper.ParseGameTable(driver).Select(g => g.SteamName));
 
                 Console.WriteLine("Setting filter to exclude all games...");
@@ -261,7 +262,7 @@ namespace UITests.Tests
                 Console.WriteLine("Setting advanced filter by release year...");
                 FilterHelper.SetAdvancedFilter(driver, 2015, 2016);
                 driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 2);
-                AssertExtentions.AssertEqualSets(new[] {GameConstants.RoninSteamName, GameConstants.AFistfulOfGunSteamName},
+                CollectionAssert.AssertEqualSets(new[] {GameConstants.RoninSteamName, GameConstants.AFistfulOfGunSteamName},
                     TableHelper.ParseGameTable(driver).Select(g => g.SteamName));
                 AssertActiveFilterNotifications(driver, true);
 
@@ -272,7 +273,7 @@ namespace UITests.Tests
                 Console.WriteLine("Setting advanced filter by Metacritic score...");
                 FilterHelper.SetAdvancedFilter(driver, 2014, -1, 60, 70);
                 driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 1);
-                AssertExtentions.AssertEqualSets(new[] {GameConstants.GodsWillBeWatchingSteamName }, TableHelper.ParseGameTable(driver).Select(g => g.SteamName));
+                CollectionAssert.AssertEqualSets(new[] {GameConstants.GodsWillBeWatchingSteamName }, TableHelper.ParseGameTable(driver).Select(g => g.SteamName));
                 AssertActiveFilterNotifications(driver, true);
 
                 Console.WriteLine("Setting advanced filter by genre...");
@@ -290,7 +291,7 @@ namespace UITests.Tests
                 driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 2);
                 FilterHelper.SetTextFilter(driver, "gun");
                 driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 1);
-                AssertExtentions.AssertEqualSets(new[] {GameConstants.AFistfulOfGunSteamName }, TableHelper.ParseGameTable(driver).Select(g => g.SteamName));
+                CollectionAssert.AssertEqualSets(new[] {GameConstants.AFistfulOfGunSteamName }, TableHelper.ParseGameTable(driver).Select(g => g.SteamName));
             });
         }
     }

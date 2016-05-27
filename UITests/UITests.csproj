@@ -35,6 +35,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="JetBrains.Annotations">
+      <HintPath>..\packages\JetBrains.Annotations.9.1.1\lib\net20\JetBrains.Annotations.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Drawing" />
     <Reference Include="WebDriver, Version=2.53.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -80,7 +83,7 @@
     <Compile Include="Tests\SharingTests.cs" />
     <Compile Include="Tests\LinkTests.cs" />
     <Compile Include="Tests\TableTests.cs" />
-    <Compile Include="Util\AssertExtentions.cs" />
+    <Compile Include="Util\CollectionAssert.cs" />
     <Compile Include="Util\SeleniumExtensions.cs" />
     <Compile Include="Util\TestUtil.cs" />
     <Compile Include="Constants\UserConstants.cs" />
