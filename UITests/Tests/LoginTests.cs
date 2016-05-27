@@ -28,6 +28,9 @@ namespace UITests.Tests
             {
                 SignInHelper.SignInWithId(driver, UserConstants.SampleSteamId, WaitType.PageLoad);
                 AssertPersonaDetails(driver, UserConstants.SamplePersonaName, UserConstants.SamplePersonaAvatarUUID);
+
+                Console.WriteLine("Asserting the imputed values notification is displayed...");
+                driver.FindElement(By.Id(SiteConstants.ImputedValuesNotificationDivId));
             });
         }
 
@@ -38,6 +41,9 @@ namespace UITests.Tests
             {
                 SignInHelper.SignInWithId(driver, UserConstants.SampleSteam64Id.ToString(), WaitType.PageLoad);
                 AssertPersonaDetails(driver, UserConstants.SamplePersonaName, UserConstants.SamplePersonaAvatarUUID);
+
+                Console.WriteLine("Asserting the imputed values notification is displayed...");
+                driver.FindElement(By.Id(SiteConstants.ImputedValuesNotificationDivId));
             });
         }
 
@@ -82,6 +88,9 @@ namespace UITests.Tests
             {
                 SignInHelper.GoToCachedGamesPage(driver, WaitType.PageLoad);
                 AssertPersonaDetails(driver, String.Empty, UserConstants.SamplePersonaAvatarUUID);
+
+                Console.WriteLine("Asserting the missing HLTB games alert is displayed...");
+                driver.FindElement(By.Id(SiteConstants.MissingHltbGamesAlertDivID));
             });
         }
     }

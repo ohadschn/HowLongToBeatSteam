@@ -24,9 +24,8 @@ namespace UITests.Tests
         {
             Console.WriteLine("Locating current playtime text...");
             var currentPlaytimeSpan = driver.FindElement(By.Id(SiteConstants.CurrentPlaytimeSpanId));
-            Assert.AreEqual("0 hours", currentPlaytimeSpan.Text);
+            Assert.AreEqual("0 hours", currentPlaytimeSpan.Text, "Expected zero playtime for HLTBS user");
 
-            Console.WriteLine("Parsing remaining playtimes...");
             var mainRemainingPlaytime = GameSummaryHelper.GetRemainingMainPlaytime(driver);
             var extrasRemainingPlaytime = GameSummaryHelper.GetRemainingExtrasPlaytime(driver);
             var completionistRemainingPlaytime = GameSummaryHelper.GetRemainingCompletionistPlaytime(driver);
@@ -73,7 +72,7 @@ namespace UITests.Tests
 
                 var gameCount = GameSummaryHelper.GetGameCount(driver);
                 Assert.IsTrue(gameCount > 10000, $"too few games in cache: {gameCount}");
-                Assert.AreEqual(0, GetExcludedGameCount(driver), "incorrect excluded game count");
+                Assert.AreEqual(0, GetExcludedGameCount(driver), "expected zero excluded games in cached page");
 
                 AssertValidPlaytimes(driver);
                 AssertValidPercentages(driver);

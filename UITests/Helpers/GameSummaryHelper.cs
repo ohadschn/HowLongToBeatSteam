@@ -27,16 +27,19 @@ namespace UITests.Helpers
 
         public static TimeSpan GetRemainingMainPlaytime(IWebDriver driver)
         {
+            Console.WriteLine("Getting main playtime...");
             return GetPlaytime(driver, By.Id(SiteConstants.MainPlaytimeRemainingSpan));
         }
 
         public static TimeSpan GetRemainingExtrasPlaytime(IWebDriver driver)
         {
+            Console.WriteLine("Getting extras playtime...");
             return GetPlaytime(driver, By.Id(SiteConstants.ExtrasPlaytimeRemainingSpan));
         }
 
         public static TimeSpan GetRemainingCompletionistPlaytime(IWebDriver driver)
         {
+            Console.WriteLine("Getting completionist playtime...");
             return GetPlaytime(driver, By.Id(SiteConstants.CompletionistPlaytimeRemainingSpan));
         }
     }

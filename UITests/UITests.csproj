@@ -78,7 +78,6 @@
     <Compile Include="Tests\LoginTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Helpers\SignInHelper.cs" />
-    <Compile Include="Tests\NotificationTests.cs" />
     <Compile Include="Tests\SurvivalTests.cs" />
     <Compile Include="Tests\SharingTests.cs" />
     <Compile Include="Tests\LinkTests.cs" />

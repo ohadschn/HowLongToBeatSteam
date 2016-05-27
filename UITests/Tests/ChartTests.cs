@@ -13,7 +13,7 @@ namespace UITests.Tests
     {
         private static void AssertAmChart(IWebDriver driver, string chartDivId)
         {
-            Console.WriteLine("Looking for amCharts div...");
+            Console.WriteLine($"Looking for amCharts div in {chartDivId}...");
             Assert.IsTrue(driver.FindElement(By.CssSelector($"#{chartDivId} .amcharts-main-div")).Displayed, "Expected amCharts div to be displayed");
         }
 

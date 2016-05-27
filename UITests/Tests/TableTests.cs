@@ -44,7 +44,7 @@ namespace UITests.Tests
                     new {SteamName = GameConstants.RoninSteamName, HltbName = GameConstants.RoninHltbName}
                 };
 
-                CollectionAssert.AssertEqualSets(expectedGames, games.Select(g => new { g.SteamName, g.HltbName }));
+                CollectionAssert.AssertEqualSets(expectedGames, games.Select(g => new { g.SteamName, g.HltbName }), "Unexpected games in table");
             });
         }
 
@@ -96,7 +96,7 @@ namespace UITests.Tests
                 var sortedValues = sortedGames.Select(selector).ToArray();
                 return (reverse ? sortedValues.OrderBy(n => n).Reverse() : sortedValues.OrderBy(n => n)).SequenceEqual(sortedValues);
             }, $"Could not verify column sort: {headerId}");
-            CollectionAssert.AssertEqualSets(originalGames, sortedGames);
+            CollectionAssert.AssertEqualSets(originalGames, sortedGames, $"Column sorting by '{headerId}' affected games in table");
         }
 
         private static void TestColumnSort<T>(IWebDriver driver, string headerId, Func<TableGameInfo, T> selector)
@@ -152,31 +152,31 @@ namespace UITests.Tests
 
                 Navigate(driver, SiteConstants.NextPageAnchorId);
                 var secondPageGames = TableHelper.ParseGameTable(driver);
-                CollectionAssert.AssertDistinctSets(firstPageGames, secondPageGames);
+                CollectionAssert.AssertDistinctSets(firstPageGames, secondPageGames, "Common games found in first and second table pages");
 
                 Navigate(driver, SiteConstants.FixedPageAnchorIdPrefix + "4");
                 var fourthPageGames = TableHelper.ParseGameTable(driver);
-                CollectionAssert.AssertDistinctSets(firstPageGames, fourthPageGames);
-                CollectionAssert.AssertDistinctSets(secondPageGames, fourthPageGames);
+                CollectionAssert.AssertDistinctSets(firstPageGames, fourthPageGames, "Common games found in first and fourth table pages");
+                CollectionAssert.AssertDistinctSets(secondPageGames, fourthPageGames, "Common games found in second and fourth game pages");
 
                 Navigate(driver, SiteConstants.LastPageAnchorId);
                 var lastPageGames = TableHelper.ParseGameTable(driver);
-                CollectionAssert.AssertDistinctSets(firstPageGames, lastPageGames);
-                CollectionAssert.AssertDistinctSets(secondPageGames, lastPageGames);
-                CollectionAssert.AssertDistinctSets(fourthPageGames, lastPageGames);
+                CollectionAssert.AssertDistinctSets(firstPageGames, lastPageGames, "Common games found in first and last table pages");
+                CollectionAssert.AssertDistinctSets(secondPageGames, lastPageGames, "Common games found in second and last table pages");
+                CollectionAssert.AssertDistinctSets(fourthPageGames, lastPageGames, "Common games found in fourth and last table pages");
 
                 Assert.IsFalse(NavigationEnabled(driver.FindElement(By.Id(SiteConstants.NextPageAnchorId))), "Expected last page button to be disabled");
                 Assert.IsFalse(NavigationEnabled(driver.FindElement(By.Id(SiteConstants.LastPageAnchorId))), "Expected next page button to be disabled");
 
                 Navigate(driver, SiteConstants.PreviousPageAnchorId);
                 var secondLastPageGames = TableHelper.ParseGameTable(driver);
-                CollectionAssert.AssertDistinctSets(firstPageGames, secondLastPageGames);
-                CollectionAssert.AssertDistinctSets(secondPageGames, secondLastPageGames);
-                CollectionAssert.AssertDistinctSets(fourthPageGames, secondLastPageGames);
-                CollectionAssert.AssertDistinctSets(lastPageGames, secondLastPageGames);
+                CollectionAssert.AssertDistinctSets(firstPageGames, secondLastPageGames, "Common games found in first and second last table pages");
+                CollectionAssert.AssertDistinctSets(secondPageGames, secondLastPageGames, "Common games found in second and second last table pages");
+                CollectionAssert.AssertDistinctSets(fourthPageGames, secondLastPageGames, "Common games found in fourth and second last table pages");
+                CollectionAssert.AssertDistinctSets(lastPageGames, secondLastPageGames, "Common games found in last and second last table pages");
 
                 Navigate(driver, SiteConstants.FirstPageAnchorId);
-                CollectionAssert.AssertEqualSequences(firstPageGames, TableHelper.ParseGameTable(driver));
+                CollectionAssert.AssertEqualSequences(firstPageGames, TableHelper.ParseGameTable(driver), "Inconsistent games in first table page");
 
                 foreach (var gamesPerPage in SiteConstants.GamesPerPageOptions)
                 {
@@ -239,7 +239,7 @@ namespace UITests.Tests
                 driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 2, $"Could not verify filter {filter}");
                 AssertActiveFilterNotifications(driver, true);
                 CollectionAssert.AssertEqualSets(new[] {GameConstants.RoninSteamName, GameConstants.GodsWillBeWatchingSteamName},
-                    TableHelper.ParseGameTable(driver).Select(g => g.SteamName));
+                    TableHelper.ParseGameTable(driver).Select(g => g.SteamName), $"Could not verify filter {filter}");
 
                 Console.WriteLine("Setting filter to exclude all games...");
                 filter = Guid.NewGuid().ToString();
@@ -265,7 +265,7 @@ namespace UITests.Tests
                 FilterHelper.SetAdvancedFilter(driver, 2015, 2016);
                 driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 2, "Could not verify release year advanced filter");
                 CollectionAssert.AssertEqualSets(new[] {GameConstants.RoninSteamName, GameConstants.AFistfulOfGunSteamName},
-                    TableHelper.ParseGameTable(driver).Select(g => g.SteamName));
+                    TableHelper.ParseGameTable(driver).Select(g => g.SteamName), "Could not verify release year advanced filter");
                 AssertActiveFilterNotifications(driver, true);
 
                 FilterHelper.ClearAdvancedFilter(driver);
@@ -275,7 +275,8 @@ namespace UITests.Tests
                 Console.WriteLine("Setting advanced filter by Metacritic score...");
                 FilterHelper.SetAdvancedFilter(driver, 2014, -1, 60, 70);
                 driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 1, "Could not verify metacritic advanced filter");
-                CollectionAssert.AssertEqualSets(new[] {GameConstants.GodsWillBeWatchingSteamName }, TableHelper.ParseGameTable(driver).Select(g => g.SteamName));
+                CollectionAssert.AssertEqualSets(new[] {GameConstants.GodsWillBeWatchingSteamName}, TableHelper.ParseGameTable(driver).Select(g => g.SteamName),
+                    "Could not verify metacritic advanced filter");
                 AssertActiveFilterNotifications(driver, true);
 
                 Console.WriteLine("Setting advanced filter by genre...");
@@ -293,7 +294,8 @@ namespace UITests.Tests
                 driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 2, "Could not verify genre advanced filter");
                 FilterHelper.SetTextFilter(driver, "gun");
                 driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 1, "Could not verify combined filter and advanced filter");
-                CollectionAssert.AssertEqualSets(new[] {GameConstants.AFistfulOfGunSteamName }, TableHelper.ParseGameTable(driver).Select(g => g.SteamName));
+                CollectionAssert.AssertEqualSets(new[] {GameConstants.AFistfulOfGunSteamName}, TableHelper.ParseGameTable(driver).Select(g => g.SteamName),
+                    "Could not verify combined filter and advanced filter");
             });
         }
     }
