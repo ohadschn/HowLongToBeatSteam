@@ -118,10 +118,15 @@ namespace UITests.Constants
         public const string AdvancedFilterNoGenresSelectedSpanId = "no-genres-selected";
 
         public const string CachedGamesPanelId = "cached-games-panel";
-        public const string FacebookLinkId = "footer-facebook-link";
-        public const string TwitterLinkId = "footer-twitter-link";
-        public const string GooglePlusLinkId = "footer-gplus-link";
-        public const string SteamGroupLinkId = "footer-steam-group-link";
+        public const string FooterFacebookLinkId = "footer-facebook-link";
+        public const string FooterTwitterLinkId = "footer-twitter-link";
+        public const string FooterGooglePlusLinkId = "footer-gplus-link";
+        public const string FooterSteamGroupLinkId = "footer-steam-group-link";
+
+        public const string MobileFooterFacebookLinkId = "mobile-footer-facebook-link";
+        public const string MobileFooterTwitterLinkId = "mobile-footer-twitter-link";
+        public const string MobileFooterGooglePlusLinkId = "mobile-footer-gplus-link";
+        public const string MobileFooterSteamGroupLinkId = "mobile-footer-steam-group-link";
 
         public const string ExternalModalId = "external-modal";
 
@@ -155,5 +160,11 @@ namespace UITests.Constants
         public const string CompletionistPlaytimeSlicerId = "completionist-playtime-slicer";
 
         public const string NoDataIndicatorId = "no-data-indicator";
+
+        public const string TooltipClass = "tooltip-inner";
+
+        public const string ProfileIdTooltip = "profile-id-tooltip";
+        public const string PlaytimeTooltip = "playtime-tooltip";
+        public const string ExcludedGamesTooltip = "excluded-games-tooltip";
     }
 }

@@ -6,7 +6,7 @@ using UITests.Util;
 
 namespace UITests.Helpers
 {
-    public class LinkHelper
+    public static class LinkHelper
     {
         public static void AssertExternalLink(IWebDriver driver, string linkId, string expectedTitle)
         {

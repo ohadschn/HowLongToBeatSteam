@@ -13,7 +13,7 @@ namespace UITests.Helpers
         SafeClicking
     }
 
-    public class SignInHelper
+    public static class SignInHelper
     {
         private const int MinAdHeight = 250;
 

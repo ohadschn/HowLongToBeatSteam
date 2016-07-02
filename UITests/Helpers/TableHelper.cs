@@ -6,7 +6,7 @@ using UITests.Constants;
 
 namespace UITests.Helpers
 {
-    class TableHelper
+    public static class TableHelper
     {
         private static double GetPlaytime(string playtime)
         {

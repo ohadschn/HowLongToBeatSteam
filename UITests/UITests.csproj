@@ -40,12 +40,12 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Drawing" />
-    <Reference Include="WebDriver, Version=2.53.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Selenium.WebDriver.2.53.0\lib\net40\WebDriver.dll</HintPath>
+    <Reference Include="WebDriver, Version=2.53.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Selenium.WebDriver.2.53.1\lib\net40\WebDriver.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="WebDriver.Support, Version=2.53.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Selenium.Support.2.53.0\lib\net40\WebDriver.Support.dll</HintPath>
+    <Reference Include="WebDriver.Support, Version=2.53.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Selenium.Support.2.53.1\lib\net40\WebDriver.Support.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
@@ -72,6 +72,7 @@
     <Compile Include="Helpers\SurvivalHelper.cs" />
     <Compile Include="Helpers\TableGameInfo.cs" />
     <Compile Include="Helpers\TableHelper.cs" />
+    <Compile Include="Helpers\TooltipHelper.cs" />
     <Compile Include="Tests\ChartTests.cs" />
     <Compile Include="Tests\GameTests.cs" />
     <Compile Include="Constants\SiteConstants.cs" />
@@ -82,6 +83,7 @@
     <Compile Include="Tests\SharingTests.cs" />
     <Compile Include="Tests\LinkTests.cs" />
     <Compile Include="Tests\TableTests.cs" />
+    <Compile Include="Tests\TooltipTests.cs" />
     <Compile Include="Util\CollectionAssert.cs" />
     <Compile Include="Util\SeleniumExtensions.cs" />
     <Compile Include="Util\TestUtil.cs" />
@@ -90,7 +92,6 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

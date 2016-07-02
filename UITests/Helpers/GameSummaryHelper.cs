@@ -6,7 +6,7 @@ using UITests.Util;
 
 namespace UITests.Helpers
 {
-    public class GameSummaryHelper
+    public static class GameSummaryHelper
     {
         public static int GetGameCount(IWebDriver driver)
         {

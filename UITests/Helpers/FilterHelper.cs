@@ -9,7 +9,7 @@ using UITests.Util;
 
 namespace UITests.Helpers
 {
-    class FilterHelper
+    public static class FilterHelper
     {
         public static int GetFilterGameCount(IWebDriver driver)
         {

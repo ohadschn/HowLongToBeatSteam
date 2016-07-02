@@ -26,17 +26,17 @@ namespace UITests.Tests
             });
         }
 
-        private static void AssertUnconditionalLinks(IWebDriver driver)
+        private static void AssertUnconditionalLinks(IWebDriver driver, bool mobile)
         {
             Assert.IsTrue(driver.FindElement(By.Id(SiteConstants.ContactAnchorId)).Displayed, "Expected contact link to be visible");
 
             AssertPageLink(driver, SiteConstants.PrivacyAnchorId, SiteConstants.PrivacyPolicyTitle);
             AssertPageLink(driver, SiteConstants.FaqAnchorId, SiteConstants.FaqTitle);
 
-            LinkHelper.AssertExternalLink(driver, SiteConstants.FacebookLinkId, "HowLongToBeatSteam");
-            LinkHelper.AssertExternalLink(driver, SiteConstants.TwitterLinkId, "hltbsteam");
-            LinkHelper.AssertExternalLink(driver, SiteConstants.GooglePlusLinkId, "HowLongToBeatSteam");
-            LinkHelper.AssertExternalLink(driver, SiteConstants.SteamGroupLinkId, "HLTBS");
+            LinkHelper.AssertExternalLink(driver, mobile ? SiteConstants.MobileFooterFacebookLinkId : SiteConstants.FooterFacebookLinkId, "HowLongToBeatSteam");
+            LinkHelper.AssertExternalLink(driver, mobile ? SiteConstants.MobileFooterTwitterLinkId :  SiteConstants.FooterTwitterLinkId, "hltbsteam");
+            LinkHelper.AssertExternalLink(driver, mobile ? SiteConstants.MobileFooterGooglePlusLinkId : SiteConstants.FooterGooglePlusLinkId, "HowLongToBeatSteam");
+            LinkHelper.AssertExternalLink(driver, mobile ? SiteConstants.MobileFooterSteamGroupLinkId : SiteConstants.FooterSteamGroupLinkId, "HLTBS");
 
             LinkHelper.AssertExternalLink(driver, SiteConstants.SteamAnchorId, "Steam");
             LinkHelper.AssertExternalLink(driver, SiteConstants.HltbAnchorId, "HowLongToBeat");
@@ -51,8 +51,20 @@ namespace UITests.Tests
                 SignInHelper.SignInWithId(driver, UserConstants.SampleSteamId);
 
                 LinkHelper.AssertExternalLink(driver, SiteConstants.CachedGamesPanelId, "HowLongToBeatSteam");
-                AssertUnconditionalLinks(driver);
+                AssertUnconditionalLinks(driver, false);
             });
+        }
+
+        [TestMethod]
+        public void TestMobileLinks()
+        {
+            SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
+            {
+                SignInHelper.SignInWithId(driver, UserConstants.SampleSteamId);
+
+                LinkHelper.AssertExternalLink(driver, SiteConstants.CachedGamesPanelId, "HowLongToBeatSteam");
+                AssertUnconditionalLinks(driver, true);
+            }, Browsers.OptimusL70Chrome);
         }
 
         [TestMethod]
@@ -63,7 +75,7 @@ namespace UITests.Tests
                 SignInHelper.GoToCachedGamesPage(driver);
 
                 Assert.IsFalse(driver.FindElement(By.Id(SiteConstants.CachedGamesPanelId)).Displayed, "Expected cached games link to be hidden in cached games page");
-                AssertUnconditionalLinks(driver);
+                AssertUnconditionalLinks(driver, false);
             });
         }
     }

@@ -61,7 +61,8 @@
         </a>
         <form data-bind="submit: vanityUrlSubmitted, attr: { action: '#/' + steamVanityUrlName() }" role="form" class="form-inline">
             <div class="form-group lowered" data-bind="visible: introPage() || error()" style="display: none">
-                <span class="glyphicon glyphicon glyphicon-question-sign cursor-default"
+                <span id="profile-id-tooltip"
+                      class="glyphicon glyphicon glyphicon-question-sign cursor-default"
                       data-placement="bottom"
                       data-toggle="tooltip"
                       data-container="body"
@@ -331,7 +332,8 @@
                                 <h3 class="text-center">
                                     Playtime
                                     <small class="text-info">
-                                        <span class="glyphicon glyphicon-info-sign cursor-default"
+                                        <span id="playtime-tooltip"
+                                              class="glyphicon glyphicon-info-sign cursor-default"
                                               data-placement="bottom"
                                               data-toggle="tooltip"
                                               data-container="body"
@@ -348,7 +350,8 @@
                         <strong id="games-found-title" data-bind="text: numberWithCommas(total().count)"></strong> <strong data-bind="text: 'finite single-player ' + (total().count === 1 ? 'game' : 'games') + ' found'"></strong>
                         <span data-bind="visible: excludedGameCount() > 0" class="text-nowrap">
                             (<span id="excluded-game-count" data-bind="text:numberWithCommas(excludedGameCount())"></span> excluded
-                            <span class="glyphicon glyphicon-info-sign inline-info cursor-default"
+                            <span id="excluded-games-tooltip"
+                                  class="glyphicon glyphicon-info-sign inline-info cursor-default"
                                   data-placement="bottom"
                                   data-toggle="tooltip"
                                   data-container="body"
@@ -617,7 +620,7 @@
                     <div id="adsenseFooter"></div>
                 </div>
             </div>
-            <div data-bind="visible: extraExtraSmall, template: { name: 'community-template', data: 'extra-small' }" class="text-center"></div>
+            <div data-bind="visible: extraExtraSmall, template: { name: 'community-template', data: 'mobile-footer' }" class="text-center"></div>
         </div>
     </div>
     <div class="footer" data-bind="visible: !introPage()" style="display: none">

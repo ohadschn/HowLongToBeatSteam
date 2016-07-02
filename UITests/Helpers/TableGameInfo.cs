@@ -2,7 +2,7 @@ using System;
 
 namespace UITests.Helpers
 {
-    enum UpdateState
+    public enum UpdateState
     {
         None,
         InProgress,
@@ -10,7 +10,7 @@ namespace UITests.Helpers
         Failure
     }
 
-    class TableGameInfo : IEquatable<TableGameInfo>
+    public class TableGameInfo : IEquatable<TableGameInfo>
     {
         public bool Included { get; }
         public string SteamName { get; }

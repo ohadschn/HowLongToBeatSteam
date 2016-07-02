@@ -18,7 +18,7 @@ namespace UITests.Helpers
         Completionist
     }
 
-    public class SurvivalHelper
+    public static class SurvivalHelper
     {
         public static void CalculateSurvival(IWebDriver driver, Gender gender, int birthYear, int weeklyPlaytime, PlayStyle playStyle)
         {

@@ -5,6 +5,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.IE;
+using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 
 namespace UITests.Util
@@ -12,15 +13,29 @@ namespace UITests.Util
     [Flags]
     public enum Browsers
     {
-        Firefox,
-        Chrome,
-        InternetExplorer
-        //TODO mobile
+        Firefox = 1,
+        Chrome = 2,
+        InternetExplorer = 4,
+        iPhone4Chrome = 8,
+        OptimusL70Chrome = 16,
+        Nexus7Chrome = 32,
+        iPadMiniChrome = 64,
+        SmallDeviceChrome = 128,
+        MediumDeviceChrome = 256
     }
 
     public static class SeleniumExtensions
     {
-        public static void ExecuteOnMultipleBrowsers([NotNull] Action<IWebDriver> test, Browsers browsers = Browsers.Firefox | Browsers.Chrome | Browsers.InternetExplorer)
+        public const Browsers DesktopBrowsers = Browsers.Firefox | Browsers.Chrome | Browsers.InternetExplorer;
+
+        private static IWebDriver GetMobileChromeDriver(string deviceName)
+        {
+            var options = new ChromeOptions();
+            options.EnableMobileEmulation(deviceName);
+            return new ChromeDriver(options);
+        }
+
+        public static void ExecuteOnMultipleBrowsers([NotNull] Action<IWebDriver> test, Browsers browsers = DesktopBrowsers)
         {
             if (test == null) throw new ArgumentNullException(nameof(test));
 
@@ -42,7 +57,29 @@ namespace UITests.Util
                 using (var driver = new InternetExplorerDriver()) { test(driver); }
             }
 
-            //TODO mobile
+            if (browsers.HasFlag(Browsers.iPhone4Chrome))
+            {
+                Console.WriteLine("Executing test on Apple iPhone 4 Chrome...");
+                using (var driver = GetMobileChromeDriver("Apple iPhone 4")) { test(driver); }
+            }
+
+            if (browsers.HasFlag(Browsers.OptimusL70Chrome))
+            {
+                Console.WriteLine("Executing test on LG Optimus L70 Chrome...");
+                using (var driver = GetMobileChromeDriver("LG Optimus L70")) { test(driver); }    
+            }
+
+            if (browsers.HasFlag(Browsers.Nexus7Chrome))
+            {
+                Console.WriteLine("Executing test on Google Nexus 7 Chrome...");
+                using (var driver = GetMobileChromeDriver("Google Nexus 7")) { test(driver); }
+            }
+
+            if (browsers.HasFlag(Browsers.iPadMiniChrome))
+            {
+                Console.WriteLine("Executing test on Apple iPad Mini Chrome...");
+                using (var driver = GetMobileChromeDriver("Apple iPad Mini")) { test(driver); }
+            }
         }
 
         public static TResult WaitUntil<TResult>([NotNull] this IWebDriver driver, [NotNull] Func<IWebDriver, TResult> condition, [NotNull] string message)
@@ -176,6 +213,12 @@ namespace UITests.Util
             if (element == null) throw new ArgumentNullException(nameof(element));
 
             return element.GetAttribute("textContent")?.Trim();
+        }
+
+        public static void Hover([NotNull] this IWebDriver driver, By by)
+        {
+            if (driver == null) throw new ArgumentNullException(nameof(driver));
+            new Actions(driver).MoveToElement(driver.FindElement(by)).Perform();
         }
     }
 }

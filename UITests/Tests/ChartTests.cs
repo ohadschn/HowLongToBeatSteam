@@ -69,6 +69,18 @@ namespace UITests.Tests
         }
 
         [TestMethod]
+        public void TestMobileRenderedCharts()
+        {
+            SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
+            {
+                SignInHelper.SignInWithId(driver, UserConstants.HltbsUser);
+
+                TestRenderedCharts(driver);
+                TestSlicers(driver);
+            }, Browsers.iPhone4Chrome);
+        }
+
+        [TestMethod]
         public void TestCachedRenderedCharts()
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
