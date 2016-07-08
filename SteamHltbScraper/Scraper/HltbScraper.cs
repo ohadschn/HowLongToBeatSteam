@@ -30,7 +30,7 @@ namespace SteamHltbScraper.Scraper
         private static readonly int StorageRetries = SiteUtil.GetOptionalValueFromConfig("HltbScraperStorageRetries", 20);
 
         private static readonly HashSet<int> NoTtbGames =
-            new HashSet<int>(SiteUtil.GetOptionalValueFromConfig("NoTtbGames", "27859,27913").Split(',').Select(Int32.Parse));
+            new HashSet<int>(SiteUtil.GetOptionalValueFromConfig("NoTtbGames", "27859,27913,32770").Split(',').Select(Int32.Parse));
 
         private static HttpRetryClient s_client;
 
@@ -184,18 +184,18 @@ namespace SteamHltbScraper.Scraper
             var releaseDate = ScrapeReleaseDate(hltbId, doc);
 
             int mainTtb = 0, extrasTtb = 0, completionistTtb = 0;
-            if (!NoTtbGames.Contains(hltbId))
-            {
-                ScrapeTtbs(hltbId, doc, out mainTtb, out extrasTtb, out completionistTtb);                
-            }
-
             if (doc.DocumentNode.InnerHtml.Contains("This game has been flagged as an endless title")
-                || doc.DocumentNode.InnerHtml.Contains("This game has been flagged as sports/unbeatable"))
+                || doc.DocumentNode.InnerHtml.Contains("This game has been flagged as sports/unbeatable")
+                || doc.DocumentNode.InnerHtml.Contains("This game has been flagged as multi-player only"))
             {
                 HltbScraperEventSource.Log.GameFlaggedAsEndless(hltbName, hltbId);
-                
+
                 //we only submit a suggestion because we can't be sure this game has been correlated correctly to begin with
                 await StorageHelper.InsertSuggestion(new SuggestionEntity(steamAppId, hltbId, AppEntity.EndlessTitleTypeName)).ConfigureAwait(false);
+            }
+            else if (!NoTtbGames.Contains(hltbId))
+            {
+                ScrapeTtbs(hltbId, doc, out mainTtb, out extrasTtb, out completionistTtb);                
             }
 
             HltbScraperEventSource.Log.ScrapeHltbInfoStop(hltbId, mainTtb, extrasTtb, completionistTtb, releaseDate.Year);
