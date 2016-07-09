@@ -17,11 +17,9 @@ namespace UITests.Util
         Chrome = 2,
         InternetExplorer = 4,
         iPhone4Chrome = 8,
-        OptimusL70Chrome = 16,
-        Nexus7Chrome = 32,
-        iPadMiniChrome = 64,
-        SmallDeviceChrome = 128,
-        MediumDeviceChrome = 256
+        OptimusL70Chrome = 16, //384 X 640
+        Nexus7Chrome = 32, // 600 X 960
+        iPadMiniChrome = 64 //768 X 1024
     }
 
     public static class SeleniumExtensions
@@ -95,7 +93,9 @@ namespace UITests.Util
             if (driver == null) throw new ArgumentNullException(nameof(driver));
             if (condition == null) throw new ArgumentNullException(nameof(condition));
 
-            return new WebDriverWait(driver, timeout) {Message = message}.Until(condition);
+            var wait = new WebDriverWait(driver, timeout) {Message = message};
+            wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
+            return wait.Until(condition);
         }
 
         public static IWebElement WaitUntilElementIsAvailable([NotNull] this IWebDriver driver, [NotNull] By by, [NotNull] string message)
@@ -218,7 +218,13 @@ namespace UITests.Util
         public static void Hover([NotNull] this IWebDriver driver, By by)
         {
             if (driver == null) throw new ArgumentNullException(nameof(driver));
-            new Actions(driver).MoveToElement(driver.FindElement(by)).Perform();
+            Hover(driver, driver.FindElement(by));
+        }
+
+        public static void Hover([NotNull] this IWebDriver driver, IWebElement element)
+        {
+            if (driver == null) throw new ArgumentNullException(nameof(driver));
+            new Actions(driver).MoveToElement(element).Perform();
         }
     }
 }

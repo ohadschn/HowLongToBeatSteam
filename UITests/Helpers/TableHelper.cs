@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using OpenQA.Selenium;
 using UITests.Constants;
 
@@ -14,9 +15,38 @@ namespace UITests.Helpers
             return Double.Parse(playtime.Remove(playtime.Length - 1));
         }
 
-        public static TableGameInfo ParseGameRow(IWebElement gameRow)
+        private static void ParseMobilePlaytime(string text, out double steam, out double main, out double extras, out double completionist)
         {
-            Console.WriteLine("Parsing game row...");
+            var match = Regex.Match(text, @"Current:\s*(.+)h.*Main:\s*(.+)h.*Extras:\s*(.+)h.*Completionist:\s*(.+)h.*");
+            if (match.Groups.Count != 5 
+                || !Double.TryParse(match.Groups[1].Value, out steam)
+                || !Double.TryParse(match.Groups[2].Value, out main) 
+                || !Double.TryParse(match.Groups[3].Value, out extras)
+                || !Double.TryParse(match.Groups[4].Value, out completionist))
+            {
+                steam = main = extras = completionist = -1;
+            }
+        }
+
+        private static TableGameInfo ParseMobileTableRow(IWebDriver driver, IWebElement gameRow)
+        {
+            Console.WriteLine("Parsing mobile game row...");
+            bool included = gameRow.FindElement(By.ClassName(SiteConstants.RowIncludedCheckboxClass)).Selected;
+            string steamName = gameRow.FindElement(By.ClassName(SiteConstants.RowSteamNameSpanClass)).Text;
+
+            var playtimeIndicator = gameRow.FindElement(By.ClassName(SiteConstants.RowMobilePlaytimeIdicatorSpanClass));
+            Console.WriteLine("Waiting for playtime indicator tooltip...");
+            TooltipHelper.AssertTooltip(driver, playtimeIndicator, "Current:", true);
+
+            double steamPlaytime, main, extras, completionist;
+            ParseMobilePlaytime(TooltipHelper.GetToolTipText(driver), out steamPlaytime, out main, out extras, out completionist);
+
+            return new TableGameInfo(included, steamName, false, steamPlaytime, main, extras, completionist, null, false, UpdateState.None);
+        }
+
+        private static TableGameInfo ParseDesktopTableRow(IWebElement gameRow)
+        {
+            Console.WriteLine("Parsing desktop game row...");
             bool included = gameRow.FindElement(By.ClassName(SiteConstants.RowIncludedCheckboxClass)).Selected;
             string steamName = gameRow.FindElement(By.ClassName(SiteConstants.RowSteamNameSpanClass)).Text;
             bool verifiedFinite = gameRow.FindElement(By.ClassName(SiteConstants.RowVerifiedGameSpanClass)).Displayed;
@@ -32,8 +62,13 @@ namespace UITests.Helpers
                     ? UpdateState.Submitted
                     : (gameRow.FindElement(By.ClassName(SiteConstants.RowCorrelationUpdateFailedClass)).Displayed ? UpdateState.Failure : UpdateState.None));
 
-            return new 
+            return new
                 TableGameInfo(included, steamName, verifiedFinite, currentPlayTime, mainPlaytime, extrasPlaytime, completionistPlaytime, hltbName, verifiedCorrelation, updateState);
+        }
+
+        public static TableGameInfo ParseGameRow(IWebDriver driver, IWebElement gameRow, bool mobile = false)
+        {
+            return mobile ? ParseMobileTableRow(driver, gameRow) : ParseDesktopTableRow(gameRow);
         }
 
         public static IWebElement FindTableBody(IWebDriver driver)
@@ -46,10 +81,10 @@ namespace UITests.Helpers
             return FindTableBody(driver).FindElements(By.TagName("tr")).Where(e => e.GetAttribute("class") != SiteConstants.RowBlankClass);
         }
 
-        public static TableGameInfo[] ParseGameTable(IWebDriver driver)
+        public static TableGameInfo[] ParseGameTable(IWebDriver driver, bool mobile = false)
         {
             Console.WriteLine("Parsing game table...");
-            return FindGameRows(driver).Select(ParseGameRow).ToArray();
+            return FindGameRows(driver).Select(row => ParseGameRow(driver, row, mobile)).ToArray();
         }
     }
 }

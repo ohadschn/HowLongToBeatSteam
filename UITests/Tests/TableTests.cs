@@ -13,39 +13,52 @@ namespace UITests.Tests
     [TestClass]
     public class TableTests
     {
+        private static void AssertHltbsUserTable(TableGameInfo[] games, bool mobile)
+        {
+            foreach (var game in games)
+            {
+                Assert.IsTrue(game.Included, $"Expected all games to be included but the following was not: {game.SteamName}");
+                Assert.AreEqual(0, game.SteamPlaytime, $"Expected zero playtime for: {game.SteamName}");
+
+                Assert.IsTrue(game.MainPlaytime > 0, $"Expected main playtime to be greater than zero: {game.SteamName}");
+                Assert.IsTrue(game.ExtrasPlaytime > 0, $"Expected extras playtime to be greater than zero: {game.SteamName}");
+                Assert.IsTrue(game.CompletionistPlaytime > 0, $"Expected completionist playtime to be greater than zero: {game.SteamName}");
+
+                Assert.IsTrue(game.MainPlaytime <= game.ExtrasPlaytime, $"Main playtime exceeds extras playtime for: {game.SteamName}");
+                Assert.IsTrue(game.ExtrasPlaytime <= game.CompletionistPlaytime, $"Extras playtime exceeds completionist playtime for: {game.SteamName}");
+
+                Assert.AreEqual(!mobile && (game.SteamName == GameConstants.RoninSteamName), game.VerifiedFinite, $"Expected verified finite for: {game.SteamName}");
+                Assert.IsFalse(game.VerifiedCorrelation, $"Unexpected verified correlation game: {game.SteamName}");
+            }
+
+            var expectedGames = new[]
+            {
+                    new {SteamName = GameConstants.AFistfulOfGunSteamName, HltbName = mobile ? null : GameConstants.AFistfulOfGunHltbName},
+                    new {SteamName = GameConstants.GodsWillBeWatchingSteamName, HltbName = mobile ? null : GameConstants.GodsWillBeWatchingHltbName},
+                    new {SteamName = GameConstants.RoninSteamName, HltbName = mobile ? null : GameConstants.RoninHltbName}
+                };
+
+            CollectionAssert.AssertEqualSets(expectedGames, games.Select(g => new { g.SteamName, g.HltbName }), "Unexpected games in table");
+        }
+
         [TestMethod]
         public void TestTableEntries()
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
                 SignInHelper.SignInWithId(driver, UserConstants.HltbsUser, WaitType.PageLoad);
-
-                var games = TableHelper.ParseGameTable(driver);
-                foreach (var game in games)
-                {
-                    Assert.IsTrue(game.Included, $"Expected all games to be included but the following was not: {game.SteamName}");
-                    Assert.AreEqual(0, game.SteamPlaytime, $"Expected zero playtime for: {game.SteamName}");
-
-                    Assert.IsTrue(game.MainPlaytime > 0, $"Expected main playtime to be greater than zero: {game.SteamName}");
-                    Assert.IsTrue(game.ExtrasPlaytime > 0, $"Expected extras playtime to be greater than zero: {game.SteamName}");
-                    Assert.IsTrue(game.CompletionistPlaytime > 0, $"Expected completionist playtime to be greater than zero: {game.SteamName}");
-
-                    Assert.IsTrue(game.MainPlaytime <= game.ExtrasPlaytime, $"Main playtime exceeds extras playtime for: {game.SteamName}");
-                    Assert.IsTrue(game.ExtrasPlaytime <= game.CompletionistPlaytime, $"Extras playtime exceeds completionist playtime for: {game.SteamName}");
-
-                    Assert.AreEqual(game.SteamName == GameConstants.RoninSteamName, game.VerifiedFinite, $"Expected verified finite for: {game.SteamName}");
-                    Assert.IsFalse(game.VerifiedCorrelation, $"Unexpected verified correlation game: {game.SteamName}");
-                }
-
-                var expectedGames = new []
-                {
-                    new {SteamName = GameConstants.AFistfulOfGunSteamName, HltbName = GameConstants.AFistfulOfGunHltbName},
-                    new {SteamName = GameConstants.GodsWillBeWatchingSteamName, HltbName = GameConstants.GodsWillBeWatchingHltbName},
-                    new {SteamName = GameConstants.RoninSteamName, HltbName = GameConstants.RoninHltbName}
-                };
-
-                CollectionAssert.AssertEqualSets(expectedGames, games.Select(g => new { g.SteamName, g.HltbName }), "Unexpected games in table");
+                AssertHltbsUserTable(TableHelper.ParseGameTable(driver), false);
             });
+        }
+
+        [TestMethod]
+        public void TestMobileTableEntries()
+        {
+            SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
+            {
+                SignInHelper.SignInWithId(driver, UserConstants.HltbsUser);
+                AssertHltbsUserTable(TableHelper.ParseGameTable(driver, true), true);
+            }, Browsers.Nexus7Chrome);
         }
 
         [TestMethod]
@@ -203,7 +216,7 @@ namespace UITests.Tests
                 });
 
                 Console.WriteLine("Waiting for correlation suggestion to be submitted...");
-                driver.WaitUntil(d => TableHelper.ParseGameRow(gameRows[0]).UpdateState == UpdateState.Submitted, "Could not verify successful correlation submission");
+                driver.WaitUntil(d => TableHelper.ParseGameRow(driver, gameRows[0]).UpdateState == UpdateState.Submitted, "Could not verify successful correlation submission");
 
                 Console.WriteLine("Suggesting non-game...");
                 DialogHelper.TestDialog(driver, gameRows[1].FindElement(By.ClassName(SiteConstants.RowVerifyGameAnchorId)), SiteConstants.NonGameUpdateModalId, () =>
@@ -214,7 +227,7 @@ namespace UITests.Tests
                 Console.WriteLine("Waiting for non-game suggestion to be submitted...");
                 driver.WaitUntil(d =>
                 {
-                    var gameInfo = TableHelper.ParseGameRow(gameRows[1]);
+                    var gameInfo = TableHelper.ParseGameRow(driver, gameRows[1]);
                     return gameInfo.UpdateState == UpdateState.Submitted && !gameInfo.Included;
                 }, "Could not verify successful non-game submission");
             });
