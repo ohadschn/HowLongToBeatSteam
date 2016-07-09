@@ -49,7 +49,7 @@ namespace UITests.Helpers
             Console.WriteLine("Parsing desktop game row...");
             bool included = gameRow.FindElement(By.ClassName(SiteConstants.RowIncludedCheckboxClass)).Selected;
             string steamName = gameRow.FindElement(By.ClassName(SiteConstants.RowSteamNameSpanClass)).Text;
-            bool verifiedFinite = gameRow.FindElement(By.ClassName(SiteConstants.RowVerifiedGameSpanClass)).Displayed;
+            bool verifiedFinite = !gameRow.FindElement(By.ClassName(SiteConstants.RowVerifyGameAnchorId)).Displayed;
             double currentPlayTime = GetPlaytime(gameRow.FindElement(By.ClassName(SiteConstants.RowSteamPlaytimeCellClass)).Text);
             double mainPlaytime = GetPlaytime(gameRow.FindElement(By.ClassName(SiteConstants.RowMainPlaytimeCellClass)).Text);
             double extrasPlaytime = GetPlaytime(gameRow.FindElement(By.ClassName(SiteConstants.RowExtrasPlaytimeCellClass)).Text);

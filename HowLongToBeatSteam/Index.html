@@ -533,9 +533,6 @@
                                         <span data-bind="text:steamName, css: 'steam-name' + (included() ? '' : ' text-muted')"></span>
                                     </a>
                                     <a data-bind="visible: !verifiedGame && updatePhase() === GameUpdatePhase.None, click: $root.displayNonGameDialog, css: 'verify-game-link hidden-xs emphasized' + (included() ? '' : ' text-muted')" href="javascript:;">(nongame/endless?)</a>
-                                    <span data-bind="visible: verifiedGame, css: 'hidden-xs' + (included() ? '' : ' text-muted')">
-                                        <span class="verified-game fa fa-check-circle-o cursor-default" title="Verified finite single-player game/DLC/mod"></span>
-                                    </span>
                                     <span class="mobile-playtime-indicator glyphicon glyphicon-time visible-xs-inline pull-right cursor-default"
                                           data-placement="top"
                                           data-toggle="tooltip"

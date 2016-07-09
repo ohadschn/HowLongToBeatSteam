@@ -70,7 +70,6 @@ namespace UITests.Constants
         public const string RowIncludedCheckboxClass = "inclusion-checkbox";
         public const string RowSteamNameSpanClass = "steam-name";
         public const string RowVerifyGameAnchorId = "verify-game-link";
-        public const string RowVerifiedGameSpanClass = "verified-game";
         public const string RowMobilePlaytimeIdicatorSpanClass = "mobile-playtime-indicator";
         public const string RowSteamPlaytimeCellClass = "steam-playtime";
         public const string RowMainPlaytimeCellClass = "main-playtime";
