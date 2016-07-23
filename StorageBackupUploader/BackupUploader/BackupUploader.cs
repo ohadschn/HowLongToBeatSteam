@@ -4,6 +4,7 @@ using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Common.Logging;
 using Common.Storage;
@@ -131,7 +132,7 @@ namespace StorageBackupUploader.BackupUploader
             await container.CreateIfNotExistsAsync().ConfigureAwait(false);
 
             var blob = container.GetBlockBlobReference(baseFilename);
-            await blob.UploadFromFileAsync(sevenzipFilename, FileMode.Open).ConfigureAwait(false);
+            await blob.UploadFromFileAsync(sevenzipFilename, CancellationToken.None).ConfigureAwait(false);
 
             BackupUploaderEventSource.Log.UploadAppBackupToBlobStorageStop(sevenzipFilename, BackupBlobContainerName);
         }

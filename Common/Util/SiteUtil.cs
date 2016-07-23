@@ -8,8 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Net.Mail;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
@@ -19,15 +18,18 @@ using System.Xml;
 using Common.Logging;
 using JetBrains.Annotations;
 using Microsoft.Practices.EnterpriseLibrary.SemanticLogging.Formatters;
-using SendGrid;
+using SendGrid.Helpers.Mail;
 
 namespace Common.Util
 {
     public static class SiteUtil
     {
-        private static readonly string SendGridUser = GetMandatoryValueFromConfig("SendGridUser");
-        private static readonly string SendGridPassword = GetMandatoryValueFromConfig("SendGridPassword");
-        private static readonly int SendGridRetries = GetOptionalValueFromConfig("SendGridRetries", 10);
+        private static readonly HttpRetryClient SendGridClient = new HttpRetryClient(GetOptionalValueFromConfig("SendGridRetries", 10))
+        {
+            DefaultRequestAuthorization = 
+                new AuthenticationHeaderValue(HttpRetryClient.BearerAuthorizationScheme, GetMandatoryCustomConnectionStringFromConfig("SendGridApiKey")),
+            BaseAddress = new Uri("https://api.sendgrid.com/v3/")
+        };
 
         private const string WebjobNameEnvironmentVariable = "WEBJOBS_NAME";
         private const string WebjobRunIDEnvironmentVariable = "WEBJOBS_RUN_ID";
@@ -233,33 +235,6 @@ namespace Common.Util
 
         public static int MaxConcurrentHttpRequests => s_maxConcurrentHttpRequests.Value;
 
-        [SuppressMessage("Microsoft.Design", "CA1057:StringUriOverloadsCallSystemUriOverloads")]
-        public static Task<T> GetAsync<T>(HttpRetryClient client, string url)
-        {
-            return GetAsync<T>(client, new Uri(url), CancellationToken.None);
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1057:StringUriOverloadsCallSystemUriOverloads")]
-        public static Task<T> GetAsync<T>(HttpRetryClient client, string url, CancellationToken ct)
-        {
-            return GetAsync<T>(client, new Uri(url), ct);
-        }
-
-        public static Task<T> GetAsync<T>(HttpRetryClient client, Uri url)
-        {
-            return GetAsync<T>(client, url, CancellationToken.None);
-        }
-
-        public static async Task<T> GetAsync<T>(HttpRetryClient client, Uri url, CancellationToken ct)
-        {
-            T deserializedResponse;
-            using (var response = await client.GetAsync(url, ct).ConfigureAwait(false))
-            {
-                deserializedResponse = await response.Content.ReadAsAsync<T>(ct).ConfigureAwait(false);
-            }
-            return deserializedResponse;
-        }
-
         public static string CurrentTimestamp
         {
             get
@@ -389,27 +364,21 @@ namespace Common.Util
 
             CommonEventSource.Log.SendSuccessMailStart(description);
 
-            await ExponentialBackoff.ExecuteAsyncWithExponentialRetries(async () =>
-            {
-                await new Web(new NetworkCredential(SendGridUser, SendGridPassword)).DeliverAsync(new SendGridMessage
-                {
-                    From = new MailAddress("webjobs@howlongtobeatsteam.com", "HLTBS WebJob notifier"),
-                    Subject = String.Format(CultureInfo.InvariantCulture, "{0} - Success ({1}) [{2}]", 
-                        WebJobName, duration, message + (errors.Length == 0 ? String.Empty : " (with session errors)")),
-                    To = new[] {new MailAddress("contact@howlongtobeatsteam.com") },
-                    Text = String.Format(CultureInfo.InvariantCulture, "{1}{0}Run ID: {2}{0}Start time: {3}{0}End time:{4}{0}Output log file: {5}{6}",
-                        Environment.NewLine, GetTriggeredRunUrl(), WebJobRunId, DateTime.UtcNow - duration, DateTime.UtcNow, GetTriggeredLogUrl(),
-                        errors.Length == 0 ? String.Empty : String.Format("{0}Session Errors:{0}{1}", Environment.NewLine, errorsText))
-                }).ConfigureAwait(false);
-                return true;
-            }, 
-            (exception, count, delay) => 
-                CommonEventSource.Log.ErrorSendingSuccessMail(description, exception.Message, count, SendGridRetries, (int)delay.TotalSeconds), 
-            e => e is ArgumentException, // "Unknown element: html"
-            SendGridRetries, HttpRetryClient.MinBackoff, HttpRetryClient.MaxBackoff, HttpRetryClient.DefaultClientBackoff, CancellationToken.None)
-                .ConfigureAwait(false);
+            var from = new Email("webjobs@howlongtobeatsteam.com");
+            var to = new Email("contact@howlongtobeatsteam.com");
+            var subject = String.Format(CultureInfo.InvariantCulture, "{0} - Success ({1}) [{2}]",
+                    WebJobName, duration, message + (errors.Length == 0 ? String.Empty : " (with session errors)"));
+            var text = String.Format(CultureInfo.InvariantCulture, "{1}{0}Run ID: {2}{0}Start time: {3}{0}End time:{4}{0}Output log file: {5}{6}",
+                Environment.NewLine, GetTriggeredRunUrl(), WebJobRunId, DateTime.UtcNow - duration, DateTime.UtcNow, GetTriggeredLogUrl(),
+                errors.Length == 0 ? String.Empty : String.Format("{0}Session Errors:{0}{1}", Environment.NewLine, errorsText));
+            var content = new Content("text/plain", text);
+            var mail = new Mail(from, subject, to, content);
 
-            CommonEventSource.Log.SendSuccessMailStop(description);
+            using (var response = await SendGridClient.PostAsJsonAsync<Mail, string>("mail/send", mail).ConfigureAwait(false))
+            {
+                CommonEventSource.Log.SendSuccessMailStop(
+                    description, response.ResponseMessage.StatusCode, response.ResponseMessage.Headers.ToString(), response.Content);
+            }
         }
 
         public static TimeSpan GetTimeElapsedFromTickCount(int tickCount)

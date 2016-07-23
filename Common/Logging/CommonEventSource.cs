@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using Common.Entities;
 using Common.Storage;
 using JetBrains.Annotations;
@@ -474,14 +475,14 @@ namespace Common.Logging
         [SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "MailStop")]
         [Event(
             25,
-            Message = "Finished sending success email for: {0}",
+            Message = "Finished sending success email for: {0} (Status Code: {1}, Headers: {2}, Body: {3})",
             Keywords = Keywords.Email,
             Level = EventLevel.Informational,
             Task = Tasks.SendSuccessMail,
             Opcode = EventOpcode.Stop)]
-        public void SendSuccessMailStop(string description)
+        public void SendSuccessMailStop(string description, HttpStatusCode statusCode, string headers, string body)
         {
-            WriteEvent(25, description);
+            WriteEvent(25, description, (int)statusCode, headers, body);
         }
 
         [Event(

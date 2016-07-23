@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -8,8 +9,27 @@ using Common.Logging;
 
 namespace Common.Util
 {
+    public sealed class HttpResponseWithContent<T> : IDisposable
+    {
+        public HttpResponseMessage ResponseMessage { get; }
+        public T Content { get;  }
+
+        public HttpResponseWithContent(HttpResponseMessage responseMessage, T content)
+        {
+            ResponseMessage = responseMessage;
+            Content = content;
+        }
+
+        public void Dispose()
+        {
+            ResponseMessage.Dispose();
+        }
+    }
+
     public sealed class HttpRetryClient : IDisposable
     {
+        public const string BearerAuthorizationScheme = "Bearer";
+
         public static readonly TimeSpan MinBackoff = TimeSpan.FromSeconds(3.0);
         public static readonly TimeSpan MaxBackoff = TimeSpan.FromSeconds(120.0);
         public static readonly TimeSpan DefaultClientBackoff = TimeSpan.FromSeconds(4.0);
@@ -23,90 +43,96 @@ namespace Common.Util
             set { m_client.DefaultRequestHeaders.Authorization = value; }
         }
 
+        public Uri BaseAddress
+        {
+            get { return m_client.BaseAddress; }
+            set { m_client.BaseAddress = value; }
+        }
+
         public HttpRetryClient(int retries)
         {
             m_retries = retries;
             m_client = new HttpClient();
         }
 
-        public Task<HttpResponseMessage> SendAsync(Func<HttpRequestMessage> requestFactory, string url)
+        public Task<HttpResponseWithContent<T>> SendAsync<T>(Func<HttpRequestMessage> requestFactory, string url)
         {
-            return SendAsync(requestFactory, new Uri(url), CancellationToken.None);
+            return SendAsync<T>(requestFactory, new Uri(url), CancellationToken.None);
         }
 
-        public Task<HttpResponseMessage> SendAsync(Func<HttpRequestMessage> requestFactory, string url, CancellationToken ct)
+        public Task<HttpResponseWithContent<T>> SendAsync<T>(Func<HttpRequestMessage> requestFactory, string url, CancellationToken ct)
         {
-            return SendAsync(requestFactory, new Uri(url), ct);            
+            return SendAsync<T>(requestFactory, new Uri(url), ct);            
         }
 
-        public Task<HttpResponseMessage> SendAsync(Func<HttpRequestMessage> requestFactory, Uri url)
+        public Task<HttpResponseWithContent<T>> SendAsync<T>(Func<HttpRequestMessage> requestFactory, Uri url)
         {
-            return SendAsync(requestFactory, url, CancellationToken.None);
+            return SendAsync<T>(requestFactory, url, CancellationToken.None);
         }
 
-        public Task<HttpResponseMessage> SendAsync(Func<HttpRequestMessage> requestFactory, Uri url, CancellationToken ct)
-        {
-            if (url == null)
-            {
-                throw new ArgumentNullException(nameof(url));
-            }
-
-            return RequestAsync(url, () => m_client.SendAsync(requestFactory(), ct), ct); 
-        }
-
-        public Task<HttpResponseMessage> GetAsync(string url)
-        {
-            return GetAsync(new Uri(url), CancellationToken.None);
-        }
-
-        public Task<HttpResponseMessage> GetAsync(string url, CancellationToken ct)
-        {
-            return GetAsync(new Uri(url), ct);
-        }
-
-        public Task<HttpResponseMessage> GetAsync(Uri url)
-        {
-            return GetAsync(url, CancellationToken.None);
-        }
-
-        public Task<HttpResponseMessage> GetAsync(Uri url, CancellationToken ct)
+        public Task<HttpResponseWithContent<T>> SendAsync<T>(Func<HttpRequestMessage> requestFactory, Uri url, CancellationToken ct)
         {
             if (url == null)
             {
                 throw new ArgumentNullException(nameof(url));
             }
 
-            return RequestAsync(url, () => m_client.GetAsync(url, ct), ct);
+            return RequestAsync<T>(url, () => m_client.SendAsync(requestFactory(), ct), ct); 
+        }
+
+        public Task<HttpResponseWithContent<T>> GetAsync<T>(string url)
+        {
+            return GetAsync<T>(new Uri(url), CancellationToken.None);
+        }
+
+        public Task<HttpResponseWithContent<T>> GetAsync<T>(string url, CancellationToken ct)
+        {
+            return GetAsync<T>(new Uri(url), ct);
+        }
+
+        public Task<HttpResponseWithContent<T>> GetAsync<T>(Uri url)
+        {
+            return GetAsync<T>(url, CancellationToken.None);
+        }
+
+        public Task<HttpResponseWithContent<T>> GetAsync<T>(Uri url, CancellationToken ct)
+        {
+            if (url == null)
+            {
+                throw new ArgumentNullException(nameof(url));
+            }
+
+            return RequestAsync<T>(url, () => m_client.GetAsync(url, ct), ct);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#")]
-        public Task<HttpResponseMessage> PostAsJsonAsync<T>(string requestUri, T value)
+        public Task<HttpResponseWithContent<TResponse>> PostAsJsonAsync<TValue, TResponse>(string requestUri, TValue value)
         {
-            return PostAsJsonAsync(new Uri(requestUri), value, CancellationToken.None);
+            return PostAsJsonAsync<TValue, TResponse>(new Uri(requestUri), value, CancellationToken.None);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#")]
-        public Task<HttpResponseMessage> PostAsJsonAsync<T>(string requestUri, T value, CancellationToken ct)
+        public Task<HttpResponseWithContent<TResponse>> PostAsJsonAsync<TValue, TResponse>(string requestUri, TValue value, CancellationToken ct)
         {
-            return PostAsJsonAsync(new Uri(requestUri), value, ct);
+            return PostAsJsonAsync<TValue, TResponse>(new Uri(requestUri), value, ct);
         }
 
-        public Task<HttpResponseMessage> PostAsJsonAsync<T>(Uri requestUri, T value)
+        public Task<HttpResponseWithContent<TResponse>> PostAsJsonAsync<TValue, TResponse>(Uri requestUri, TValue value)
         {
-            return PostAsJsonAsync(requestUri, value, CancellationToken.None);
+            return PostAsJsonAsync<TValue, TResponse>(requestUri, value, CancellationToken.None);
         }
 
-        public Task<HttpResponseMessage> PostAsJsonAsync<T>(Uri requestUri, T value, CancellationToken ct)
+        public Task<HttpResponseWithContent<TResponse>> PostAsJsonAsync<TValue, TResponse>(Uri requestUri, TValue value, CancellationToken ct)
         {
             if (requestUri == null)
             {
                 throw new ArgumentNullException(nameof(requestUri));
             }
 
-            return RequestAsync(requestUri, () => m_client.PostAsJsonAsync(requestUri, value, ct), ct);
+            return RequestAsync<TResponse>(requestUri, () => m_client.PostAsJsonAsync(requestUri, value, ct), ct);
         }
 
-        private Task<HttpResponseMessage> RequestAsync(Uri uri, Func<Task<HttpResponseMessage>> requester, CancellationToken ct)
+        private Task<HttpResponseWithContent<T>> RequestAsync<T>(Uri uri, Func<Task<HttpResponseMessage>> requester, CancellationToken ct)
         {
             return ExponentialBackoff.ExecuteAsyncWithExponentialRetries(async () =>
             {
@@ -115,11 +141,26 @@ namespace Common.Util
                 {
                     response = await requester().ConfigureAwait(false);
                 }
-                catch (TaskCanceledException e) //HttpClient throws this when a request times out (bug in HttpClient)
-                {                               //If we don't catch it here ExecuteAsync will fail as well (bug in RetryPolicy)
+                catch (TaskCanceledException e) when (!ct.IsCancellationRequested) 
+                {
+                    //HttpClient throws TaskCanceledException when a request times out (bug in HttpClient)
+                    //Since we only want to cancel the entire operation if our CT has been signaled, we identify this case
+                    //and convert it to the correct (HTTP) exception - otherwise ExecuteAsync will assume we want to cancel everything
                     throw new HttpRequestException("Request timed out", e);
                 }
-                return response.EnsureSuccessStatusCode();
+                response.EnsureSuccessStatusCode();
+                object content;
+                if (typeof(T) == typeof(Stream))
+                {
+                    ct.ThrowIfCancellationRequested(); //ReadAsStreamAsync doesn't take a CT so we make the best effort here
+                    content = await response.Content.ReadAsStreamAsync();
+                }
+                else
+                {
+                    content = await response.Content.ReadAsAsync<T>(ct);
+                }
+
+                return new HttpResponseWithContent<T>(response, (T)content);
             },
             (lastException, retryCount, delay) => CommonEventSource.Log.HttpRequestFailed(uri, lastException, retryCount, m_retries, delay),
             e => e is HttpRequestException || e is WebException, m_retries, MinBackoff, MaxBackoff, DefaultClientBackoff, ct);

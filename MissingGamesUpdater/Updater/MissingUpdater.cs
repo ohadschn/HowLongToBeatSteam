@@ -98,19 +98,20 @@ namespace MissingGamesUpdater.Updater
         {
             MissingUpdaterEventSource.Log.RetrieveAllSteamAppsStart(GetSteamAppListUrl);
 
-            var allGamesRoot = await SiteUtil.GetAsync<AllGamesRoot>(client, GetSteamAppListUrl).ConfigureAwait(false);
-
-            MissingUpdaterEventSource.Log.RetrieveAllSteamAppsStop(GetSteamAppListUrl);
-
-            if (allGamesRoot?.applist?.apps?.app == null)
+            using (var allGamesRoot = await client.GetAsync<AllGamesRoot>(GetSteamAppListUrl).ConfigureAwait(false))
             {
-                MissingUpdaterEventSource.Log.ErrorRetrievingAllSteamApps(GetSteamAppListUrl);
-                throw new InvalidOperationException("Invalid response from " + GetSteamAppListUrl);
-            }
+                MissingUpdaterEventSource.Log.RetrieveAllSteamAppsStop(GetSteamAppListUrl);
 
-            var apps = allGamesRoot.applist.apps.app;
-            MissingUpdaterEventSource.Log.RetrievedAllSteamApps(GetSteamAppListUrl, apps.Count);
-            return apps;
+                if (allGamesRoot.Content?.applist?.apps?.app == null)
+                {
+                    MissingUpdaterEventSource.Log.ErrorRetrievingAllSteamApps(GetSteamAppListUrl);
+                    throw new InvalidOperationException("Invalid response from " + GetSteamAppListUrl);
+                }
+
+                var apps = allGamesRoot.Content.applist.apps.app;
+                MissingUpdaterEventSource.Log.RetrievedAllSteamApps(GetSteamAppListUrl, apps.Count);
+                return apps;
+            }
         }
     }
 }

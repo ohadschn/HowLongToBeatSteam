@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Common.Entities;
@@ -74,7 +73,7 @@ namespace SteamHltbScraper.Imputation
             Sanitize(allApps);
             using (s_client = new HttpRetryClient(ImputationServiceRetries))
             {
-                s_client.DefaultRequestAuthorization = new AuthenticationHeaderValue("Bearer", ApiKey);
+                s_client.DefaultRequestAuthorization = new AuthenticationHeaderValue(HttpRetryClient.BearerAuthorizationScheme, ApiKey);
 
                 var gamesImputationTask = ImputeTypeGenres(allApps.Where(a => a.IsGame).ToArray(), GameTypeGames);
                 var dlcsImputationTask = ImputeTypeGenres(allApps.Where(a => !a.IsGame).ToArray(), GameTypeDlcsMods);
@@ -341,27 +340,30 @@ namespace SteamHltbScraper.Imputation
             var startTicks = Environment.TickCount;
             while (imputed == null && (Environment.TickCount - startTicks) <AzureMlImputePollTimeoutMs)
             {
-                var status = await SiteUtil.GetAsync<BatchScoreStatus>(s_client, jobLocation).ConfigureAwait(false);
-                switch (status.StatusCode)
+                using (var statusResponse = await s_client.GetAsync<BatchScoreStatus>(jobLocation).ConfigureAwait(false))
                 {
-                    case BatchScoreStatusCode.NotStarted:
-                        HltbScraperEventSource.Log.ExpectedPollingStatusRetrieved(status.StatusCode.ToString());
-                        break;
-                    case BatchScoreStatusCode.Running:
-                        HltbScraperEventSource.Log.ExpectedPollingStatusRetrieved(status.StatusCode.ToString());
-                        break;
-                    case BatchScoreStatusCode.Failed:
-                        HltbScraperEventSource.Log.UnexpectedPollingStatusRetrieved(status.StatusCode.ToString(), status.Details);
-                        throw new InvalidOperationException("Error executing imputation job:" + Environment.NewLine + status.Details);
-                    case BatchScoreStatusCode.Cancelled:
-                        HltbScraperEventSource.Log.UnexpectedPollingStatusRetrieved(status.StatusCode.ToString(), "job canceled");
-                        throw new InvalidOperationException("Imputation job was unexpectedly canceled");
-                    case BatchScoreStatusCode.Finished:
-                        HltbScraperEventSource.Log.ExpectedPollingStatusRetrieved(status.StatusCode.ToString());
-                        var credentials = new StorageCredentials(status.Result.SasBlobToken);
-                        var cloudBlob = new CloudBlockBlob(new Uri(new Uri(status.Result.BaseLocation), status.Result.RelativeLocation), credentials);
-                        imputed = await cloudBlob.DownloadTextAsync().ConfigureAwait(false);
-                        break;
+                    var status = statusResponse.Content;
+                    switch (status.StatusCode)
+                    {
+                        case BatchScoreStatusCode.NotStarted:
+                            HltbScraperEventSource.Log.ExpectedPollingStatusRetrieved(status.StatusCode.ToString());
+                            break;
+                        case BatchScoreStatusCode.Running:
+                            HltbScraperEventSource.Log.ExpectedPollingStatusRetrieved(status.StatusCode.ToString());
+                            break;
+                        case BatchScoreStatusCode.Failed:
+                            HltbScraperEventSource.Log.UnexpectedPollingStatusRetrieved(status.StatusCode.ToString(), status.Details);
+                            throw new InvalidOperationException("Error executing imputation job:" + Environment.NewLine + status.Details);
+                        case BatchScoreStatusCode.Cancelled:
+                            HltbScraperEventSource.Log.UnexpectedPollingStatusRetrieved(status.StatusCode.ToString(), "job canceled");
+                            throw new InvalidOperationException("Imputation job was unexpectedly canceled");
+                        case BatchScoreStatusCode.Finished:
+                            HltbScraperEventSource.Log.ExpectedPollingStatusRetrieved(status.StatusCode.ToString());
+                            var credentials = new StorageCredentials(status.Result.SasBlobToken);
+                            var cloudBlob = new CloudBlockBlob(new Uri(new Uri(status.Result.BaseLocation), status.Result.RelativeLocation), credentials);
+                            imputed = await cloudBlob.DownloadTextAsync().ConfigureAwait(false);
+                            break;
+                    }
                 }
                 await Task.Delay(AzureMlImputePollIntervalMs).ConfigureAwait(false);
             }
@@ -387,14 +389,12 @@ namespace SteamHltbScraper.Imputation
             };
 
             HltbScraperEventSource.Log.SubmitImputationJobStart();
-            string jobId;
-            using (var response = await s_client.PostAsJsonAsync(AzureMlImputeServiceBaseUrl, request).ConfigureAwait(false))
+            using (var response = await s_client.PostAsJsonAsync<BatchScoreRequest, string>(AzureMlImputeServiceBaseUrl, request).ConfigureAwait(false))
             {
-                jobId = await response.Content.ReadAsAsync<string>().ConfigureAwait(false);
+                string jobId = response.Content;
+                HltbScraperEventSource.Log.SubmitImputationJobStop(jobId);
+                return jobId;
             }
-            HltbScraperEventSource.Log.SubmitImputationJobStop(jobId);
-
-            return jobId;
         }
 
         private static async Task<string> UploadTtbInputToBlob(string genre, IReadOnlyList<AppEntity> notMissing)

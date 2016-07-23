@@ -210,31 +210,31 @@ namespace HowLongToBeatSteam.Controllers
         {
             SiteEventSource.Log.ResolveVanityUrlStart(userVanityUrlName);
 
-            var vanityUrlResolutionResponse = await 
-                SiteUtil.GetAsync<VanityUrlResolutionResponse>(Client, String.Format(ResolveVanityUrlFormat, SteamApiKey, userVanityUrlName), ct)
-                .ConfigureAwait(false);
-
-            if (vanityUrlResolutionResponse.response == null)
+            using (var vanityUrlResolutionResponse = await Client.GetAsync<VanityUrlResolutionResponse>(
+                String.Format(ResolveVanityUrlFormat, SteamApiKey, userVanityUrlName), ct).ConfigureAwait(false))
             {
-                SiteEventSource.Log.VanityUrlResolutionInvalidResponse(userVanityUrlName, VanityUrlResolutionInvalidResponseType.Unknown);
-                throw new HttpResponseException(HttpStatusCode.BadRequest);
-            }
-            
-            if (vanityUrlResolutionResponse.response.success != VanityUrlResolutionSuccess)
-            {
-                SiteEventSource.Log.ErrorResolvingVanityUrl(userVanityUrlName, vanityUrlResolutionResponse.response.message);
-                throw new HttpResponseException(HttpStatusCode.BadRequest);
-            }
+                if (vanityUrlResolutionResponse.Content.response == null)
+                {
+                    SiteEventSource.Log.VanityUrlResolutionInvalidResponse(userVanityUrlName, VanityUrlResolutionInvalidResponseType.Unknown);
+                    throw new HttpResponseException(HttpStatusCode.BadRequest);
+                }
 
-            long steam64Id;
-            if (!Int64.TryParse(vanityUrlResolutionResponse.response.steamid, out steam64Id))
-            {
-                SiteEventSource.Log.VanityUrlResolutionInvalidResponse(userVanityUrlName, VanityUrlResolutionInvalidResponseType.SteamIdIsNotAnInt64);
-                throw new HttpResponseException(HttpStatusCode.BadRequest); 
-            }
+                if (vanityUrlResolutionResponse.Content.response.success != VanityUrlResolutionSuccess)
+                {
+                    SiteEventSource.Log.ErrorResolvingVanityUrl(userVanityUrlName, vanityUrlResolutionResponse.Content.response.message);
+                    throw new HttpResponseException(HttpStatusCode.BadRequest);
+                }
 
-            SiteEventSource.Log.ResolveVanityUrlStop(userVanityUrlName);
-            return steam64Id;
+                long steam64Id;
+                if (!Int64.TryParse(vanityUrlResolutionResponse.Content.response.steamid, out steam64Id))
+                {
+                    SiteEventSource.Log.VanityUrlResolutionInvalidResponse(userVanityUrlName, VanityUrlResolutionInvalidResponseType.SteamIdIsNotAnInt64);
+                    throw new HttpResponseException(HttpStatusCode.BadRequest);
+                }
+
+                SiteEventSource.Log.ResolveVanityUrlStop(userVanityUrlName);
+                return steam64Id;
+            }
         }
 
         private static async Task<OwnedGame[]> GetOwnedGames(long steamId, CancellationToken ct)
@@ -253,21 +253,22 @@ namespace HowLongToBeatSteam.Controllers
             }
 
             SiteEventSource.Log.RetrieveOwnedGamesStart(steamId);
-            
-            var ownedGamesResponse = await
-                SiteUtil.GetAsync<OwnedGamesResponse>(Client, String.Format(GetOwnedSteamGamesFormat, SteamApiKey, steamId), ct).ConfigureAwait(false);
-            
-            SiteEventSource.Log.RetrieveOwnedGamesStop(steamId);
 
-            if (ownedGamesResponse?.response?.games == null)
+            using (var ownedGamesResponse = await
+                Client.GetAsync<OwnedGamesResponse>(String.Format(GetOwnedSteamGamesFormat, SteamApiKey, steamId), ct).ConfigureAwait(false))
             {
-                SiteEventSource.Log.ErrorRetrievingOwnedGames(steamId);
-                throw new HttpResponseException(HttpStatusCode.BadRequest);
-            }
+                SiteEventSource.Log.RetrieveOwnedGamesStop(steamId);
 
-            var games = ownedGamesResponse.response.games;
-            SiteEventSource.Log.RetrievedOwnedGames(steamId, games.Length);
-            return games;
+                if (ownedGamesResponse.Content?.response?.games == null)
+                {
+                    SiteEventSource.Log.ErrorRetrievingOwnedGames(steamId);
+                    throw new HttpResponseException(HttpStatusCode.BadRequest);
+                }
+
+                var games = ownedGamesResponse.Content.response.games;
+                SiteEventSource.Log.RetrievedOwnedGames(steamId, games.Length);
+                return games;
+            }
         }
 
         private static async Task<PersonaInfo> GetPersonaInfo(long steamId, CancellationToken ct)
@@ -279,22 +280,23 @@ namespace HowLongToBeatSteam.Controllers
 
             SiteEventSource.Log.RetrievePersonaInfoStart(steamId);
 
-            var playerSummariesResponse = await
-                SiteUtil.GetAsync<PlayerSummariesResponse>(Client, String.Format(GetPlayerSummariesUrlFormat, SteamApiKey, steamId), ct).ConfigureAwait(false);
-
-            if (playerSummariesResponse?.response?.players == null || 
-                playerSummariesResponse.response.players.Length != 1 || 
-                String.IsNullOrWhiteSpace(playerSummariesResponse.response.players[0].avatarmedium) || 
-                String.IsNullOrWhiteSpace(playerSummariesResponse.response.players[0].personaname))
+            using (var playerSummariesResponse = await
+                Client.GetAsync<PlayerSummariesResponse>(String.Format(GetPlayerSummariesUrlFormat, SteamApiKey, steamId), ct).ConfigureAwait(false))
             {
-                SiteEventSource.Log.ErrorRetrievingPersonaInfo(steamId);
-                return new PersonaInfo(String.Empty, CacheAvatar);
+                if (playerSummariesResponse.Content?.response?.players == null ||
+                    playerSummariesResponse.Content.response.players.Length != 1 ||
+                    String.IsNullOrWhiteSpace(playerSummariesResponse.Content.response.players[0].avatarmedium) ||
+                    String.IsNullOrWhiteSpace(playerSummariesResponse.Content.response.players[0].personaname))
+                {
+                    SiteEventSource.Log.ErrorRetrievingPersonaInfo(steamId);
+                    return new PersonaInfo(String.Empty, CacheAvatar);
+                }
+
+                var playerSummary = playerSummariesResponse.Content.response.players[0];
+                SiteEventSource.Log.RetrievePersonaInfoStop(steamId, playerSummary.personaname, playerSummary.avatarmedium);
+
+                return new PersonaInfo(playerSummary.personaname, playerSummary.avatarmedium);
             }
-
-            var playerSummary = playerSummariesResponse.response.players[0];
-            SiteEventSource.Log.RetrievePersonaInfoStop(steamId, playerSummary.personaname, playerSummary.avatarmedium);
-
-            return new PersonaInfo(playerSummary.personaname, playerSummary.avatarmedium);
         }
     }
 }

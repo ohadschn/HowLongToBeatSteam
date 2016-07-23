@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -166,7 +167,13 @@ namespace SteamHltbScraper.Scraper
             var gamePageUrl = new Uri(String.Format(HltbGamePageFormat, hltbId));
 
             HltbScraperEventSource.Log.GetHltbGamePageStart(gamePageUrl);
-            var doc = await LoadDocument(() => s_client.GetAsync(gamePageUrl)).ConfigureAwait(false);
+            var doc = new HtmlDocument();
+            using (var response = await s_client.GetAsync<Stream>(gamePageUrl).ConfigureAwait(false))
+            using (var stream = response.Content)
+            {
+                doc.Load(stream);    
+            }
+            
             HltbScraperEventSource.Log.GetHltbGamePageStop(gamePageUrl);
 
             var headerDiv = doc.DocumentNode.Descendants().FirstOrDefault(n => n.GetAttributeValue("class", null) == "profile_header");
@@ -409,20 +416,15 @@ namespace SteamHltbScraper.Scraper
             };
 
             HltbScraperEventSource.Log.PostHltbSearchStart(SearchHltbUrl, content);
-            var doc = await LoadDocument(() => s_client.SendAsync(requestFactory, SearchHltbUrl)).ConfigureAwait(false);
+
+            var doc = new HtmlDocument();
+            using (var response = await s_client.SendAsync<Stream>(requestFactory, SearchHltbUrl))
+            using (var stream = response.Content)
+            {
+                doc.Load(stream);
+            }
             HltbScraperEventSource.Log.PostHltbSearchStop(SearchHltbUrl, content);
             
-            return doc;
-        }
-
-        private static async Task<HtmlDocument> LoadDocument(Func<Task<HttpResponseMessage>> httpRequester)
-        {
-            var doc = new HtmlDocument();
-            using (var response = await httpRequester().ConfigureAwait(false))
-            using (var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-            {
-                doc.Load(responseStream);
-            }
             return doc;
         }
 

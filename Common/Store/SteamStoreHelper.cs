@@ -39,30 +39,31 @@ namespace Common.Store
             var requestUrl = new Uri(String.Format(SteamStoreApiUrlTemplate, String.Join(",", apps.Select(si => si.AppId))));
             CommonEventSource.Log.RetrieveStoreInformationStart(start, counter, total, requestUrl);
 
-            var jObject = await SiteUtil.GetAsync<JObject>(client, requestUrl).ConfigureAwait(false);
-
-            foreach (var app in apps)
+            using (var jObject = await client.GetAsync<JObject>(requestUrl).ConfigureAwait(false))
             {
-                var appInfo = jObject[app.AppId.ToString(CultureInfo.InvariantCulture)].ToObject<StoreAppInfo>();
-
-                string type = !appInfo.success || String.IsNullOrWhiteSpace(appInfo.data?.type)
-                    ? AppEntity.UnknownType
-                    : appInfo.data.type;
-
-                if (app.AppType == type)
+                foreach (var app in apps)
                 {
-                    CommonEventSource.Log.SkippedPopulatedApp(app.AppId, app.Name, type);
-                    continue;
-                }
+                    var appInfo = jObject.Content[app.AppId.ToString(CultureInfo.InvariantCulture)].ToObject<StoreAppInfo>();
 
-                if (type == AppEntity.UnknownType)
-                {
-                    CommonEventSource.Log.PopulatingUnknownApp(app.AppId, app.Name);
-                    updates.Add(new AppEntity(app.AppId, app.Name, AppEntity.UnknownType));
-                    return;
-                }
+                    string type = !appInfo.success || String.IsNullOrWhiteSpace(appInfo.data?.type)
+                        ? AppEntity.UnknownType
+                        : appInfo.data.type;
 
-                PopulateApp(updates, appInfo, app, type);
+                    if (app.AppType == type)
+                    {
+                        CommonEventSource.Log.SkippedPopulatedApp(app.AppId, app.Name, type);
+                        continue;
+                    }
+
+                    if (type == AppEntity.UnknownType)
+                    {
+                        CommonEventSource.Log.PopulatingUnknownApp(app.AppId, app.Name);
+                        updates.Add(new AppEntity(app.AppId, app.Name, AppEntity.UnknownType));
+                        return;
+                    }
+
+                    PopulateApp(updates, appInfo, app, type);
+                }
             }
 
             CommonEventSource.Log.RetrieveStoreInformationStop(start, counter, total, requestUrl);
