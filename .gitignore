@@ -154,6 +154,7 @@ $RECYCLE.BIN/
 
 # Mac desktop service store files
 .DS_Store
+
 /packages/*
 !/packages/repositories.config
 /Enterprise Library Semantic Logging Service/*
