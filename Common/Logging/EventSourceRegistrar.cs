@@ -23,7 +23,7 @@ namespace Common.Logging
         }
 
         private static readonly bool s_logTplEvents = SiteUtil.GetOptionalValueFromConfig("LogTplEvents", false);
-        static private readonly ConcurrentBag<EventListenerInfo> s_listeners = new ConcurrentBag<EventListenerInfo>(); 
+        private static readonly ConcurrentBag<EventListenerInfo> s_listeners = new ConcurrentBag<EventListenerInfo>(); 
         public static void RegisterEventListener(EventSource source, ObservableEventListener listener)
         {
             if (listener == null)

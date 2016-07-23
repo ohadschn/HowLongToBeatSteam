@@ -10,6 +10,7 @@ using Common.Entities;
 using Common.Logging;
 using Common.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
+using static System.FormattableString;
 
 // ReSharper disable UnusedMember.Local
 
@@ -100,9 +101,9 @@ namespace ManualTableUpdater.Updater
                 //DeleteInvalidSuggestions();
                 //InsertManualSuggestions();
                 //DeleteUnknowns();
-                //ForceUpdateAppHltbID(390730, -1);
-                //ForceUpdateAppHltbID(346810, 29325);
-                //ForceUpdateAppHltbID(266310, 27913);
+                //ForceUpdateAppHltbId(390730, -1);
+                //ForceUpdateAppHltbId(346810, 29325);
+                //ForceUpdateAppHltbId(266310, 27913);
                 Console.WriteLine("Done - Press any key to continue...");
                 Console.ReadLine();
             }
@@ -118,7 +119,7 @@ namespace ManualTableUpdater.Updater
             Console.WriteLine(String.Join(Environment.NewLine, suggestions));
         }
 
-        public static void ForceUpdateAppHltbID(int steamId, int hltbId)
+        public static void ForceUpdateAppHltbId(int steamId, int hltbId)
         {
             var app = StorageHelper.GetAllApps().Result.First(a => a.SteamAppId == steamId);
             app.HltbId = hltbId;
@@ -201,7 +202,7 @@ namespace ManualTableUpdater.Updater
                 PrintGame(game);
                 count++;
             }
-            Console.WriteLine($"Total: {count}");
+            Console.WriteLine(Invariant($"Total: {count}"));
 
             //count = 0;
             //foreach (var game in measured.Where(a => !a.IsGame && a.Genres.First()== "Racing"))

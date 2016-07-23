@@ -2,7 +2,7 @@
   "$schema": "http://schemastore.org/schemas/json/webjob-publish-settings.json",
   "webJobName": "StorageBackupUploader",
   "startTime": "2015-07-18T00:00:00+02:00",
-  "endTime": null,
+  "endTime": "9999-07-18T00:00:00+02:00",
   "jobRecurrenceFrequency": "Week",
   "interval": 1,
   "runMode": "Scheduled"

@@ -2,6 +2,7 @@
 using System.Globalization;
 using Common.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
+using static System.FormattableString;
 
 namespace Common.Entities
 {
@@ -41,7 +42,7 @@ namespace Common.Entities
 
         public override string ToString()
         {
-            return $"SteamAppId: {SteamAppId}, HltbId: {HltbId}, AppType: {AppType}, IsRetype: {IsRetype}";
+            return Invariant($"SteamAppId: {SteamAppId}, HltbId: {HltbId}, AppType: {AppType}, IsRetype: {IsRetype}");
         }
     }
 }

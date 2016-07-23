@@ -62,7 +62,7 @@ namespace UnknownUpdater.Updater
         }
 
 
-        private async static Task UpdateUnknownApps()
+        private static async Task UpdateUnknownApps()
         {
             var ticks = Environment.TickCount;
             UnknownUpdaterEventSource.Log.UpdateUnknownAppsStart();

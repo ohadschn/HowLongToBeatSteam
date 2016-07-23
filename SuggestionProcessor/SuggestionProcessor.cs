@@ -236,7 +236,7 @@ namespace SuggestionProcessor
         private static void InspectSuggestion(SuggestionInfo suggestion)
         {
             Console.WriteLine("Launching Steam game page...");
-            Process.Start(String.Format(SteamStoreGamePageTemplate, suggestion.App.SteamAppId));
+            Process.Start(String.Format(CultureInfo.InvariantCulture, SteamStoreGamePageTemplate, suggestion.App.SteamAppId));
 
             if (suggestion.App.HltbId >= 0)
             {
@@ -268,12 +268,12 @@ namespace SuggestionProcessor
         {
             public bool Equals(SuggestionEntity x, SuggestionEntity y)
             {
-                return x.SteamAppId == y.SteamAppId;
+                return x?.SteamAppId == y?.SteamAppId;
             }
 
             public int GetHashCode(SuggestionEntity obj)
             {
-                return obj.SteamAppId;
+                return obj?.SteamAppId ?? 0;
             }
         }
     }

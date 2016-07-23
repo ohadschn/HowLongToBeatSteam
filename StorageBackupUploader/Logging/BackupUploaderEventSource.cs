@@ -62,14 +62,14 @@ namespace StorageBackupUploader.Logging
 
         [Event(
             3,
-            Message = "Start serializing {0} app(s) to file {1}",
+            Message = "Start serializing {0} app(s) to file: {1}",
             Keywords = Keywords.StorageBackup,
             Level = EventLevel.Informational,
             Task = Tasks.SerializeApps,
             Opcode = EventOpcode.Start)]
-        public void SerializeAppsStart(int appCount, string filename)
+        public void SerializeAppsStart(int appCount, string fileName)
         {
-            WriteEvent(3, appCount, filename);
+            WriteEvent(3, appCount, fileName);
         }
 
         [Event(
@@ -79,9 +79,9 @@ namespace StorageBackupUploader.Logging
             Level = EventLevel.Informational,
             Task = Tasks.SerializeApps,
             Opcode = EventOpcode.Stop)]
-        public void SerializeAppsStop(int appCount, string filename)
+        public void SerializeAppsStop(int appCount, string fileName)
         {
-            WriteEvent(4, appCount, filename);
+            WriteEvent(4, appCount, fileName);
         }
 
         [Event(

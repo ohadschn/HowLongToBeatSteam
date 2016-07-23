@@ -24,12 +24,18 @@ namespace Common.Util
 {
     public static class SiteUtil
     {
-        private static readonly HttpRetryClient SendGridClient = new HttpRetryClient(GetOptionalValueFromConfig("SendGridRetries", 10))
+        private static readonly HttpRetryClient SendGridClient = GetSendGridClient();
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
+        private static HttpRetryClient GetSendGridClient()
         {
-            DefaultRequestAuthorization = 
-                new AuthenticationHeaderValue(HttpRetryClient.BearerAuthorizationScheme, GetMandatoryCustomConnectionStringFromConfig("SendGridApiKey")),
-            BaseAddress = new Uri("https://api.sendgrid.com/v3/")
-        };
+            var apiKey = GetMandatoryCustomConnectionStringFromConfig("SendGridApiKey");
+            var retries = GetOptionalValueFromConfig("SendGridRetries", 10);
+            return new HttpRetryClient(retries)
+            {
+                DefaultRequestAuthorization = new AuthenticationHeaderValue(HttpRetryClient.BearerAuthorizationScheme, apiKey),
+                BaseAddress = new Uri("https://api.sendgrid.com/v3/")
+            };
+        }
 
         private const string WebjobNameEnvironmentVariable = "WEBJOBS_NAME";
         private const string WebjobRunIDEnvironmentVariable = "WEBJOBS_RUN_ID";

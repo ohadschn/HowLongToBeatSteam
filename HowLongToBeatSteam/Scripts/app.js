@@ -807,7 +807,7 @@ function AppViewModel() {
             var title = titles[i];
             var hours = getHours(slicedPlaytime[title]);
             if (title === unknownTitle || (hours / playtimeTotal) < groupingThreshold) {
-                others.push(title) ;
+                others.push(title);
                 othersTotal += hours;
                 continue;
             }

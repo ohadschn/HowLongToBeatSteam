@@ -2,7 +2,7 @@
   "$schema": "http://schemastore.org/schemas/json/webjob-publish-settings.json",
   "webJobName": "TestRunner",
   "startTime": "2015-07-24T05:00:00+02:00",
-  "endTime": null,
+  "endTime": "9999-06-20T20:00:00+02:00",
   "jobRecurrenceFrequency": "Day",
   "interval": 1,
   "runMode": "Scheduled"
