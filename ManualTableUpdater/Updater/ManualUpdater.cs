@@ -94,7 +94,7 @@ namespace ManualTableUpdater.Updater
         {
             try
             {
-                PrintGenres();
+                //PrintGenres();
                 //SerializeAllAppsToFile();
                 //LoadAllAppsFromFile();
                 //WriteAllMeasuredToTsv();
@@ -169,6 +169,15 @@ namespace ManualTableUpdater.Updater
 
         public static void LoadAllAppsFromFile()
         {
+            Console.WriteLine("Loading apps from file - this will override all loaded games!!!");
+            Console.Write("Are you sure? If so, type SURE (in capital letters): ");
+            var input = Console.ReadLine();
+            if (input != "SURE")
+            {
+                Console.WriteLine("You are not sure, aborting");
+                return;
+            }
+
             AppEntityData[] appData;
             using (var stream = File.OpenRead(AppDataXml))
             {
