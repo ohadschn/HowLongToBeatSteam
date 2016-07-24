@@ -33,7 +33,7 @@ namespace HltbTests.Scraping
             await DrainAllSuggestionsForSteamApp().ConfigureAwait(false);
 
             TestScraping("World of Guns: Gun Disassembly", 2014, false, false, false);
-            TestScraping("Gearcrack Arena", 2014, true, true, false);
+            TestScraping("Gearcrack Arena", 2014, false, false, false);
 
             //verify a new endless suggestion was auto-generated for it
             var suggestions = await DrainAllSuggestionsForSteamApp().ConfigureAwait(false);
