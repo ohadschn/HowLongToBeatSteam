@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
+using System.Globalization;
 using System.IO;
 using JetBrains.Annotations;
 using Microsoft.Practices.EnterpriseLibrary.SemanticLogging;
@@ -10,15 +11,15 @@ namespace Common.Logging
 {
     public class SystemDiagnosticsTraceSink : IObserver<EventEntry>
     {
-        public void OnNext(EventEntry entry)
+        public void OnNext(EventEntry value)
         {
-            if (entry == null) return;
-            using (var writer = new StringWriter())
+            if (value == null) return;
+            using (var writer = new StringWriter(CultureInfo.InvariantCulture))
             {
-                new EventTextFormatter().WriteEvent(entry, writer);
+                new EventTextFormatter().WriteEvent(value, writer);
                 var eventText = writer.ToString();
 
-                switch (entry.Schema.Level)
+                switch (value.Schema.Level)
                 {
                     case EventLevel.LogAlways:
                     case EventLevel.Critical:
@@ -33,7 +34,7 @@ namespace Common.Logging
                         Trace.TraceInformation(eventText);
                         return;
                     default:
-                        Trace.TraceError("Unknown event level: " + entry.Schema.Level);
+                        Trace.TraceError("Unknown event level: " + value.Schema.Level);
                         Trace.TraceInformation(eventText);
                         return;
                 }
