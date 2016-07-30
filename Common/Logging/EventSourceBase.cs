@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
-using Common.Storage;
 using Microsoft.Practices.EnterpriseLibrary.SemanticLogging;
 
 namespace Common.Logging
@@ -21,8 +20,7 @@ namespace Common.Logging
         {
             var listener = new ObservableEventListener();
             listener.EnableEvents(this, Verbosity, Keywords.All);
-            listener.LogToWindowsAzureTable("AzureTable", StorageHelper.AzureStorageTablesConnectionString);
-            listener.LogToConsole();
+            listener.LogToSystemDiagnosticsTrace();
             listener.LogSessionErrors();
             EventSourceRegistrar.RegisterEventListener(this, listener);
         }
