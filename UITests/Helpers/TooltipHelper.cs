@@ -1,4 +1,5 @@
-﻿using OpenQA.Selenium;
+﻿using System;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using UITests.Constants;
 using UITests.Util;
@@ -9,31 +10,53 @@ namespace UITests.Helpers
     {
         public static void AssertTooltip(IWebDriver driver, By by, string expectedTooltip, bool mobile = false)
         {
-            driver.Hover(by);
+            Console.WriteLine($"Hovering over '{by}' and asserting a tooltip containing '{expectedTooltip}'...");
             AssertTooltip(driver, driver.FindElement(by), expectedTooltip, mobile);
         }
 
         public static void AssertTooltip(IWebDriver driver, IWebElement element, string expectedTooltip, bool mobile = false)
         {
-            if (mobile)
+            var verificationFailureMessage = $"Could not verify tooltip '{expectedTooltip}'";
+            driver.WaitUntil(d =>
             {
-                new Actions(driver).ClickAndHold(element).Perform();
-            }
-            else
-            {
-                driver.Hover(element);
-            }
+                if (mobile)
+                {
+                    new Actions(driver).ClickAndHold(element).Perform();
+                }
+                else
+                {
+                    driver.Hover(element);
+                }
 
-            driver.WaitUntil(d => GetToolTipText(driver)?.Contains(expectedTooltip) ?? false, $"Could not verify tooltip '{expectedTooltip}'");
+                bool tooltipFound = true;
+                try
+                {
+                    driver.WaitUntil(dr => GetToolTipText(driver)?.Contains(expectedTooltip) ?? false, verificationFailureMessage, TimeSpan.FromSeconds(3));
+                }
+                catch (WebDriverTimeoutException)
+                {
+                    tooltipFound = false;
+                }
+                finally
+                {
+                    if (mobile)
+                    {
+                        new Actions(driver).Release(element).Perform();
+                    }
+                }
 
-            if (mobile)
-            {
-                new Actions(driver).Release(element).Perform();
-            }
-            else
-            {
-                new Actions(driver).MoveByOffset(999, 999).Perform();
-            }
+                if (tooltipFound)
+                {
+                    return true;
+                }
+
+                if (!mobile)
+                {
+                    new Actions(driver).MoveByOffset(999, 999).Perform();
+                }
+
+                return false;
+            }, verificationFailureMessage);
         }
 
         public static string GetToolTipText(IWebDriver driver)
