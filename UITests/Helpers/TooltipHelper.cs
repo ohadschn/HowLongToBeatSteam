@@ -30,6 +30,10 @@ namespace UITests.Helpers
             {
                 new Actions(driver).Release(element).Perform();
             }
+            else
+            {
+                new Actions(driver).MoveByOffset(999, 999).Perform();
+            }
         }
 
         public static string GetToolTipText(IWebDriver driver)
