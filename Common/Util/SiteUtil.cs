@@ -8,9 +8,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,11 +32,7 @@ namespace Common.Util
         {
             var apiKey = GetMandatoryCustomConnectionStringFromConfig("SendGridApiKey");
             var retries = GetOptionalValueFromConfig("SendGridRetries", 10);
-            return new HttpRetryClient(retries)
-            {
-                DefaultRequestAuthorization = new AuthenticationHeaderValue(HttpRetryClient.BearerAuthorizationScheme, apiKey),
-                BaseAddress = new Uri("https://api.sendgrid.com/v3/")
-            };
+            return new HttpRetryClient(retries) { DefaultRequestAuthorization = new AuthenticationHeaderValue(HttpRetryClient.BearerAuthorizationScheme, apiKey) };
         }
 
         private const string WebjobNameEnvironmentVariable = "WEBJOBS_NAME";
@@ -380,7 +378,8 @@ namespace Common.Util
             var content = new Content("text/plain", text);
             var mail = new Mail(from, subject, to, content);
 
-            using (var response = await SendGridClient.PostAsJsonAsync<Mail, string>("mail/send", mail).ConfigureAwait(false))
+            using (var response = await SendGridClient.PostAsync<string>("https://api.sendgrid.com/v3/mail/send", 
+                new StringContent(mail.Get(), Encoding.UTF8, "application/json")).ConfigureAwait(false))
             {
                 CommonEventSource.Log.SendSuccessMailStop(
                     description, response.ResponseMessage.StatusCode, response.ResponseMessage.Headers.ToString(), response.Content);

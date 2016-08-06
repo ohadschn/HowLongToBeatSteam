@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Common.Entities;
 using Common.Logging;
 using Common.Storage;
+using Common.Util;
 using Microsoft.WindowsAzure.Storage.Table;
 using static System.FormattableString;
 
@@ -105,6 +106,7 @@ namespace ManualTableUpdater.Updater
                 //ForceUpdateAppHltbId(390730, -1);
                 //ForceUpdateAppHltbId(346810, 29325);
                 //ForceUpdateAppHltbId(266310, 27913);
+                SendMail();
                 Console.WriteLine("Done - Press any key to continue...");
                 Console.ReadLine();
             }
@@ -112,6 +114,11 @@ namespace ManualTableUpdater.Updater
             {
                 EventSourceRegistrar.DisposeEventListeners();
             }
+        }
+
+        public static void SendMail()
+        {
+            SiteUtil.SendSuccessMail("lorem ipsum", "foo", TimeSpan.FromSeconds(20)).Wait();
         }
 
         public static void DeleteInvalidSuggestions()

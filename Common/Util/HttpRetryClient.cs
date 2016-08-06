@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Common.Logging;
+using JetBrains.Annotations;
 
 namespace Common.Util
 {
@@ -41,12 +42,6 @@ namespace Common.Util
         {
             get { return m_client.DefaultRequestHeaders.Authorization; }
             set { m_client.DefaultRequestHeaders.Authorization = value; }
-        }
-
-        public Uri BaseAddress
-        {
-            get { return m_client.BaseAddress; }
-            set { m_client.BaseAddress = value; }
         }
 
         public HttpRetryClient(int retries)
@@ -103,6 +98,23 @@ namespace Common.Util
             }
 
             return RequestAsync<T>(url, () => m_client.GetAsync(url, ct), ct);
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#")]
+        public Task<HttpResponseWithContent<T>> PostAsync<T>([NotNull] string uri, [NotNull] HttpContent content)
+        {
+            if (uri == null) throw new ArgumentNullException(nameof(uri));
+            if (content == null) throw new ArgumentNullException(nameof(content));
+
+            return PostAsync<T>( new Uri(uri), content);
+        }
+
+        public Task<HttpResponseWithContent<T>> PostAsync<T>([NotNull] Uri uri, [NotNull] HttpContent content)
+        {
+            if (uri == null) throw new ArgumentNullException(nameof(uri));
+            if (content == null) throw new ArgumentNullException(nameof(content));
+
+            return RequestAsync<T>(uri, () => m_client.PostAsync(uri, content), CancellationToken.None);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#")]
