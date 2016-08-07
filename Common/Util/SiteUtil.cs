@@ -39,6 +39,9 @@ namespace Common.Util
         private const string WebjobRunIDEnvironmentVariable = "WEBJOBS_RUN_ID";
         private const string WebsiteNameEnvironmentVariable = "WEBSITE_SITE_NAME";
 
+        //used to determine if running on azure or not (never mocked)
+        private const string WebSiteHostNameEnvironmentVariable = "WEBSITE_HOSTNAME";
+
         [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", MessageId = "0#"), SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", MessageId = "1#")]
         public static void Swap<T>(ref T first, ref T second)
         {
@@ -310,6 +313,8 @@ namespace Common.Util
             Console.WriteLine("Keepalive...");
             Task.Delay(KeepAliveIntervalSeconds*1000).ContinueWith(t => KeepWebJobAlive());
         }
+
+        public static bool OnAzure => Environment.GetEnvironmentVariable(WebSiteHostNameEnvironmentVariable) != null;
 
         public static string WebJobName => Environment.GetEnvironmentVariable(WebjobNameEnvironmentVariable);
 

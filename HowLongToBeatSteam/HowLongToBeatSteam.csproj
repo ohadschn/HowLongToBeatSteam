@@ -265,6 +265,7 @@
     <Compile Include="Controllers\Responses\OwnedGamesResponse.cs" />
     <Compile Include="Controllers\Responses\PlayerSummariesResponse.cs" />
     <Compile Include="Controllers\Responses\VanityUrlResolutionResponse.cs" />
+    <Compile Include="Filters\CsrfFilter.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
