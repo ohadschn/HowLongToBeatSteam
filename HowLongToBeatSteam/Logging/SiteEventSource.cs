@@ -1,7 +1,9 @@
-﻿using System.Diagnostics.Tracing;
+﻿using System;
+using System.Diagnostics.Tracing;
 using System.Net.Http;
 using Common.Logging;
 using DotNetOpenAuth.OpenId.RelyingParty;
+using JetBrains.Annotations;
 
 namespace HowLongToBeatSteam.Logging
 {
@@ -327,8 +329,9 @@ namespace HowLongToBeatSteam.Logging
         }
 
         [NonEvent]
-        public void NeitherOriginNorRefererSpecifiedInRequest(HttpRequestMessage request)
+        public void NeitherOriginNorRefererSpecifiedInRequest([NotNull] HttpRequestMessage request)
         {
+            if (request == null) throw new ArgumentNullException(nameof(request));
             NeitherOriginNorRefererSpecifiedInRequest(request.ToString());
         }
 
@@ -342,8 +345,9 @@ namespace HowLongToBeatSteam.Logging
         }
 
         [NonEvent]
-        public void PartialRefererSpecifiedInRequest(HttpRequestMessage request)
+        public void PartialRefererSpecifiedInRequest([NotNull] HttpRequestMessage request)
         {
+            if (request == null) throw new ArgumentNullException(nameof(request));
             PartialRefererSpecifiedInRequest(request.ToString());
         }
 
@@ -357,8 +361,9 @@ namespace HowLongToBeatSteam.Logging
         }
 
         [NonEvent]
-        public void MismatchedOriginInRequest(HttpRequestMessage request)
+        public void MismatchedOriginInRequest([NotNull] HttpRequestMessage request)
         {
+            if (request == null) throw new ArgumentNullException(nameof(request));
             MismatchedOriginInRequest(request.ToString());
         }
 
@@ -372,8 +377,9 @@ namespace HowLongToBeatSteam.Logging
         }
 
         [NonEvent]
-        public void MismatchedRefererHeader(HttpRequestMessage request)
+        public void MismatchedRefererHeader([NotNull] HttpRequestMessage request)
         {
+            if (request == null) throw new ArgumentNullException(nameof(request));
             MismatchedRefererHeader(request.ToString());
         }
 

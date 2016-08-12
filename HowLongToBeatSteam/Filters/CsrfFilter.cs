@@ -6,20 +6,23 @@ using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
 using HowLongToBeatSteam.Logging;
+using JetBrains.Annotations;
 
 namespace HowLongToBeatSteam.Filters
 {
-    public class CsrfFilterAttribute : ActionFilterAttribute
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
+    public sealed class CsrfFilterAttribute : ActionFilterAttribute
     {
         private readonly Uri m_expectedUri = new Uri("https://www.howlongtobeatsteam.com");
 
-        public override void OnActionExecuting(HttpActionContext actionContext)
+        public override void OnActionExecuting([NotNull] HttpActionContext actionContext)
         {
+            if (actionContext == null) throw new ArgumentNullException(nameof(actionContext));
             IEnumerable<string> values;
 
             if (actionContext.Request.Headers.TryGetValues("Origin", out values))
             {
-                if (!m_expectedUri.GetLeftPart(UriPartial.Authority).Equals(values.SingleOrDefault(), StringComparison.InvariantCultureIgnoreCase))
+                if (!m_expectedUri.GetLeftPart(UriPartial.Authority).Equals(values.SingleOrDefault(), StringComparison.OrdinalIgnoreCase))
                 {
                     SiteEventSource.Log.MismatchedOriginInRequest(actionContext.Request);
                     throw new HttpResponseException(HttpStatusCode.Forbidden);
@@ -42,7 +45,7 @@ namespace HowLongToBeatSteam.Filters
                 return; // assuming the URL's base is our host so we're good
             }
 
-            if (!m_expectedUri.GetLeftPart(UriPartial.Authority).Equals(refererUri.GetLeftPart(UriPartial.Authority), StringComparison.InvariantCultureIgnoreCase))
+            if (!m_expectedUri.GetLeftPart(UriPartial.Authority).Equals(refererUri.GetLeftPart(UriPartial.Authority), StringComparison.OrdinalIgnoreCase))
             {
                 SiteEventSource.Log.MismatchedRefererHeader(actionContext.Request);
                 throw new HttpResponseException(HttpStatusCode.Forbidden);

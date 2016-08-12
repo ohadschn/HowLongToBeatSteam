@@ -4,6 +4,10 @@ using Microsoft.ApplicationInsights;
 
 namespace HowLongToBeatSteam.Logging
 {
+    /// <summary>
+    /// Exception logger for ASP.NET WEB API 2.X
+    /// https://azure.microsoft.com/en-us/documentation/articles/app-insights-asp-net-exceptions/#web-api-2x
+    /// </summary>
     public class AppInsightsExceptionLogger : ExceptionLogger
     {
         private readonly TelemetryClient m_appInsightsClient = new TelemetryClient();
