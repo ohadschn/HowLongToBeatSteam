@@ -14,7 +14,7 @@ namespace HowLongToBeatSteam.Logging
     }
 
     [EventSource(Name = "OS-HowLongToBeatSteam-Site")]
-    public class SiteEventSource : EventSourceBase
+    public sealed class SiteEventSource : EventSourceBase
     {
         public static readonly SiteEventSource Log = new SiteEventSource();
         private SiteEventSource()
@@ -190,7 +190,7 @@ namespace HowLongToBeatSteam.Logging
             Keywords = Keywords.GamesController,
             Level = EventLevel.Informational,
             Task = Tasks.HandleGetGamesRequest,
-            Opcode = EventOpcode.Start)]
+            Opcode = EventOpcode.Stop)]
         public void HandleGetGamesRequestStop(string userVanityUrlName)
         {
             WriteEvent(16, userVanityUrlName);

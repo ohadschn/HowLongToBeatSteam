@@ -5,7 +5,7 @@ using Common.Logging;
 namespace TestRunner.Logging
 {
     [EventSource(Name = "OS-HowLongToBeatSteam-TestRunner")]
-    public class TestRunnerEventSource : EventSourceBase
+    public sealed class TestRunnerEventSource : EventSourceBase
     {
         public static readonly TestRunnerEventSource Log = new TestRunnerEventSource();
         private TestRunnerEventSource()

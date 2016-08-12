@@ -9,7 +9,7 @@ using Common.Storage;
 namespace UnknownUpdater.Logging
 {
     [EventSource(Name = "OS-HowLongToBeatSteam-UnknownGamesUpdater")]
-    public class UnknownUpdaterEventSource : EventSourceBase
+    public sealed class UnknownUpdaterEventSource : EventSourceBase
     {
         public static readonly UnknownUpdaterEventSource Log = new UnknownUpdaterEventSource();
         private UnknownUpdaterEventSource()

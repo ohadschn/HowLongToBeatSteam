@@ -11,7 +11,7 @@ using MissingGamesUpdater.Updater;
 namespace MissingGamesUpdater.Logging
 {
     [EventSource(Name = "OS-HowLongToBeatSteam-MissingGamesUpdater")]
-    public class MissingUpdaterEventSource : EventSourceBase
+    public sealed class MissingUpdaterEventSource : EventSourceBase
     {
         public static readonly MissingUpdaterEventSource Log = new MissingUpdaterEventSource();
         private MissingUpdaterEventSource()

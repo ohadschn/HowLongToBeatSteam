@@ -5,7 +5,7 @@ using Common.Logging;
 namespace StorageBackupUploader.Logging
 {
     [EventSource(Name = "OS-HowLongToBeatSteam-BackupUploader")]
-    public class BackupUploaderEventSource : EventSourceBase
+    public sealed class BackupUploaderEventSource : EventSourceBase
     {
         public static readonly BackupUploaderEventSource Log = new BackupUploaderEventSource();
         private BackupUploaderEventSource()

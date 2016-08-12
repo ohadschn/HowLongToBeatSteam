@@ -5,7 +5,7 @@ using Microsoft.Practices.EnterpriseLibrary.SemanticLogging;
 
 namespace Common.Logging
 {
-    public class EventSourceBase : EventSource
+    public abstract class EventSourceBase : EventSource
     {
         private static readonly EventLevel Verbosity = ResolveVerbosity();
 
@@ -16,7 +16,7 @@ namespace Common.Logging
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
-        public EventSourceBase()
+        protected EventSourceBase()
         {
             var listener = new ObservableEventListener();
             listener.EnableEvents(this, Verbosity, Keywords.All);

@@ -5,7 +5,7 @@ using Common.Logging;
 namespace SuggestionWatcher.Logging
 {
     [EventSource(Name = "OS-HowLongToBeatSteam-SuggestionWatcher")]
-    public class SuggestionWatcherEventSource : EventSourceBase
+    public sealed class SuggestionWatcherEventSource : EventSourceBase
     {
         public static readonly SuggestionWatcherEventSource Log = new SuggestionWatcherEventSource();
         private SuggestionWatcherEventSource()
