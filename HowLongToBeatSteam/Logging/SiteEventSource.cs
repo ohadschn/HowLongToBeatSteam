@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.Tracing;
+using System.Net.Http;
 using Common.Logging;
 using DotNetOpenAuth.OpenId.RelyingParty;
 
@@ -27,6 +28,7 @@ namespace HowLongToBeatSteam.Logging
             public const EventKeywords GamesController = (EventKeywords) 2;
             public const EventKeywords TableStorage = (EventKeywords) 4;
             public const EventKeywords OpenId = (EventKeywords)8;
+            public const EventKeywords Http = (EventKeywords) 16;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
@@ -322,6 +324,66 @@ namespace HowLongToBeatSteam.Logging
         public void SteamAuthenticationSucceeded(string claimedId)
         {
             WriteEvent(28, claimedId);
+        }
+
+        [NonEvent]
+        public void NeitherOriginNorRefererSpecifiedInRequest(HttpRequestMessage request)
+        {
+            NeitherOriginNorRefererSpecifiedInRequest(request.ToString());
+        }
+
+        [Event(29,
+            Message = "Neither Origin nor Referer were specified: {0}",
+            Keywords = Keywords.Http,
+            Level = EventLevel.Warning)]
+        private void NeitherOriginNorRefererSpecifiedInRequest(string request)
+        {
+            WriteEvent(29, request);
+        }
+
+        [NonEvent]
+        public void PartialRefererSpecifiedInRequest(HttpRequestMessage request)
+        {
+            PartialRefererSpecifiedInRequest(request.ToString());
+        }
+
+        [Event(30,
+            Message = "Partial Referer header specified: {0}",
+            Keywords = Keywords.Http,
+            Level = EventLevel.Warning)]
+        private void PartialRefererSpecifiedInRequest(string request)
+        {
+            WriteEvent(30, request);
+        }
+
+        [NonEvent]
+        public void MismatchedOriginInRequest(HttpRequestMessage request)
+        {
+            MismatchedOriginInRequest(request.ToString());
+        }
+
+        [Event(31,
+            Message = "Mismatched Origin header specified: {0}",
+            Keywords = Keywords.Http,
+            Level = EventLevel.Warning)]
+        private void MismatchedOriginInRequest(string request)
+        {
+            WriteEvent(31, request);
+        }
+
+        [NonEvent]
+        public void MismatchedRefererHeader(HttpRequestMessage request)
+        {
+            MismatchedRefererHeader(request.ToString());
+        }
+
+        [Event(32,
+            Message = "Mismatched Referer header specified: {0}",
+            Keywords = Keywords.Http,
+            Level = EventLevel.Warning)]
+        private void MismatchedRefererHeader(string request)
+        {
+            WriteEvent(32, request);
         }
     }
 }

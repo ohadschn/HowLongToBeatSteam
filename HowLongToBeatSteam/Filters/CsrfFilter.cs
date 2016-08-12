@@ -5,6 +5,7 @@ using System.Net;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
+using HowLongToBeatSteam.Logging;
 
 namespace HowLongToBeatSteam.Filters
 {
@@ -16,44 +17,34 @@ namespace HowLongToBeatSteam.Filters
         {
             IEnumerable<string> values;
 
-            bool hostSpecified = actionContext.Request.Headers.TryGetValues("Host", out values);
-            if (!hostSpecified || !m_expectedUri.Host.Equals(values.SingleOrDefault(), StringComparison.InvariantCultureIgnoreCase))
+            if (actionContext.Request.Headers.TryGetValues("Origin", out values))
             {
-                //log
-                throw new HttpResponseException(HttpStatusCode.Forbidden);
-            }
+                if (!m_expectedUri.GetLeftPart(UriPartial.Authority).Equals(values.SingleOrDefault(), StringComparison.InvariantCultureIgnoreCase))
+                {
+                    SiteEventSource.Log.MismatchedOriginInRequest(actionContext.Request);
+                    throw new HttpResponseException(HttpStatusCode.Forbidden);
+                }
 
-            bool originSpecified = actionContext.Request.Headers.TryGetValues("Origin", out values);
-            if (originSpecified && !m_expectedUri.GetLeftPart(UriPartial.Authority).Equals(values.SingleOrDefault(), StringComparison.InvariantCultureIgnoreCase))
-            {
-                //log
-                throw new HttpResponseException(HttpStatusCode.Forbidden);
-            }
-
-            if (originSpecified)
-            {
-                // Origin header check passed
                 return;
             }
 
-            var refererSpecified = actionContext.Request.Headers.TryGetValues("Referer", out values);
-            if (!refererSpecified)
+            if (!actionContext.Request.Headers.TryGetValues("Referer", out values))
             {
-                //log (should be very rare)
+                //Should be very rare according to OWASP - monitor event
+                SiteEventSource.Log.NeitherOriginNorRefererSpecifiedInRequest(actionContext.Request);
                 return;
             }
 
             Uri refererUri;
-            if (!Uri.TryCreate(values.SingleOrDefault(), UriKind.Absolute, out refererUri))
+            if (!Uri.TryCreate(values.SingleOrDefault(), UriKind.Absolute, out refererUri)) //partial URI
             {
-                //partial URI - assuming the base is our host so we're good (should be rare too)
-                //log
-                return;
+                SiteEventSource.Log.PartialRefererSpecifiedInRequest(actionContext.Request);
+                return; // assuming the URL's base is our host so we're good
             }
 
             if (!m_expectedUri.GetLeftPart(UriPartial.Authority).Equals(refererUri.GetLeftPart(UriPartial.Authority), StringComparison.InvariantCultureIgnoreCase))
             {
-                //log
+                SiteEventSource.Log.MismatchedRefererHeader(actionContext.Request);
                 throw new HttpResponseException(HttpStatusCode.Forbidden);
             }
         }
