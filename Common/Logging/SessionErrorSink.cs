@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using JetBrains.Annotations;
 using Microsoft.Practices.EnterpriseLibrary.SemanticLogging;
+using Microsoft.Practices.EnterpriseLibrary.SemanticLogging.Schema;
+using static System.FormattableString;
 
 namespace Common.Logging
 {
-    public class SessionErrorSink : IObserver<EventEntry>
+    public sealed class SessionErrorSink : IObserver<EventEntry>
     {
         public void OnNext(EventEntry value)
         {
@@ -20,9 +23,9 @@ namespace Common.Logging
         [SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "OnError")]
         public void OnError(Exception error)
         {
-            // ReSharper disable once ConstantNullCoalescingCondition
-            // ReSharper disable once ConstantConditionalAccessQualifier
-            SemanticLoggingEventSource.Log.CustomSinkUnhandledFault(error?.ToString() ?? "null exception in SessionErrorSink::OnError()");
+            EventSourceRegistrar.RecordSessionError(
+                new EventEntry(Guid.Empty, -1, Invariant($"Error in SLAB provider: {error}"), new ReadOnlyCollection<object>(new object[] {}), DateTimeOffset.UtcNow,
+                new EventSchema(-1, Guid.Empty, "SLAB", EventLevel.Error, EventTask.None, "", EventOpcode.Info, "", EventKeywords.None, "", 0, new string[] {})));
         }
 
         public void OnCompleted()

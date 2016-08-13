@@ -9,8 +9,15 @@ using Microsoft.Practices.EnterpriseLibrary.SemanticLogging.Formatters;
 
 namespace Common.Logging
 {
-    public class SystemDiagnosticsTraceSink : IObserver<EventEntry>
+    public sealed class SystemDiagnosticsTraceSink : IObserver<EventEntry>
     {
+        private bool m_disposed = false;
+
+        ~SystemDiagnosticsTraceSink()
+        {
+            Dispose(false);
+        }
+
         public void OnNext(EventEntry value)
         {
             if (value == null) return;
@@ -43,14 +50,37 @@ namespace Common.Logging
 
         public void OnError(Exception error)
         {
-            // ReSharper disable once ConstantNullCoalescingCondition
-            // ReSharper disable once ConstantConditionalAccessQualifier
-            SemanticLoggingEventSource.Log.CustomSinkUnhandledFault(error?.ToString() ?? "null exception in SessionErrorSink::OnError()");
+            Trace.TraceError("SystemDiagnosticsTraceSink.OnError() called with exception: " + error);
         }
 
         public void OnCompleted()
         {
-            //nothing to do
+            Dispose(true);
+        }
+
+        private void Dispose(bool completing)
+        {
+            if (m_disposed)
+            {
+                return;
+            }
+
+            if (!completing)
+            {
+                //we shouldn't reach here - it means ObservableEventListener.Dispose() wasn't called
+                if (Debugger.IsAttached)
+                {
+                    Debugger.Break();
+                }
+                else
+                {
+                    Trace.TraceError($"{nameof(SystemDiagnosticsTraceSink)} was not disposed");
+                }
+            }
+
+            Trace.Flush();
+
+            m_disposed = true;
         }
     }
 
