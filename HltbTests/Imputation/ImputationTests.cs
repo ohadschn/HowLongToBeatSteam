@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Threading.Tasks;
 using Common.Entities;
+using Common.Logging;
 using Common.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SteamHltbScraper.Imputation;
@@ -11,6 +12,12 @@ namespace HltbTests.Imputation
     [TestClass]
     public class ImputationTests
     {
+        [TestCleanup]
+        public void Cleanup()
+        {
+            EventSourceRegistrar.DisposeEventListeners();
+        }
+
         [TestMethod]
         public async Task TestImputation()
         {

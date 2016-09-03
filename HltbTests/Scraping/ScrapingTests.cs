@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Common.Entities;
+using Common.Logging;
 using Common.Storage;
 using JetBrains.Annotations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -14,6 +15,12 @@ namespace HltbTests.Scraping
     [TestClass]
     public class ScrapingTests
     {
+        [TestCleanup]
+        public void Cleanup()
+        {
+            EventSourceRegistrar.DisposeEventListeners();
+        }
+
         [TestMethod]
         public void TestFullStats()
         {

@@ -7,12 +7,19 @@ using Common.Store;
 using MissingGamesUpdater.Updater;
 using Common.Util;
 using Common.Entities;
+using Common.Logging;
 
 namespace HltbTests.Steam
 {
     [TestClass]
     public class SteamTests
     {
+        [TestCleanup]
+        public void Cleanup()
+        {
+            EventSourceRegistrar.DisposeEventListeners();
+        }
+
         [TestMethod]
         public void TestStoreApi()
         {

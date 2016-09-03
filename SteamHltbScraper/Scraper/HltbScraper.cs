@@ -211,26 +211,25 @@ namespace SteamHltbScraper.Scraper
 
         private static DateTime ScrapeReleaseDate(int hltbId, HtmlDocument doc)
         {
-            var releaseDatesTitle = doc.DocumentNode.Descendants("h5").FirstOrDefault(n => n.InnerText.Contains("Release Date(s):"));
-            if (releaseDatesTitle == null)
-            {
-                return AppEntity.UnknownDate;
-            }
-
-            var releaseDateDiv = releaseDatesTitle.ParentNode;
-            if (releaseDateDiv == null)
-            {
-                throw GetFormatException("Release date title has no parent", hltbId, doc);
-            }
-
             var minDate = DateTime.MaxValue;
-            foreach (var dateNode in releaseDateDiv.ChildNodes.Where(n => n.NodeType == HtmlNodeType.Text))
+            var potentialDateNodes = doc.DocumentNode
+                .Descendants("div")
+                .Where(n => n.Attributes["class"]?.Value == "profile_info")
+                .SelectMany(n => n.ChildNodes.Where(d => d.NodeType == HtmlNodeType.Text))
+                .ToArray();
+
+            if (potentialDateNodes.Length == 0)
+            {
+                throw GetFormatException("No potential date text nodes found (div .profile_info)", hltbId, doc);
+            }
+
+            foreach (var potentialDateNode in potentialDateNodes)
             {
                 DateTime date;
-                if (!DateTime.TryParse(dateNode.InnerText, out date))
+                if (!DateTime.TryParse(potentialDateNode.InnerText, out date))
                 {
                     int year;
-                    if (!Int32.TryParse(dateNode.InnerText, out year))
+                    if (!Int32.TryParse(potentialDateNode.InnerText, out year))
                     {
                         continue;
                     }
