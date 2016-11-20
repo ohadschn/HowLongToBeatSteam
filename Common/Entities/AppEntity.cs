@@ -108,7 +108,21 @@ namespace Common.Entities
             get { return PublishersFlat.ToStringArray(); } 
             set { PublishersFlat = value.ToFlatString(); }
         }
-        public DateTime ReleaseDate { get; set; }
+
+        private DateTime _releaseDate;
+        public DateTime ReleaseDate
+        {
+            get { return _releaseDate; }
+            set
+            {
+                if (!StorageHelper.IsValid(value))
+                {
+                    throw new ArgumentOutOfRangeException(nameof(ReleaseDate), value, $"Date must be between {StorageHelper.MinEdmDate} and {StorageHelper.MaxEdmDate})");
+                }
+                _releaseDate = value;
+            }
+        }
+
         public int MetacriticScore { get; set; }
 
         [IgnoreProperty] public bool Measured => RowKey.StartsWith(MeasuredKey, StringComparison.Ordinal);

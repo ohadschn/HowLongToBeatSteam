@@ -36,7 +36,7 @@ namespace Common.Util
         }
 
         private const string WebjobNameEnvironmentVariable = "WEBJOBS_NAME";
-        private const string WebjobRunIDEnvironmentVariable = "WEBJOBS_RUN_ID";
+        private const string WebjobRunIdEnvironmentVariable = "WEBJOBS_RUN_ID";
         private const string WebsiteNameEnvironmentVariable = "WEBSITE_SITE_NAME";
 
         //used to determine if running on azure or not (never mocked)
@@ -316,9 +316,11 @@ namespace Common.Util
 
         public static bool OnAzure => Environment.GetEnvironmentVariable(WebSiteHostNameEnvironmentVariable) != null;
 
+        public static bool InWebJob =>Environment.GetEnvironmentVariable("WEBJOBS_TYPE") != null;
+
         public static string WebJobName => Environment.GetEnvironmentVariable(WebjobNameEnvironmentVariable);
 
-        public static string WebJobRunId => Environment.GetEnvironmentVariable(WebjobRunIDEnvironmentVariable);
+        public static string WebJobRunId => Environment.GetEnvironmentVariable(WebjobRunIdEnvironmentVariable);
 
         public static string WebsiteName => Environment.GetEnvironmentVariable(WebsiteNameEnvironmentVariable);
 
@@ -330,7 +332,7 @@ namespace Common.Util
             }
 
             Environment.SetEnvironmentVariable(WebjobNameEnvironmentVariable, name);
-            Environment.SetEnvironmentVariable(WebjobRunIDEnvironmentVariable, RandomGenerator.Next(0, int.MaxValue).ToString(CultureInfo.InvariantCulture));
+            Environment.SetEnvironmentVariable(WebjobRunIdEnvironmentVariable, RandomGenerator.Next(0, int.MaxValue).ToString(CultureInfo.InvariantCulture));
             Environment.SetEnvironmentVariable(WebsiteNameEnvironmentVariable, "[mock]");
         }
 
@@ -384,7 +386,7 @@ namespace Common.Util
             var mail = new Mail(from, subject, to, content);
 
             using (var response = await SendGridClient.PostAsync<string>("https://api.sendgrid.com/v3/mail/send", 
-                new StringContent(mail.Get(), Encoding.UTF8, "application/json")).ConfigureAwait(false))
+                () => new StringContent(mail.Get(), Encoding.UTF8, "application/json")).ConfigureAwait(false))
             {
                 CommonEventSource.Log.SendSuccessMailStop(
                     description, response.ResponseMessage.StatusCode, response.ResponseMessage.Headers.ToString(), response.Content);

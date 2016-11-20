@@ -209,40 +209,53 @@ namespace SteamHltbScraper.Scraper
             return new HltbInfo(hltbName, mainTtb, extrasTtb, completionistTtb, releaseDate);
         }
 
+        private static void ThrowOnInvalidDate(string releaseDate, DateTime date, int hltbId, HtmlDocument doc)
+        {
+            if (!StorageHelper.IsValid(date))
+            {
+                throw GetFormatException($"Invalid release date: {releaseDate} (parsed as {date})", hltbId, doc);
+            }
+        }
+
+        private static DateTime ParseReleaseDate(string releaseDate, int hltbId, HtmlDocument doc)
+        {
+            DateTime date;
+            if (DateTime.TryParse(releaseDate, out date))
+            {
+                ThrowOnInvalidDate(releaseDate, date, hltbId, doc);
+                return date;
+            }
+
+            int year;
+            if (Int32.TryParse(releaseDate, out year))
+            {
+                var ret = new DateTime(year, 1, 1);
+                ThrowOnInvalidDate(releaseDate, ret, hltbId, doc);
+                return ret;
+            }
+
+            throw GetFormatException($"Could not parse release date: {releaseDate}", hltbId, doc);
+        }
+
         private static DateTime ScrapeReleaseDate(int hltbId, HtmlDocument doc)
         {
-            var minDate = DateTime.MaxValue;
             var potentialDateNodes = doc.DocumentNode
                 .Descendants("div")
-                .Where(n => n.Attributes["class"]?.Value == "profile_info")
-                .SelectMany(n => n.ChildNodes.Where(d => d.NodeType == HtmlNodeType.Text))
+                .Where(n => n.Attributes["class"]?.Value == "profile_info" && !string.IsNullOrWhiteSpace(n.InnerText))
                 .ToArray();
-
+                           
             if (potentialDateNodes.Length == 0)
             {
                 throw GetFormatException("No potential date text nodes found (div .profile_info)", hltbId, doc);
             }
 
-            foreach (var potentialDateNode in potentialDateNodes)
-            {
-                DateTime date;
-                if (!DateTime.TryParse(potentialDateNode.InnerText, out date))
-                {
-                    int year;
-                    if (!Int32.TryParse(potentialDateNode.InnerText, out year))
-                    {
-                        continue;
-                    }
-                    date = new DateTime(year, 1, 1);
-                }
-                
-                if (date < minDate)
-                {
-                    minDate = date;
-                }
-            }
+            var potentialDates = potentialDateNodes
+                .Select(n => Regex.Match(n.InnerText.Trim(), "^[A-Z]{2}: (.*)$"))
+                .Where(m => m.Groups.Count == 2)
+                .Select(m => ParseReleaseDate(m.Groups[1].Value, hltbId, doc))
+                .ToArray();
 
-            return (minDate == DateTime.MaxValue) ? AppEntity.UnknownDate : minDate;
+            return (potentialDates.Length == 0) ? AppEntity.UnknownDate : potentialDates.Min();
         }
 
         private static void ScrapeTtbs(int hltbId, HtmlDocument doc, out int mainTtb, out int extrasTtb, out int completionistTtb)

@@ -31,6 +31,14 @@ namespace Common.Storage
         public static readonly string AzureStorageBlobConnectionString = SiteUtil.GetMandatoryCustomConnectionStringFromConfig("HltbsBlobs");        
         private static readonly TimeSpan DefaultDeltaBackoff = TimeSpan.FromSeconds(4);
 
+        public static readonly DateTime MinEdmDate = new DateTime(1601, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        public static readonly DateTime MaxEdmDate = new DateTime(9999, 12, 31, 23, 59, 59, DateTimeKind.Utc);
+
+        public static bool IsValid(DateTime dateTime)
+        {
+            return dateTime >= MinEdmDate && dateTime <= MaxEdmDate;
+        }
+
         //https://msdn.microsoft.com/en-us/library/azure/dd179338.aspx
         public static string CleanStringForTableKey(string text)
         {
@@ -246,13 +254,20 @@ namespace Common.Storage
                 }
                 catch (StorageException e)
                 {
+                    var batchContents = String.Join(Environment.NewLine,
+                        tboi.Operation.Select((o, i) => String.Format(CultureInfo.InvariantCulture,
+                            "[{0}] Type: {1} Partition: {2} Row: {3}", i, o.GetTableOperationType(), o.GetPartitionKey(), o.GetRowKey())));
+
                     CommonEventSource.Log.ErrorExecutingPartitionBatchOperation(
                         e,
-                        e.RequestInformation.HttpStatusCode,
-                        e.RequestInformation.ExtendedErrorInformation.ErrorCode,
-                        e.RequestInformation.ExtendedErrorInformation.ErrorMessage,
-                        tboi.Operation);
-                    throw;
+                        e.RequestInformation?.HttpStatusCode ?? 0,
+                        e.RequestInformation?.ExtendedErrorInformation?.ErrorCode ?? "unknown",
+                        e.RequestInformation?.ExtendedErrorInformation?.ErrorMessage ?? "unknown",
+                        batchContents);
+
+                    throw new StorageException(String.Format(CultureInfo.InvariantCulture,
+                        "Error executing batch operation: {0}. Status code: {1}. Batch contents: {2}",
+                        e.RequestInformation?.ExtendedErrorInformation?.ErrorMessage ?? "unknown", e.RequestInformation?.HttpStatusCode, batchContents), e);
                 }
                 CommonEventSource.Log.ExecutePartitionBatchOperationStop(tboi.Partition, tboi.Batch, final);
             }, false).ConfigureAwait(false);

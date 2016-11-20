@@ -16,8 +16,9 @@ namespace HltbTests.Scraping
     public class ScrapingTests
     {
         [TestCleanup]
-        public void Cleanup()
+        public async void Cleanup()
         {
+            await DrainAllSuggestionsForSteamApp();
             EventSourceRegistrar.DisposeEventListeners();
         }
 
@@ -68,6 +69,13 @@ namespace HltbTests.Scraping
         public void TestNonAlphanumericName()
         {
             TestScraping("Air Conflicts - Secret Wars", 2011, true, true, true, "Air Conflicts: Secret Wars");
+        }
+
+        [TestMethod]
+        public void TestMetadataParsableAsReleaseYear()
+        {
+            //The following was developed by '773' which can be parsed as the date 773 A.D.
+            TestScraping("Cherry Tree High Comedy Club", 2012, true, true, true);
         }
 
         [TestMethod]
@@ -159,7 +167,7 @@ namespace HltbTests.Scraping
         private static AppEntity ScrapeApp(string name)
         {
             var app = new AppEntity(0, name, AppEntity.GameTypeName);
-            HltbScraper.ScrapeHltb(new[] { app }).Wait();
+            HltbScraper.ScrapeHltb(new[] { app }, (a,e) => { throw new InvalidOperationException("error during scraping", e); }).Wait();
             return app;
         }
     }

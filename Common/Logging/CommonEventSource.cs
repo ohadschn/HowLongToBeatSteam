@@ -2,12 +2,9 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.Globalization;
-using System.Linq;
 using System.Net;
 using Common.Entities;
-using Common.Storage;
 using JetBrains.Annotations;
-using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Common.Logging
 {
@@ -199,6 +196,16 @@ namespace Common.Logging
         }
 
         [Event(
+             108,
+             Message = "Invalid release date reported from Steam API: {0} (parsed as {1})",
+             Keywords = Keywords.StoreApi,
+             Level = EventLevel.Error)]
+        public void ErrorParsingStoreReleaseDate(string releaseDate, DateTime relDateTime)
+        {
+            WriteEvent(108, releaseDate, relDateTime);
+        }
+
+        [Event(
             8,
             Message = "Start querying table storage for all {0} with filter: [{1}]",
             Keywords = Keywords.TableStorage,
@@ -370,14 +377,11 @@ namespace Common.Logging
         public void ErrorExecutingPartitionBatchOperation(
             [NotNull] Exception exception, 
             int statusCode, string errorCode, string errorMessage,
-            [NotNull] TableBatchOperation batchOperation)
+            string batchContents)
         {
             if (exception == null) throw new ArgumentNullException(nameof(exception));
-            if (batchOperation == null) throw new ArgumentNullException(nameof(batchOperation));
 
-            ErrorExecutingPartitionBatchOperation(exception.ToString(), statusCode, errorCode, errorMessage, String.Join(Environment.NewLine,
-                    batchOperation.Select((o, i) => String.Format(CultureInfo.InvariantCulture, 
-                        "[{0}] Type: {1} Partition: {2} Row: {3}", i, o.GetTableOperationType(), o.GetPartitionKey(), o.GetRowKey()))));
+            ErrorExecutingPartitionBatchOperation(exception.ToString(), statusCode, errorCode, errorMessage, batchContents);
         }
 
         [Event(

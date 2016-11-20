@@ -27,6 +27,9 @@ namespace Common.Util
         }
     }
 
+    /// <summary>
+    /// Note that request and content factories are required below, since the HttpClient will dispose of them after the first try
+    /// </summary>
     public sealed class HttpRetryClient : IDisposable
     {
         public const string BearerAuthorizationScheme = "Bearer";
@@ -111,20 +114,20 @@ namespace Common.Util
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#")]
-        public Task<HttpResponseWithContent<T>> PostAsync<T>([NotNull] string uri, [NotNull] HttpContent content)
+        public Task<HttpResponseWithContent<T>> PostAsync<T>([NotNull] string uri, [NotNull] Func<HttpContent> contentFactory)
         {
             if (uri == null) throw new ArgumentNullException(nameof(uri));
-            if (content == null) throw new ArgumentNullException(nameof(content));
+            if (contentFactory == null) throw new ArgumentNullException(nameof(contentFactory));
 
-            return PostAsync<T>( new Uri(uri), content);
+            return PostAsync<T>( new Uri(uri), contentFactory);
         }
 
-        public Task<HttpResponseWithContent<T>> PostAsync<T>([NotNull] Uri uri, [NotNull] HttpContent content)
+        public Task<HttpResponseWithContent<T>> PostAsync<T>([NotNull] Uri uri, [NotNull] Func<HttpContent> contentFactory)
         {
             if (uri == null) throw new ArgumentNullException(nameof(uri));
-            if (content == null) throw new ArgumentNullException(nameof(content));
+            if (contentFactory == null) throw new ArgumentNullException(nameof(contentFactory));
 
-            return RequestAsync<T>(uri, () => m_client.PostAsync(uri, content), CancellationToken.None);
+            return RequestAsync<T>(uri, () => m_client.PostAsync(uri, contentFactory()), CancellationToken.None);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#")]

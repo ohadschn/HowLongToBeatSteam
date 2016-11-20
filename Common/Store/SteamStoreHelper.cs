@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Common.Entities;
 using Common.Logging;
+using Common.Storage;
 using Common.Util;
 using Newtonsoft.Json.Linq;
 
@@ -144,10 +145,21 @@ namespace Common.Store
                 return AppEntity.UnknownDate;
             }
 
-            DateTime ret;
-            return DateTime.TryParse(releaseDate.date, out ret)
-                ? ret
-                : AppEntity.UnknownDate;
+            DateTime relDateTime;
+            bool dateParsed = DateTime.TryParse(releaseDate.date, out relDateTime);
+
+            if (!dateParsed)
+            {
+                return AppEntity.UnknownDate;
+            }
+
+            if (!StorageHelper.IsValid(relDateTime))
+            {
+                CommonEventSource.Log.ErrorParsingStoreReleaseDate(releaseDate.date, relDateTime);
+                return AppEntity.UnknownDate;
+            }
+
+            return relDateTime;
         }
 
         private static int GetMetaCriticScore(Metacritic metacritic)
