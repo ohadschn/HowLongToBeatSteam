@@ -20,7 +20,7 @@ namespace HowLongToBeatSteam.Controllers
     [RoutePrefix("api/games")]
     public class GamesController : ApiController
     {
-        private static readonly string SteamApiKey = SiteUtil.GetMandatoryValueFromConfig("SteamApiKey");
+        private static readonly string SteamApiKey = SiteUtil.GetMandatoryCustomConnectionStringFromConfig("SteamApiKey");
 
         private static readonly int s_vanitUrlResolutionParallelization = SiteUtil.GetOptionalValueFromConfig("VanitUrlResolutionParallelization", 3);
         private const string ResolveVanityUrlFormat = @"http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key={0}&vanityurl={1}";

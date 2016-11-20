@@ -36,8 +36,8 @@ namespace SteamHltbScraper.Imputation
         private const string GameTypeDlcsMods = "dlcs/mods";
         public static string AllGenresId => "All";
 
-        private static readonly string ApiKey = SiteUtil.GetMandatoryValueFromConfig("AzureMlImputeApiKey");
         private static readonly string AzureMlImputeServiceBaseUrl = SiteUtil.GetMandatoryValueFromConfig("AzureMlImputeServiceBaseUrl");
+        private static readonly string ApiKey = SiteUtil.GetMandatoryCustomConnectionStringFromConfig("AzureMlImputeApiKey");
         private static readonly int AzureMlImputePollIntervalMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollIntervalMs", 1000);
         private static readonly int AzureMlImputePollTimeoutMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollTimeoutMs", 300 * 1000);
 
@@ -47,7 +47,7 @@ namespace SteamHltbScraper.Imputation
         private static readonly int NotCompletelyMissingThreshold = SiteUtil.GetOptionalValueFromConfig("NotCompletelyMissingThreshold", 100);
         private static readonly int ImputationThreshold = SiteUtil.GetOptionalValueFromConfig("ImputationThreshold", 70);
         private static readonly double InvalidTtbsThreshold = SiteUtil.GetOptionalValueFromConfig("InvalidTtbsThresholdPercent", 10)/100.0;
-        private static readonly double ImputationMissThreshold = SiteUtil.GetOptionalValueFromConfig("ImputationMissThreshold", 10)/100.0;
+        private static readonly double ImputationMissThreshold = SiteUtil.GetOptionalValueFromConfig("ImputationMissThreshold", 15)/100.0;
         private static readonly double ImputationZerosThreshold = SiteUtil.GetOptionalValueFromConfig("ImputationZerosThreshold", 10)/100.0;
         private static readonly int GenreStatsStorageRetries = SiteUtil.GetOptionalValueFromConfig("GenreStatsStorageRetries", 100);
         private static readonly int ImputationServiceRetries = SiteUtil.GetOptionalValueFromConfig("ImputationServiceRetries", 100);
