@@ -98,7 +98,7 @@ namespace ManualTableUpdater.Updater
             {
                 //PrintGenres();
                 //SerializeAllAppsToFile();
-                //LoadAllAppsFromFile();
+                LoadAllAppsFromFile();
                 //WriteAllMeasuredToTsv();
                 //DeleteInvalidSuggestions();
                 //InsertManualSuggestions();
@@ -106,7 +106,7 @@ namespace ManualTableUpdater.Updater
                 //ForceUpdateAppHltbId(390730, -1);
                 //ForceUpdateAppHltbId(346810, 29325);
                 //ForceUpdateAppHltbId(266310, 27913);
-                SendMail();
+                //SendMail();
                 Console.WriteLine("Done - Press any key to continue...");
                 Console.ReadLine();
             }
@@ -162,6 +162,15 @@ namespace ManualTableUpdater.Updater
 
         public static void SerializeAllAppsToFile()
         {
+            Console.WriteLine("About to serialize all apps to file (overwriting existing): " + Path.Combine(Environment.CurrentDirectory, AppDataXml));
+            Console.WriteLine("Are you sure [y/n]? ");
+            var input = Console.ReadLine();
+            if (input != "y" && input != "Y")
+            {
+                Console.WriteLine("You are not sure, aborting");
+                return;
+            }
+
             var appData = StorageHelper.GetAllApps().Result.Select(a =>
                 new AppEntityData(a.SteamAppId, a.SteamName, a.AppType, a.Platforms, a.Categories.ToArray(),
                     a.Genres.ToArray(),
@@ -169,10 +178,14 @@ namespace ManualTableUpdater.Updater
                     a.HltbId, a.HltbName, a.MainTtb, a.MainTtbImputed, a.ExtrasTtb, a.ExtrasTtbImputed, a.CompletionistTtb, a.CompletionistTtbImputed, a.VerifiedGame))
                     .ToArray();
 
+
+            Console.WriteLine();
+
             using (var stream = File.OpenWrite(AppDataXml))
             {
                 new DataContractSerializer(typeof(AppEntityData[])).WriteObject(stream, appData);
             }
+
         }
 
         public static void LoadAllAppsFromFile()
@@ -198,6 +211,8 @@ namespace ManualTableUpdater.Updater
                     return;
                 }
             }
+
+            Console.WriteLine("Loading all apps from: " + Path.Combine(Environment.CurrentDirectory, AppDataXml));
 
             AppEntityData[] appData;
             using (var stream = File.OpenRead(AppDataXml))
