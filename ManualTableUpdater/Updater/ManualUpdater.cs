@@ -230,7 +230,8 @@ namespace ManualTableUpdater.Updater
                     ExtrasTtb = a.ExtrasTtb,
                     ExtrasTtbImputed = a.ExtrasTtbImputed,
                     CompletionistTtb = a.CompletionistTtb,
-                    CompletionistTtbImputed = a.CompletionistTtbImputed
+                    CompletionistTtbImputed = a.CompletionistTtbImputed,
+                    VerifiedGame = a.VerifiedGame
                 }), "updating apps from file").Wait();
         }
 

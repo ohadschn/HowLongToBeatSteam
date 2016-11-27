@@ -53,8 +53,8 @@ namespace UITests.Tests
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
                 Console.WriteLine("Retrieving Steam password from environment variable...");
-                string steamPassword = Environment.GetEnvironmentVariable("STEAM_PASSWORD");
-                Assert.IsNotNull(steamPassword, "The STEAM_PASSWORD environment variable must be set for Steam sign-in test (make sure to restart VS after you set it)");
+                string steamPassword = TestUtil.GetCredentialFromManager("OHADSOFT_STEAM_PASSWORD").Password;
+                Assert.IsNotNull(steamPassword, "The OHADSOFT_STEAM_PASSWORD generic credential must be set in the Windows Credential Manager");
 
                 SignInHelper.SignInThroughSteam(driver, UserConstants.HltbsUser, steamPassword, WaitType.PageLoad);
                 AssertPersonaDetails(driver, UserConstants.HltbsPersonaName, UserConstants.HltbsPersonaAvatarUUID);

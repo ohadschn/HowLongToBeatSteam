@@ -50,7 +50,7 @@ namespace UITests.Tests
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                Console.WriteLine("Asserting the non-survival of a 70 year old make who plays 1 hour a wekk in Completionist style...");
+                Console.WriteLine("Asserting the non-survival of a 70 year old make who plays 1 hour a week in Completionist style...");
                 AssertSurvival(driver, Gender.Male, DateTime.Now.Year - 70, 1, PlayStyle.Completionist, false);
             });
         }
