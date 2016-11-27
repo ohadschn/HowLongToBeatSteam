@@ -27,8 +27,12 @@ namespace Common.Storage
         public static readonly string JobDataBlobContainerName = SiteUtil.GetOptionalValueFromConfig("JobDataBlobContainerName", "jobdata");
         public static readonly string SteamToHltbTableName = SiteUtil.GetOptionalValueFromConfig("SteamToHltbTableName", "steamToHltb");
         public static readonly string GenreStatsTableName = SiteUtil.GetOptionalValueFromConfig("GenreStatsTableName", "genreStats");
-        public static readonly string AzureStorageTablesConnectionString = SiteUtil.GetMandatoryCustomConnectionStringFromConfig("HltbsTables");
-        public static readonly string AzureStorageBlobConnectionString = SiteUtil.GetMandatoryCustomConnectionStringFromConfig("HltbsBlobs");        
+
+        public static readonly string AzureStorageTablesConnectionString =
+            SiteUtil.GetMandatoryCustomConnectionStringFromConfig(SiteUtil.GetOptionalValueFromConfig("TablesConnectionStringKey", "HltbsTables"));
+        public static readonly string AzureStorageBlobConnectionString = 
+            SiteUtil.GetMandatoryCustomConnectionStringFromConfig(SiteUtil.GetOptionalValueFromConfig("BlobsConnectionStringKey", "HltbsBlobs"));
+
         private static readonly TimeSpan DefaultDeltaBackoff = TimeSpan.FromSeconds(4);
 
         public static readonly DateTime MinEdmDate = new DateTime(1601, 1, 1, 0, 0, 0, DateTimeKind.Utc);

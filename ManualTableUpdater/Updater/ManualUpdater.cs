@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -199,9 +198,9 @@ namespace ManualTableUpdater.Updater
                 return;
             }
 
-            if (ConfigurationManager.ConnectionStrings["HltbsTables"].ConnectionString != "UseDevelopmentStorage=true")
+            if (!StorageHelper.AzureStorageTablesConnectionString.Contains("staging"))
             {
-                Console.WriteLine("Non-simulator connection string detected");
+                Console.WriteLine("Non-staging connection string detected");
                 Console.WriteLine("By proceeding, you might override PRODUCTION DATA");
                 Console.Write("Are you absolutely sure? If so, type ABSOLUTELY SURE (in capital letters): ");
                 input = Console.ReadLine();
