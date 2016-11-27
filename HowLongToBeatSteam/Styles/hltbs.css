@@ -76,13 +76,15 @@
     background-color: black;
 
     background-image: url(../Resources/sk5_0.jpg);
+    /* ReSharper disable once CssBrowserCompatibility */
     background-position: center center;
+    /* ReSharper disable once CssBrowserCompatibility */
     background-repeat: no-repeat;
+    /* ReSharper disable once CssBrowserCompatibility */
     background-attachment: fixed;
   
-    /* ReSharper disable CssBrowserCompatibility */
+    /* ReSharper disable once CssBrowserCompatibility */
     background-size: cover;
-    /* ReSharper restore CssBrowserCompatibility */
 
 }
 .header-intro {
@@ -261,9 +263,8 @@ table tbody tr td.vcenter {
     -moz-user-select: none;
     -ms-user-select: none;
     /* ReSharper restore UnknownCssVendorExtension */
-    /* ReSharper disable CssBrowserCompatibility */
+    /* ReSharper disable once CssNotResolved */
     user-select: none;
-    /* ReSharper restore CssBrowserCompatibility */
 }
 .a-unstyled { color: inherit; text-decoration: none}
 .a-unstyled:link { color: inherit; text-decoration: none}

@@ -200,9 +200,9 @@ namespace Common.Logging
              Message = "Invalid release date reported from Steam API: {0} (parsed as {1})",
              Keywords = Keywords.StoreApi,
              Level = EventLevel.Error)]
-        public void ErrorParsingStoreReleaseDate(string releaseDate, DateTime relDateTime)
+        public void ErrorParsingStoreReleaseDate(string releaseDate, DateTime releaseDateTime)
         {
-            WriteEvent(108, releaseDate, relDateTime);
+            WriteEvent(108, releaseDate, releaseDateTime);
         }
 
         [Event(

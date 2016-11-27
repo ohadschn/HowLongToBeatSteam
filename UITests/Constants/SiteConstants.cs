@@ -21,7 +21,7 @@ namespace UITests.Constants
         public const string GamesFoundTitleId = "games-found-title";
         public const string ExcludedGameCountSpanId = "excluded-game-count";
 
-        public const string MissingHltbGamesAlertDivID = "missing-hltb-games-alert";
+        public const string MissingHltbGamesAlertDivId = "missing-hltb-games-alert";
         public const string ImputedValuesNotificationDivId = "imputed-values-notification";
 
         public const string CurrentPlaytimeSpanId = "current-playtime";

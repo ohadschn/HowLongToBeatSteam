@@ -16,6 +16,7 @@ using Common.Util;
 using HtmlAgilityPack;
 using SteamHltbScraper.Imputation;
 using SteamHltbScraper.Logging;
+using static System.FormattableString;
 
 namespace SteamHltbScraper.Scraper
 {
@@ -213,7 +214,7 @@ namespace SteamHltbScraper.Scraper
         {
             if (!StorageHelper.IsValid(date))
             {
-                throw GetFormatException($"Invalid release date: {releaseDate} (parsed as {date})", hltbId, doc);
+                throw GetFormatException(Invariant($"Invalid release date: {releaseDate} (parsed as {date})"), hltbId, doc);
             }
         }
 
@@ -234,9 +235,10 @@ namespace SteamHltbScraper.Scraper
                 return ret;
             }
 
-            throw GetFormatException($"Could not parse release date: {releaseDate}", hltbId, doc);
+            throw GetFormatException(Invariant($"Could not parse release date: {releaseDate}"), hltbId, doc);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "profileinfo")]
         private static DateTime ScrapeReleaseDate(int hltbId, HtmlDocument doc)
         {
             var potentialDateNodes = doc.DocumentNode

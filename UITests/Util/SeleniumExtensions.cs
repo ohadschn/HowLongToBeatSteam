@@ -16,9 +16,11 @@ namespace UITests.Util
         Firefox = 1,
         Chrome = 2,
         InternetExplorer = 4,
+        // ReSharper disable once InconsistentNaming
         iPhone4Chrome = 8,
         OptimusL70Chrome = 16, //384 X 640
         Nexus7Chrome = 32, // 600 X 960
+        // ReSharper disable once InconsistentNaming
         iPadMiniChrome = 64 //768 X 1024
     }
 

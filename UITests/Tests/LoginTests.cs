@@ -90,7 +90,7 @@ namespace UITests.Tests
                 AssertPersonaDetails(driver, String.Empty, UserConstants.SamplePersonaAvatarUUID);
 
                 Console.WriteLine("Asserting the missing HLTB games alert is displayed...");
-                driver.FindElement(By.Id(SiteConstants.MissingHltbGamesAlertDivID));
+                driver.FindElement(By.Id(SiteConstants.MissingHltbGamesAlertDivId));
             });
         }
     }

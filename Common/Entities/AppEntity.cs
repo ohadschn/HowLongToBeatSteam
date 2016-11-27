@@ -9,6 +9,7 @@ using Common.Storage;
 using Common.Util;
 using JetBrains.Annotations;
 using Microsoft.WindowsAzure.Storage.Table;
+using static System.FormattableString;
 
 namespace Common.Entities
 {
@@ -117,7 +118,7 @@ namespace Common.Entities
             {
                 if (!StorageHelper.IsValid(value))
                 {
-                    throw new ArgumentOutOfRangeException(nameof(ReleaseDate), value, $"Date must be between {StorageHelper.MinEdmDate} and {StorageHelper.MaxEdmDate})");
+                    throw new ArgumentOutOfRangeException(nameof(value), value, Invariant($"Date must be between {StorageHelper.MinEdmDate} and {StorageHelper.MaxEdmDate})"));
                 }
                 _releaseDate = value;
             }

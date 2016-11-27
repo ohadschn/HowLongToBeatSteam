@@ -17,6 +17,9 @@
            <Word>Tsv</Word>
            <Word>Csrf</Word>
            <Word>Referer</Word>
+           <Word>Edm</Word>
+           <Word>Ml</Word>
+           <Word>Parsable</Word>
          </Recognized>
 		    <Compound>
             <Term CompoundAlternate="CoOp">coop</Term>

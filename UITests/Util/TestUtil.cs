@@ -10,6 +10,7 @@ namespace UITests.Util
 {
     public static class TestUtil
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1065:DoNotRaiseExceptionsInUnexpectedLocations")]
         static TestUtil()
         {
             var seleniumIeRegFlag = Registry.GetValue(Environment.Is64BitOperatingSystem

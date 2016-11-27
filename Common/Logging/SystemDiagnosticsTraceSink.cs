@@ -6,12 +6,13 @@ using System.IO;
 using JetBrains.Annotations;
 using Microsoft.Practices.EnterpriseLibrary.SemanticLogging;
 using Microsoft.Practices.EnterpriseLibrary.SemanticLogging.Formatters;
+using static System.FormattableString;
 
 namespace Common.Logging
 {
     public sealed class SystemDiagnosticsTraceSink : IObserver<EventEntry>
     {
-        private bool m_disposed = false;
+        private bool m_disposed;
 
         ~SystemDiagnosticsTraceSink()
         {
@@ -74,7 +75,7 @@ namespace Common.Logging
                 }
                 else
                 {
-                    Trace.TraceError($"{nameof(SystemDiagnosticsTraceSink)} was not disposed");
+                    Trace.TraceError(Invariant($"{nameof(SystemDiagnosticsTraceSink)} was not disposed"));
                 }
             }
 

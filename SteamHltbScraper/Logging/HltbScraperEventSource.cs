@@ -22,7 +22,7 @@ namespace SteamHltbScraper.Logging
             public const EventKeywords Scraping = (EventKeywords) 1;
             public const EventKeywords Http = (EventKeywords)2;
             public const EventKeywords Imputation = (EventKeywords)4;
-            public const EventKeywords AzureML = (EventKeywords)8;
+            public const EventKeywords AzureMl = (EventKeywords)8;
             public const EventKeywords BlobStorage = (EventKeywords)16;
         }
 
@@ -482,7 +482,7 @@ namespace SteamHltbScraper.Logging
         [Event(
             23,
             Message = "Start submitting imputation job",
-            Keywords = Keywords.Imputation | Keywords.AzureML,
+            Keywords = Keywords.Imputation | Keywords.AzureMl,
             Level = EventLevel.Informational,
             Task = Tasks.SubmitImputationJob,
             Opcode = EventOpcode.Start)]
@@ -494,7 +494,7 @@ namespace SteamHltbScraper.Logging
         [Event(
             24,
             Message = "Finished submitting imputation job, ID: {0}",
-            Keywords = Keywords.Imputation | Keywords.AzureML,
+            Keywords = Keywords.Imputation | Keywords.AzureMl,
             Level = EventLevel.Informational,
             Task = Tasks.SubmitImputationJob,
             Opcode = EventOpcode.Stop)]
@@ -628,7 +628,7 @@ namespace SteamHltbScraper.Logging
         [Event(
             28,
             Message = "Start uploading TTB input to blob {0}",
-            Keywords = Keywords.Imputation | Keywords.BlobStorage | Keywords.AzureML,
+            Keywords = Keywords.Imputation | Keywords.BlobStorage | Keywords.AzureMl,
             Level = EventLevel.Informational,
             Task = Tasks.UploadTtbToBlob,
             Opcode = EventOpcode.Start)]
@@ -640,7 +640,7 @@ namespace SteamHltbScraper.Logging
         [Event(
             29,
             Message = "Finished uploading TTB input to blob {0}",
-            Keywords = Keywords.Imputation | Keywords.BlobStorage | Keywords.AzureML,
+            Keywords = Keywords.Imputation | Keywords.BlobStorage | Keywords.AzureMl,
             Level = EventLevel.Informational,
             Task = Tasks.UploadTtbToBlob,
             Opcode = EventOpcode.Stop)]
@@ -652,7 +652,7 @@ namespace SteamHltbScraper.Logging
         [Event(
             30,
             Message = "Start polling imputation job status",
-            Keywords = Keywords.Imputation | Keywords.Http | Keywords.AzureML,
+            Keywords = Keywords.Imputation | Keywords.Http | Keywords.AzureMl,
             Level = EventLevel.Informational,
             Task = Tasks.PollImputationJobStatus,
             Opcode = EventOpcode.Start)]
@@ -664,7 +664,7 @@ namespace SteamHltbScraper.Logging
         [Event(
             31,
             Message = "Finished polling imputation job status",
-            Keywords = Keywords.Imputation | Keywords.Http | Keywords.AzureML,
+            Keywords = Keywords.Imputation | Keywords.Http | Keywords.AzureMl,
             Level = EventLevel.Informational,
             Task = Tasks.PollImputationJobStatus,
             Opcode = EventOpcode.Stop)]
@@ -676,7 +676,7 @@ namespace SteamHltbScraper.Logging
         [Event(
             32,
             Message = "Imputation job status is: {0}",
-            Keywords = Keywords.Imputation | Keywords.AzureML,
+            Keywords = Keywords.Imputation | Keywords.AzureMl,
             Level = EventLevel.Informational)]
         public void ExpectedPollingStatusRetrieved(string status)
         {
@@ -686,7 +686,7 @@ namespace SteamHltbScraper.Logging
         [Event(
             33,
             Message = "Imputation job status is: {0} ({1})",
-            Keywords = Keywords.Imputation | Keywords.AzureML,
+            Keywords = Keywords.Imputation | Keywords.AzureMl,
             Level = EventLevel.Error)]
         public void UnexpectedPollingStatusRetrieved(string status, string details)
         {
