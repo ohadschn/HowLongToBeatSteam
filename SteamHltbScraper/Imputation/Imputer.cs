@@ -338,7 +338,7 @@ namespace SteamHltbScraper.Imputation
 
             string imputed = null;
             var startTicks = Environment.TickCount;
-            while (imputed == null && (Environment.TickCount - startTicks) <AzureMlImputePollTimeoutMs)
+            while (imputed == null && (Environment.TickCount - startTicks) < AzureMlImputePollTimeoutMs)
             {
                 using (var statusResponse = await s_client.GetAsync<BatchScoreStatus>(jobLocation).ConfigureAwait(false))
                 {

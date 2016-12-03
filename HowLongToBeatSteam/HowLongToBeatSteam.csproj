@@ -283,7 +283,6 @@
       <SubType>Designer</SubType>
     </Content>
     <None Include="Properties\PublishProfiles\hltbsprod.pubxml" />
-    <None Include="Properties\PublishProfiles\howlongtobeatsteam.pubxml" />
     <Content Include="Properties\webjobs-list.json" />
     <Content Include="Scripts\app.min.js.map">
       <DependentUpon>app.min.js</DependentUpon>
@@ -292,6 +291,7 @@
       <DependentUpon>responsive.min.js</DependentUpon>
     </Content>
     <Content Include="Service References\Application Insights\ConnectedService.json" />
+    <None Include="Properties\PublishProfiles\howlongtobeatsteam - Web Deploy.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
