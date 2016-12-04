@@ -298,10 +298,10 @@ namespace Common.Storage
                 TableOperation.InsertOrReplace(new ProcessedSuggestionEntity(suggestion))
             };
 
-            if (app != null)
+            if (app != null) //this means we want to update the app to be a verified game and stop future non-game suggestions
             {
                 app.VerifiedGame = true;
-                batchOperation.Add(TableOperation.Replace(app));
+                batchOperation.Replace(app);
             }
 
             var table = await GetTable(SteamToHltbTableName, retries).ConfigureAwait(false);
@@ -317,27 +317,26 @@ namespace Common.Storage
             if (app == null) throw new ArgumentNullException(nameof(app));
             if (suggestion == null) throw new ArgumentNullException(nameof(suggestion));
 
-            var table = await GetTable(SteamToHltbTableName, retries).ConfigureAwait(false);
+            var batchOperation = new TableBatchOperation
+            {
+                TableOperation.Delete(suggestion),
+                TableOperation.InsertOrReplace(new ProcessedSuggestionEntity(suggestion))
+            };
 
-            CommonEventSource.Log.AcceptSuggestionStart(suggestion.SteamAppId, suggestion.HltbId);
             if (suggestion.IsRetype)
             {
-                await table.ExecuteBatchAsync(new TableBatchOperation
-                {
-                    TableOperation.Delete(app),
-                    TableOperation.Delete(suggestion),
-                    TableOperation.Insert(new AppEntity(app.SteamAppId, app.SteamName, suggestion.AppType))
-                }).ConfigureAwait(false);
+                batchOperation.Delete(app);
+                batchOperation.Insert(new AppEntity(app.SteamAppId, app.SteamName, suggestion.AppType));
             }
             else
             {
-                await table.ExecuteBatchAsync(new TableBatchOperation
-                    {
-                        TableOperation.Replace(app),
-                        TableOperation.Delete(suggestion),
-                        TableOperation.InsertOrReplace(new ProcessedSuggestionEntity(suggestion))
-                    }).ConfigureAwait(false);
+                batchOperation.Replace(app);
             }
+
+            var table = await GetTable(SteamToHltbTableName, retries).ConfigureAwait(false);
+
+            CommonEventSource.Log.AcceptSuggestionStart(suggestion.SteamAppId, suggestion.HltbId);
+            await table.ExecuteBatchAsync(batchOperation).ConfigureAwait(false);
             CommonEventSource.Log.AcceptSuggestionStop(suggestion.SteamAppId, suggestion.HltbId);
         }
 

@@ -74,7 +74,7 @@ namespace SuggestionProcessor
                 Console.WriteLine("Processing more suggestions (if available)...");
             }
 
-            Console.WriteLine("All Done!");
+            Console.WriteLine("All suggestions have been processed");
         }
 
         private static async Task ProcessDistinctSuggestions(
