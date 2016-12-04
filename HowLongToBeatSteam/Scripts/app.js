@@ -196,6 +196,12 @@ function AppViewModel() {
         }
     });
 
+    $('#hltb-update-modal')
+        .on('shown.bs.modal',
+            function () {
+                $("#hltb-update-intput").focus();
+            });
+
     self.steamVanityUrlName = ko.observable("");
 
     var tableOptions = {
