@@ -63,19 +63,32 @@ namespace SuggestionProcessor
 
             var allProcessedSuggestions = processedSuggestionsTask.Result;
             var allProcessedSuggestionsSet = new HashSet<ProcessedSuggestionEntity>(allProcessedSuggestions, new ProcessedSuggestionComparer());
+            var unprocessedSuggestions = suggestionsTask.Result.Where(s => !allProcessedSuggestionsSet.Contains(new ProcessedSuggestionEntity(s))).ToArray();
 
-            //only consider the first suggestion for each app per run
-            var suggestions = suggestionsTask.Result.Where(s => !allProcessedSuggestionsSet.Contains(new ProcessedSuggestionEntity(s))).Distinct(new SuggestionSteamIdComparer()).ToArray(); 
+            while (unprocessedSuggestions.Length > 0)
+            {
+                //In each iteration we consider a single suggestion per Steam ID
+                var distinctSuggestions = unprocessedSuggestions.Distinct(new SuggestionSteamIdComparer()).ToArray();
+                await ProcessDistinctSuggestions(distinctSuggestions, allMeasuredAppsMap, allMeasuredAppsMapForImputation);
+                unprocessedSuggestions = unprocessedSuggestions.Except(distinctSuggestions).ToArray();
+                Console.WriteLine("Processing more suggestions (if available)...");
+            }
 
+            Console.WriteLine("All Done!");
+        }
+
+        private static async Task ProcessDistinctSuggestions(
+            SuggestionEntity[] distinctSuggestions, Dictionary<int, AppEntity> allMeasuredAppsMap, Dictionary<int, AppEntity> allMeasuredAppsMapForImputation)
+        {
             var validSuggestions = new ConcurrentDictionary<int, SuggestionInfo>(
-                GetSuggestionsForKnownAndPrepareApps(allMeasuredAppsMap, suggestions).ToDictionary(si => si.App.SteamAppId));
+                GetSuggestionsForKnownAndPrepareApps(allMeasuredAppsMap, distinctSuggestions).ToDictionary(si => si.App.SteamAppId));
 
             var invalidSuggestions = new ConcurrentBag<SuggestionInfo>(
-                suggestions.Where(s => !validSuggestions.ContainsKey(s.SteamAppId))
+                distinctSuggestions.Where(s => !validSuggestions.ContainsKey(s.SteamAppId))
                     .Select(s => new SuggestionInfo(s, new AppEntity(-1, "[Unknown]", "[Unknown]"), -1, "[Unknown]")));
 
             Console.WriteLine("Scraping HLTB info for suggestions...");
-            await HltbScraper.ScrapeHltb(validSuggestions.Values.Where(s => !s.Suggestion.IsRetype).Select(s => s.App).ToArray(), 
+            await HltbScraper.ScrapeHltb(validSuggestions.Values.Where(s => !s.Suggestion.IsRetype).Select(s => s.App).ToArray(),
                 (a, e) =>
                 {
                     Console.WriteLine("Can't parse HLTB ID {0} suggested for {1} ({2}): {3}", a.HltbId, a.SteamName, a.SteamAppId, e);
@@ -105,13 +118,12 @@ namespace SuggestionProcessor
                 foreach (var suggestion in acceptedHltbSuggestions)
                 {
                     await StorageHelper.AcceptSuggestion(suggestion.App, suggestion.Suggestion).ConfigureAwait(false);
-                } 
+                }
             }
-
-            Console.WriteLine("All Done!");
         }
 
-        private static List<SuggestionInfo> GetSuggestionsForKnownAndPrepareApps(IReadOnlyDictionary<int, AppEntity> appsMap, IEnumerable<SuggestionEntity> suggestions)
+        private static List<SuggestionInfo> GetSuggestionsForKnownAndPrepareApps(
+            IReadOnlyDictionary<int, AppEntity> appsMap, IEnumerable<SuggestionEntity> suggestions)
         {
             var suggestionsForKnownApps = new List<SuggestionInfo>();
             foreach (var suggestion in suggestions)
