@@ -1,16 +1,16 @@
 [
   {
-    "outputFileName": "Scripts/app.js",
+    "sourceMap": true,
+    "outputFileName": "Scripts/app.min.js",
     "inputFiles": [
       "Scripts/app.js"
-    ],
-    "sourceMap": true
+    ]
   },
   {
-    "outputFileName": "Scripts/responsive.js",
+    "sourceMap": true,
+    "outputFileName": "Scripts/responsive.min.js",
     "inputFiles": [
       "Scripts/responsive.js"
-    ],
-    "sourceMap": true
+    ]
   }
 ]
