@@ -33,8 +33,6 @@ namespace Common.Entities
 
         public static string SuggestionFilter => StorageHelper.StartsWithFilter(StorageHelper.RowKey, SuggestionPrefix);
 
-        public static string NonSuggestionFilter => StorageHelper.DoesNotStartWithFilter(StorageHelper.RowKey, SuggestionPrefix);
-
         public static string[] GetPartitions()
         {
             return AppEntity.GetPartitions();

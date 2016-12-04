@@ -52,16 +52,20 @@ namespace SuggestionProcessor
             Console.WriteLine("Retrieving all apps and suggestions...");
             var allMeasuredAppsTask = StorageHelper.GetAllApps(AppEntity.MeasuredFilter);
             var suggestionsTask = StorageHelper.GetAllSuggestions();
+            var processedSuggestionsTask = StorageHelper.GetAllProcessedSuggestions();
 
-            await Task.WhenAll(allMeasuredAppsTask, suggestionsTask).ConfigureAwait(false);
+            await Task.WhenAll(allMeasuredAppsTask, suggestionsTask, processedSuggestionsTask).ConfigureAwait(false);
 
             Console.WriteLine("Building app dictionary");
             var allMeasuredApps = allMeasuredAppsTask.Result;
             var allMeasuredAppsMap = allMeasuredApps.ToDictionary(a => a.SteamAppId);
             var allMeasuredAppsMapForImputation = allMeasuredApps.ToDictionary(ae => ae.SteamAppId, ae => ae.ShallowClone());
 
+            var allProcessedSuggestions = processedSuggestionsTask.Result;
+            var allProcessedSuggestionsSet = new HashSet<ProcessedSuggestionEntity>(allProcessedSuggestions, new ProcessedSuggestionComparer());
+
             //only consider the first suggestion for each app per run
-            var suggestions = suggestionsTask.Result.Distinct(new SuggestionSteamIdComparer()).ToArray(); 
+            var suggestions = suggestionsTask.Result.Where(s => !allProcessedSuggestionsSet.Contains(new ProcessedSuggestionEntity(s))).Distinct(new SuggestionSteamIdComparer()).ToArray(); 
 
             var validSuggestions = new ConcurrentDictionary<int, SuggestionInfo>(
                 GetSuggestionsForKnownAndPrepareApps(allMeasuredAppsMap, suggestions).ToDictionary(si => si.App.SteamAppId));
@@ -274,6 +278,28 @@ namespace SuggestionProcessor
             public int GetHashCode(SuggestionEntity obj)
             {
                 return obj?.SteamAppId ?? 0;
+            }
+        }
+
+        class ProcessedSuggestionComparer : IEqualityComparer<ProcessedSuggestionEntity>
+        {
+            public bool Equals(ProcessedSuggestionEntity x, ProcessedSuggestionEntity y)
+            {
+                return 
+                    x?.SteamAppId ==    y?.SteamAppId && 
+                    x?.HltbId ==        y?.HltbId && 
+                    x?.AppType ==       y?.AppType;
+            }
+
+            public int GetHashCode(ProcessedSuggestionEntity processedSuggestion)
+            {
+                unchecked
+                {
+                    var hashCode = processedSuggestion?.SteamAppId;
+                    hashCode = (hashCode * 397) ^ processedSuggestion?.HltbId;
+                    hashCode = (hashCode * 397) ^ (processedSuggestion?.AppType?.GetHashCode() ?? 0);
+                    return hashCode ?? 0;
+                }
             }
         }
     }

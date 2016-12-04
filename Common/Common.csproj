@@ -113,6 +113,7 @@
   <ItemGroup>
     <Compile Include="Entities\GenreStatsEntity.cs" />
     <Compile Include="Entities\SuggestionEntity.cs" />
+    <Compile Include="Entities\ProcessedSuggestionEntity.cs" />
     <Compile Include="Logging\EventSourceBase.cs" />
     <Compile Include="Logging\EventSourceRegistrar.cs" />
     <Compile Include="Logging\SessionErrorSink.cs" />

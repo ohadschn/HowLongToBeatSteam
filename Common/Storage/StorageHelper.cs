@@ -69,30 +69,29 @@ namespace Common.Storage
                 apps.Select(ae => String.Format(CultureInfo.InvariantCulture, "{0} ({1})", ae.SteamName, ae.SteamAppId)));
         }
 
-        public static async Task<ConcurrentBag<AppEntity>> GetAllApps(string rowFilter = null, int retries = -1)
+        public static Task<ConcurrentBag<AppEntity>> GetAllApps(string rowFilter = null, int retries = -1)
         {
-            const string entitiesType = "apps";
-            rowFilter = rowFilter ?? SuggestionEntity.NonSuggestionFilter;
-
-            CommonEventSource.Log.QueryAllEntitiesStart(entitiesType, rowFilter);
-            var knownSteamApps = await QueryAllTableEntities<AppEntity>(SteamToHltbTableName, AppEntity.GetPartitions(), rowFilter, retries)
-                .ConfigureAwait(false);
-            CommonEventSource.Log.QueryAllEntitiesStop(entitiesType, rowFilter, knownSteamApps.Count);
-            
-            return knownSteamApps;
+            return GetAllSteamToHltbEntities<AppEntity>(rowFilter ?? AppEntity.AppEntityFilter, AppEntity.GetPartitions(), retries);
         }
 
-        public static async Task<ConcurrentBag<SuggestionEntity>> GetAllSuggestions(string rowFilter = null, int retries = -1)
+        public static Task<ConcurrentBag<SuggestionEntity>> GetAllSuggestions(string rowFilter = null, int retries = -1)
         {
-            const string entitiesType = "suggestions";
-            rowFilter = rowFilter ?? SuggestionEntity.SuggestionFilter;
+            return GetAllSteamToHltbEntities<SuggestionEntity>(rowFilter ?? SuggestionEntity.SuggestionFilter, SuggestionEntity.GetPartitions(), retries);
+        }
 
-            CommonEventSource.Log.QueryAllEntitiesStart(entitiesType, rowFilter);
-            var suggestions = await QueryAllTableEntities<SuggestionEntity>(SteamToHltbTableName, SuggestionEntity.GetPartitions(), rowFilter, retries)
-                .ConfigureAwait(false);
-            CommonEventSource.Log.QueryAllEntitiesStop(entitiesType, rowFilter, suggestions.Count);
+        public static Task<ConcurrentBag<ProcessedSuggestionEntity>> GetAllProcessedSuggestions(string rowFilter = null, int retries = -1)
+        {
+            return GetAllSteamToHltbEntities<ProcessedSuggestionEntity>(
+                rowFilter ?? ProcessedSuggestionEntity.ProcessedSuggestionFilter, ProcessedSuggestionEntity.GetPartitions(), retries);
+        }
 
-            return suggestions;
+        private static async Task<ConcurrentBag<T>> GetAllSteamToHltbEntities<T>(string rowFilter, string[] partitions, int retries = -1) where T : ITableEntity, new()
+        {
+            CommonEventSource.Log.QueryAllEntitiesStart(typeof(T).FullName, rowFilter);
+            var entities = await QueryAllTableEntities<T>(SteamToHltbTableName, partitions, rowFilter, retries).ConfigureAwait(false);
+            CommonEventSource.Log.QueryAllEntitiesStop(typeof(T).FullName, rowFilter, entities.Count);
+
+            return entities;
         }
 
         public static async Task<ConcurrentBag<GenreStatsEntity>> GetAllGenreStats(string rowFilter = "", int retries = -1)
@@ -293,7 +292,12 @@ namespace Common.Storage
         {
             if (suggestion == null) throw new ArgumentNullException(nameof(suggestion));
 
-            var batchOperation = new TableBatchOperation { TableOperation.Delete(suggestion) };
+            var batchOperation = new TableBatchOperation
+            {
+                TableOperation.Delete(suggestion),
+                TableOperation.InsertOrReplace(new ProcessedSuggestionEntity(suggestion))
+            };
+
             if (app != null)
             {
                 app.VerifiedGame = true;
@@ -330,7 +334,8 @@ namespace Common.Storage
                 await table.ExecuteBatchAsync(new TableBatchOperation
                     {
                         TableOperation.Replace(app),
-                        TableOperation.Delete(suggestion)
+                        TableOperation.Delete(suggestion),
+                        TableOperation.InsertOrReplace(new ProcessedSuggestionEntity(suggestion))
                     }).ConfigureAwait(false);
             }
             CommonEventSource.Log.AcceptSuggestionStop(suggestion.SteamAppId, suggestion.HltbId);
@@ -395,6 +400,16 @@ namespace Common.Storage
                 TableQuery.GenerateFilterCondition(propertyName, QueryComparisons.LessThan, value),
                 TableOperators.Or,
                 TableQuery.GenerateFilterCondition(propertyName, QueryComparisons.GreaterThanOrEqual, IncrementLastChar(value)));
+        }
+
+        public static string OrFilter(string filter1, string filter2)
+        {
+            return TableQuery.CombineFilters(filter1, TableOperators.Or, filter2);
+        }
+
+        public static string AndFilter(string filter1, string filter2)
+        {
+            return TableQuery.CombineFilters(filter1, TableOperators.And, filter2);
         }
 
         private static string TimestampFilter(DateTime latest)
