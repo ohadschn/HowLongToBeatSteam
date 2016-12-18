@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Web.Mvc;
-using HowLongToBeatSteam.Logging;
 using JetBrains.Annotations;
 
 namespace HowLongToBeatSteam
@@ -14,7 +13,7 @@ namespace HowLongToBeatSteam
                 throw new ArgumentNullException(nameof(filters));
             }
 
-            filters.Add(new AppInsightsExceptionHandlerAttribute());
+            filters.Add(new ErrorHandler.AiHandleErrorAttribute());
         }
     }
 }
