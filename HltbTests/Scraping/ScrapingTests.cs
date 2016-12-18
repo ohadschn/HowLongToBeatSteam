@@ -15,9 +15,10 @@ namespace HltbTests.Scraping
     [TestClass]
     public class ScrapingTests
     {
-        [TestCleanup]
-        public async void Cleanup()
+        [ClassCleanup]
+        public static async void Cleanup()
         {
+            await Task.Delay(2000); //give Azure Storage time to complete deletion of the suggestions
             await DrainAllSuggestionsForSteamApp();
             EventSourceRegistrar.DisposeEventListeners();
         }
