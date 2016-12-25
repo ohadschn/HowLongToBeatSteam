@@ -259,7 +259,7 @@ namespace Common.Storage
                 {
                     var batchContents = String.Join(Environment.NewLine,
                         tboi.Operation.Select((o, i) => String.Format(CultureInfo.InvariantCulture,
-                            "[{0}] Type: {1} Partition: {2} Row: {3}", i, o.GetTableOperationType(), o.GetPartitionKey(), o.GetRowKey())));
+                            "[{0}] Type: {1} Partition: {2} Row: {3}", i, o.OperationType, o.GetPartitionKey(), o.GetRowKey())));
 
                     CommonEventSource.Log.ErrorExecutingPartitionBatchOperation(
                         e,

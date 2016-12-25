@@ -16,8 +16,6 @@ namespace HltbTests.Storage
             var entity = new TableEntity(partition, row);
             var operation = TableOperation.Insert(entity);
 
-            Assert.AreSame(entity, operation.GetEntity());
-            Assert.AreEqual(TableOperationType.Insert, operation.GetTableOperationType());
             Assert.AreEqual(partition, operation.GetPartitionKey());
             Assert.AreEqual(row, operation.GetRowKey());
 
