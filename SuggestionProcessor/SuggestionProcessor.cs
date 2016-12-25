@@ -61,9 +61,8 @@ namespace SuggestionProcessor
             var allMeasuredAppsMap = allMeasuredApps.ToDictionary(a => a.SteamAppId);
             var allMeasuredAppsMapForImputation = allMeasuredApps.ToDictionary(ae => ae.SteamAppId, ae => ae.ShallowClone());
 
-            var allProcessedSuggestions = processedSuggestionsTask.Result;
-            var allProcessedSuggestionsSet = new HashSet<ProcessedSuggestionEntity>(allProcessedSuggestions, new ProcessedSuggestionComparer());
-            var unprocessedSuggestions = suggestionsTask.Result.Where(s => !allProcessedSuggestionsSet.Contains(new ProcessedSuggestionEntity(s))).ToArray();
+            var allProcessedSuggestions = new HashSet<ProcessedSuggestionEntity>(processedSuggestionsTask.Result);
+            var unprocessedSuggestions = suggestionsTask.Result.Where(s => !allProcessedSuggestions.Contains(new ProcessedSuggestionEntity(s))).ToArray();
 
             while (unprocessedSuggestions.Length > 0)
             {
@@ -290,28 +289,6 @@ namespace SuggestionProcessor
             public int GetHashCode(SuggestionEntity obj)
             {
                 return obj?.SteamAppId ?? 0;
-            }
-        }
-
-        class ProcessedSuggestionComparer : IEqualityComparer<ProcessedSuggestionEntity>
-        {
-            public bool Equals(ProcessedSuggestionEntity x, ProcessedSuggestionEntity y)
-            {
-                return 
-                    x?.SteamAppId ==    y?.SteamAppId && 
-                    x?.HltbId ==        y?.HltbId && 
-                    x?.AppType ==       y?.AppType;
-            }
-
-            public int GetHashCode(ProcessedSuggestionEntity processedSuggestion)
-            {
-                unchecked
-                {
-                    var hashCode = processedSuggestion?.SteamAppId;
-                    hashCode = (hashCode * 397) ^ processedSuggestion?.HltbId;
-                    hashCode = (hashCode * 397) ^ (processedSuggestion?.AppType?.GetHashCode() ?? 0);
-                    return hashCode ?? 0;
-                }
             }
         }
     }
