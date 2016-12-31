@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using Common.Entities;
 using JetBrains.Annotations;
@@ -7,12 +8,12 @@ using JetBrains.Annotations;
 namespace HowLongToBeatSteam.Models
 {
     [DataContract]
-    public class PlayerInfo
+    public sealed class PlayerInfo
     {
         [DataMember]
         public bool PartialCache { get; private set; }
         [DataMember]
-        public IList<SteamAppUserData> Games { get; private set; }
+        public SteamAppUserData[] Games { get; private set; }
         [DataMember]
         public int ExcludedCount { get; private set; }
         [DataMember]
@@ -20,7 +21,7 @@ namespace HowLongToBeatSteam.Models
         [DataMember]
         public PersonaInfo PersonaInfo { get; private set; }
 
-        public PlayerInfo(bool partialCache, IList<SteamAppUserData> games, int excludedCount, Totals totals, PersonaInfo personaInfo)
+        public PlayerInfo(bool partialCache, SteamAppUserData[] games, int excludedCount, Totals totals, PersonaInfo personaInfo)
         {
             PartialCache = partialCache;
             Games = games;
@@ -30,7 +31,7 @@ namespace HowLongToBeatSteam.Models
         }
     }
 
-    public class PersonaInfo
+    public sealed class PersonaInfo
     {
         [DataMember]
         public string PersonaName { get; private set; }
@@ -46,7 +47,7 @@ namespace HowLongToBeatSteam.Models
     }
 
     [DataContract]
-    public class Totals
+    public sealed class Totals
     {
         [DataMember]
         public int Playtime { get; private set; }
@@ -79,8 +80,8 @@ namespace HowLongToBeatSteam.Models
 
         public Totals(int playtime, int mainTtb, int extrasTtb, int completionistTtb, int mainRemaining, int extrasRemaining, int completionistRemaining,
             int mainCompleted, int extrasCompleted, int completionistCompleted,
-            Dictionary<string, int> playtimesByGenre, Dictionary<int, int> playtimesByMetacritic, 
-            Dictionary<string, int> playtimesByAppType, Dictionary<int, int> playtimesByReleaseYear)
+            IDictionary<string, int> playtimesByGenre, IDictionary<int, int> playtimesByMetacritic, 
+            IDictionary<string, int> playtimesByAppType, IDictionary<int, int> playtimesByReleaseYear)
         {
             Playtime = playtime;
             MainTtb = mainTtb;
@@ -92,15 +93,17 @@ namespace HowLongToBeatSteam.Models
             MainCompleted = mainCompleted;
             ExtrasCompleted = extrasCompleted;
             CompletionistCompleted = completionistCompleted;
-            PlaytimesByGenre = playtimesByGenre;
-            PlaytimesByMetacritic = playtimesByMetacritic;
-            PlaytimesByAppType = playtimesByAppType;
-            PlaytimesByReleaseYear = playtimesByReleaseYear;
+
+            //we create new dictionaries to prevent unexpected type serialization exceptions
+            PlaytimesByGenre = new Dictionary<string, int>(playtimesByGenre);
+            PlaytimesByMetacritic = new Dictionary<int, int>(playtimesByMetacritic);
+            PlaytimesByAppType = new Dictionary<string, int>(playtimesByAppType);
+            PlaytimesByReleaseYear = new Dictionary<int, int>(playtimesByReleaseYear);
         }
     }
 
     [DataContract]
-    public class SteamAppData
+    public sealed class SteamAppData
     {
         [DataMember]
         public int SteamAppId { get; private set; }
@@ -111,7 +114,7 @@ namespace HowLongToBeatSteam.Models
         [DataMember]
         public bool VerifiedGame { get; set; }
         [DataMember]
-        public IReadOnlyList<string> Genres { get; private set; }
+        public string[] Genres { get; private set; }
         [DataMember]
         public int ReleaseYear { get; private set; }
         [DataMember]
@@ -130,7 +133,7 @@ namespace HowLongToBeatSteam.Models
             SteamName = appEntity.SteamName;
             AppType = appEntity.AppType;
             VerifiedGame = appEntity.VerifiedGame;
-            Genres = appEntity.Genres;
+            Genres = appEntity.Genres.ToArray();
             ReleaseYear = appEntity.ReleaseDate.Year;
             MetacriticScore = appEntity.MetacriticScore;
             HltbInfo = appEntity.Measured ? new HltbInfo(appEntity) : null;
@@ -138,7 +141,7 @@ namespace HowLongToBeatSteam.Models
     }
 
     [DataContract]
-    public class SteamAppUserData
+    public sealed class SteamAppUserData
     {
         [DataMember]
         public SteamAppData SteamAppData { get; private set; }

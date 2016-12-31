@@ -5,7 +5,7 @@ using Common.Entities;
 namespace HowLongToBeatSteam.Models
 {
     [DataContract]
-    public class HltbInfo
+    public sealed class HltbInfo
     {
         [DataMember]
         public int Id { get; private set; }
