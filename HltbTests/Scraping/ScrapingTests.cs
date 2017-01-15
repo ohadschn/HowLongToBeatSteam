@@ -100,7 +100,7 @@ namespace HltbTests.Scraping
         [TestMethod]
         public void TestGameNotFoundInSearch()
         {
-            var app = ScrapeApp("{3F883F0C-A91E-4B99-A4E7-F4AA873AA3FF}"); //just a random GUID that won't be found
+            var app = ScrapeApp("Farming Simulator 15 - ITRunner"); //just a random GUID that won't be found
             AppAssertAreEqual(app, -1, app.HltbId, "expected no HLTB ID");
         }
 
