@@ -13,7 +13,7 @@ namespace HowLongToBeatSteam
                 throw new ArgumentNullException(nameof(filters));
             }
 
-            filters.Add(new AiHandleErrorAttribute());
+            filters.Add(new ErrorHandler.AiHandleErrorAttribute());
         }
     }
 }
