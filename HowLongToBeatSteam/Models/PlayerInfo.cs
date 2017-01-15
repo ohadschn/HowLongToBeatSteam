@@ -12,6 +12,7 @@ namespace HowLongToBeatSteam.Models
     {
         [DataMember]
         public bool PartialCache { get; private set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         [DataMember]
         public SteamAppUserData[] Games { get; private set; }
         [DataMember]
@@ -113,6 +114,7 @@ namespace HowLongToBeatSteam.Models
         public string AppType { get; private set; }
         [DataMember]
         public bool VerifiedGame { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         [DataMember]
         public string[] Genres { get; private set; }
         [DataMember]

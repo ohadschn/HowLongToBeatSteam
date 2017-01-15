@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using Common.Storage;
+using JetBrains.Annotations;
 using Microsoft.WindowsAzure.Storage.Table;
 using static System.FormattableString;
 
@@ -28,8 +29,14 @@ namespace Common.Entities
             AppType = appType;
         }
 
-        public ProcessedSuggestionEntity(SuggestionEntity suggestion) : this(suggestion.SteamAppId, suggestion.HltbId, suggestion.AppType)
+        public ProcessedSuggestionEntity([NotNull] SuggestionEntity suggestion)
         {
+            //we don't call the ctor above because we want to verify the 'suggestion' parameter before it's used
+            if (suggestion == null) throw new ArgumentNullException(nameof(suggestion));
+
+            SteamAppId = suggestion.SteamAppId;
+            HltbId = suggestion.HltbId;
+            AppType = suggestion.AppType;
         }
 
         private static string GetRowKey(int steamAppId, int hltbId, string appType)

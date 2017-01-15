@@ -20,6 +20,7 @@
            <Word>Edm</Word>
            <Word>Ml</Word>
            <Word>Parsable</Word>
+           <Word>Darb</Word>
          </Recognized>
 		    <Compound>
             <Term CompoundAlternate="CoOp">coop</Term>
