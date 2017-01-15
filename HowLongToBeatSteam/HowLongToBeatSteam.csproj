@@ -24,6 +24,7 @@
     <UseGlobalApplicationHostFile />
     <TargetFrameworkProfile />
     <ApplicationInsightsResourceId>/subscriptions/8e03eaa1-7457-4cba-a0e4-9094d5fad78d/resourcegroups/Default-Web-EastUS2/providers/microsoft.insights/components/howlongtobeatsteam</ApplicationInsightsResourceId>
+    <ApplicationInsightsAnnotationResourceId>/subscriptions/8e03eaa1-7457-4cba-a0e4-9094d5fad78d/resourcegroups/Default-Web-EastUS2/providers/microsoft.insights/components/howlongtobeatsteam</ApplicationInsightsAnnotationResourceId>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DotNetOpenAuth.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=2780ccd10d57b246, processorArchitecture=MSIL">
