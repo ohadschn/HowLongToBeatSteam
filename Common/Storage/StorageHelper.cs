@@ -250,31 +250,58 @@ namespace Common.Storage
             {
                 var final = tboi.Final ? "(final)" : String.Empty;
                 CommonEventSource.Log.ExecutePartitionBatchOperationStart(tboi.Partition, tboi.Batch, final);
-
-                try
-                {
-                    await table.ExecuteBatchAsync(tboi.Operation).ConfigureAwait(false);
-                }
-                catch (StorageException e)
-                {
-                    var batchContents = String.Join(Environment.NewLine,
-                        tboi.Operation.Select((o, i) => String.Format(CultureInfo.InvariantCulture,
-                            "[{0}] Type: {1} Partition: {2} Row: {3}", i, o.OperationType, o.GetPartitionKey(), o.GetRowKey())));
-
-                    CommonEventSource.Log.ErrorExecutingPartitionBatchOperation(
-                        e,
-                        e.RequestInformation?.HttpStatusCode ?? 0,
-                        e.RequestInformation?.ExtendedErrorInformation?.ErrorCode ?? "unknown",
-                        e.RequestInformation?.ExtendedErrorInformation?.ErrorMessage ?? "unknown",
-                        batchContents);
-
-                    throw new StorageException(String.Format(CultureInfo.InvariantCulture,
-                        "Error executing batch operation: {0}. Status code: {1}. Batch contents: {2}",
-                        e.RequestInformation?.ExtendedErrorInformation?.ErrorMessage ?? "unknown", e.RequestInformation?.HttpStatusCode, batchContents), e);
-                }
+                await ExecuteBatchCore(table, tboi.Operation);
                 CommonEventSource.Log.ExecutePartitionBatchOperationStop(tboi.Partition, tboi.Batch, final);
             }, false).ConfigureAwait(false);
             CommonEventSource.Log.ExecuteOperationsStop(description);
+        }
+
+        public static async Task ExecuteBatchOperation(
+            [NotNull] IEnumerable<TableOperation> operations,
+            [NotNull] string tableName,
+            [NotNull] string description,
+            int retries = -1)
+        {
+            if (operations == null) throw new ArgumentNullException(nameof(operations));
+            if (tableName == null) throw new ArgumentNullException(nameof(tableName));
+            if (description == null) throw new ArgumentNullException(nameof(description));
+
+            CommonEventSource.Log.ExecuteBatchOperationStart(description);
+
+            var batchOperation = new TableBatchOperation();
+            foreach (var operation in operations)
+            {
+                batchOperation.Add(operation);
+            }
+            var table = await GetTable(tableName, retries).ConfigureAwait(false);
+            await ExecuteBatchCore(table, batchOperation);
+
+            CommonEventSource.Log.ExecuteBatchOperationStop(description);
+        }
+
+        private static async Task ExecuteBatchCore(CloudTable table, TableBatchOperation tableBatchOperation)
+        {
+            try
+            {
+                await table.ExecuteBatchAsync(tableBatchOperation).ConfigureAwait(false);
+            }
+            catch (StorageException e)
+            {
+                var batchContents = String.Join(Environment.NewLine,
+                    tableBatchOperation.Select((o, i) => String.Format(CultureInfo.InvariantCulture,
+                        "[{0}] Type: {1} Partition: {2} Row: {3}", i, o.OperationType, o.GetPartitionKey(), o.GetRowKey())));
+
+                CommonEventSource.Log.ErrorExecutingBatchOperation(
+                    e,
+                    e.RequestInformation?.HttpStatusCode ?? 0,
+                    e.RequestInformation?.ExtendedErrorInformation?.ErrorCode ?? "unknown",
+                    e.RequestInformation?.ExtendedErrorInformation?.ErrorMessage ?? "unknown",
+                    batchContents);
+
+                throw new StorageException(String.Format(CultureInfo.InvariantCulture,
+                    "Error executing batch operation: {0}. Status code: {1}. Batch contents: {2}",
+                    e.RequestInformation?.ExtendedErrorInformation?.ErrorMessage ?? "unknown", e.RequestInformation?.HttpStatusCode, batchContents), e);
+            }
         }
 
         public static async Task InsertSuggestion(SuggestionEntity suggestion, int retries = -1)

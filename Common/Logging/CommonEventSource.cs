@@ -49,8 +49,9 @@ namespace Common.Logging
             public const EventTask ProcessContainerBlobs = (EventTask) 14;
             public const EventTask RetrieveContainerBlobBatch = (EventTask)15;
             public const EventTask ProcessContainerBlobBatch = (EventTask)16;
+            public const EventTask ExecuteBatchOperation = (EventTask)17;
         }
-// ReSharper restore ConvertToStaticClass
+        // ReSharper restore ConvertToStaticClass
 
         [NonEvent]
         public void HttpRequestFailed(Uri uri, Exception exception, int attempt, int totalRetries, TimeSpan delay)
@@ -325,6 +326,30 @@ namespace Common.Logging
             WriteEvent(15, description);
         }
 
+        [Event(
+             150,
+             Message = "Start executing batch operation: {0}",
+             Keywords = Keywords.TableStorage,
+             Level = EventLevel.Informational,
+             Task = Tasks.ExecuteBatchOperation,
+             Opcode = EventOpcode.Start)]
+        public void ExecuteBatchOperationStart(string description)
+        {
+            WriteEvent(150, description);
+        }
+
+        [Event(
+             151,
+             Message = "Finished executing batch operation: {0}",
+             Keywords = Keywords.TableStorage,
+             Level = EventLevel.Informational,
+             Task = Tasks.ExecuteBatchOperation,
+             Opcode = EventOpcode.Stop)]
+        public void ExecuteBatchOperationStop(string description)
+        {
+            WriteEvent(151, description);
+        }
+
         [NonEvent]
         public void ExecutePartitionBatchOperationStart(string partition, int batch, string final)
         {
@@ -374,14 +399,14 @@ namespace Common.Logging
         }
 
         [NonEvent]
-        public void ErrorExecutingPartitionBatchOperation(
+        public void ErrorExecutingBatchOperation(
             [NotNull] Exception exception, 
             int statusCode, string errorCode, string errorMessage,
             string batchContents)
         {
             if (exception == null) throw new ArgumentNullException(nameof(exception));
 
-            ErrorExecutingPartitionBatchOperation(exception.ToString(), statusCode, errorCode, errorMessage, batchContents);
+            ErrorExecutingBatchOperation(exception.ToString(), statusCode, errorCode, errorMessage, batchContents);
         }
 
         [Event(
@@ -389,7 +414,7 @@ namespace Common.Logging
             Message = "Error executing batch operation: {0}. Status code: {1}. Error code: {2}. Error message: {3}. Batch contents: {4}",
             Keywords = Keywords.TableStorage,
             Level = EventLevel.Error)]
-        private void ErrorExecutingPartitionBatchOperation(string exception, int statusCode, string errorCode, string errorMessage, string batchContents)
+        private void ErrorExecutingBatchOperation(string exception, int statusCode, string errorCode, string errorMessage, string batchContents)
         {
             WriteEvent(180, exception, statusCode, errorCode, errorMessage, batchContents);
         }
