@@ -30,6 +30,7 @@ namespace SteamHltbScraper.Scraper
         private static readonly int ScrapingLimit = SiteUtil.GetOptionalValueFromConfig("ScrapingLimit", int.MaxValue);
         private static readonly int ScrapingRetries = SiteUtil.GetOptionalValueFromConfig("HltbScraperScrapingRetries", 5);
         private static readonly int StorageRetries = SiteUtil.GetOptionalValueFromConfig("HltbScraperStorageRetries", 20);
+        private static readonly int ResultCountConfidenceThreshold = SiteUtil.GetOptionalValueFromConfig("ResultCountConfidenceThreshold", 1000);
 
         private static readonly HashSet<int> NoTtbGames =
             new HashSet<int>(SiteUtil.GetOptionalValueFromConfig("NoTtbGames", "27859,27913,32770").Split(',').Select(Int32.Parse));
@@ -402,6 +403,26 @@ namespace SteamHltbScraper.Scraper
                     HltbScraperEventSource.Log.GameNotFoundInSearch(appName);
                     return -1;   
                 }
+            }
+
+            var searchResultsTitle = doc.DocumentNode.Descendants("h3").FirstOrDefault();
+            if (String.IsNullOrWhiteSpace(searchResultsTitle?.InnerText))
+            {
+                throw GetFormatException("Could not find h3 search results title for confidence evaluation", appName, doc);
+            }
+
+            int resultCount;
+            var match = Regex.Match(searchResultsTitle.InnerText, "We Found (.*) Game");
+            if (!match.Success || !Int32.TryParse(match.Groups[1].Value, out resultCount))
+            {
+                throw GetFormatException("Unexpected search results title format: " + searchResultsTitle.InnerText, appName, doc);
+            }
+
+            HltbScraperEventSource.Log.GamesFoundInSearch(appName, resultCount);
+            if (resultCount > ResultCountConfidenceThreshold)
+            {
+                HltbScraperEventSource.Log.ResultCountExceedsConfidenceThreshold(appName, resultCount, ResultCountConfidenceThreshold);
+                return -1;
             }
 
             var link = firstResultAnchor.GetAttributeValue("href", null);

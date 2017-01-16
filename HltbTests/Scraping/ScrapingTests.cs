@@ -73,6 +73,20 @@ namespace HltbTests.Scraping
         }
 
         [TestMethod]
+        public void TestExclusiveNonLetterNumberName()
+        {
+            var app = ScrapeApp("+++++");
+            AppAssertAreEqual(app, -1, app.HltbId, "expected no HLTB ID due to no search results");
+        }
+
+        [TestMethod]
+        public void TestTooManySearchResults()
+        {
+            var app = ScrapeApp("O.R.B.");
+            AppAssertAreEqual(app, -1, app.HltbId, "expected no HLTB ID due to too many search results");
+        }
+
+        [TestMethod]
         public void TestMetadataParsableAsReleaseYear()
         {
             //The following was developed by '773' which can be parsed as the date 773 A.D.
@@ -100,7 +114,7 @@ namespace HltbTests.Scraping
         [TestMethod]
         public void TestGameNotFoundInSearch()
         {
-            var app = ScrapeApp("Farming Simulator 15 - ITRunner"); //just a random GUID that won't be found
+            var app = ScrapeApp("Farming Simulator 15 - ITRunner");
             AppAssertAreEqual(app, -1, app.HltbId, "expected no HLTB ID");
         }
 

@@ -197,6 +197,26 @@ namespace SteamHltbScraper.Logging
             WriteEvent(90, original, letterNumberStrippedName);
         }
 
+        [Event(
+            91,
+            Message = "Games found in HLTB search for '{0}' : {1}",
+            Keywords = Keywords.Scraping,
+            Level = EventLevel.Informational)]
+        public void GamesFoundInSearch(string game, int resultsFound)
+        {
+            WriteEvent(91, game, resultsFound);
+        }
+
+        [Event(
+            92,
+            Message = "Too many games found in HLTB search for '{0}' - result count of {1} exceeds threshold of {2}",
+            Keywords = Keywords.Scraping,
+            Level = EventLevel.Warning)]
+        public void ResultCountExceedsConfidenceThreshold(string game, int resultsFound, int threshold)
+        {
+            WriteEvent(92, game, resultsFound, threshold);
+        }
+
         [NonEvent]
         public void ErrorScrapingHltbId(int current, int steamAppId, string steamName, Exception exception)
         {
