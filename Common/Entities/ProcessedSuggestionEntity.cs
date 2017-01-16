@@ -37,6 +37,9 @@ namespace Common.Entities
             SteamAppId = suggestion.SteamAppId;
             HltbId = suggestion.HltbId;
             AppType = suggestion.AppType;
+
+            PartitionKey = AppEntity.GetPartitionKey(SteamAppId);
+            RowKey = GetRowKey(SteamAppId, HltbId, AppType);
         }
 
         private static string GetRowKey(int steamAppId, int hltbId, string appType)
