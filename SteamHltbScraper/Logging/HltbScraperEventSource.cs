@@ -189,12 +189,12 @@ namespace SteamHltbScraper.Logging
 
         [Event(
             90,
-            Message = "Could not find exact game name '{0}' - trying alphanumeric version '{1}'",
+            Message = "Could not find exact game name '{0}' - trying letter/number stripped version: '{1}'",
             Keywords = Keywords.Scraping,
             Level = EventLevel.Informational)]
-        public void SearchingForAlphanumericName(string original, string alphanumeric)
+        public void SearchingForLetterNumberStrippedName(string original, string letterNumberStrippedName)
         {
-            WriteEvent(90, original, alphanumeric);
+            WriteEvent(90, original, letterNumberStrippedName);
         }
 
         [NonEvent]

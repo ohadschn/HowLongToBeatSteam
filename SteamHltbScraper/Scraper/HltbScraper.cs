@@ -389,11 +389,11 @@ namespace SteamHltbScraper.Scraper
 
             if (firstResultAnchor == null)
             {
-                var alphanumericName = SiteUtil.ReplaceNonAlphanumericWithSpaces(appName);
-                if (alphanumericName != appName)
+                var letterNumberStrippedName = SiteUtil.ReplaceNonLettersAndNumbersWithSpaces(appName);
+                if (letterNumberStrippedName != appName && !String.IsNullOrWhiteSpace(letterNumberStrippedName))
                 {
-                    HltbScraperEventSource.Log.SearchingForAlphanumericName(appName, alphanumericName);
-                    doc = await GetHltbSearchResults(alphanumericName).ConfigureAwait(false);
+                    HltbScraperEventSource.Log.SearchingForLetterNumberStrippedName(appName, letterNumberStrippedName);
+                    doc = await GetHltbSearchResults(letterNumberStrippedName).ConfigureAwait(false);
                     firstResultAnchor = doc.DocumentNode.Descendants("a").FirstOrDefault(); 
                 }
 
