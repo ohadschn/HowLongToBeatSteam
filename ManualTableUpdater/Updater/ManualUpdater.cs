@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -17,6 +18,24 @@ using static System.FormattableString;
 
 namespace ManualTableUpdater.Updater
 {
+    [DataContract]
+    public class SuggestionData
+    {
+        [DataMember]
+        public int SteamAppId { get; set; }
+        [DataMember]
+        public int HltbId { get; set; }
+        [DataMember]
+        public string AppType { get; set; }
+
+        public SuggestionData(int steamAppId, int hltbId, string appType)
+        {
+            SteamAppId = steamAppId;
+            HltbId = hltbId;
+            AppType = appType;
+        }
+    }
+
     [DataContract]
     public class AppEntityData
     {
@@ -93,11 +112,31 @@ namespace ManualTableUpdater.Updater
 
         static void Main()
         {
+            if (StorageHelper.AzureStorageTablesConnectionString.Contains("staging"))
+            {
+                Console.WriteLine("STAGING connection string detected - press any key to continue...");
+                Console.ReadLine();
+            }
+            else
+            {
+                Console.WriteLine("Non-staging connection string detected");
+                Console.WriteLine("By proceeding, you might override PRODUCTION DATA");
+                Console.Write("Are you absolutely sure? If so, type ABSOLUTELY SURE (in capital letters): ");
+                var input = Console.ReadLine();
+                if (input != "ABSOLUTELY SURE")
+                {
+                    Console.WriteLine("You are not absolutely sure, aborting");
+                    return;
+                }
+            }
+
             try
             {
+                //ProcessIDarbSuggestions();
+                //ProcessIDarbApps();
                 //PrintGenres();
                 //SerializeAllAppsToFile();
-                LoadAllAppsFromFile();
+                //LoadAllAppsFromFile();
                 //WriteAllMeasuredToTsv();
                 //DeleteInvalidSuggestions();
                 //InsertManualSuggestions();
@@ -106,6 +145,7 @@ namespace ManualTableUpdater.Updater
                 //ForceUpdateAppHltbId(346810, 29325);
                 //ForceUpdateAppHltbId(266310, 27913);
                 //SendMail();
+                //GetEarliestGame();
                 Console.WriteLine("Done - Press any key to continue...");
                 Console.ReadLine();
             }
@@ -113,6 +153,42 @@ namespace ManualTableUpdater.Updater
             {
                 EventSourceRegistrar.DisposeEventListeners();
             }
+        }
+
+        public static void ProcessIDarbSuggestions()
+        {
+            var suggestions = StorageHelper.GetAllSuggestions().Result;
+            var idarbSuggestions = suggestions.Where(a => a.HltbId == 23224).ToArray();
+
+            Console.WriteLine("Serializing #IDARB suggestions to file...");
+            SerializeSuggestionsToFile(idarbSuggestions, "IDARB-suggestions.xml");
+
+            Console.WriteLine("Removing #IDARB suggestions...");
+            foreach (var suggestion in idarbSuggestions)
+            {
+                Console.WriteLine("Removing #IDARB suggestion:");
+                Console.WriteLine(suggestion);
+                StorageHelper.Delete(new[] { suggestion }, "Removing #IDARB suggestion", StorageHelper.SteamToHltbTableName).Wait();
+            }
+        }
+
+        public static void ProcessIDarbApps()
+        {
+            var apps = StorageHelper.GetAllApps(AppEntity.MeasuredFilter).Result;
+            var idarbApps = apps.Where(a => a.HltbId == 23224).ToArray();
+
+            Console.WriteLine("Serializing #IDARB apps to file...");
+            SerializeAppsToFile(idarbApps, "IDARB.xml");
+
+            Console.WriteLine("Removing #IDARB-correlated games...");
+            foreach (var app in idarbApps)
+            {
+                Console.WriteLine("Removing #IDARB app:");
+                PrintGame(app);
+                StorageHelper.Delete(new[] {app}, "Resetting #IDARB correlation", StorageHelper.SteamToHltbTableName).Wait();
+            }
+
+            Console.WriteLine("apps removed - now run the missing games updater");
         }
 
         public static void SendMail()
@@ -170,21 +246,37 @@ namespace ManualTableUpdater.Updater
                 return;
             }
 
-            var appData = StorageHelper.GetAllApps().Result.Select(a =>
-                new AppEntityData(a.SteamAppId, a.SteamName, a.AppType, a.Platforms, a.Categories.ToArray(),
-                    a.Genres.ToArray(),
-                    a.Developers.ToArray(), a.Publishers.ToArray(), a.ReleaseDate, a.MetacriticScore, 
-                    a.HltbId, a.HltbName, a.MainTtb, a.MainTtbImputed, a.ExtrasTtb, a.ExtrasTtbImputed, a.CompletionistTtb, a.CompletionistTtbImputed, a.VerifiedGame))
-                    .ToArray();
-
-
             Console.WriteLine();
 
-            using (var stream = File.OpenWrite(AppDataXml))
-            {
-                new DataContractSerializer(typeof(AppEntityData[])).WriteObject(stream, appData);
-            }
+            SerializeAppsToFile(StorageHelper.GetAllApps().Result, AppDataXml);
+        }
 
+        private static void SerializeAppsToFile(IEnumerable<AppEntity> apps, string filename)
+        {
+            var appData = apps.Select(a =>
+                    new AppEntityData(a.SteamAppId, a.SteamName, a.AppType, a.Platforms, a.Categories.ToArray(),
+                        a.Genres.ToArray(),
+                        a.Developers.ToArray(), a.Publishers.ToArray(), a.ReleaseDate, a.MetacriticScore,
+                        a.HltbId, a.HltbName, a.MainTtb, a.MainTtbImputed, a.ExtrasTtb, a.ExtrasTtbImputed, a.CompletionistTtb,
+                        a.CompletionistTtbImputed, a.VerifiedGame))
+                .ToArray();
+
+
+            SerializeToFile(appData, filename);
+        }
+
+        private static void SerializeSuggestionsToFile(IEnumerable<SuggestionEntity> suggestions, string filename)
+        {
+            var suggestionsData = suggestions.Select(s => new SuggestionData(s.SteamAppId, s.HltbId, s.AppType)).ToArray();
+            SerializeToFile(suggestionsData, filename);
+        }
+
+        private static void SerializeToFile<T>(T appData, string filename)
+        {
+            using (var stream = File.OpenWrite(filename))
+            {
+                new DataContractSerializer(typeof(T)).WriteObject(stream, appData);
+            }
         }
 
         public static void LoadAllAppsFromFile()
@@ -196,19 +288,6 @@ namespace ManualTableUpdater.Updater
             {
                 Console.WriteLine("You are not sure, aborting");
                 return;
-            }
-
-            if (!StorageHelper.AzureStorageTablesConnectionString.Contains("staging"))
-            {
-                Console.WriteLine("Non-staging connection string detected");
-                Console.WriteLine("By proceeding, you might override PRODUCTION DATA");
-                Console.Write("Are you absolutely sure? If so, type ABSOLUTELY SURE (in capital letters): ");
-                input = Console.ReadLine();
-                if (input != "ABSOLUTELY SURE")
-                {
-                    Console.WriteLine("You are not absolutely sure, aborting");
-                    return;
-                }
             }
 
             Console.WriteLine("Loading all apps from: " + Path.Combine(Environment.CurrentDirectory, AppDataXml));
