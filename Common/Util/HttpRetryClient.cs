@@ -166,8 +166,11 @@ namespace Common.Util
 
         private Task<HttpResponseWithContent<T>> RequestAsync<T>(Uri uri, Func<Task<HttpResponseMessage>> requester, CancellationToken ct)
         {
+            int attempt = 0;
             return ExponentialBackoff.ExecuteAsyncWithExponentialRetries(async () =>
             {
+
+                CommonEventSource.Log.SendHttpRequestStart(uri, ++attempt, m_retries + 1);
                 HttpResponseMessage response;
                 try
                 {
@@ -180,7 +183,10 @@ namespace Common.Util
                     //and convert it to the correct (HTTP) exception - otherwise ExecuteAsync will assume we want to cancel everything
                     throw new HttpRequestException("Request timed out", e);
                 }
+                CommonEventSource.Log.SendHttpRequestStop(uri, attempt, m_retries + 1);
+
                 response.EnsureSuccessStatusCode();
+
                 object content;
                 if (typeof(T) == typeof(Stream))
                 {
@@ -195,7 +201,12 @@ namespace Common.Util
                 return new HttpResponseWithContent<T>(response, (T)content);
             },
             (lastException, retryCount, delay) => CommonEventSource.Log.HttpRequestFailed(uri, lastException, retryCount, m_retries, delay),
-            e => e is HttpRequestException || e is WebException, m_retries, MinBackoff, MaxBackoff, DefaultClientBackoff, ct);
+                e =>
+                {
+                    var transient = e is HttpRequestException || e is WebException;
+                    CommonEventSource.Log.HttpRequestFailedWithException(uri, e, transient, attempt, m_retries + 1);
+                    return transient;
+                }, m_retries, MinBackoff, MaxBackoff, DefaultClientBackoff, ct);
         }
 
         public void Dispose()

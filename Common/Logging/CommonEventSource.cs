@@ -50,29 +50,75 @@ namespace Common.Logging
             public const EventTask RetrieveContainerBlobBatch = (EventTask)15;
             public const EventTask ProcessContainerBlobBatch = (EventTask)16;
             public const EventTask ExecuteBatchOperation = (EventTask)17;
+            public const EventTask SendHttpRequest = (EventTask)18;
         }
         // ReSharper restore ConvertToStaticClass
 
         [NonEvent]
-        public void HttpRequestFailed(Uri uri, Exception exception, int attempt, int totalRetries, TimeSpan delay)
+        public void SendHttpRequestStart([NotNull] Uri uri, int attempt, int totalAttempts)
         {
-            if (uri == null)
-            {
-                throw new ArgumentNullException(nameof(uri));
-            }
+            if (uri == null) throw new ArgumentNullException(nameof(uri));
 
-            if (exception == null)
-            {
-                throw new ArgumentNullException(nameof(exception));
-            }
+            SendHttpRequestStart(uri.ToString(), attempt, totalAttempts);
+        }
 
-            if (!IsEnabled())
-            {
-                return;
-            }
+        [Event(
+            1000,
+            Message = "Start sending request to URI {0} (attempt {1} out of a total of {2})",
+            Keywords = Keywords.Http,
+            Level = EventLevel.Verbose,
+            Task = Tasks.SendHttpRequest,
+            Opcode = EventOpcode.Start)]
+        private void SendHttpRequestStart(string uri, int attempt, int totalAttempts)
+        {
+            WriteEvent(1000, uri, attempt, totalAttempts);
+        }
 
-            HttpRequestFailed(uri.ToString(), String.Format(CultureInfo.InvariantCulture, "{0} / {1}", exception.GetType(), exception.Message), 
-                attempt, totalRetries, delay.TotalSeconds);
+        [NonEvent]
+        public void SendHttpRequestStop([NotNull] Uri uri, int attempt, int totalAttempts)
+        {
+            if (uri == null) throw new ArgumentNullException(nameof(uri));
+            SendHttpRequestStop(uri.ToString(), attempt, totalAttempts);
+        }
+
+        [Event(
+            1001,
+            Message = "Finished sending request to URI {0} (attempt {1} out of a total of {2})",
+            Keywords = Keywords.Http,
+            Level = EventLevel.Verbose,
+            Task = Tasks.SendHttpRequest,
+            Opcode = EventOpcode.Stop)]
+        private void SendHttpRequestStop(string uri, int attempt, int totalAttempts)
+        {
+            WriteEvent(1001, uri, attempt, totalAttempts);
+        }
+
+        [NonEvent]
+        public void HttpRequestFailedWithException([NotNull] Uri uri, [NotNull] Exception exception, bool trasnient, int attempt, int totalAttempts)
+        {
+            if (uri == null) throw new ArgumentNullException(nameof(uri));
+            if (exception == null) throw new ArgumentNullException(nameof(exception));
+
+            HttpRequestFailedWithException(uri.ToString(), exception.ToString(), trasnient, attempt, totalAttempts);
+        }
+
+        [Event(
+            1002,
+            Message = "Request to URI {0} (attempt {3} out of a total of {4}) failed with exception (transient: {2}): {1}",
+            Keywords = Keywords.Http,
+            Level = EventLevel.Warning)]
+        private void HttpRequestFailedWithException(string uri, string exception, bool transient, int attempt, int totalAttempts)
+        {
+            WriteEvent(1002, uri, exception, transient, attempt, totalAttempts);
+        }
+
+        [NonEvent]
+        public void HttpRequestFailed([NotNull] Uri uri, [NotNull]Exception exception, int retryAttempt, int totalRetries, TimeSpan delay)
+        {
+            if (uri == null) throw new ArgumentNullException(nameof(uri));
+            if (exception == null) throw new ArgumentNullException(nameof(exception));
+
+            HttpRequestFailed(uri.ToString(), exception.ToString(), retryAttempt, totalRetries, delay.TotalSeconds);
         }
 
         [Event(
@@ -80,9 +126,9 @@ namespace Common.Logging
             Message = "Request to URI {0} failed due to: {1} - retrying attempt #{2} / {3} will take place in {4} seconds",
             Keywords = Keywords.Http,
             Level = EventLevel.Warning)]
-        private void HttpRequestFailed(string uri, string exceptionMessage, int attempt, int totalRetries, double delaySeconds)
+        private void HttpRequestFailed(string uri, string exceptionMessage, int retryAttempt, int totalRetries, double delaySeconds)
         {
-            WriteEvent(1, uri, exceptionMessage, attempt, totalRetries, delaySeconds);
+            WriteEvent(1, uri, exceptionMessage, retryAttempt, totalRetries, delaySeconds);
         }
 
         [Event(
@@ -117,11 +163,6 @@ namespace Common.Logging
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            if (!IsEnabled())
-            {
-                return;
-            }
-
             RetrieveStoreInformationStart(uri.ToString(), startIndex, endIndex, total);
         }
 
@@ -143,11 +184,6 @@ namespace Common.Logging
             if (uri == null)
             {
                 throw new ArgumentNullException(nameof(uri));
-            }
-
-            if (!IsEnabled())
-            {
-                return;
             }
 
             RetrieveStoreInformationStop(uri.ToString(), startIndex, endIndex, total);
