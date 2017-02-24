@@ -141,7 +141,7 @@ namespace ManualTableUpdater.Updater
                 //DeleteInvalidSuggestions();
                 //InsertManualSuggestions();
                 //DeleteUnknowns();
-                //ForceUpdateAppHltbId(390730, -1);
+                ForceUpdateAppHltbId(246680, 27619);
                 //ForceUpdateAppHltbId(346810, 29325);
                 //ForceUpdateAppHltbId(266310, 27913);
                 //SendMail();
