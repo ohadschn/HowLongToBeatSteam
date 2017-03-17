@@ -32,6 +32,7 @@ namespace HowLongToBeatSteam.Models
         }
     }
 
+    [DataContract]
     public sealed class PersonaInfo
     {
         [DataMember]
