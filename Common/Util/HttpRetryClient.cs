@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Common.Logging;
+using static System.FormattableString;
 using JetBrains.Annotations;
 
 namespace Common.Util
@@ -185,7 +186,14 @@ namespace Common.Util
                 }
                 CommonEventSource.Log.SendHttpRequestStop(uri, attempt, m_retries + 1);
 
-                response.EnsureSuccessStatusCode();
+                try
+                {
+                    response.EnsureSuccessStatusCode();
+                }
+                catch (HttpRequestException e)
+                {
+                    throw new HttpRequestException(Invariant($"HTTP request failed on attempt #{attempt} / {m_retries + 1}"), e);
+                }
 
                 object content;
                 if (typeof(T) == typeof(Stream))
