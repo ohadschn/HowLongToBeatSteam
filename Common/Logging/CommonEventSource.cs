@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
-using System.Globalization;
 using System.Net;
 using Common.Entities;
 using JetBrains.Annotations;
@@ -94,12 +93,12 @@ namespace Common.Logging
         }
 
         [NonEvent]
-        public void HttpRequestFailedWithException([NotNull] Uri uri, [NotNull] Exception exception, bool trasnient, int attempt, int totalAttempts)
+        public void HttpRequestFailedWithException([NotNull] Uri uri, [NotNull] Exception exception, bool transient, int attempt, int totalAttempts)
         {
             if (uri == null) throw new ArgumentNullException(nameof(uri));
             if (exception == null) throw new ArgumentNullException(nameof(exception));
 
-            HttpRequestFailedWithException(uri.ToString(), exception.ToString(), trasnient, attempt, totalAttempts);
+            HttpRequestFailedWithException(uri.ToString(), exception.ToString(), transient, attempt, totalAttempts);
         }
 
         [Event(
