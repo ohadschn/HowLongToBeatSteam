@@ -125,34 +125,34 @@ namespace HltbTests.Scraping
             AppAssertAreEqual(app, releaseYear, app.ReleaseDate.Year, "Incorrect release year");
             if (hasMain)
             {
-                AppAssertIsTrue(app, app.MainTtb > 0, "expected positive main TTB");
+                AppAssertIsTrue(app, app.MainTtb > 0, $"expected positive main TTB (actual: {app.MainTtb})");
                 AppAssertIsFalse(app, app.MainTtbImputed, "expected non-imputed main TTB");
             }
             else
             {
-                AppAssertAreEqual(app, 0, app.MainTtb, "expected zero main TTB");
+                AppAssertAreEqual(app, 0, app.MainTtb, $"expected zero main TTB (actual: {app.MainTtb})");
                 AppAssertIsTrue(app, app.MainTtbImputed, "expected imputed main TTB");
             }
 
             if (hasExtras)
             {
-                AppAssertIsTrue(app, app.ExtrasTtb > 0, "expected positive extras TTB");
+                AppAssertIsTrue(app, app.ExtrasTtb > 0, $"expected positive extras TTB (actual: {app.ExtrasTtb})");
                 AppAssertIsFalse(app, app.ExtrasTtbImputed, "expected non-imputed extras TTB");
             }
             else
             {
-                AppAssertAreEqual(app, 0, app.ExtrasTtb, "expected zero extras TTB");
+                AppAssertAreEqual(app, 0, app.ExtrasTtb, $"expected zero extras TTB (actual: {app.ExtrasTtb})");
                 AppAssertIsTrue(app, app.ExtrasTtbImputed, "expected imputed extras TTB");
             }
 
             if (hasCompletionist)
             {
-                AppAssertIsTrue(app, app.CompletionistTtb > 0, "expected positive completionist TTB");
+                AppAssertIsTrue(app, app.CompletionistTtb > 0, $"expected positive completionist TTB (actual: {app.CompletionistTtb})");
                 AppAssertIsFalse(app, app.CompletionistTtbImputed, "expected non-imputed completionist TTB");
             }
             else
             {
-                AppAssertAreEqual(app, 0, app.CompletionistTtb, "expected zero completionist TTB");
+                AppAssertAreEqual(app, 0, app.CompletionistTtb, $"expected zero completionist TTB (actual: {app.CompletionistTtb})");
                 AppAssertIsTrue(app, app.CompletionistTtbImputed, "expected imputed completionist TTB");
             }
         }
