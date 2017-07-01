@@ -44,8 +44,8 @@ namespace Common.Util
 
         public AuthenticationHeaderValue DefaultRequestAuthorization
         {
-            get { return m_client.DefaultRequestHeaders.Authorization; }
-            set { m_client.DefaultRequestHeaders.Authorization = value; }
+            get => m_client.DefaultRequestHeaders.Authorization;
+            set => m_client.DefaultRequestHeaders.Authorization = value;
         }
 
         public HttpRetryClient(int retries)

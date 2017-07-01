@@ -31,11 +31,8 @@ namespace Common.Entities
         public GenreStatsEntity([NotNull] string genre, [NotNull] string appType)
             : base(GenreStatsPartitionKey, StorageHelper.CleanStringForTableKey(GetDecoratedGenre(genre, appType))) 
         {
-            if (genre == null) throw new ArgumentNullException(nameof(genre));
-            if (appType == null) throw new ArgumentNullException(nameof(appType));
-
-            Genre = genre;
-            AppType = appType;
+            Genre = genre ?? throw new ArgumentNullException(nameof(genre));
+            AppType = appType ?? throw new ArgumentNullException(nameof(appType));
         }
 
         public static string[] GetPartitions()

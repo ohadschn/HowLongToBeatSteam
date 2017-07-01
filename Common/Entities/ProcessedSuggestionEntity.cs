@@ -13,9 +13,9 @@ namespace Common.Entities
     public sealed class ProcessedSuggestionEntity : TableEntity, IEquatable<ProcessedSuggestionEntity>
     {
         public const string ProcessedSuggestionPrefix = "ProcessedSuggestion";
-        public int SteamAppId { get; set; }
-        public int HltbId { get; set; }
-        public string AppType { get; set; }
+        public int SteamAppId { get; }
+        public int HltbId { get;  }
+        public string AppType { get; }
 
         public ProcessedSuggestionEntity() //required by azure storage client library
         {

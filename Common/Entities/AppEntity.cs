@@ -80,40 +80,40 @@ namespace Common.Entities
         public int PlatformsValue { get; set; } //for use by the Azure client libraries only
         [IgnoreProperty] public Platforms Platforms
         {
-            get { return (Platforms) PlatformsValue; }
-            set { PlatformsValue = (int) value; }
+            get => (Platforms) PlatformsValue;
+            set => PlatformsValue = (int) value;
         }
         public string CategoriesFlat { get; set; } //for use by the Azure client libraries only
         [IgnoreProperty] public IReadOnlyList<string> Categories 
         {
-            get { return CategoriesFlat.ToStringArray(); }
-            set { CategoriesFlat = value.ToFlatString(); }
+            get => CategoriesFlat.ToStringArray();
+            set => CategoriesFlat = value.ToFlatString();
         }
         public string GenresFlat { get; set; } //for use by the Azure client libraries only
         [IgnoreProperty] public IReadOnlyList<string> Genres
         {
-            get { return GenresFlat.ToStringArray(); }
-            set { GenresFlat = value.ToFlatString(); }
+            get => GenresFlat.ToStringArray();
+            set => GenresFlat = value.ToFlatString();
         }
 
         public string DevelopersFlat { get; set; } //for use by the Azure client libraries only
         [IgnoreProperty] public IReadOnlyList<string> Developers
         {
-            get { return DevelopersFlat.ToStringArray(); }
-            set { DevelopersFlat = value.ToFlatString(); }
+            get => DevelopersFlat.ToStringArray();
+            set => DevelopersFlat = value.ToFlatString();
         }
 
         public string PublishersFlat { get; set; } //for use by the Azure client libraries only
         [IgnoreProperty] public IReadOnlyList<string> Publishers
         {
-            get { return PublishersFlat.ToStringArray(); } 
-            set { PublishersFlat = value.ToFlatString(); }
+            get => PublishersFlat.ToStringArray();
+            set => PublishersFlat = value.ToFlatString();
         }
 
         private DateTime _releaseDate;
         public DateTime ReleaseDate
         {
-            get { return _releaseDate; }
+            get => _releaseDate;
             set
             {
                 if (!StorageHelper.IsValid(value))
@@ -146,27 +146,11 @@ namespace Common.Entities
             DateTime releaseDate, int metacriticScore)
             : this(steamAppId, steamName, appType)
         {
-            if (categories == null)
-            {
-                throw new ArgumentNullException(nameof(categories));
-            }
-            if (genres == null)
-            {
-                throw new ArgumentNullException(nameof(genres));
-            }
-            if (publishers == null)
-            {
-                throw new ArgumentNullException(nameof(publishers));
-            }
-            if (developers == null)
-            {
-                throw new ArgumentNullException(nameof(developers));
-            }
+            Categories = categories ?? throw new ArgumentNullException(nameof(categories));
+            Genres = genres ?? throw new ArgumentNullException(nameof(genres));
+            Publishers = publishers ?? throw new ArgumentNullException(nameof(publishers));
+            Developers = developers ?? throw new ArgumentNullException(nameof(developers));
             Platforms = platforms;
-            Categories = categories;
-            Genres = genres;
-            Publishers = publishers;
-            Developers = developers;
             ReleaseDate = releaseDate;
             MetacriticScore = metacriticScore;
         }

@@ -445,7 +445,8 @@ namespace SteamHltbScraper.Scraper
         private static async Task<HtmlDocument> GetHltbSearchResults(string appName)
         {
             var content = String.Format(SearchHltbPostDataFormat, appName);
-            Func<HttpRequestMessage> requestFactory = () => new HttpRequestMessage(HttpMethod.Post, SearchHltbUrl)
+
+            HttpRequestMessage RequestFactory() => new HttpRequestMessage(HttpMethod.Post, SearchHltbUrl)
             {
                 Content = new StringContent(content, Encoding.UTF8, "application/x-www-form-urlencoded")
             };
@@ -453,7 +454,7 @@ namespace SteamHltbScraper.Scraper
             HltbScraperEventSource.Log.PostHltbSearchStart(SearchHltbUrl, content);
 
             var doc = new HtmlDocument();
-            using (var response = await s_client.SendAsync<Stream>(requestFactory, SearchHltbUrl))
+            using (var response = await s_client.SendAsync<Stream>(RequestFactory, SearchHltbUrl))
             using (var stream = response.Content)
             {
                 doc.Load(stream);

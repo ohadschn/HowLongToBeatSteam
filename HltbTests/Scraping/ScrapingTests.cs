@@ -9,6 +9,7 @@ using Common.Storage;
 using JetBrains.Annotations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SteamHltbScraper.Scraper;
+using static System.FormattableString;
 
 namespace HltbTests.Scraping
 {
@@ -125,34 +126,34 @@ namespace HltbTests.Scraping
             AppAssertAreEqual(app, releaseYear, app.ReleaseDate.Year, "Incorrect release year");
             if (hasMain)
             {
-                AppAssertIsTrue(app, app.MainTtb > 0, $"expected positive main TTB (actual: {app.MainTtb})");
+                AppAssertIsTrue(app, app.MainTtb > 0, Invariant($"expected positive main TTB (actual: {app.MainTtb})"));
                 AppAssertIsFalse(app, app.MainTtbImputed, "expected non-imputed main TTB");
             }
             else
             {
-                AppAssertAreEqual(app, 0, app.MainTtb, $"expected zero main TTB (actual: {app.MainTtb})");
+                AppAssertAreEqual(app, 0, app.MainTtb, Invariant($"expected zero main TTB (actual: {app.MainTtb})"));
                 AppAssertIsTrue(app, app.MainTtbImputed, "expected imputed main TTB");
             }
 
             if (hasExtras)
             {
-                AppAssertIsTrue(app, app.ExtrasTtb > 0, $"expected positive extras TTB (actual: {app.ExtrasTtb})");
+                AppAssertIsTrue(app, app.ExtrasTtb > 0, Invariant($"expected positive extras TTB (actual: {app.ExtrasTtb})"));
                 AppAssertIsFalse(app, app.ExtrasTtbImputed, "expected non-imputed extras TTB");
             }
             else
             {
-                AppAssertAreEqual(app, 0, app.ExtrasTtb, $"expected zero extras TTB (actual: {app.ExtrasTtb})");
+                AppAssertAreEqual(app, 0, app.ExtrasTtb, Invariant($"expected zero extras TTB (actual: {app.ExtrasTtb})"));
                 AppAssertIsTrue(app, app.ExtrasTtbImputed, "expected imputed extras TTB");
             }
 
             if (hasCompletionist)
             {
-                AppAssertIsTrue(app, app.CompletionistTtb > 0, $"expected positive completionist TTB (actual: {app.CompletionistTtb})");
+                AppAssertIsTrue(app, app.CompletionistTtb > 0, Invariant($"expected positive completionist TTB (actual: {app.CompletionistTtb})"));
                 AppAssertIsFalse(app, app.CompletionistTtbImputed, "expected non-imputed completionist TTB");
             }
             else
             {
-                AppAssertAreEqual(app, 0, app.CompletionistTtb, $"expected zero completionist TTB (actual: {app.CompletionistTtb})");
+                AppAssertAreEqual(app, 0, app.CompletionistTtb, Invariant($"expected zero completionist TTB (actual: {app.CompletionistTtb})"));
                 AppAssertIsTrue(app, app.CompletionistTtbImputed, "expected imputed completionist TTB");
             }
         }
@@ -182,7 +183,7 @@ namespace HltbTests.Scraping
         private static AppEntity ScrapeApp(string name)
         {
             var app = new AppEntity(0, name, AppEntity.GameTypeName);
-            HltbScraper.ScrapeHltb(new[] { app }, (a,e) => { throw new InvalidOperationException("error during scraping", e); }).Wait();
+            HltbScraper.ScrapeHltb(new[] { app }, (a,e) => throw new InvalidOperationException("error during scraping", e)).Wait();
             return app;
         }
     }

@@ -21,6 +21,7 @@ using Common.Logging;
 using JetBrains.Annotations;
 using Microsoft.Practices.EnterpriseLibrary.SemanticLogging.Formatters;
 using SendGrid.Helpers.Mail;
+using static System.FormattableString;
 
 namespace Common.Util
 {
@@ -59,7 +60,13 @@ namespace Common.Util
         {
             if (instance == null) throw new ArgumentNullException(nameof(instance));
 
-            return (T)instance.GetType().GetProperty(propName, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(instance, null);
+            var propertyInfo = instance.GetType().GetProperty(propName, BindingFlags.Instance | BindingFlags.NonPublic);
+            if (propertyInfo == null)
+            {
+                throw new InvalidOperationException(Invariant($"Non-public instance property '{propName}' does not exist in type {instance.GetType()}"));    
+            }
+
+            return (T) propertyInfo.GetValue(instance, null);
         }
 
         public static string CleanString(string text, HashSet<char> disallowedChars)
@@ -75,8 +82,7 @@ namespace Common.Util
                 throw new ArgumentNullException(nameof(dictionary));
             }
 
-            TValue ret;
-            if (!dictionary.TryGetValue(key, out ret))
+            if (!dictionary.TryGetValue(key, out TValue ret))
             {
                 ret = new TValue();
                 dictionary[key] = ret;
@@ -260,18 +266,16 @@ namespace Common.Util
 
         public static int GetOptionalValueFromConfig(string key, int defaultValue)
         {
-            int val;
-            return Int32.TryParse(GetValueFromConfig(key), out val)
+            return Int32.TryParse(GetValueFromConfig(key), out int val)
                 ? val
                 : defaultValue;
         }
 
         public static bool GetOptionalValueFromConfig(string key, bool defaultValue)
         {
-            bool val;
-            return Boolean.TryParse(GetValueFromConfig(key), out val)
-                ? val
-                : defaultValue;
+            return Boolean.TryParse(GetValueFromConfig(key), out bool val)
+    ? val
+    : defaultValue;
         }
 
         public static string GetMandatoryValueFromConfig(string key)

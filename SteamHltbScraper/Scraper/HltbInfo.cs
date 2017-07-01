@@ -4,15 +4,15 @@ namespace SteamHltbScraper.Scraper
 {
     public class HltbInfo
     {
-        public string Name { get; private set; }
+        public string Name { get; }
 
-        public int MainTtb { get; private set; }
+        public int MainTtb { get; }
 
-        public int ExtrasTtb { get; private set; }
+        public int ExtrasTtb { get; }
 
-        public int CompletionistTtb { get; private set; }
+        public int CompletionistTtb { get; }
 
-        public DateTime ReleaseDate { get; private set; }
+        public DateTime ReleaseDate { get; }
 
         public HltbInfo(string name, int mainTtb, int extrasTtb, int completionistTtb, DateTime releaseDate)
         {
