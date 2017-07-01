@@ -82,6 +82,7 @@ namespace SteamHltbScraper.Imputation
             }
         }
 
+        // makes sure non-imputed values are ordered correctly (main <= extras <= completionist)
         internal static void Sanitize(IReadOnlyList<AppEntity> allApps)
         {
             int invalidTtbCount = 0;
@@ -483,22 +484,22 @@ namespace SteamHltbScraper.Imputation
 
         private static void FixTtbZeroes(TtbRatios ratios, ref int mainTtb, ref int extrasTtb, ref int completionistTtb)
         {
-            //May result in invalid TTBs, so genreally FixInvalidTtbs should be used as well
+            //May result in invalid TTBs, so generally FixInvalidTtbs should be used as well
             if (mainTtb == 0)
             {
                 if (extrasTtb == 0)
                 {
-                    extrasTtb = (int) (completionistTtb*ratios.ExtrasCompletionist);
+                    extrasTtb = CalculateTtbFromRatio(completionistTtb, ratios.ExtrasCompletionist);
                 }
-                mainTtb = (int) (extrasTtb*ratios.MainExtras); //we know that extrasTtb is non-zero now
+                mainTtb = CalculateTtbFromRatio(extrasTtb, ratios.MainExtras); //we know that extrasTtb is non-zero now
             }
             if (extrasTtb == 0)
             {
-                extrasTtb = (int) (mainTtb/ratios.MainExtras); //we know mainTtb is non-zero now
+                extrasTtb = CalculateTtbFromRatio(mainTtb, 1/ratios.MainExtras); //we know mainTtb is non-zero now
             }
             if (completionistTtb == 0)
             {
-                completionistTtb = (int) (extrasTtb/ratios.ExtrasCompletionist); //we know extrasTtb is non-zero now
+                completionistTtb = CalculateTtbFromRatio(extrasTtb, 1/ratios.ExtrasCompletionist); //we know extrasTtb is non-zero now
             }
         }
 
@@ -508,43 +509,98 @@ namespace SteamHltbScraper.Imputation
             int originalImputedExtras = imputedExtras;
             int originalImputedCompletionist = imputedCompletionist;
 
-            if (FixInvalidTtbs(appEntity, ratios, ref imputedMain, ref imputedExtras, ref imputedCompletionist))
+            FixInvalidTtbs(appEntity, ratios, ref imputedMain, ref imputedExtras, ref imputedCompletionist);
+            
+            HltbScraperEventSource.Log.ImputationMiss(
+                appEntity.SteamName, appEntity.SteamAppId, originalImputedMain, originalImputedExtras, originalImputedCompletionist,
+                imputedMain, imputedExtras, imputedCompletionist, appEntity.MainTtbImputed, appEntity.ExtrasTtbImputed,
+                appEntity.CompletionistTtbImputed);
+        }
+
+        private static void FixInvalidTtbs(AppEntity appEntity, TtbRatios ratios, ref int mainTtb, ref int extrasTtb, ref int completionistTtb)
+        {
+            //recall that Sanitize made sure that non-imputed values were ordered correctly (main <= extras <= completionist)
+            if (mainTtb > extrasTtb && extrasTtb > completionistTtb)
             {
-                HltbScraperEventSource.Log.ImputationMiss(
-                    appEntity.SteamName, appEntity.SteamAppId, originalImputedMain, originalImputedExtras, originalImputedCompletionist, 
-                    imputedMain, imputedExtras, imputedCompletionist, appEntity.MainTtbImputed, appEntity.ExtrasTtbImputed, appEntity.CompletionistTtbImputed);
+                if (!appEntity.MainTtbImputed)
+                {
+                    //main is not imputed, which means both extras and completionist must be imputed and therefore fixed
+                    extrasTtb = CalculateTtbFromRatio(mainTtb, 1 / ratios.MainExtras);
+                    completionistTtb = CalculateTtbFromRatio(extrasTtb, 1 / ratios.ExtrasCompletionist);
+                }
+                else if (!appEntity.ExtrasTtbImputed)
+                {
+                    //extras is not imputed, which means both main and completionist must be imputed and therefore fixed
+                    mainTtb = CalculateTtbFromRatio(extrasTtb, ratios.MainExtras);
+                    completionistTtb = CalculateTtbFromRatio(extrasTtb, 1 / ratios.ExtrasCompletionist);
+                }
+                else //!appEntity.CompletionistTtbImputed
+                {
+                    //completionist is not imputed, which means both main and extras must be imputed and therefore fixed
+                    extrasTtb = CalculateTtbFromRatio(completionistTtb, ratios.ExtrasCompletionist);
+                    mainTtb = CalculateTtbFromRatio(extrasTtb, ratios.MainExtras);
+                }
+            }
+            else if (mainTtb > extrasTtb && extrasTtb <= completionistTtb && mainTtb > completionistTtb)
+            {
+                if (appEntity.MainTtbImputed)
+                {
+                    //main is larger than both extras and completionist, therefore needs to be fixed
+                    mainTtb = CalculateTtbFromRatio(extrasTtb, ratios.ExtrasCompletionist);
+                }
+                else
+                {
+                    //main is not imputed and is bigger than both extras and completionist, therefore they must both be imputed and need to be fixed
+                    extrasTtb = CalculateTtbFromRatio(mainTtb, 1 / ratios.MainExtras);
+                    completionistTtb = CalculateTtbFromRatio(extrasTtb, 1 / ratios.ExtrasCompletionist);
+                }
+            }
+            else if (mainTtb > extrasTtb && extrasTtb <= completionistTtb && mainTtb <= completionistTtb)
+            {
+                if (appEntity.MainTtbImputed)
+                {
+                    //main is imputed and extras <= completionist, so we'll just fix main
+                    mainTtb = CalculateTtbFromRatio(extrasTtb, ratios.MainExtras);
+                }
+                else
+                {
+                    //main is not imputed and is larger than extras, meaning extras must be imputed
+                    extrasTtb = (int)(mainTtb + ratios.ExtrasPlacement * (completionistTtb - mainTtb));
+                }
+            }
+            else if (mainTtb <= extrasTtb && extrasTtb > completionistTtb && mainTtb > completionistTtb)
+            {
+                if (appEntity.CompletionistTtbImputed)
+                {
+                    //completionist is imputed and main <= extras, so we'll just fix completionist
+                    completionistTtb = CalculateTtbFromRatio(extrasTtb, 1 / ratios.ExtrasCompletionist);
+                }
+                else
+                {
+                    //completionist is not imputed but both main and extras are larger than it, which means both are imputed and need to be fixed
+                    extrasTtb = CalculateTtbFromRatio(completionistTtb, ratios.ExtrasCompletionist);
+                    mainTtb = CalculateTtbFromRatio(extrasTtb, ratios.MainExtras);
+                }
+            }
+            else // (mainTtb <= extrasTtb && extrasTtb > completionistTtb && mainTtb <= completionistTtb)
+            {
+                if (appEntity.CompletionistTtbImputed)
+                {
+                    //completionist is imputed and main <= extras, so we'll just fix completionist
+                    completionistTtb = CalculateTtbFromRatio(extrasTtb, 1 / ratios.ExtrasCompletionist);
+                }
+                else
+                {
+                    //completionist is not imputed and smaller than extras, therefore extras must be fixed
+                    extrasTtb = (int)(mainTtb + ratios.ExtrasPlacement * (completionistTtb - mainTtb));
+                }
             }
         }
 
-        private static bool FixInvalidTtbs(AppEntity appEntity, TtbRatios ratios, ref int mainTtb, ref int extrasTtb, ref int completionistTtb)
+        private static int CalculateTtbFromRatio(int referenceTtb, double ratio)
         {
-            bool imputationMiss = false;
-            if (mainTtb > extrasTtb)
-            {
-                imputationMiss = true;
-                if (appEntity.MainTtbImputed) //main imputed (possibly extras as well)
-                {
-                    mainTtb = (int) (extrasTtb*ratios.MainExtras);
-                }
-                else //extras imputed (main not imputed)
-                {
-                    extrasTtb = (int) (mainTtb/ratios.MainExtras);
-                }
-            }
-            if (extrasTtb > completionistTtb)
-            {
-                imputationMiss = true;
-                if (appEntity.CompletionistTtbImputed) //completionist imputed (possibly extras as well)
-                {
-                    completionistTtb = (int) (extrasTtb/ratios.ExtrasCompletionist);
-                }
-                else
-                //extras imputed (completionist not imputed) - we'll use the extras placement to avoid reducing extras below main
-                {
-                    extrasTtb = (int) (mainTtb + ratios.ExtrasPlacement*(completionistTtb - mainTtb));
-                }
-            }
-            return imputationMiss;
+            int calculatedTtb = (int)(referenceTtb * ratio);
+            return calculatedTtb == 0 ? 1 : calculatedTtb;
         }
 
         private static void HandleOverridenTtb(AppEntity appEntity, string ttbType, int currentTtb, bool ttbImputed, ref int imputed)
