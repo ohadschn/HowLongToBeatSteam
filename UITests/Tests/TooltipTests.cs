@@ -24,7 +24,7 @@ namespace UITests.Tests
                 TooltipHelper.AssertTooltip(driver, By.Id(SiteConstants.MainPlaytimeTitle), "main objectives");
                 TooltipHelper.AssertTooltip(driver, By.Id(SiteConstants.ExtrasPlaytimeTitle), "extra objectives");
                 TooltipHelper.AssertTooltip(driver, By.Id(SiteConstants.CompletionistPlaytimeTitle), "all possible objectives");
-            }, Browsers.Chrome | Browsers.InternetExplorer); //Excluding Firefox (Marionette) Until the following is fixed: https://github.com/SeleniumHQ/selenium/issues/2285
+            });
         }
     }
 }

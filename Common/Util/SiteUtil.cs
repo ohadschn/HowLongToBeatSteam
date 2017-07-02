@@ -8,11 +8,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Runtime.Serialization;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -379,18 +377,16 @@ namespace Common.Util
 
             CommonEventSource.Log.SendSuccessMailStart(description);
 
-            var from = new Email("webjobs@howlongtobeatsteam.com");
-            var to = new Email("contact@howlongtobeatsteam.com");
+            var from = new EmailAddress("webjobs@howlongtobeatsteam.com", "HLTBS webjobs");
+            var to = new EmailAddress("contact@howlongtobeatsteam.com", "HLTBS contact");
             var subject = String.Format(CultureInfo.InvariantCulture, "{0} - Success ({1}) [{2}]",
                     WebJobName, duration, message + (errors.Length == 0 ? String.Empty : " (with session errors)"));
             var text = String.Format(CultureInfo.InvariantCulture, "{1}{0}Run ID: {2}{0}Start time: {3}{0}End time:{4}{0}Output log file: {5}{6}",
                 Environment.NewLine, GetTriggeredRunUrl(), WebJobRunId, DateTime.UtcNow - duration, DateTime.UtcNow, GetTriggeredLogUrl(),
                 errors.Length == 0 ? String.Empty : String.Format("{0}Session Errors:{0}{1}", Environment.NewLine, errorsText));
-            var content = new Content("text/plain", text);
-            var mail = new Mail(from, subject, to, content);
+            var mail = MailHelper.CreateSingleEmail(from, to, subject, text, null);
 
-            using (var response = await SendGridClient.PostAsync<string>("https://api.sendgrid.com/v3/mail/send", 
-                () => new StringContent(mail.Get(), Encoding.UTF8, "application/json")).ConfigureAwait(false))
+            using (var response = await SendGridClient.PostAsJsonAsync<SendGridMessage, string>("https://api.sendgrid.com/v3/mail/send", mail))
             {
                 CommonEventSource.Log.SendSuccessMailStop(
                     description, response.ResponseMessage.StatusCode, response.ResponseMessage.Headers.ToString(), response.Content);
