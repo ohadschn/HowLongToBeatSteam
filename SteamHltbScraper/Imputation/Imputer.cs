@@ -39,7 +39,7 @@ namespace SteamHltbScraper.Imputation
         private static readonly string AzureMlImputeServiceBaseUrl = SiteUtil.GetMandatoryValueFromConfig("AzureMlImputeServiceBaseUrl");
         private static readonly string ApiKey = SiteUtil.GetMandatoryCustomConnectionStringFromConfig("AzureMlImputeApiKey");
         private static readonly int AzureMlImputePollIntervalMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollIntervalMs", 1000);
-        private static readonly int AzureMlImputePollTimeoutMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollTimeoutMs", 300 * 1000);
+        private static readonly int AzureMlImputePollTimeoutMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollTimeoutMs", 600 * 1000);
 
         private static readonly HashSet<string> KnownMissingGenres = 
             new HashSet<string>(SiteUtil.GetOptionalValueFromConfig("KnownMissingGenres", "Racing (dlcs/mods)").Split(',').Select(g => g.Trim()));
