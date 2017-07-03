@@ -87,6 +87,7 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Properties\PublishProfiles\howlongtobeatsteam - Web Deploy.pubxml" />
     <None Include="Properties\webjob-publish-settings.json" />
     <None Include="_EventRegisterUsersGuide.docx" />
   </ItemGroup>
