@@ -89,6 +89,9 @@
     </None>
     <None Include="Properties\PublishProfiles\howlongtobeatsteam - Web Deploy.pubxml" />
     <None Include="Properties\webjob-publish-settings.json" />
+    <None Include="settings.job">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="_EventRegisterUsersGuide.docx" />
   </ItemGroup>
   <ItemGroup>

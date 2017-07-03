@@ -1,9 +1,5 @@
 ﻿{
   "$schema": "http://schemastore.org/schemas/json/webjob-publish-settings.json",
   "webJobName": "UnknownUpdater",
-  "startTime": "2015-07-02T05:00:00+02:00",
-  "endTime": "9999-07-02T05:00:00+02:00",
-  "jobRecurrenceFrequency": "Week",
-  "interval": 1,
-  "runMode": "Scheduled"
+  "runMode": "OnDemand"
 }
