@@ -6,6 +6,19 @@
 
 "use strict"; // jshint ignore:line
 
+// https://stackoverflow.com/questions/610406/javascript-equivalent-to-printf-string-format
+// ReSharper disable once NativeTypePrototypeExtending
+if (!String.prototype.format) {
+    String.prototype.format = function () {
+        var args = arguments;
+        return this.replace(/{(\d+)}/g, function (match, number) {
+            return typeof args[number] != "undefined"
+                    ? args[number]
+                    : match;
+        });
+    };
+}
+
 var getOwnProperties = function(object) {
     var propArr = [];
     for (var prop in object) {
@@ -447,20 +460,11 @@ function AppViewModel() {
         appInsights.trackEvent("SurvivalCalculated", { gender: self.userGender() }, { birthYear: self.userBirthYear() });
 
         self.calculatingSurvival(true);
-        $.ajax({
-            url: "https://life-left.p.mashape.com/time-left?birth=" + self.userBirthYear() + "&gender=" + self.userGender().toLowerCase(),
-            type: "GET",
-            headers: { "X-Mashape-Authorization": "UTVc9f6A67mshqzNpSyJqUccAIffp1JrXFYjsn85w9cWnElfhy" }
-        }).done(function (data) {
-
-            if (!data.success) {
-                appInsights.trackException(data.error);
-                self.survivalCalculationError(true);
-                return;
-            }
-            
+        $.get("http://api.population.io:80/1.0/life-expectancy/remaining/{0}/{1}/{2}/{3}y"
+            .format(self.userGender().toLowerCase(), "World", new Date().toISOString().substring(0, 10), new Date().getFullYear() - self.userBirthYear()))
+        .done(function (data) {
             self.survivalCalculationError(false);
-            self.timeOfDeath(getTimeFromNow(data.data.hoursLeft));
+            self.timeOfDeath(getTimeFromNow(countdown(null, { years: data.remaining_life_expectancy }).hours));
 
             var playstyleRemainingMinutes = (self.userPlayStyle() === PlaytimeType.Completionist) ? self.total().completionistRemaining :
                 ((self.userPlayStyle() === PlaytimeType.Extras) ? self.total().extrasRemaining : self.total().mainRemaining);

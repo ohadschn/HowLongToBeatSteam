@@ -247,7 +247,6 @@
     <Content Include="Scripts\app.min.js">
       <DependentUpon>app.js</DependentUpon>
     </Content>
-    <Content Include="Scripts\countdown.min.js" />
     <Content Include="Scripts\responsive.js" />
     <Content Include="Scripts\responsive.min.js">
       <DependentUpon>responsive.js</DependentUpon>
