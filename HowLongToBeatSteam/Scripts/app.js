@@ -460,11 +460,11 @@ function AppViewModel() {
         appInsights.trackEvent("SurvivalCalculated", { gender: self.userGender() }, { birthYear: self.userBirthYear() });
 
         self.calculatingSurvival(true);
-        $.get("http://api.population.io:80/1.0/life-expectancy/remaining/{0}/{1}/{2}/{3}y"
-            .format(self.userGender().toLowerCase(), "World", new Date().toISOString().substring(0, 10), new Date().getFullYear() - self.userBirthYear()))
+        $.get("api/survival/life-expectancy/remaining/{0}/{1}/{2}"
+            .format("World", self.userGender(), new Date().getFullYear() - self.userBirthYear()))
         .done(function (data) {
             self.survivalCalculationError(false);
-            self.timeOfDeath(getTimeFromNow(countdown(null, { years: data.remaining_life_expectancy }).hours));
+            self.timeOfDeath(getTimeFromNow(countdown(null, { years: data.RemainingYears }).hours));
 
             var playstyleRemainingMinutes = (self.userPlayStyle() === PlaytimeType.Completionist) ? self.total().completionistRemaining :
                 ((self.userPlayStyle() === PlaytimeType.Extras) ? self.total().extrasRemaining : self.total().mainRemaining);

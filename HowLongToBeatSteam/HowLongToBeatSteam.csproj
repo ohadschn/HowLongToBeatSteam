@@ -269,13 +269,16 @@
     <Compile Include="Controllers\GamesController.cs" />
     <Compile Include="Controllers\Responses\OwnedGamesResponse.cs" />
     <Compile Include="Controllers\Responses\PlayerSummariesResponse.cs" />
+    <Compile Include="Controllers\Responses\RemainingLifeExpectancyResponse.cs" />
     <Compile Include="Controllers\Responses\VanityUrlResolutionResponse.cs" />
+    <Compile Include="Controllers\SurvivalController.cs" />
     <Compile Include="Filters\CsrfFilter.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Logging\AppInsightsExceptionLogger.cs" />
+    <Compile Include="Models\LifeExpectancy.cs" />
     <Compile Include="Models\PlayerInfo.cs" />
     <Compile Include="Models\HltbInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
