@@ -143,8 +143,7 @@ namespace HowLongToBeatSteam.Controllers
 
             foreach (var game in ownedGames)
             {
-                SteamAppData cachedGameData;
-                var inCache = Cache.TryGetValue(game.appid, out cachedGameData);
+                var inCache = Cache.TryGetValue(game.appid, out SteamAppData cachedGameData);
                 if (!inCache)
                 {
                     SiteEventSource.Log.SkipNonCachedApp(game.appid, game.name);
@@ -225,8 +224,7 @@ namespace HowLongToBeatSteam.Controllers
                     throw new HttpResponseException(HttpStatusCode.BadRequest);
                 }
 
-                long steam64Id;
-                if (!Int64.TryParse(vanityUrlResolutionResponse.Content.response.steamid, out steam64Id))
+                if (!Int64.TryParse(vanityUrlResolutionResponse.Content.response.steamid, out long steam64Id))
                 {
                     SiteEventSource.Log.VanityUrlResolutionInvalidResponse(userVanityUrlName, VanityUrlResolutionInvalidResponseType.SteamIdIsNotAnInt64);
                     throw new HttpResponseException(HttpStatusCode.BadRequest);
