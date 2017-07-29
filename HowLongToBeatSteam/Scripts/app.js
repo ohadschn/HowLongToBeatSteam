@@ -464,7 +464,7 @@ function AppViewModel() {
             .format("World", self.userGender(), new Date().getFullYear() - self.userBirthYear()))
         .done(function (data) {
             self.survivalCalculationError(false);
-            self.timeOfDeath(getTimeFromNow(countdown(null, { years: data.RemainingYears }).hours));
+            self.timeOfDeath(getTimeFromNow(data.RemainingHours));
 
             var playstyleRemainingMinutes = (self.userPlayStyle() === PlaytimeType.Completionist) ? self.total().completionistRemaining :
                 ((self.userPlayStyle() === PlaytimeType.Extras) ? self.total().extrasRemaining : self.total().mainRemaining);

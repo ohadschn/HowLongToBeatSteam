@@ -6,11 +6,11 @@ namespace HowLongToBeatSteam.Models
     public sealed class LifeExpectancy
     {
         [DataMember]
-        public float RemainingYears { get; private set; }
+        public double RemainingHours { get; private set; }
 
-        public LifeExpectancy(float remainingYears)
+        public LifeExpectancy(double remainingHours)
         {
-            RemainingYears = remainingYears;
+            RemainingHours = remainingHours;
         }
     }
 }

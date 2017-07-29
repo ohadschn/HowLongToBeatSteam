@@ -101,6 +101,7 @@
     <Compile Include="Scraping\ScrapingTests.cs" />
     <Compile Include="Steam\SteamTests.cs" />
     <Compile Include="Storage\StorageTests.cs" />
+    <Compile Include="Util\UtilTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\PrepareWebJobFolder.bat">

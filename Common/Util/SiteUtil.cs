@@ -54,6 +54,14 @@ namespace Common.Util
             return Regex.Replace(text, @"[^\p{L}\p{N}]", " ", RegexOptions.Compiled);
         }
 
+        public static DateTime AddYears(this DateTime dateTime, double years)
+        {
+            int roundedYears = (int) Math.Floor(years);
+            var roundedDate = dateTime.AddYears(roundedYears);
+            var lastYearSpan = roundedDate.AddYears(1) - roundedDate;
+            return roundedDate.AddDays((years % 1) * lastYearSpan.TotalDays);
+        }
+
         public static T GetNonpublicInstancePropertyValue<T>([NotNull] object instance, string propName)
         {
             if (instance == null) throw new ArgumentNullException(nameof(instance));

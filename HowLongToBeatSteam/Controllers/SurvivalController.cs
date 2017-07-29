@@ -11,8 +11,7 @@ namespace HowLongToBeatSteam.Controllers
     public enum Gender
     {
         Male,
-        Female,
-        Unisex
+        Female
     }
 
     [RoutePrefix("api/survival")]
@@ -23,12 +22,14 @@ namespace HowLongToBeatSteam.Controllers
         [Route("life-expectancy/remaining/{country}/{gender}/{age:range(0,200)}")]
         public async Task<LifeExpectancy> GetRemainingLifeExpectancy(string country, Gender gender, int age)
         {
-            var iso8601Date = DateTime.UtcNow.ToString("yyyy-MM-dd");
+            var now = DateTime.UtcNow;
+            var iso8601Date = now.ToString("yyyy-MM-dd");
             var sex = gender.ToString().ToLowerInvariant();
             using (var respone = await Client.GetAsync<RemainingLifeExpectancyResponse>(
                 Invariant($"http://api.population.io:80/1.0/life-expectancy/remaining/{sex}/{country}/{iso8601Date}/{age}y")))
             {
-                return new LifeExpectancy(respone.Content.remaining_life_expectancy);
+                var remainingHours = now.AddYears(respone.Content.remaining_life_expectancy) - now;
+                return new LifeExpectancy(remainingHours.TotalHours);
             }
         }
     }
