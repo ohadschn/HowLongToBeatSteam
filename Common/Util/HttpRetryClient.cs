@@ -182,7 +182,7 @@ namespace Common.Util
                     //HttpClient throws TaskCanceledException when a request times out (bug in HttpClient)
                     //Since we only want to cancel the entire operation if our CT has been signaled, we identify this case
                     //and convert it to the correct (HTTP) exception - otherwise ExecuteAsync will assume we want to cancel everything
-                    throw new HttpRequestException("Request timed out", e);
+                    throw new HttpRequestException(Invariant($"Request to '{uri}' timed out"), e);
                 }
                 CommonEventSource.Log.SendHttpRequestStop(uri, attempt, m_retries + 1);
 
@@ -192,7 +192,7 @@ namespace Common.Util
                 }
                 catch (HttpRequestException e)
                 {
-                    throw new HttpRequestException(Invariant($"HTTP request failed on attempt #{attempt} / {m_retries + 1}"), e);
+                    throw new HttpRequestException(Invariant($"HTTP request to '{uri}' failed on attempt #{attempt} / {m_retries + 1}"), e);
                 }
 
                 object content;
