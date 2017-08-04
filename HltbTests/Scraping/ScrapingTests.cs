@@ -107,6 +107,12 @@ namespace HltbTests.Scraping
         }
 
         [TestMethod]
+        public void TestMonthYearDate()
+        {
+            TestScraping("Wizard of Legend", 2017, false, false, false);
+        }
+
+        [TestMethod]
         public void TestSinglePlayerUnifiedStatRange()
         {
             TestScraping("The Walking Dead: Season 2", 2013, true, true, false);

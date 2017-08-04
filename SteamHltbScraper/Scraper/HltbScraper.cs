@@ -35,6 +35,9 @@ namespace SteamHltbScraper.Scraper
         private static readonly HashSet<int> NoTtbGames =
             new HashSet<int>(SiteUtil.GetOptionalValueFromConfig("NoTtbGames", "27859,27913,32770,42334").Split(',').Select(Int32.Parse));
 
+        private static readonly HashSet<int> MalformedDateGames = 
+            new HashSet<int>(SiteUtil.GetOptionalValueFromConfig("MalformedDateGames", "26294").Split(',').Select(Int32.Parse));
+
         private static HttpRetryClient s_client;
 
         private static void Main()
@@ -236,6 +239,11 @@ namespace SteamHltbScraper.Scraper
                 return ret;
             }
 
+            if (MalformedDateGames.Contains(hltbId))
+            {
+                return AppEntity.UnknownDate;
+            }
+
             throw GetFormatException(Invariant($"Could not parse release date: {releaseDate}"), hltbId, doc);
         }
 
@@ -256,6 +264,7 @@ namespace SteamHltbScraper.Scraper
                 .Select(n => Regex.Match(n.InnerText.Trim(), "^[A-Z]{2}: (.*)$"))
                 .Where(m => m.Groups.Count == 2)
                 .Select(m => ParseReleaseDate(m.Groups[1].Value, hltbId, doc))
+                .Where(d => d > AppEntity.UnknownDate) //discard known malformed dates
                 .ToArray();
 
             return (potentialDates.Length == 0) ? AppEntity.UnknownDate : potentialDates.Min();
