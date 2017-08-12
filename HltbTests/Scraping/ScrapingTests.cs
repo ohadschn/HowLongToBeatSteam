@@ -25,6 +25,12 @@ namespace HltbTests.Scraping
         }
 
         [TestMethod]
+        public void TestNoStats()
+        {
+            TestScraping("Music Inside: A VR Rhythm Game", 2016, false, false, false);
+        }
+
+        [TestMethod]
         public void TestFullStats()
         {
             TestScraping("Portal", 2007, true, true, true);

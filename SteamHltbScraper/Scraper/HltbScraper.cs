@@ -421,7 +421,7 @@ namespace SteamHltbScraper.Scraper
             }
 
             int resultCount;
-            var match = Regex.Match(searchResultsTitle.InnerText, "We Found (.*) Game");
+            var match = Regex.Match(searchResultsTitle.InnerText, "We Found (.*?) Game");
             if (!match.Success || !Int32.TryParse(match.Groups[1].Value, out resultCount))
             {
                 throw GetFormatException("Unexpected search results title format: " + searchResultsTitle.InnerText, appName, doc);
