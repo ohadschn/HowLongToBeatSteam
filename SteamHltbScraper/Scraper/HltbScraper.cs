@@ -395,22 +395,22 @@ namespace SteamHltbScraper.Scraper
             HltbScraperEventSource.Log.ScrapeHltbIdStart(appName);
 
             var doc = await GetHltbSearchResults(appName).ConfigureAwait(false);
-            var firstResultAnchor = doc.DocumentNode.Descendants("a").FirstOrDefault();
 
-            if (firstResultAnchor == null)
+            if (!ResultsFound(doc))
             {
                 var letterNumberStrippedName = SiteUtil.ReplaceNonLettersAndNumbersWithSpaces(appName);
-                if (letterNumberStrippedName != appName && !String.IsNullOrWhiteSpace(letterNumberStrippedName))
-                {
-                    HltbScraperEventSource.Log.SearchingForLetterNumberStrippedName(appName, letterNumberStrippedName);
-                    doc = await GetHltbSearchResults(letterNumberStrippedName).ConfigureAwait(false);
-                    firstResultAnchor = doc.DocumentNode.Descendants("a").FirstOrDefault(); 
-                }
-
-                if (firstResultAnchor == null)
+                if (letterNumberStrippedName == appName || String.IsNullOrWhiteSpace(letterNumberStrippedName))
                 {
                     HltbScraperEventSource.Log.GameNotFoundInSearch(appName);
-                    return -1;   
+                    return -1;
+                }
+
+                HltbScraperEventSource.Log.SearchingForLetterNumberStrippedName(appName, letterNumberStrippedName);
+                doc = await GetHltbSearchResults(letterNumberStrippedName).ConfigureAwait(false);
+                if (!ResultsFound(doc))
+                {
+                    HltbScraperEventSource.Log.GameNotFoundInSearch(appName);
+                    return -1;
                 }
             }
 
@@ -434,10 +434,10 @@ namespace SteamHltbScraper.Scraper
                 return -1;
             }
 
-            var link = firstResultAnchor.GetAttributeValue("href", null);
+            var link = doc.DocumentNode.Descendants("a").FirstOrDefault()?.GetAttributeValue("href", null);
             if (link == null)
             {
-                throw GetFormatException("App anchor does not include href attribute", appName, doc);
+                throw GetFormatException("Could not find app anchor, or it does not include an href attribute", appName, doc);
             }
 
             var idStr = link.Substring(12);
@@ -449,6 +449,11 @@ namespace SteamHltbScraper.Scraper
 
             HltbScraperEventSource.Log.ScrapeHltbIdStop(appName, hltbId);
             return hltbId;
+        }
+
+        private static bool ResultsFound(HtmlDocument doc)
+        {
+            return !doc.DocumentNode.InnerText.StartsWith("No results for", StringComparison.OrdinalIgnoreCase);
         }
 
         private static async Task<HtmlDocument> GetHltbSearchResults(string appName)

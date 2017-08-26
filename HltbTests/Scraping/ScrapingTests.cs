@@ -43,6 +43,13 @@ namespace HltbTests.Scraping
         }
 
         [TestMethod]
+        public void TestAtSymbolInTitle()
+        {
+            var app = ScrapeApp("Tales of Berseria™ - Idolm@ster Costumes Set");
+            AppAssertAreEqual(app, -1, app.HltbId, "expected no HLTB ID due to no search results");
+        }
+
+        [TestMethod]
         public async Task TestEndlessTitle()
         {
             //delete existing suggestions for game - the Steam app ID will be 0
