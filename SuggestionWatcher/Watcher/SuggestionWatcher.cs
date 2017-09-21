@@ -36,8 +36,8 @@ namespace SuggestionWatcher.Watcher
 
             await Task.WhenAll(suggestionsTask, processedSuggestionsTask).ConfigureAwait(false);
 
-            var allProcessedSuggestionsS = new HashSet<ProcessedSuggestionEntity>(processedSuggestionsTask.Result);
-            var unprocessedSuggestions = suggestionsTask.Result.Where(s => !allProcessedSuggestionsS.Contains(new ProcessedSuggestionEntity(s))).ToArray();
+            var allProcessedSuggestions = new HashSet<ProcessedSuggestionEntity>(processedSuggestionsTask.Result);
+            var unprocessedSuggestions = suggestionsTask.Result.Where(s => !allProcessedSuggestions.Contains(new ProcessedSuggestionEntity(s))).ToArray();
 
             var pendingSuggestionsCount = unprocessedSuggestions.Length;
 

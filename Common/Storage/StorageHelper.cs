@@ -367,6 +367,17 @@ namespace Common.Storage
             CommonEventSource.Log.AcceptSuggestionStop(suggestion.SteamAppId, suggestion.HltbId);
         }
 
+        public static async Task UpdateProcessedSuggestions([NotNull] ProcessedSuggestionEntity processedSuggestion, int retries = -1)
+        {
+            if (processedSuggestion == null) throw new ArgumentNullException(nameof(processedSuggestion));
+
+            var table = await GetTable(SteamToHltbTableName, retries).ConfigureAwait(false);
+
+            CommonEventSource.Log.UpdateProcessedSuggestionStart(processedSuggestion.SteamAppId, processedSuggestion.HltbId);
+            await table.ExecuteAsync(TableOperation.InsertOrReplace(processedSuggestion));
+            CommonEventSource.Log.UpdateProcessedSuggestionStop(processedSuggestion.SteamAppId, processedSuggestion.HltbId);
+        }
+
         private static IEnumerable<TableBatchOperationInfo> SplitToBatchOperations<T>(
             IEnumerable<T> entities, Func<T, TableOperation[]> operationGenerator)
             where T: ITableEntity

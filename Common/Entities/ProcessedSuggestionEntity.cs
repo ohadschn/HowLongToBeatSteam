@@ -7,15 +7,16 @@ using static System.FormattableString;
 
 namespace Common.Entities
 {
+    /// <inheritdoc cref="TableEntity" />
     /// <summary>
     /// Existence of this record for some HltbId/SteamId/AppType suggestion indicates that the suggestion has been processed
     /// </summary>
     public sealed class ProcessedSuggestionEntity : TableEntity, IEquatable<ProcessedSuggestionEntity>
     {
         public const string ProcessedSuggestionPrefix = "ProcessedSuggestion";
-        public int SteamAppId { get; }
-        public int HltbId { get;  }
-        public string AppType { get; }
+        public int SteamAppId { get; set; }
+        public int HltbId { get; set; }
+        public string AppType { get; set; }
 
         public ProcessedSuggestionEntity() //required by azure storage client library
         {
@@ -70,17 +71,18 @@ namespace Common.Entities
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            var a = obj as ProcessedSuggestionEntity;
-            return a != null && Equals(a);
+            return obj is ProcessedSuggestionEntity other && Equals(other);
         }
 
         public override int GetHashCode()
         {
             unchecked
             {
+                // ReSharper disable NonReadonlyMemberInGetHashCode
                 var hashCode = SteamAppId;
                 hashCode = (hashCode * 397) ^ HltbId;
                 hashCode = (hashCode * 397) ^ (AppType?.GetHashCode() ?? 0);
+                // ReSharper restore NonReadonlyMemberInGetHashCode
                 return hashCode;
             }
         }

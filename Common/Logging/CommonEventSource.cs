@@ -42,6 +42,7 @@ namespace Common.Logging
             public const EventTask InsertSuggestion = (EventTask)8;
             public const EventTask DeleteSuggestion = (EventTask) 9;
             public const EventTask AcceptSuggestion = (EventTask) 10;
+            public const EventTask UpdateProcessedSuggestion = (EventTask)1000;
             public const EventTask SendSuccessMail = (EventTask)11;
             public const EventTask RunProcess = (EventTask)12;
             public const EventTask DeleteOldEntities = (EventTask)13;
@@ -512,6 +513,30 @@ namespace Common.Logging
         public void AcceptSuggestionStop(int steamAppId, int hltbId)
         {
             WriteEvent(23, steamAppId, hltbId);
+        }
+
+        [Event(
+            220,
+            Message = "Start updating processed suggestion for Steam ID: {0} HLTB ID: {1}",
+            Keywords = Keywords.TableStorage,
+            Level = EventLevel.Informational,
+            Task = Tasks.UpdateProcessedSuggestion,
+            Opcode = EventOpcode.Start)]
+        public void UpdateProcessedSuggestionStart(int steamAppId, int hltbId)
+        {
+            WriteEvent(220, steamAppId, hltbId);
+        }
+
+        [Event(
+            230,
+            Message = "Finished updating processed suggestion for Steam ID: {0} HLTB ID: {1}",
+            Keywords = Keywords.TableStorage,
+            Level = EventLevel.Informational,
+            Task = Tasks.UpdateProcessedSuggestion,
+            Opcode = EventOpcode.Stop)]
+        public void UpdateProcessedSuggestionStop(int steamAppId, int hltbId)
+        {
+            WriteEvent(230, steamAppId, hltbId);
         }
 
         [Event(

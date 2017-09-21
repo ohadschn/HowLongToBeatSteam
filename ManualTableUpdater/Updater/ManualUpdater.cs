@@ -131,6 +131,7 @@ namespace ManualTableUpdater.Updater
 
             try
             {
+                //RebuildProcessedSuggestions();
                 //ProcessIDarbSuggestions();
                 //ProcessIDarbApps();
                 //PrintGenres();
@@ -140,7 +141,7 @@ namespace ManualTableUpdater.Updater
                 //DeleteInvalidSuggestions();
                 //InsertManualSuggestions();
                 //DeleteUnknowns();
-                ForceUpdateAppHltbId(246680, 27619);
+                //ForceUpdateAppHltbId(246680, 27619);
                 //ForceUpdateAppHltbId(346810, 29325);
                 //ForceUpdateAppHltbId(266310, 27913);
                 //SendMail();
@@ -151,6 +152,21 @@ namespace ManualTableUpdater.Updater
             finally
             {
                 EventSourceRegistrar.DisposeEventListeners();
+            }
+        }
+
+        private static void RebuildProcessedSuggestions()
+        {
+            var allProcessedSuggestions = StorageHelper.GetAllProcessedSuggestions().Result;
+            foreach (var processedSuggestion in allProcessedSuggestions.Where(ps => ps.SteamAppId == 0))
+            {
+                Console.Write($"Restoring processed suggestions: {processedSuggestion} ({processedSuggestion.RowKey})...");
+                var components = processedSuggestion.RowKey.Split('_');
+                processedSuggestion.SteamAppId = Convert.ToInt32(components[1]);
+                processedSuggestion.HltbId = Convert.ToInt32(components[2]);
+                processedSuggestion.AppType = components[3];
+                StorageHelper.UpdateProcessedSuggestions(processedSuggestion).Wait();
+                Console.WriteLine("Done.");
             }
         }
 
