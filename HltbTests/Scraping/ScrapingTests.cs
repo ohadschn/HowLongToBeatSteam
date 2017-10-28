@@ -31,6 +31,12 @@ namespace HltbTests.Scraping
         }
 
         [TestMethod]
+        public void TestGameLiteralInName()
+        {
+            TestScraping("Football Game", AppEntity.UnknownDate.Year, true, true, true, "Tecmo Cup Football Game");
+        }
+
+        [TestMethod]
         public void TestFullStats()
         {
             TestScraping("Portal", 2007, true, true, true);

@@ -280,15 +280,13 @@ namespace SteamHltbScraper.Scraper
 
             var listItems = list.Descendants("li").Take(4).ToArray();
 
-            int mainTtbInitial, extrasTtbInitial, soloTtb, coOp, vs, singlePlayerMain, singlePlayerExtras, dummy;
-
-            bool gotMain = TryGetMinutes(listItems, "main", hltbId, doc, out mainTtbInitial, out dummy);
-            bool gotExtras = TryGetMinutes(listItems, "extras", hltbId, doc, out extrasTtbInitial, out dummy);
+            bool gotMain = TryGetMinutes(listItems, "main", hltbId, doc, out var mainTtbInitial, out var dummy);
+            bool gotExtras = TryGetMinutes(listItems, "extras", hltbId, doc, out var extrasTtbInitial, out dummy);
             bool gotCompletionist = TryGetMinutes(listItems, "completionist", hltbId, doc, out completionistTtb, out dummy);
-            bool gotSolo = TryGetMinutes(listItems, "solo", hltbId, doc, out soloTtb, out dummy);
-            bool gotCoOp = TryGetMinutes(listItems, "co-op", hltbId, doc, out coOp, out dummy);
-            bool gotVs = TryGetMinutes(listItems, "vs", hltbId, doc, out vs, out dummy);
-            bool gotSinglePlayer = TryGetMinutes(listItems, "single", hltbId, doc, out singlePlayerMain, out singlePlayerExtras);
+            bool gotSolo = TryGetMinutes(listItems, "solo", hltbId, doc, out var soloTtb, out dummy);
+            bool gotCoOp = TryGetMinutes(listItems, "co-op", hltbId, doc, out _, out dummy);
+            bool gotVs = TryGetMinutes(listItems, "vs", hltbId, doc, out _, out dummy);
+            bool gotSinglePlayer = TryGetMinutes(listItems, "single", hltbId, doc, out var singlePlayerMain, out var singlePlayerExtras);
 
             if (!gotMain && !gotExtras && !gotCompletionist && !gotSolo && !gotCoOp && !gotVs && !gotSinglePlayer)
             {
@@ -420,9 +418,8 @@ namespace SteamHltbScraper.Scraper
                 throw GetFormatException("Could not find h3 search results title for confidence evaluation", appName, doc);
             }
 
-            int resultCount;
             var match = Regex.Match(searchResultsTitle.InnerText, "We Found (.*?) Game");
-            if (!match.Success || !Int32.TryParse(match.Groups[1].Value, out resultCount))
+            if (!match.Success || !Int32.TryParse(match.Groups[1].Value, out var resultCount))
             {
                 throw GetFormatException("Unexpected search results title format: " + searchResultsTitle.InnerText, appName, doc);
             }
