@@ -141,8 +141,8 @@ namespace ManualTableUpdater.Updater
                 //DeleteInvalidSuggestions();
                 //InsertManualSuggestions();
                 //DeleteUnknowns();
-                //ForceUpdateAppHltbId(246680, 27619);
-                //ForceUpdateAppHltbId(346810, 29325);
+                ForceUpdateAppHltbId(409710, 1065);
+                ForceUpdateAppHltbId(409720, 1066);
                 //ForceUpdateAppHltbId(266310, 27913);
                 //SendMail();
                 //GetEarliestGame();
