@@ -181,7 +181,7 @@ namespace SteamHltbScraper.Scraper
             
             HltbScraperEventSource.Log.GetHltbGamePageStop(gamePageUrl);
 
-            var headerDiv = doc.DocumentNode.Descendants().FirstOrDefault(n => n.GetAttributeValue("class", "").Split(' ').Contains("profile_header"));
+            var headerDiv = doc.DocumentNode.Descendants().FirstOrDefault(n => n.GetClasses().Contains("profile_header"));
             if (headerDiv == null)
             {
                 throw new TransientHltbFaultException("Can't parse name for HLTB ID " + hltbId, doc);
