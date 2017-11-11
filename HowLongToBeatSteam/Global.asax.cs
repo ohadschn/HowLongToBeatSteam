@@ -5,6 +5,7 @@ using Common.Util;
 using HowLongToBeatSteam.Controllers;
 using System.Web.Mvc;
 using System.Web.Routing;
+using HowLongToBeatSteam.Telemetry;
 
 namespace HowLongToBeatSteam
 {
@@ -12,6 +13,7 @@ namespace HowLongToBeatSteam
     {
         protected void Application_Start()
         {
+            TelemetryManager.Setup("d0a63409-84bf-4f88-a8cf-8440ce670471");
             SiteUtil.SetDefaultConnectionLimit();
             GlobalConfiguration.Configure(WebApiConfig.Register);
             GamesController.StartUpdatingCache(); //make sure caching starts as soon as site is up
