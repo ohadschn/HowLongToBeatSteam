@@ -33,7 +33,7 @@ namespace HltbTests.Scraping
         [TestMethod]
         public void TestGameLiteralInName()
         {
-            TestScraping("Football Game", AppEntity.UnknownDate.Year, true, true, true, "Tecmo Cup Football Game");
+            TestScraping("Jurassic Park: The Game", 2011, true, true, true, "Jurassic Park: The Game");
         }
 
         [TestMethod]
