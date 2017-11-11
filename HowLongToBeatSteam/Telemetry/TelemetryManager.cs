@@ -15,9 +15,25 @@ namespace HowLongToBeatSteam.Telemetry
         private const string AdaptiveSamplingType = "Event";
         private const int AdaptiveSamplingMaxItemsPerSecond = 5;
 
+        public static void SetInstrumentationKey(string instrumentationKey)
+        {
+            if (string.IsNullOrWhiteSpace(instrumentationKey)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(instrumentationKey));
+
+            TelemetryConfiguration.Active.InstrumentationKey = instrumentationKey;
+        }
+
+        public static void SetDeveloperMode()
+        {
+            TelemetryConfiguration.Active.TelemetryChannel.DeveloperMode = true;
+        }
+
         public static void Setup(string instrumentationKey)
         {
             SetInstrumentationKey(instrumentationKey);
+
+#if DEBUG
+            SetDeveloperMode();
+#endif
 
             //AddAndInitializeModule<DeveloperModeWithDebuggerAttachedTelemetryModule>(); TODO enable when made public in the SDK
 
@@ -90,22 +106,9 @@ namespace HowLongToBeatSteam.Telemetry
             TelemetryConfiguration.Active.TelemetryInitializers.Add(new SessionTelemetryInitializer());
 
             // ReSharper disable once UseObjectOrCollectionInitializer
-            TelemetryConfiguration.Active.TelemetryChannel = new ServerTelemetryChannel();
-#if DEBUG
-            SetDeveloperMode();
-#endif
-        }
-
-        public static void SetDeveloperMode()
-        {
-            TelemetryConfiguration.Active.TelemetryChannel.DeveloperMode = true;
-        }
-
-        public static void SetInstrumentationKey(string instrumentationKey)
-        {
-            if (string.IsNullOrWhiteSpace(instrumentationKey)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(instrumentationKey));
-
-            TelemetryConfiguration.Active.InstrumentationKey = instrumentationKey;
+            var channel = new ServerTelemetryChannel();
+            channel.Initialize(TelemetryConfiguration.Active);
+            TelemetryConfiguration.Active.TelemetryChannel = channel;
         }
 
         private static T AddAndInitializeModule<T>(Func<T> factory = null)
