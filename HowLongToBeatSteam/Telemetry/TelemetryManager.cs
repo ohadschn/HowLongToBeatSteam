@@ -90,6 +90,7 @@ namespace HowLongToBeatSteam.Telemetry
                 .UseAdaptiveSampling(AdaptiveSamplingMaxItemsPerSecond, excludedTypes: null, includedTypes: AdaptiveSamplingType)
                 .Build();
 
+            TelemetryConfiguration.Active.TelemetryInitializers.Add(new UrlReferrerInitializer());
             TelemetryConfiguration.Active.TelemetryInitializers.Add(new BuildInfoConfigComponentVersionTelemetryInitializer());
             TelemetryConfiguration.Active.TelemetryInitializers.Add(new DeviceTelemetryInitializer());
             TelemetryConfiguration.Active.TelemetryInitializers.Add(new HttpDependenciesParsingTelemetryInitializer());

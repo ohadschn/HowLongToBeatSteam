@@ -282,6 +282,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Logging\SiteEventSource.cs" />
     <Compile Include="Telemetry\TelemetryManager.cs" />
+    <Compile Include="Telemetry\UrlReferrerInitializer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config">
