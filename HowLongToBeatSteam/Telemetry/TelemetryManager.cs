@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.ApplicationInsights.DependencyCollector;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
@@ -15,18 +16,34 @@ namespace HowLongToBeatSteam.Telemetry
         private const string AdaptiveSamplingType = "Event";
         private const int AdaptiveSamplingMaxItemsPerSecond = 5;
 
+        public static void SetInstrumentationKey(string instrumentationKey)
+        {
+            if (string.IsNullOrWhiteSpace(instrumentationKey)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(instrumentationKey));
+
+            TelemetryConfiguration.Active.InstrumentationKey = instrumentationKey;
+        }
+
+        public static void SetDeveloperMode()
+        {
+            TelemetryConfiguration.Active.TelemetryChannel.DeveloperMode = true;
+        }
+
         public static void Setup(string instrumentationKey)
         {
             SetInstrumentationKey(instrumentationKey);
 
+#if DEBUG
+            SetDeveloperMode();
+#endif
+
             //AddAndInitializeModule<DeveloperModeWithDebuggerAttachedTelemetryModule>(); TODO enable when made public in the SDK
 
-            AddAndInitializeModule<UnhandledExceptionTelemetryModule>();
-            AddAndInitializeModule<UnobservedExceptionTelemetryModule>();
-            AddAndInitializeModule<ExceptionTrackingTelemetryModule>();
-            AddAndInitializeModule<AspNetDiagnosticTelemetryModule>();
+            TelemetryModules.Instance.Modules.Add(new UnhandledExceptionTelemetryModule());
+            TelemetryModules.Instance.Modules.Add(new UnobservedExceptionTelemetryModule());
+            TelemetryModules.Instance.Modules.Add(new ExceptionTrackingTelemetryModule());
+            TelemetryModules.Instance.Modules.Add(new AspNetDiagnosticTelemetryModule());
 
-            AddAndInitializeModule(() => new RequestTrackingTelemetryModule
+            TelemetryModules.Instance.Modules.Add(new RequestTrackingTelemetryModule
             {
                 Handlers =
                 {
@@ -42,7 +59,7 @@ namespace HowLongToBeatSteam.Telemetry
                 }
             });
 
-            AddAndInitializeModule(() => new DependencyTrackingTelemetryModule
+            TelemetryModules.Instance.Modules.Add(new DependencyTrackingTelemetryModule
             {
                 ExcludeComponentCorrelationHttpHeadersOnDomains =
                 {
@@ -56,10 +73,13 @@ namespace HowLongToBeatSteam.Telemetry
             });
 
             // for performance counter collection see: http://apmtips.com/blog/2015/10/07/performance-counters-in-non-web-applications/
-            AddAndInitializeModule<PerformanceCollectorModule>();
+            TelemetryModules.Instance.Modules.Add(new PerformanceCollectorModule());
 
             // for more information on QuickPulse see: http://apmtips.com/blog/2017/02/13/enable-application-insights-live-metrics-from-code/ 
-            var quickPulseModule = AddAndInitializeModule<QuickPulseTelemetryModule>();
+            var quickPulseModule = new QuickPulseTelemetryModule();
+            TelemetryModules.Instance.Modules.Add(new QuickPulseTelemetryModule());
+
+            InitializeModules();
 
             TelemetryConfiguration.Active.TelemetryProcessorChainBuilder
                 .Use(next => new AutocollectedMetricsExtractor(next))
@@ -89,32 +109,17 @@ namespace HowLongToBeatSteam.Telemetry
             TelemetryConfiguration.Active.TelemetryInitializers.Add(new AccountIdTelemetryInitializer());
             TelemetryConfiguration.Active.TelemetryInitializers.Add(new SessionTelemetryInitializer());
 
-            // ReSharper disable once UseObjectOrCollectionInitializer
-            TelemetryConfiguration.Active.TelemetryChannel = new ServerTelemetryChannel();
-#if DEBUG
-            SetDeveloperMode();
-#endif
+            var channel = new ServerTelemetryChannel();
+            channel.Initialize(TelemetryConfiguration.Active);
+            TelemetryConfiguration.Active.TelemetryChannel = channel;
         }
 
-        public static void SetDeveloperMode()
+        private static void InitializeModules()
         {
-            TelemetryConfiguration.Active.TelemetryChannel.DeveloperMode = true;
-        }
-
-        public static void SetInstrumentationKey(string instrumentationKey)
-        {
-            if (string.IsNullOrWhiteSpace(instrumentationKey)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(instrumentationKey));
-
-            TelemetryConfiguration.Active.InstrumentationKey = instrumentationKey;
-        }
-
-        private static T AddAndInitializeModule<T>(Func<T> factory = null)
-            where T : ITelemetryModule, new()
-        {
-            var module = (factory != null) ? factory() : new T();
-            module.Initialize(TelemetryConfiguration.Active);
-            TelemetryModules.Instance.Modules.Add(module);
-            return module;
+            foreach (var telemetryModule in TelemetryConfiguration.Active.TelemetryProcessors.OfType<ITelemetryModule>())
+            {
+                telemetryModule.Initialize(TelemetryConfiguration.Active);
+            }
         }
     }
 }
