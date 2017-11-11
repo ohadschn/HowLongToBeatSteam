@@ -1601,6 +1601,8 @@ function AppViewModel() {
 
 $(document).ready(function () {
 
+    $("#copyright-year").text(new Date().getFullYear());
+
     //init palette
     for (var i = 0; i < 50; i++) {
         alternatingPalette.push("#75C7F0", "#97BBCD");

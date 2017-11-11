@@ -16,26 +16,22 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.min.js" crossorigin="anonymous"></script>
     <![endif]-->
     <!-- ReSharper disable All -->
-    <script type="text/javascript">
-    (function (e, t, n, r, i, s, o) {
-        e["GoogleAnalyticsObject"] = i;
-        e[i] = e[i] || function () { (e[i].q = e[i].q || []).push(arguments) }, e[i].l = 1 * new Date;
-        s = t.createElement(n), o = t.getElementsByTagName(n)[0];
-        s.async = 1;
-        s.src = r;
-        o.parentNode.insertBefore(s, o)
-    })(window, document, "script", "//www.google-analytics.com/analytics.js", "ga");
-    ga("create", "UA-58442747-1", "auto");
-    ga("send", "pageview")
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-58442747-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'UA-58442747-1');
     </script>
     <script type="text/javascript">
-        var appInsights = window.appInsights || function (config) {
-            function s(config) { t[config] = function () { var i = arguments; t.queue.push(function () { t[config].apply(t, i) }) } } var t = { config: config }, r = document, f = window, e = "script", o = r.createElement(e), i, u; for (o.src = config.url || "//az416426.vo.msecnd.net/scripts/a/ai.0.js", r.getElementsByTagName(e)[0].parentNode.appendChild(o), t.cookie = r.cookie, t.queue = [], i = ["Event", "Exception", "Metric", "PageView", "Trace"]; i.length;) s("track" + i.pop()); return config.disableExceptionTracking || (i = "onerror", s("_" + i), u = f[i], f[i] = function (config, r, f, e, o) { var s = u && u(config, r, f, e, o); return s !== !0 && t["_" + i](config, r, f, e, o), s }), t
+        var appInsights=window.appInsights||function(config){
+            function i(config){t[config]=function(){var i=arguments;t.queue.push(function(){t[config].apply(t,i)})}}var t={config:config},u=document,e=window,o="script",s="AuthenticatedUserContext",h="start",c="stop",l="Track",a=l+"Event",v=l+"Page",y=u.createElement(o),r,f;y.src=config.url||"https://az416426.vo.msecnd.net/scripts/a/ai.0.js";u.getElementsByTagName(o)[0].parentNode.appendChild(y);try{t.cookie=u.cookie}catch(p){}for(t.queue=[],t.version="1.0",r=["Event","Exception","Metric","PageView","Trace","Dependency"];r.length;)i("track"+r.pop());return i("set"+s),i("clear"+s),i(h+a),i(c+a),i(h+v),i(c+v),i("flush"),config.disableExceptionTracking||(r="onerror",i("_"+r),f=e[r],e[r]=function(config,i,u,e,o){var s=f&&f(config,i,u,e,o);return s!==!0&&t["_"+r](config,i,u,e,o),s}),t
         }({
-            instrumentationKey: "d0a63409-84bf-4f88-a8cf-8440ce670471"
+            instrumentationKey:"d0a63409-84bf-4f88-a8cf-8440ce670471"
         });
-        window.appInsights = appInsights;
-        appInsights.trackPageView();
+        window.appInsights=appInsights;
+        appInsights.trackPageView(null, null, { urlReferrer: document.referrer });
     </script>
     <!-- ReSharper restore All -->
 </head>
@@ -632,7 +628,7 @@
             <a id="steam-link" href="http://steampowered.com" target="_blank">Powered by Steam</a> &
             <a id="hltb-link" href="https://howlongtobeat.com" target="_blank">HowLongToBeat</a>
             <br />
-            All Rights Reserved <a id="ohadsoft-link" href="https://www.ohadsoft.com" target="_blank">Ohad Schneider</a> &copy; 2016
+            All Rights Reserved <a id="ohadsoft-link" href="https://www.ohadsoft.com" target="_blank">Ohad Schneider</a> &copy; <span id="copyright-year">2016</span>
         </div>
         <div class="pull-right" data-bind="template: { name: 'community-template', data: 'footer' }, visible: !extraExtraSmall"></div>
     </div>
