@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.ApplicationInsights.DependencyCollector;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
@@ -72,7 +73,7 @@ namespace HowLongToBeatSteam.Telemetry
             });
 
             // for performance counter collection see: http://apmtips.com/blog/2015/10/07/performance-counters-in-non-web-applications/
-            AddAndInitializeModule<PerformanceCollectorModule>();
+            AddAndInitializeModule(() => new PerformanceCollectorModule {EnableIISExpressPerformanceCounters = true});
 
             // for more information on QuickPulse see: http://apmtips.com/blog/2017/02/13/enable-application-insights-live-metrics-from-code/ 
             var quickPulseModule = AddAndInitializeModule<QuickPulseTelemetryModule>();
@@ -105,6 +106,8 @@ namespace HowLongToBeatSteam.Telemetry
             TelemetryConfiguration.Active.TelemetryInitializers.Add(new AccountIdTelemetryInitializer());
             TelemetryConfiguration.Active.TelemetryInitializers.Add(new SessionTelemetryInitializer());
 
+            InitializeProcessorModules();
+
             // ReSharper disable once UseObjectOrCollectionInitializer
             var channel = new ServerTelemetryChannel();
             channel.Initialize(TelemetryConfiguration.Active);
@@ -118,6 +121,14 @@ namespace HowLongToBeatSteam.Telemetry
             module.Initialize(TelemetryConfiguration.Active);
             TelemetryModules.Instance.Modules.Add(module);
             return module;
+        }
+
+        private static void InitializeProcessorModules()
+        {
+            foreach (var telemetryModule in TelemetryConfiguration.Active.TelemetryProcessors.OfType<ITelemetryModule>())
+            {
+                telemetryModule.Initialize(TelemetryConfiguration.Active);
+            }
         }
     }
 }
