@@ -33,7 +33,7 @@ namespace SteamHltbScraper.Scraper
         private static readonly int ResultCountConfidenceThreshold = SiteUtil.GetOptionalValueFromConfig("ResultCountConfidenceThreshold", 1000);
 
         private static readonly HashSet<int> NoTtbGames =
-            new HashSet<int>(SiteUtil.GetOptionalValueFromConfig("NoTtbGames", "27859,27913,32770,42334").Split(',').Select(Int32.Parse));
+            new HashSet<int>(SiteUtil.GetOptionalValueFromConfig("NoTtbGames", "27859,27913,32770,42334,48414,48415").Split(',').Select(Int32.Parse));
 
         private static readonly HashSet<int> MalformedDateGames = 
             new HashSet<int>(SiteUtil.GetOptionalValueFromConfig("MalformedDateGames", "26294").Split(',').Select(Int32.Parse));
