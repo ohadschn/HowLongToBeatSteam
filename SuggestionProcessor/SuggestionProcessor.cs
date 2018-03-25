@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Common.Entities;
 using Common.Logging;
 using Common.Storage;
+using Common.Util;
 using SteamHltbScraper.Imputation;
 using SteamHltbScraper.Scraper;
 
@@ -16,6 +17,7 @@ namespace SuggestionProcessor
     class SuggestionProcessor
     {
         private const string SteamStoreGamePageTemplate = "http://store.steampowered.com/app/{0}";
+        private static readonly int BatchSize = SiteUtil.GetOptionalValueFromConfig("BatchSize", 50);
         
         static void Main()
         {
@@ -66,8 +68,9 @@ namespace SuggestionProcessor
 
             while (unprocessedSuggestions.Length > 0)
             {
+                Console.WriteLine("Processing first {0} elements...", BatchSize);
                 //In each iteration we consider a single suggestion per Steam ID
-                var distinctSuggestions = unprocessedSuggestions.Distinct(new SuggestionSteamIdComparer()).ToArray();
+                var distinctSuggestions = unprocessedSuggestions.Distinct(new SuggestionSteamIdComparer()).Take(BatchSize).ToArray();
                 await ProcessDistinctSuggestions(distinctSuggestions, allMeasuredAppsMap, allMeasuredAppsMapForImputation);
                 unprocessedSuggestions = unprocessedSuggestions.Except(distinctSuggestions).ToArray();
                 Console.WriteLine("Processing more suggestions (if available)...");
@@ -91,8 +94,7 @@ namespace SuggestionProcessor
                 (a, e) =>
                 {
                     Console.WriteLine("Can't parse HLTB ID {0} suggested for {1} ({2}): {3}", a.HltbId, a.SteamName, a.SteamAppId, e);
-                    SuggestionInfo invalidSuggestion;
-                    bool removed = validSuggestions.TryRemove(a.SteamAppId, out invalidSuggestion);
+                    bool removed = validSuggestions.TryRemove(a.SteamAppId, out var invalidSuggestion);
                     Trace.Assert(removed, "Invalid validSuggestions state");
                     invalidSuggestions.Add(invalidSuggestion);
                 }).ConfigureAwait(false);
@@ -288,6 +290,8 @@ namespace SuggestionProcessor
 
             public int GetHashCode(SuggestionEntity obj)
             {
+                // ReSharper disable once ConstantConditionalAccessQualifier
+                // ReSharper disable once ConstantNullCoalescingCondition
                 return obj?.SteamAppId ?? 0;
             }
         }
