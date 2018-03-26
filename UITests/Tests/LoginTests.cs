@@ -26,7 +26,7 @@ namespace UITests.Tests
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SignInHelper.SignInWithId(driver, UserConstants.SampleSteamId, WaitType.PageLoad);
+                SignInHelper.SignInWithId(driver, UserConstants.SampleSteamId);
                 AssertPersonaDetails(driver, UserConstants.SamplePersonaName, UserConstants.SamplePersonaAvatarUUID);
 
                 Console.WriteLine("Asserting the imputed values notification is displayed...");
@@ -39,7 +39,7 @@ namespace UITests.Tests
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SignInHelper.SignInWithId(driver, UserConstants.SampleSteam64Id.ToString(), WaitType.PageLoad);
+                SignInHelper.SignInWithId(driver, UserConstants.SampleSteam64Id.ToString());
                 AssertPersonaDetails(driver, UserConstants.SamplePersonaName, UserConstants.SamplePersonaAvatarUUID);
 
                 Console.WriteLine("Asserting the imputed values notification is displayed...");
@@ -56,7 +56,7 @@ namespace UITests.Tests
                 string steamPassword = TestUtil.GetCredentialFromManager("OHADSOFT_STEAM_PASSWORD").Password;
                 Assert.IsNotNull(steamPassword, "The OHADSOFT_STEAM_PASSWORD generic credential must be set in the Windows Credential Manager");
 
-                SignInHelper.SignInThroughSteam(driver, UserConstants.HltbsUser, steamPassword, WaitType.PageLoad);
+                SignInHelper.SignInThroughSteam(driver, UserConstants.HltbsUser, steamPassword);
                 AssertPersonaDetails(driver, UserConstants.HltbsPersonaName, UserConstants.HltbsPersonaAvatarUUID);
             });
         }
@@ -86,7 +86,7 @@ namespace UITests.Tests
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SignInHelper.GoToCachedGamesPage(driver, WaitType.PageLoad);
+                SignInHelper.GoToCachedGamesPage(driver);
                 AssertPersonaDetails(driver, String.Empty, UserConstants.SamplePersonaAvatarUUID);
 
                 Console.WriteLine("Asserting the missing HLTB games alert is displayed...");
