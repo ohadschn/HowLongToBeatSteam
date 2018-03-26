@@ -1237,48 +1237,9 @@ function AppViewModel() {
         chartsSizeInvalidated = true;
     };
 
-    var adsenseHtmlTemplate = '<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins id="{id}Internal" class="adsbygoogle{centered}" style="display:block" data-ad-client="ca-pub-6877197967563569" data-ad-slot="{adUnitId}" data-ad-format="{format}"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>';
-    var displayAd = function (divId, adUnitId, format, center) {
-        var adHtml = adsenseHtmlTemplate
-                     .replace("{format}", format).replace("{centered}", center ? " centered" : "").replace("{id}", divId).replace("{adUnitId}", adUnitId);
-        $("#" + divId).html(adHtml);
-    };
-
-    var displayRectangluarAd = function (adUnitId, divId, heightDivId) {
-        var adsenseRectangle = $("#" + divId);
-
-        //we need to set the height so that centering works
-        //we subtract 50 to account for chart axis labels
-        //we make sure that the ad is not too short to be a rectangle ad
-        adsenseRectangle.height(Math.max($("#" + heightDivId).height() - 50, 290));
-
-        //we only set the background now so that we don't see a stripe before this point
-        adsenseRectangle.css("background-color", "#f5f5f5");
-
-        displayAd(divId, adUnitId, "rectangle", true);
-    };
-
-    var adsDisplayed = false;
-    var displayAds = function () {
-        if (adsDisplayed || self.introPage()) { //don't try and display ads if user quickly went back to intro
-            return;
-        }
-
-        displayRectangluarAd("9687661733", "adsense-playtime", "playtimeChart");
-        displayRectangluarAd("3926671738", "adsense-slice", "appTypeChart");
-
-        //we slightly reduce the internal rectangle width so that we can still see the background
-        var adsenseRectangleInternal = $("#adsenseRectangleInternal");
-        adsenseRectangleInternal.width(0.9 * adsenseRectangleInternal.width());
-
-        displayAd("adsenseFooter", "7792126130", "horizontal", false);
-        adsDisplayed = true;
-    };
-
     var scrollEvents = "scroll mousedown DOMMouseScroll mousewheel keyup touchstart";
     var scrollToAlerts = function () {
         if (window.pageYOffset > 0) {
-            displayAds();
             return; //don't override user position
         }
 
@@ -1287,17 +1248,12 @@ function AppViewModel() {
         //scroll viewport
         $viewport.animate({
             scrollTop: $("#alerts").offset().top - 10
-        }, 1500, function() {
-            setTimeout(function() {
-                displayAds();
-            }, 1500);
-        });
+        }, 1500);
 
         //stop scrolling on user interruption
         $viewport.bind(scrollEvents, function (e) {
             if (e.which > 0 || e.type === "mousedown" || e.type === "mousewheel" || e.type === "touchstart") {
                 $viewport.stop().unbind(scrollEvents); // Identify the scroll as a user action, stop the animation, and unbind the event
-                displayAds();
             }
         });
     };

@@ -143,9 +143,6 @@ namespace UITests.Constants
         public const string ExternalPageTitleHeaderId = "external-title";
         public const string ExternalPageCloseButtonId = "close-external-modal";
 
-        public const string AdsensePlaytimeDivId = "adsense-playtime";
-        public const string AdsenseSliceDivId = "adsense-slice";
-
         public const string ValveSteamLoginButtonId = "imageLogin";
         public const string ValveSteamUsername = "steamAccountName";
         public const string ValveSteamPassword = "steamPassword";

@@ -9,21 +9,11 @@ namespace UITests.Helpers
     public enum WaitType
     {
         None,
-        PageLoad,
-        SafeClicking
+        PageLoad
     }
 
     public static class SignInHelper
     {
-        private const int MinAdHeight = 250;
-
-        public static void WaitForSafeClicking(IWebDriver driver)
-        {
-            Console.WriteLine("Waiting for ads to display so that elements below them are not moved and can therefore be clicked reliably...");
-            driver.WaitUntil(d => d.FindElement(By.Id(SiteConstants.AdsensePlaytimeDivId)).Size.Height > MinAdHeight &&
-                                  d.FindElement(By.Id(SiteConstants.AdsenseSliceDivId)).Size.Height > MinAdHeight, "Could not verify ad expansion");
-        }
-
         private static void WaitForLoad(IWebDriver driver, WaitType waitType)
         {
             if (waitType == WaitType.None)
@@ -34,14 +24,9 @@ namespace UITests.Helpers
             Console.WriteLine("Waiting for user page to load...");
             driver.WaitUntilElementIsVisible(By.Id(SiteConstants.PersonaAvatarImgId), "Could not locate persona avatar image");
             Console.WriteLine("User page loaded");
-
-            if (waitType == WaitType.SafeClicking)
-            {
-                WaitForSafeClicking(driver);
-            }
         }
 
-        public static void SignInWithId(IWebDriver driver, string steamId, WaitType waitType = WaitType.SafeClicking)
+        public static void SignInWithId(IWebDriver driver, string steamId, WaitType waitType = WaitType.PageLoad)
         {
             Console.WriteLine($"Navigating to deployment URL: {SiteConstants.LocalDeploymentUrl}...");
             driver.Url = SiteConstants.LocalDeploymentUrl;
@@ -58,7 +43,7 @@ namespace UITests.Helpers
             WaitForLoad(driver, waitType);
         }
 
-        public static void SignInThroughSteam(IWebDriver driver, string steamUser, string steamPassword, WaitType waitType = WaitType.SafeClicking)
+        public static void SignInThroughSteam(IWebDriver driver, string steamUser, string steamPassword, WaitType waitType = WaitType.PageLoad)
         {
             Console.WriteLine($"Navigating to deployment URL: {SiteConstants.LocalDeploymentUrl}...");
             driver.Url = SiteConstants.LocalDeploymentUrl;
@@ -93,7 +78,7 @@ namespace UITests.Helpers
             WaitForLoad(driver, waitType);
         }
 
-        public static void GoToCachedGamesPage(IWebDriver driver, WaitType waitType = WaitType.SafeClicking)
+        public static void GoToCachedGamesPage(IWebDriver driver, WaitType waitType = WaitType.PageLoad)
         {
             Console.WriteLine($"Navigating to cached games page URL: {SiteConstants.CachedGamePage}...");
             driver.Url = SiteConstants.CachedGamePage;
