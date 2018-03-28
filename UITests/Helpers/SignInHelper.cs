@@ -1,6 +1,6 @@
 ﻿using System;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
+using SeleniumExtras.WaitHelpers;
 using UITests.Constants;
 using UITests.Util;
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
+using SeleniumExtras.WaitHelpers;
 using UITests.Constants;
 using UITests.Helpers;
 using UITests.Util;
@@ -34,7 +34,7 @@ namespace UITests.Tests
             AssertPageLink(driver, SiteConstants.FaqAnchorId, SiteConstants.FaqTitle);
         }
 
-        private static void AssertExternalLinks(IWebDriver driver, bool mobile = false, bool cached = false)
+        private static void AssertExternalLinks(IWebDriver driver, bool mobile = false)
         {
             LinkHelper.AssertExternalLink(driver, SiteConstants.CachedGamesPanelId, "HowLongToBeatSteam");
 

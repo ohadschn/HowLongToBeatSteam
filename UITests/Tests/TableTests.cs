@@ -7,6 +7,7 @@ using UITests.Constants;
 using UITests.Helpers;
 using UITests.Util;
 using CollectionAssert = UITests.Util.CollectionAssert;
+using ExpectedConditions = SeleniumExtras.WaitHelpers.ExpectedConditions;
 
 namespace UITests.Tests
 {
@@ -46,7 +47,7 @@ namespace UITests.Tests
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SignInHelper.SignInWithId(driver, UserConstants.HltbsUser, WaitType.PageLoad);
+                SignInHelper.SignInWithId(driver, UserConstants.HltbsUser);
                 AssertHltbsUserTable(TableHelper.ParseGameTable(driver), false);
             });
         }
