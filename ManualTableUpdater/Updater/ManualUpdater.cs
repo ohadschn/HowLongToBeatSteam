@@ -109,7 +109,7 @@ namespace ManualTableUpdater.Updater
     {
         public const string AppDataXml = "AppData.xml";
 
-        static void Main()
+        private static void Main()
         {
             if (StorageHelper.AzureStorageTablesConnectionString.Contains("staging"))
             {

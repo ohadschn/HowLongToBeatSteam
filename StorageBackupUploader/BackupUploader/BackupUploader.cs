@@ -14,7 +14,7 @@ using StorageBackupUploader.Logging;
 
 namespace StorageBackupUploader.BackupUploader
 {
-    class BackupUploader
+    internal class BackupUploader
     {
         private static readonly int LogRetentionDays = SiteUtil.GetOptionalValueFromConfig("LogRetentionDays", 14);
         private static readonly int BackupRetentionDays = SiteUtil.GetOptionalValueFromConfig("BackupRetentionDays", 3000);
@@ -22,7 +22,7 @@ namespace StorageBackupUploader.BackupUploader
         private static readonly string BackupBlobContainerName = SiteUtil.GetOptionalValueFromConfig("BackupBlobContainerName", "storagebackup");
         private static readonly int BackupUploaderStorageRetries = SiteUtil.GetOptionalValueFromConfig("BackupUploaderStorageRetries", 10);
 
-        static void Main()
+        private static void Main()
         {
             EventSource.SetCurrentThreadActivityId(Guid.NewGuid());
             try

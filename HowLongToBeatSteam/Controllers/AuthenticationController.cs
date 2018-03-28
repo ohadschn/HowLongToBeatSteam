@@ -11,7 +11,7 @@ namespace HowLongToBeatSteam.Controllers
 {
     public class AuthenticationController : Controller
     {
-        const string SteamOpenIdProviderIdentifier = "http://steamcommunity.com/openid";
+        private const string SteamOpenIdProviderIdentifier = "http://steamcommunity.com/openid";
 
         private static readonly OpenIdRelyingParty s_relyingParty = new OpenIdRelyingParty(); //thread-safe
 

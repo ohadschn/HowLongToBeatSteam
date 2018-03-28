@@ -14,8 +14,8 @@ namespace UITests.Util
             if (actual == null) throw new ArgumentNullException(nameof(actual));
             if (message == null) throw new ArgumentNullException(nameof(message));
 
-            ICollection<T> expectedCollection = expected as ICollection<T> ?? expected.ToArray();
-            ICollection<T> actualCollection = actual as ICollection<T> ?? actual.ToArray();
+            var expectedCollection = expected as ICollection<T> ?? expected.ToArray();
+            var actualCollection = actual as ICollection<T> ?? actual.ToArray();
 
             Assert.IsTrue(expectedCollection.SequenceEqual(actualCollection),
                 $"{message}. Expected sequence : {expectedCollection.StringJoin()}; Actual sequence: {actualCollection.StringJoin()}");
@@ -27,8 +27,8 @@ namespace UITests.Util
             if (actual == null) throw new ArgumentNullException(nameof(actual));
             if (message == null) throw new ArgumentNullException(nameof(message));
 
-            ISet<T> expectedSet = expected as ISet<T> ?? new HashSet<T>(expected);
-            ISet<T> actualSet = actual as ISet<T> ?? new HashSet<T>(actual);
+            var expectedSet = expected as ISet<T> ?? new HashSet<T>(expected);
+            var actualSet = actual as ISet<T> ?? new HashSet<T>(actual);
 
             Assert.IsTrue(expectedSet.SetEquals(actualSet), $"{message}. Expected set: {expectedSet.StringJoin()}; Actual set: {actualSet.StringJoin()}");
         }
@@ -39,8 +39,8 @@ namespace UITests.Util
             if (second == null) throw new ArgumentNullException(nameof(second));
             if (message == null) throw new ArgumentNullException(nameof(message));
 
-            ISet<T> firstSet = first as ISet<T> ?? new HashSet<T>(first);
-            ISet<T> secondSet = second as ISet<T> ?? new HashSet<T>(second);
+            var firstSet = first as ISet<T> ?? new HashSet<T>(first);
+            var secondSet = second as ISet<T> ?? new HashSet<T>(second);
 
             var intersection = firstSet.Intersect(secondSet).ToArray();
             Assert.AreEqual(0, intersection.Length, $"{message}. Non-empty intersection for set: {firstSet.StringJoin()} and set: {secondSet.StringJoin()} - {intersection.StringJoin()}");

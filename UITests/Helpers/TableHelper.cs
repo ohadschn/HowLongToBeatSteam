@@ -28,7 +28,7 @@ namespace UITests.Helpers
             }
         }
 
-        private static TableGameInfo ParseMobileTableRow(IWebDriver driver, IWebElement gameRow)
+        private static TableGameInfo ParseMobileTableRow(IWebDriver driver, ISearchContext gameRow)
         {
             Console.WriteLine("Parsing mobile game row...");
             bool included = gameRow.FindElement(By.ClassName(SiteConstants.RowIncludedCheckboxClass)).Selected;
@@ -38,13 +38,11 @@ namespace UITests.Helpers
             Console.WriteLine("Waiting for playtime indicator tooltip...");
             TooltipHelper.AssertTooltip(driver, playtimeIndicator, "Current:", true);
 
-            double steamPlaytime, main, extras, completionist;
-            ParseMobilePlaytime(TooltipHelper.GetToolTipText(driver), out steamPlaytime, out main, out extras, out completionist);
-
+            ParseMobilePlaytime(TooltipHelper.GetToolTipText(driver), out var steamPlaytime, out var main, out var extras, out var completionist);
             return new TableGameInfo(included, steamName, false, steamPlaytime, main, extras, completionist, null, false, UpdateState.None);
         }
 
-        private static TableGameInfo ParseDesktopTableRow(IWebElement gameRow)
+        private static TableGameInfo ParseDesktopTableRow(ISearchContext gameRow)
         {
             Console.WriteLine("Parsing desktop game row...");
             bool included = gameRow.FindElement(By.ClassName(SiteConstants.RowIncludedCheckboxClass)).Selected;

@@ -136,10 +136,10 @@ namespace HowLongToBeatSteam.Controllers
             int mainCompleted = 0;
             int extrasCompleted = 0;
             int completionistCompleted = 0;
-            Dictionary<string, int> playtimesByGenre = new Dictionary<string, int>();
-            Dictionary<int, int> playtimesByMetacritic = new Dictionary<int, int>();
-            Dictionary<string, int> playtimesByAppType = new Dictionary<string, int>();
-            Dictionary<int, int> playtimesByReleaseYear = new Dictionary<int, int>();
+            var playtimesByGenre = new Dictionary<string, int>();
+            var playtimesByMetacritic = new Dictionary<int, int>();
+            var playtimesByAppType = new Dictionary<string, int>();
+            var playtimesByReleaseYear = new Dictionary<int, int>();
 
             foreach (var game in ownedGames)
             {
@@ -246,7 +246,7 @@ namespace HowLongToBeatSteam.Controllers
                     {
                         appid = kvp.Key,
                         name = kvp.Value.SteamName,
-                        playtime_forever = 0,
+                        playtime_forever = 0
                     }).ToArray();
             }
 

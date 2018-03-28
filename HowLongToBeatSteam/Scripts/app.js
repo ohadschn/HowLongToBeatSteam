@@ -209,8 +209,8 @@ function AppViewModel() {
         }
     });
 
-    $('#hltb-update-modal')
-        .on('shown.bs.modal',
+    $("#hltb-update-modal")
+        .on("shown.bs.modal",
             function () {
                 $("#hltb-update-intput").focus();
             });
@@ -218,8 +218,8 @@ function AppViewModel() {
     self.steamVanityUrlName = ko.observable("");
 
     var tableOptions = {
-        recordWord: 'game',
-        sortDir: 'asc',
+        recordWord: "game",
+        sortDir: "asc",
         perPage: 10,
         paginationLimit: self.superSmall ? 3 : (self.small ? 4 : (self.medium ? 6 : 10)),
         unsortedClass: "glyphicon glyphicon-sort",
@@ -759,7 +759,7 @@ function AppViewModel() {
             //steamVanityUrlName is something like "[http(s)://](prefix)ID[/home]"
             var suffix = parts[1];
             //suffix is something like "(ID)[/home]"
-            self.steamVanityUrlName(suffix.split('/')[0]);
+            self.steamVanityUrlName(suffix.split("/")[0]);
         }
     };
 
@@ -1028,8 +1028,8 @@ function AppViewModel() {
 
     var updateReleaseDateChart = function (total, clickedSlice) {
         var decades = [];
-        for (var year = earliestYear; year <= latestYear; year += 10) {
-            decades.push({ title: year.toString().substring(2) + "s", min: year, max: year + 9 });
+        for (var firstDecadeYear = earliestYear; firstDecadeYear <= latestYear; firstDecadeYear += 10) {
+            decades.push({ title: firstDecadeYear.toString().substring(2) + "s", min: firstDecadeYear, max: firstDecadeYear + 9 });
         }
         updateContinuousSliceChart(self.releaseDateChart, total.playtimesByReleaseYear, decades, clickedSlice);
     };
@@ -1060,7 +1060,7 @@ function AppViewModel() {
     };
 
     var initChart = function (chartId, factor) {
-        if (typeof factor === 'undefined') {
+        if (typeof factor === "undefined") {
             factor = 1;
         }
         var chart = $("#" + chartId);
@@ -1121,7 +1121,7 @@ function AppViewModel() {
                 }
             ],
             precision: 0,
-            startDuration: (typeof window.orientation === 'undefined') ? 1.5 : 0,
+            startDuration: (typeof window.orientation === "undefined") ? 1.5 : 0,
             responsive: {
                 enabled: true,
                 rules: [{
@@ -1243,7 +1243,7 @@ function AppViewModel() {
             return; //don't override user position
         }
 
-        var $viewport = $('html, body');
+        var $viewport = $("html, body");
 
         //scroll viewport
         $viewport.animate({
@@ -1289,7 +1289,7 @@ function AppViewModel() {
                 $(this).css("width", $(this).width() + 10 + "px");
             });
 
-            $("#game-table").css('table-layout', "fixed");
+            $("#game-table").css("table-layout", "fixed");
 
             firstTableRender = false;
         }

@@ -19,7 +19,7 @@ namespace Common.Entities
         None    = 0,
         Windows = 1,
         Mac     = 2,
-        Linux   = 4,
+        Linux   = 4
     }
     public class AppEntity : TableEntity
     {

@@ -28,6 +28,7 @@ namespace Common.Util
         }
     }
 
+    /// <inheritdoc />
     /// <summary>
     /// Note that request and content factories are required below, since the HttpClient will dispose of them after the first try
     /// </summary>

@@ -93,6 +93,7 @@ namespace Common.Util
                 ret = new TValue();
                 dictionary[key] = ret;
             }
+
             return ret;
         }
 

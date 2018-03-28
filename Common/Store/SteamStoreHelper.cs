@@ -96,7 +96,7 @@ namespace Common.Store
             updates.Add(new AppEntity(app.AppId, app.Name, type, platforms, categories, genres, publishers, developers, releaseDate, metaCriticScore));
         }
 
-        private static bool ContainsAppGenre(IReadOnlyList<string> genres)
+        private static bool ContainsAppGenre(IEnumerable<string> genres)
         {
             var currentAppGenres = new HashSet<string>(genres, StringComparer.OrdinalIgnoreCase);
             currentAppGenres.IntersectWith(new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -108,7 +108,7 @@ namespace Common.Store
                 "Design & Illustration",
                 "Animation & Modeling",
                 "Accounting",
-                "Education",
+                "Education"
             });
             return currentAppGenres.Count > 0;
         }
@@ -145,8 +145,7 @@ namespace Common.Store
                 return AppEntity.UnknownDate;
             }
 
-            DateTime relDateTime;
-            bool dateParsed = DateTime.TryParse(releaseDate.date, out relDateTime);
+            bool dateParsed = DateTime.TryParse(releaseDate.date, out var relDateTime);
 
             if (!dateParsed)
             {

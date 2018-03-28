@@ -23,7 +23,7 @@ namespace HltbTests.Steam
         [TestMethod]
         public void TestStoreApi()
         {
-            ConcurrentBag<AppEntity> updates = new ConcurrentBag<AppEntity>();
+            var updates = new ConcurrentBag<AppEntity>();
 
             using (var client = new HttpRetryClient(200))
             {

@@ -10,9 +10,9 @@ using SuggestionWatcher.Logging;
 
 namespace SuggestionWatcher.Watcher
 {
-    class SuggestionWatcher
+    internal class SuggestionWatcher
     {
-        static void Main()
+        private static void Main()
         {
             try
             {

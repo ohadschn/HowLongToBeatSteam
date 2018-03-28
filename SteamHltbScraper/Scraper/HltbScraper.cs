@@ -145,8 +145,7 @@ namespace SteamHltbScraper.Scraper
 
         private static void MakeVerbose(Exception e)
         {
-            var transientFaultException = e as TransientHltbFaultException;
-            if (transientFaultException != null)
+            if (e is TransientHltbFaultException transientFaultException)
             {
                 transientFaultException.PrintDocument = true;
             }
@@ -224,15 +223,13 @@ namespace SteamHltbScraper.Scraper
 
         private static DateTime ParseReleaseDate(string releaseDate, int hltbId, HtmlDocument doc)
         {
-            DateTime date;
-            if (DateTime.TryParse(releaseDate, out date))
+            if (DateTime.TryParse(releaseDate, out var date))
             {
                 ThrowOnInvalidDate(releaseDate, date, hltbId, doc);
                 return date;
             }
 
-            int year;
-            if (Int32.TryParse(releaseDate, out year))
+            if (Int32.TryParse(releaseDate, out var year))
             {
                 var ret = new DateTime(year, 1, 1);
                 ThrowOnInvalidDate(releaseDate, ret, hltbId, doc);
@@ -360,14 +357,12 @@ namespace SteamHltbScraper.Scraper
                 return 0;
             }
 
-            double hours;
-            if (TryGetDuration(durationText, @"\s*(.+) Hour", out hours))
+            if (TryGetDuration(durationText, @"\s*(.+) Hour", out var hours))
             {
                 return (int)TimeSpan.FromHours(hours).TotalMinutes;
             }
 
-            double minutes;
-            if (TryGetDuration(durationText, @"\s*(.+) Min", out minutes))
+            if (TryGetDuration(durationText, @"\s*(.+) Min", out var minutes))
             {
                 return (int)minutes;
             }
@@ -438,8 +433,7 @@ namespace SteamHltbScraper.Scraper
             }
 
             var idStr = link.Substring(12);
-            int hltbId;
-            if (!int.TryParse(idStr, out hltbId))
+            if (!int.TryParse(idStr, out var hltbId))
             {
                 throw GetFormatException("App link does not contain HLTB integer ID in expected location (expecting char12..end): " + idStr, appName, doc);
             }

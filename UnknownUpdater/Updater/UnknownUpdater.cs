@@ -9,7 +9,6 @@ using Common.Logging;
 using Common.Storage;
 using Common.Store;
 using Common.Util;
-using JetBrains.Annotations;
 using Microsoft.WindowsAzure.Storage.Table;
 using SteamHltbScraper.Imputation;
 using SteamHltbScraper.Scraper;
@@ -17,14 +16,15 @@ using UnknownUpdater.Logging;
 
 namespace UnknownUpdater.Updater
 {
-    class UnknownUpdater
+    internal class UnknownUpdater
     {
         private static readonly int StoreApiRetries = SiteUtil.GetOptionalValueFromConfig("UnknownUpdaterStoreApiRetries", 1000);
         private static readonly int StorageRetries = SiteUtil.GetOptionalValueFromConfig("UnknownUpdaterStorageRetries", 100);
         private static readonly int UpdateLimit = SiteUtil.GetOptionalValueFromConfig("UnknownUpdaterUpdateLimit", int.MaxValue);
 
         private static readonly HttpRetryClient Client = new HttpRetryClient(StoreApiRetries);
-        static void Main()
+
+        private static void Main()
         {
             EventSource.SetCurrentThreadActivityId(Guid.NewGuid());
             try
@@ -43,9 +43,9 @@ namespace UnknownUpdater.Updater
             }
         }
 
-        class AppEntitySteamIdComparer : IEqualityComparer<AppEntity>
+        private class AppEntitySteamIdComparer : IEqualityComparer<AppEntity>
         {
-            public bool Equals([NotNull] AppEntity x, [NotNull] AppEntity y)
+            public bool Equals(AppEntity x, AppEntity y)
             {
                 if (x == null) throw new ArgumentNullException(nameof(x));
                 if (y == null) throw new ArgumentNullException(nameof(y));
@@ -53,7 +53,7 @@ namespace UnknownUpdater.Updater
                 return x.SteamAppId == y.SteamAppId;
             }
 
-            public int GetHashCode([NotNull] AppEntity appEntity)
+            public int GetHashCode(AppEntity appEntity)
             {
                 if (appEntity == null) throw new ArgumentNullException(nameof(appEntity));
 

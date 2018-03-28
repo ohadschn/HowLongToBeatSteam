@@ -139,7 +139,7 @@ namespace SteamHltbScraper.Imputation
             }
         }
 
-        private static async Task ImputeTypeGenres(IReadOnlyList<AppEntity> games, string gameType)
+        private static async Task ImputeTypeGenres(IReadOnlyCollection<AppEntity> games, string gameType)
         {
             var gameTypeGenre = GenreStatsEntity.GetDecoratedGenre(AllGenresId, gameType);
             s_genreStats[gameTypeGenre] = new GenreStatsEntity(AllGenresId, gameType);
@@ -155,7 +155,7 @@ namespace SteamHltbScraper.Imputation
             }).ConfigureAwait(false);
         }
 
-        private static async Task<TtbRatios> ImputeGenreAndGetRatios(IReadOnlyList<AppEntity> apps, string genre, TtbRatios fallbackRatios, bool initial)
+        private static async Task<TtbRatios> ImputeGenreAndGetRatios(IReadOnlyCollection<AppEntity> apps, string genre, TtbRatios fallbackRatios, bool initial)
         {
             HltbScraperEventSource.Log.ImputeGenreStart(genre, apps.Count);
 
@@ -302,8 +302,7 @@ namespace SteamHltbScraper.Imputation
             int imputationMisses = 0;
             for (int i = 0; i < notCompletelyMissing.Count; i++)
             {
-                bool imputationZero, imputationMiss;
-                UpdateFromCsvRow(notCompletelyMissing[i], imputedRows[i], ratios, out imputationZero, out imputationMiss);
+                UpdateFromCsvRow(notCompletelyMissing[i], imputedRows[i], ratios, out var imputationZero, out var imputationMiss);
                 if (imputationMiss)
                 {
                     imputationMisses++;
@@ -326,7 +325,7 @@ namespace SteamHltbScraper.Imputation
             HltbScraperEventSource.Log.CalculateImputationStop(genre, notCompletelyMissing.Count);
         }
 
-        private static async Task<string> InvokeImputationService(string genre, IReadOnlyList<AppEntity> notCompletelyMissing)
+        private static async Task<string> InvokeImputationService(string genre, IEnumerable<AppEntity> notCompletelyMissing)
         {
             var blobPath = await UploadTtbInputToBlob(genre, notCompletelyMissing).ConfigureAwait(false);
             string jobId = await SubmitImputationJob(blobPath).ConfigureAwait(false);
@@ -364,6 +363,9 @@ namespace SteamHltbScraper.Imputation
                             var cloudBlob = new CloudBlockBlob(new Uri(new Uri(status.Result.BaseLocation), status.Result.RelativeLocation), credentials);
                             imputed = await cloudBlob.DownloadTextAsync().ConfigureAwait(false);
                             break;
+                        default:
+                            HltbScraperEventSource.Log.UnexpectedPollingStatusRetrieved(status.StatusCode.ToString(), status.Details);
+                            throw new InvalidOperationException("Unknown imputation job status: " + status.StatusCode);
                     }
                 }
                 await Task.Delay(AzureMlImputePollIntervalMs).ConfigureAwait(false);
@@ -384,9 +386,9 @@ namespace SteamHltbScraper.Imputation
                 Input = new AzureBlobDataReference
                 {
                     ConnectionString = StorageHelper.AzureStorageBlobConnectionString,
-                    RelativeLocation = inputBlobPath,
+                    RelativeLocation = inputBlobPath
                 },
-                GlobalParameters = new Dictionary<string, string>(),
+                GlobalParameters = new Dictionary<string, string>()
             };
 
             HltbScraperEventSource.Log.SubmitImputationJobStart();
@@ -398,7 +400,7 @@ namespace SteamHltbScraper.Imputation
             }
         }
 
-        private static async Task<string> UploadTtbInputToBlob(string genre, IReadOnlyList<AppEntity> notMissing)
+        private static async Task<string> UploadTtbInputToBlob(string genre, IEnumerable<AppEntity> notMissing)
         {
             var csvString = "Game,Main,Extras,Complete" + Environment.NewLine + string.Join(Environment.NewLine,
                 notMissing.Select(a => string.Format(CultureInfo.InvariantCulture, "{0} ({1}),{2},{3},{4}",
@@ -604,12 +606,14 @@ namespace SteamHltbScraper.Imputation
         }
 
         private static void HandleOverridenTtb(AppEntity appEntity, string ttbType, int currentTtb, bool ttbImputed, ref int imputed)
-        {           
-            if (!ttbImputed && currentTtb != imputed)
+        {
+            if (ttbImputed || currentTtb == imputed)
             {
-                HltbScraperEventSource.Log.ImputationOverrodeOriginalValue(appEntity.SteamAppId, appEntity.SteamName, ttbType, currentTtb, imputed);
-                imputed = currentTtb;
+                return;
             }
+
+            HltbScraperEventSource.Log.ImputationOverrodeOriginalValue(appEntity.SteamAppId, appEntity.SteamName, ttbType, currentTtb, imputed);
+            imputed = currentTtb;
         }
 
         internal static int GetRoundedValue(string value)

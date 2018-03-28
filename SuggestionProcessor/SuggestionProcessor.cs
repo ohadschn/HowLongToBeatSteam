@@ -14,12 +14,12 @@ using SteamHltbScraper.Scraper;
 
 namespace SuggestionProcessor
 {
-    class SuggestionProcessor
+    internal class SuggestionProcessor
     {
         private const string SteamStoreGamePageTemplate = "http://store.steampowered.com/app/{0}";
         private static readonly int BatchSize = SiteUtil.GetOptionalValueFromConfig("BatchSize", 50);
-        
-        static void Main()
+
+        private static void Main()
         {
             try
             {
@@ -33,7 +33,7 @@ namespace SuggestionProcessor
             }
         }
 
-        class SuggestionInfo
+        private class SuggestionInfo
         {
             public SuggestionEntity Suggestion { get; }
             public AppEntity App { get; }
@@ -80,7 +80,7 @@ namespace SuggestionProcessor
         }
 
         private static async Task ProcessDistinctSuggestions(
-            SuggestionEntity[] distinctSuggestions, Dictionary<int, AppEntity> allMeasuredAppsMap, Dictionary<int, AppEntity> allMeasuredAppsMapForImputation)
+            SuggestionEntity[] distinctSuggestions, IReadOnlyDictionary<int, AppEntity> allMeasuredAppsMap, Dictionary<int, AppEntity> allMeasuredAppsMapForImputation)
         {
             var validSuggestions = new ConcurrentDictionary<int, SuggestionInfo>(
                 GetSuggestionsForKnownAndPrepareApps(allMeasuredAppsMap, distinctSuggestions).ToDictionary(si => si.App.SteamAppId));
@@ -129,8 +129,7 @@ namespace SuggestionProcessor
             var suggestionsForKnownApps = new List<SuggestionInfo>();
             foreach (var suggestion in suggestions)
             {
-                AppEntity app;
-                if (!appsMap.TryGetValue(suggestion.SteamAppId, out app))
+                if (!appsMap.TryGetValue(suggestion.SteamAppId, out var app))
                 {
                     Console.WriteLine("ERROR: suggestion for unknown Steam ID {0} (Suggested HLTB ID {1})", suggestion.SteamAppId, suggestion.HltbId);
                     continue;
@@ -150,7 +149,7 @@ namespace SuggestionProcessor
             return suggestionsForKnownApps;
         }
 
-        private static void RemoveInvalidSuggestions(ConcurrentBag<SuggestionInfo> invalidSuggestions)
+        private static void RemoveInvalidSuggestions(IReadOnlyCollection<SuggestionInfo> invalidSuggestions)
         {
             int i = 0;
             foreach (var invalidSuggestion in invalidSuggestions)
@@ -176,12 +175,14 @@ namespace SuggestionProcessor
                         }
                         continue;
                     }
+
                     if (key.KeyChar == 'y' || key.KeyChar == 'Y')
                     {
                         Console.WriteLine("Removing suggestion...");
                         StorageHelper.DeleteSuggestion(invalidSuggestion.Suggestion).Wait();
                         break;
                     }
+
                     if (key.KeyChar == 'n' || key.KeyChar == 'N')
                     {
                         Console.WriteLine("Keeping invalid suggestions");
@@ -220,6 +221,7 @@ namespace SuggestionProcessor
                         }
                         break;
                     }
+
                     if (key.KeyChar == 'd' || key.KeyChar == 'D')
                     {
                         Console.Write("Deleting suggestion... ");
@@ -227,6 +229,7 @@ namespace SuggestionProcessor
                         Console.WriteLine("Done!");
                         break;
                     }
+
                     if (suggestion.Suggestion.IsRetype && (key.KeyChar == 'v' || key.KeyChar == 'V'))
                     {
                         Console.WriteLine("Verifying game and deleting suggestion...");
@@ -234,11 +237,13 @@ namespace SuggestionProcessor
                         Console.WriteLine("Done");
                         break;
                     }
+
                     if (key.KeyChar == 'i' || key.KeyChar == 'I')
                     {
                         InspectSuggestion(suggestion);
                         continue;
                     }
+
                     if (key.KeyChar == 's' || key.KeyChar == 'S')
                     {
                         Console.WriteLine("Skipping...");
@@ -281,7 +286,7 @@ namespace SuggestionProcessor
                           : String.Empty));
         }
 
-        class SuggestionSteamIdComparer : IEqualityComparer<SuggestionEntity>
+        private class SuggestionSteamIdComparer : IEqualityComparer<SuggestionEntity>
         {
             public bool Equals(SuggestionEntity x, SuggestionEntity y)
             {

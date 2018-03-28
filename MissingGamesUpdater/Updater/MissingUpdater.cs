@@ -15,7 +15,7 @@ using SteamHltbScraper.Scraper;
 
 namespace MissingGamesUpdater.Updater
 {
-    class MissingUpdater
+    internal class MissingUpdater
     {
         private static readonly int SteamApiRetries = SiteUtil.GetOptionalValueFromConfig("MissingUpdaterSteamApiRetries", 100);
         private static readonly int StorageRetries = SiteUtil.GetOptionalValueFromConfig("MissingUpdaterStorageRetries", 10);
@@ -23,7 +23,7 @@ namespace MissingGamesUpdater.Updater
         private static readonly Uri GetSteamAppListUrl = new Uri("http://api.steampowered.com/ISteamApps/GetAppList/v0001/");
         private static HttpRetryClient s_client;
 
-        static void Main()
+        private static void Main()
         {
             EventSource.SetCurrentThreadActivityId(Guid.NewGuid());
             try

@@ -4,6 +4,7 @@ using Microsoft.ApplicationInsights;
 
 namespace HowLongToBeatSteam.Logging
 {
+    /// <inheritdoc />
     /// <summary>
     /// Exception logger for ASP.NET WEB API 2.X
     /// https://azure.microsoft.com/en-us/documentation/articles/app-insights-asp-net-exceptions/#web-api-2x

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
@@ -18,9 +17,8 @@ namespace HowLongToBeatSteam.Filters
         public override void OnActionExecuting([NotNull] HttpActionContext actionContext)
         {
             if (actionContext == null) throw new ArgumentNullException(nameof(actionContext));
-            IEnumerable<string> values;
 
-            if (actionContext.Request.Headers.TryGetValues("Origin", out values))
+            if (actionContext.Request.Headers.TryGetValues("Origin", out var values))
             {
                 if (!m_expectedUri.GetLeftPart(UriPartial.Authority).Equals(values.SingleOrDefault(), StringComparison.OrdinalIgnoreCase))
                 {
@@ -38,8 +36,7 @@ namespace HowLongToBeatSteam.Filters
                 return;
             }
 
-            Uri refererUri;
-            if (!Uri.TryCreate(values.SingleOrDefault(), UriKind.Absolute, out refererUri)) //partial URI
+            if (!Uri.TryCreate(values.SingleOrDefault(), UriKind.Absolute, out var refererUri)) //partial URI
             {
                 SiteEventSource.Log.PartialRefererSpecifiedInRequest(actionContext.Request);
                 return; // assuming the URL's base is our host so we're good

@@ -11,7 +11,7 @@ namespace UITests.Tests
     [TestClass]
     public class GameTests
     {
-        private static int GetExcludedGameCount(IWebDriver driver)
+        private static int GetExcludedGameCount(ISearchContext driver)
         {
             Console.WriteLine("Locating excluded game count span...");
             var findElement = driver.FindElement(By.Id(SiteConstants.ExcludedGameCountSpanId));
@@ -34,7 +34,7 @@ namespace UITests.Tests
             Assert.IsTrue(extrasRemainingPlaytime > mainRemainingPlaytime, "extras playtime does not exceed completionist playtime");
         }
 
-        private static void AssertValidPercentages(IWebDriver driver)
+        private static void AssertValidPercentages(ISearchContext driver)
         {
             Console.WriteLine("Locating and asserting playtime percentages...");
 
@@ -53,7 +53,7 @@ namespace UITests.Tests
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SignInHelper.SignInWithId(driver, UserConstants.HltbsUser, WaitType.PageLoad);
+                SignInHelper.SignInWithId(driver, UserConstants.HltbsUser);
 
                 Assert.AreEqual(UserConstants.HltbUserGameCount, GameSummaryHelper.GetGameCount(driver), "incorrect game count");
                 Assert.AreEqual(UserConstants.HltbUserExludedGameCount, GetExcludedGameCount(driver), "incorrect excluded game count");

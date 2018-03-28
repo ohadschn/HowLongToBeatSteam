@@ -10,7 +10,7 @@ namespace UITests.Tests
     [TestClass]
     public class LoginTests
     {
-        private static void AssertPersonaDetails(IWebDriver driver, string personaName, string avatarUUID)
+        private static void AssertPersonaDetails(ISearchContext driver, string personaName, string avatarUUID)
         {
             Console.WriteLine("Locating and asserting persona name...");
             var personaNameSpan = driver.FindElement(By.Id(SiteConstants.PersonaNameSpanId));

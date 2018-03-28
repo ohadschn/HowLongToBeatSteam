@@ -85,7 +85,7 @@ namespace Common.Storage
                 rowFilter ?? ProcessedSuggestionEntity.ProcessedSuggestionFilter, ProcessedSuggestionEntity.GetPartitions(), retries);
         }
 
-        private static async Task<ConcurrentBag<T>> GetAllSteamToHltbEntities<T>(string rowFilter, string[] partitions, int retries = -1) where T : ITableEntity, new()
+        private static async Task<ConcurrentBag<T>> GetAllSteamToHltbEntities<T>(string rowFilter, ICollection<string> partitions, int retries = -1) where T : ITableEntity, new()
         {
             CommonEventSource.Log.QueryAllEntitiesStart(typeof(T).FullName, rowFilter);
             var entities = await QueryAllTableEntities<T>(SteamToHltbTableName, partitions, rowFilter, retries).ConfigureAwait(false);
@@ -188,8 +188,9 @@ namespace Common.Storage
                 currentSegment = await table.ExecuteQuerySegmentedAsync(query, currentSegment?.ContinuationToken)
                         .ConfigureAwait(false);
                 segmentStopLogger(batch);
-
+                
                 await segmentProcessor(currentSegment).ConfigureAwait(false);
+                batch++;
             }
         }
 
@@ -537,7 +538,7 @@ namespace Common.Storage
                 : str.Remove(str.Length - 1, 1) + (char) (lastChar + 1);
         }
 
-        class TableBatchOperationInfo
+        private class TableBatchOperationInfo
         {
             public string Partition { get; }
             public int Batch { get; }

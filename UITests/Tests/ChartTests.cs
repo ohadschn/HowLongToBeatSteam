@@ -11,13 +11,13 @@ namespace UITests.Tests
     [TestClass]
     public class ChartTests
     {
-        private static void AssertAmChart(IWebDriver driver, string chartDivId)
+        private static void AssertAmChart(ISearchContext driver, string chartDivId)
         {
             Console.WriteLine($"Looking for amCharts div in {chartDivId}...");
             Assert.IsTrue(driver.FindElement(By.CssSelector($"#{chartDivId} .amcharts-main-div")).Displayed, "Expected amCharts div to be displayed");
         }
 
-        private static void TestRenderedCharts(IWebDriver driver)
+        private static void TestRenderedCharts(ISearchContext driver)
         {
             foreach (var amchartDiv in SiteConstants.AmchartDivs)
             {
@@ -25,12 +25,12 @@ namespace UITests.Tests
             }
         }
 
-        private void AssertActive(IWebElement element)
+        private static void AssertActive(IWebElement element)
         {
             Assert.IsTrue(element.GetAttribute("class").Contains("active"), $"Expected element {element} to be active");
         }
 
-        private void TestSlicers(IWebDriver driver)
+        private static void TestSlicers(ISearchContext driver)
         {
             Console.WriteLine("Clicking 'Current' playtime slicer...");
             var currentPlaytimeSlicer = driver.FindElement(By.Id(SiteConstants.CurrentPlaytimeSlicerId));

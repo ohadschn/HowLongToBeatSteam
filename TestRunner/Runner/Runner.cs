@@ -8,9 +8,9 @@ using TestRunner.Logging;
 
 namespace TestRunner.Runner
 {
-    class TestRunner
+    internal class TestRunner
     {
-        static void Main()
+        private static void Main()
         {
             EventSource.SetCurrentThreadActivityId(Guid.NewGuid());
             try

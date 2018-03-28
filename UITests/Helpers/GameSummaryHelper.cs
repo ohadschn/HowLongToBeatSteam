@@ -20,7 +20,7 @@ namespace UITests.Helpers
             return gameCount;
         }
 
-        private static TimeSpan GetPlaytime(IWebDriver driver, By by)
+        private static TimeSpan GetPlaytime(ISearchContext driver, By by)
         {
             return TestUtil.FreetextDurationToTimespan(driver.FindElement(by).Text);
         }

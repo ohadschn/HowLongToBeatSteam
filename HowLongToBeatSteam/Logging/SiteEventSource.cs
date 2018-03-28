@@ -10,7 +10,7 @@ namespace HowLongToBeatSteam.Logging
     public enum VanityUrlResolutionInvalidResponseType
     {
         Unknown = 0,
-        SteamIdIsNotAnInt64 = 1,
+        SteamIdIsNotAnInt64 = 1
     }
 
     [EventSource(Name = "OS-HowLongToBeatSteam-Site")]

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
@@ -100,7 +101,7 @@ namespace UITests.Tests
             });
         }
 
-        private static void TestColumnSort<T>(IWebDriver driver, string headerId, Func<TableGameInfo, T> selector, TableGameInfo[] originalGames, bool reverse)
+        private static void TestColumnSort<T>(IWebDriver driver, string headerId, Func<TableGameInfo, T> selector, IEnumerable<TableGameInfo> originalGames, bool reverse)
         {
             TableGameInfo[] sortedGames = null;
             driver.FindElement(By.Id(headerId)).Click();
@@ -234,7 +235,7 @@ namespace UITests.Tests
             });
         }
 
-        private void AssertActiveFilterNotifications(IWebDriver driver, bool displayed)
+        private static void AssertActiveFilterNotifications(ISearchContext driver, bool displayed)
         {
             Assert.AreEqual(displayed, driver.FindElement(By.Id(SiteConstants.SummaryFilterActive)).Displayed, "unexpected summary filter active notification visibility");
             Assert.AreEqual(displayed, driver.FindElement(By.Id(SiteConstants.SlicingFilterActive)).Displayed, "unexpected slicing filter active notification visibility");

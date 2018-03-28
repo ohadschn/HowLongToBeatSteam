@@ -17,16 +17,18 @@ namespace Common.Util
         private readonly int m_deltaBackoffMin;
         private readonly int m_deltaBackoffMax;
 
+        /// <inheritdoc />
         /// <summary>
-        /// Initializes a new instance of the <see cref="ExponentialBackoff"/> class. 
+        /// Initializes a new instance of the <see cref="T:Common.Util.ExponentialBackoff" /> class. 
         /// </summary>
         public ExponentialBackoff()
             : this(DefaultClientRetryCount, DefaultMinBackoff, DefaultMaxBackoff, DefaultClientBackoff)
         {
         }
 
+        /// <inheritdoc />
         /// <summary>
-        /// Initializes a new instance of the <see cref="ExponentialBackoff"/> class with the specified retry settings.
+        /// Initializes a new instance of the <see cref="T:Common.Util.ExponentialBackoff" /> class with the specified retry settings.
         /// </summary>
         /// <param name="retryCount">The maximum number of retry attempts.</param>
         /// <param name="minBackoff">The minimum backoff time</param>
@@ -37,8 +39,9 @@ namespace Common.Util
         {
         }
 
+        /// <inheritdoc />
         /// <summary>
-        /// Initializes a new instance of the <see cref="ExponentialBackoff"/> class with the specified name and retry settings.
+        /// Initializes a new instance of the <see cref="T:Common.Util.ExponentialBackoff" /> class with the specified name and retry settings.
         /// </summary>
         /// <param name="name">The name of the retry strategy.</param>
         /// <param name="retryCount">The maximum number of retry attempts.</param>
@@ -50,8 +53,9 @@ namespace Common.Util
         {
         }
 
+        /// <inheritdoc />
         /// <summary>
-        /// Initializes a new instance of the <see cref="ExponentialBackoff"/> class with the specified name, retry settings, and fast retry option.
+        /// Initializes a new instance of the <see cref="T:Common.Util.ExponentialBackoff" /> class with the specified name, retry settings, and fast retry option.
         /// </summary>
         /// <param name="name">The name of the retry strategy.</param>
         /// <param name="retryCount">The maximum number of retry attempts.</param>
@@ -94,6 +98,7 @@ namespace Common.Util
             m_deltaBackoffMax = checked((int)(deltaBackoff.TotalMilliseconds * 1.2));
         }
 
+        /// <inheritdoc />
         /// <summary>
         /// Returns the corresponding ShouldRetry delegate.
         /// </summary>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Common.Entities;
@@ -62,7 +63,7 @@ namespace HltbTests.Imputation
             Assert.AreEqual(completionistExpected, game.CompletionistTtb, "Invalid Completionist sanitization for TTBs: " + ttbs);
         }
 
-        private static void AssertValidTtbs(AppEntity[] games)
+        private static void AssertValidTtbs(IEnumerable<AppEntity> games)
         {
             foreach (var game in games)
             {
