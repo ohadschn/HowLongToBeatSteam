@@ -26,12 +26,17 @@ namespace UITests.Tests
             });
         }
 
-        private static void AssertUnconditionalLinks(IWebDriver driver, bool mobile)
+        private static void AssertPageLinks(IWebDriver driver)
         {
             Assert.IsTrue(driver.FindElement(By.Id(SiteConstants.ContactAnchorId)).Displayed, "Expected contact link to be visible");
 
             AssertPageLink(driver, SiteConstants.PrivacyAnchorId, SiteConstants.PrivacyPolicyTitle);
             AssertPageLink(driver, SiteConstants.FaqAnchorId, SiteConstants.FaqTitle);
+        }
+
+        private static void AssertExternalLinks(IWebDriver driver, bool mobile = false, bool cached = false)
+        {
+            LinkHelper.AssertExternalLink(driver, SiteConstants.CachedGamesPanelId, "HowLongToBeatSteam");
 
             LinkHelper.AssertExternalLink(driver, mobile ? SiteConstants.MobileFooterFacebookLinkId : SiteConstants.FooterFacebookLinkId, "HowLongToBeatSteam");
             LinkHelper.AssertExternalLink(driver, mobile ? SiteConstants.MobileFooterTwitterLinkId :  SiteConstants.FooterTwitterLinkId, "hltbsteam");
@@ -44,15 +49,25 @@ namespace UITests.Tests
         }
 
         [TestMethod]
-        public void TestLinks()
+        public void TestPageLinks()
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
                 SignInHelper.SignInWithId(driver, UserConstants.SampleSteamId);
 
-                LinkHelper.AssertExternalLink(driver, SiteConstants.CachedGamesPanelId, "HowLongToBeatSteam");
-                AssertUnconditionalLinks(driver, false);
+                AssertPageLinks(driver);
             });
+        }
+
+        [TestMethod]
+        public void TestExternalLinks()
+        {
+            SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
+            {
+                SignInHelper.SignInWithId(driver, UserConstants.SampleSteamId);
+
+                AssertExternalLinks(driver);
+            }, Browsers.Chrome | Browsers.Firefox); //IE behaves strangely and it doesn't really matter as these links are simple hrefs
         }
 
         [TestMethod]
@@ -62,8 +77,8 @@ namespace UITests.Tests
             {
                 SignInHelper.SignInWithId(driver, UserConstants.SampleSteamId);
 
-                LinkHelper.AssertExternalLink(driver, SiteConstants.CachedGamesPanelId, "HowLongToBeatSteam");
-                AssertUnconditionalLinks(driver, true);
+                AssertPageLinks(driver);
+                AssertExternalLinks(driver, true);
             }, Browsers.OptimusL70Chrome);
         }
 
@@ -73,9 +88,7 @@ namespace UITests.Tests
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
                 SignInHelper.GoToCachedGamesPage(driver);
-
                 Assert.IsFalse(driver.FindElement(By.Id(SiteConstants.CachedGamesPanelId)).Displayed, "Expected cached games link to be hidden in cached games page");
-                AssertUnconditionalLinks(driver, false);
             });
         }
     }

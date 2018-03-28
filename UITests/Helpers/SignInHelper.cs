@@ -22,7 +22,8 @@ namespace UITests.Helpers
             }
 
             Console.WriteLine("Waiting for user page to load...");
-            driver.WaitUntilElementIsVisible(By.Id(SiteConstants.PersonaAvatarImgId), "Could not locate persona avatar image");
+            driver.WaitUntilElementIsVisible(By.Id(SiteConstants.PersonaAvatarImgId), "Could not locate persona avatar image", TimeSpan.FromSeconds(20));
+            driver.WaitUntilElementIsStationary(By.Id(SiteConstants.PersonaAvatarImgId), 3, "Could not detect scrolling animation completion", TimeSpan.FromSeconds(10));
             Console.WriteLine("User page loaded");
         }
 
