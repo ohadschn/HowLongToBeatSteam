@@ -26,6 +26,11 @@
     <ApplicationInsightsResourceId>/subscriptions/8e03eaa1-7457-4cba-a0e4-9094d5fad78d/resourcegroups/Default-Web-EastUS2/providers/microsoft.insights/components/howlongtobeatsteam</ApplicationInsightsResourceId>
     <ApplicationInsightsAnnotationResourceId>/subscriptions/8e03eaa1-7457-4cba-a0e4-9094d5fad78d/resourcegroups/Default-Web-EastUS2/providers/microsoft.insights/components/howlongtobeatsteam</ApplicationInsightsAnnotationResourceId>
     <Use64BitIISExpress />
+    <CodeAnalysisRuleSet>..\ohads.ruleset</CodeAnalysisRuleSet>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <LangVersion>latest</LangVersion>
+    <Features>strict</Features>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CredentialManagement, Version=1.0.2.0, Culture=neutral, processorArchitecture=MSIL">
@@ -313,7 +318,6 @@
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>..\ohads.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>bin\</OutputPath>
@@ -322,10 +326,7 @@
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>..\ohads.ruleset</CodeAnalysisRuleSet>
     <UseVSHostingProcess>true</UseVSHostingProcess>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
