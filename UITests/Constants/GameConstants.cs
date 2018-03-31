@@ -1,6 +1,6 @@
 ﻿namespace UITests.Constants
 {
-    public class GameConstants
+    public static class GameConstants
     {
         public const string RoninSteamName = "RONIN";
         public const string RoninHltbName = "Ronin";

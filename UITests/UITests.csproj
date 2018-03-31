@@ -17,7 +17,7 @@
     <IsCodedUITest>False</IsCodedUITest>
     <TestProjectType>UnitTest</TestProjectType>
     <TargetFrameworkProfile />
-    <CodeAnalysisRuleSet>..\ohads.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>..\tests.ruleset</CodeAnalysisRuleSet>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <LangVersion>latest</LangVersion>
