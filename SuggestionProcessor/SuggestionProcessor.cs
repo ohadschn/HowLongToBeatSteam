@@ -100,7 +100,7 @@ namespace SuggestionProcessor
                 }).ConfigureAwait(false);
 
             Console.WriteLine("Removing invalid suggestions...");
-            RemoveInvalidSuggestions(invalidSuggestions);
+            await RemoveInvalidSuggestions(invalidSuggestions);
 
             Console.WriteLine("Processing suggestions...");
 
@@ -149,64 +149,54 @@ namespace SuggestionProcessor
             return suggestionsForKnownApps;
         }
 
-        private static void RemoveInvalidSuggestions(IReadOnlyCollection<SuggestionInfo> invalidSuggestions)
+        private static async Task RemoveInvalidSuggestions(IReadOnlyCollection<SuggestionInfo> invalidSuggestions)
         {
-            int i = 0;
-            foreach (var invalidSuggestion in invalidSuggestions)
+            await ProcessSuggestions(invalidSuggestions, invalidSuggestions.Count, async invalidSuggestion =>
             {
-                i++;
-                PrintSuggestion(invalidSuggestion, i, invalidSuggestions.Count);
+                Console.Write("Remove invalid suggestions? (Y)es / (N)o / (I)nspect ");
+                var key = Console.ReadKey();
+                Console.WriteLine();
 
-                while (true)
+                if (key.KeyChar == 'i' || key.KeyChar == 'I')
                 {
-                    Console.Write("Remove invalid suggestions? (Y)es / (N)o / (I)nspect ");
-                    var key = Console.ReadKey();
-                    Console.WriteLine();
-
-                    if (key.KeyChar == 'i' || key.KeyChar == 'I')
+                    if (invalidSuggestion.App.SteamAppId == -1)
                     {
-                        if (invalidSuggestion.App.SteamAppId == -1)
-                        {
-                            Console.WriteLine("Unknown Steam ID - nothing to inspect");
-                        }
-                        else
-                        {
-                            InspectSuggestion(invalidSuggestion);                            
-                        }
-                        continue;
+                        Console.WriteLine("Unknown Steam ID - nothing to inspect");
+                    }
+                    else
+                    {
+                        InspectSuggestion(invalidSuggestion);
                     }
 
-                    if (key.KeyChar == 'y' || key.KeyChar == 'Y')
-                    {
-                        Console.WriteLine("Removing suggestion...");
-                        StorageHelper.DeleteSuggestion(invalidSuggestion.Suggestion).Wait();
-                        break;
-                    }
-
-                    if (key.KeyChar == 'n' || key.KeyChar == 'N')
-                    {
-                        Console.WriteLine("Keeping invalid suggestions");
-                        break;
-                    }
+                    return false;
                 }
-            }
+
+                if (key.KeyChar == 'y' || key.KeyChar == 'Y')
+                {
+                    Console.WriteLine("Removing suggestion...");
+                    await StorageHelper.DeleteSuggestion(invalidSuggestion.Suggestion).ConfigureAwait(false);
+                    return true;
+                }
+
+                if (key.KeyChar == 'n' || key.KeyChar == 'N')
+                {
+                    Console.WriteLine("Keeping invalid suggestions");
+                    return true;
+                }
+
+                return false;
+            }).ConfigureAwait(false);
         }
 
-        private static async Task<IList<SuggestionInfo>>  ProcessSuggestionsByUserInput(ICollection<SuggestionInfo> validSuggestions)
+        private static async Task<IList<SuggestionInfo>> ProcessSuggestionsByUserInput(ICollection<SuggestionInfo> validSuggestions)
         {
             var acceptedHltbSuggestions = new List<SuggestionInfo>();
-
-            int i = 0;
-            foreach (var suggestion in validSuggestions)
+            await ProcessSuggestions(validSuggestions, validSuggestions.Count, async suggestion =>
             {
-                i++;
-                PrintSuggestion(suggestion, i, validSuggestions.Count);
-
-                while (true)
-                {
-                    Console.Write("Accept suggestion? (A)ccept / (D)elete {0}/ (I)nspect / (S)kip ", suggestion.Suggestion.IsRetype ? "/ (V)erify game and delete " : String.Empty);
+                Console.Write("Accept suggestion? (A)ccept / (D)elete {0}/ (I)nspect / (S)kip ", suggestion.Suggestion.IsRetype ? "/ (V)erify game and delete " : String.Empty);
                     var key = Console.ReadKey();
                     Console.WriteLine();
+
                     if (key.KeyChar == 'a' || key.KeyChar == 'A')
                     {
                         if (suggestion.Suggestion.IsRetype)
@@ -219,7 +209,8 @@ namespace SuggestionProcessor
                             Console.WriteLine("Marking suggestion as accepted (will accept after imputation)...");
                             acceptedHltbSuggestions.Add(suggestion);
                         }
-                        break;
+
+                        return true;
                     }
 
                     if (key.KeyChar == 'd' || key.KeyChar == 'D')
@@ -227,7 +218,7 @@ namespace SuggestionProcessor
                         Console.Write("Deleting suggestion... ");
                         await StorageHelper.DeleteSuggestion(suggestion.Suggestion).ConfigureAwait(false);
                         Console.WriteLine("Done!");
-                        break;
+                        return true;
                     }
 
                     if (suggestion.Suggestion.IsRetype && (key.KeyChar == 'v' || key.KeyChar == 'V'))
@@ -235,24 +226,39 @@ namespace SuggestionProcessor
                         Console.WriteLine("Verifying game and deleting suggestion...");
                         await StorageHelper.DeleteSuggestion(suggestion.Suggestion, suggestion.App).ConfigureAwait(false);
                         Console.WriteLine("Done");
-                        break;
+                        return true;
                     }
 
                     if (key.KeyChar == 'i' || key.KeyChar == 'I')
                     {
                         InspectSuggestion(suggestion);
-                        continue;
+                        return false;
                     }
 
                     if (key.KeyChar == 's' || key.KeyChar == 'S')
                     {
                         Console.WriteLine("Skipping...");
-                        break;
+                        return true;
                     }
-                }
-            }
+
+                return false;
+            }).ConfigureAwait(false);
             
             return acceptedHltbSuggestions;
+        }
+
+        private static async Task ProcessSuggestions(IEnumerable<SuggestionInfo> suggestions, int suggestionCount, Func<SuggestionInfo, Task<bool>> processor)
+        {
+            int i = 0;
+            foreach (var invalidSuggestion in suggestions)
+            {
+                i++;
+                PrintSuggestion(invalidSuggestion, i, suggestionCount);
+
+                while (!await processor(invalidSuggestion))
+                {
+                }
+            }
         }
 
         private static void InspectSuggestion(SuggestionInfo suggestion)
