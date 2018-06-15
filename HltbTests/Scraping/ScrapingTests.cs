@@ -128,7 +128,7 @@ namespace HltbTests.Scraping
         [TestMethod]
         public void TestMonthYearDate()
         {
-            TestScraping("Wizard of Legend", 2017, false, false, false);
+            TestScraping("Wizard of Legend", 2017, true, true, true);
         }
 
         [TestMethod]
