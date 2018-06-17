@@ -13,6 +13,6 @@
         public const string SamplePersonaName = "ohad";
         public const string SamplePersonaAvatarUUID = "ce8f7969f8c79019ab3c7c88ccfbf3185e8ec7da";
 
-        public const long SampleNoGamesUserId = 76561198149012415;
+        public const string SampleNoGamesUserId = "hltbs-nogames";
     }
 }

@@ -259,6 +259,11 @@ namespace HowLongToBeatSteam.Controllers
 
                 if (ownedGamesResponse.Content?.response?.games == null)
                 {
+                    if (ownedGamesResponse.Content?.response?.game_count == 0)
+                    {
+                        return new OwnedGame[0];
+                    }
+
                     SiteEventSource.Log.ErrorRetrievingOwnedGames(steamId);
                     throw new HttpResponseException(HttpStatusCode.BadRequest);
                 }

@@ -67,7 +67,7 @@ namespace UITests.Tests
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SignInHelper.SignInWithId(driver, UserConstants.SampleNoGamesUserId.ToString(CultureInfo.InvariantCulture), WaitType.None);
+                SignInHelper.SignInWithId(driver, UserConstants.SampleNoGamesUserId, WaitType.None);
                 driver.WaitUntilElementIsVisible(By.Id(SiteConstants.EmptyLibraryDivId), "Could not locate empty library notification");
             });
         }
