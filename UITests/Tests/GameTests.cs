@@ -5,6 +5,7 @@ using OpenQA.Selenium;
 using UITests.Constants;
 using UITests.Helpers;
 using UITests.Util;
+using static System.FormattableString;
 
 namespace UITests.Tests
 {
@@ -17,7 +18,7 @@ namespace UITests.Tests
             var findElement = driver.FindElement(By.Id(SiteConstants.ExcludedGameCountSpanId));
 
             Console.WriteLine("Parsing excluded game count...");
-            return findElement.Displayed ? Int32.Parse(findElement.Text, NumberStyles.Number) : 0;
+            return findElement.Displayed ? Int32.Parse(findElement.Text, NumberStyles.Number, CultureInfo.InvariantCulture) : 0;
         }
 
         private static void AssertValidPlaytimes(IWebDriver driver)
@@ -71,7 +72,7 @@ namespace UITests.Tests
                 SignInHelper.GoToCachedGamesPage(driver);
 
                 var gameCount = GameSummaryHelper.GetGameCount(driver);
-                Assert.IsTrue(gameCount > 10000, $"too few games in cache: {gameCount}");
+                Assert.IsTrue(gameCount > 10000, Invariant($"too few games in cache: {gameCount}"));
                 Assert.AreEqual(0, GetExcludedGameCount(driver), "expected zero excluded games in cached page");
 
                 AssertValidPlaytimes(driver);

@@ -28,6 +28,7 @@ namespace HowLongToBeatSteam.Telemetry
             TelemetryConfiguration.Active.TelemetryChannel.DeveloperMode = true;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
         public static void Setup(string instrumentationKey)
         {
             SetInstrumentationKey(instrumentationKey);

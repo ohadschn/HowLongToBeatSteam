@@ -160,10 +160,10 @@ namespace ManualTableUpdater.Updater
             var allProcessedSuggestions = StorageHelper.GetAllProcessedSuggestions().Result;
             foreach (var processedSuggestion in allProcessedSuggestions.Where(ps => ps.SteamAppId == 0))
             {
-                Console.Write($"Restoring processed suggestions: {processedSuggestion} ({processedSuggestion.RowKey})...");
+                Console.Write(Invariant($"Restoring processed suggestions: {processedSuggestion} ({processedSuggestion.RowKey})..."));
                 var components = processedSuggestion.RowKey.Split('_');
-                processedSuggestion.SteamAppId = Convert.ToInt32(components[1]);
-                processedSuggestion.HltbId = Convert.ToInt32(components[2]);
+                processedSuggestion.SteamAppId = Convert.ToInt32(components[1], CultureInfo.InvariantCulture);
+                processedSuggestion.HltbId = Convert.ToInt32(components[2], CultureInfo.InvariantCulture);
                 processedSuggestion.AppType = components[3];
                 StorageHelper.UpdateProcessedSuggestions(processedSuggestion).Wait();
                 Console.WriteLine("Done.");

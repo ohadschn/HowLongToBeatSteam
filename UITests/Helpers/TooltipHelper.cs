@@ -3,6 +3,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using UITests.Constants;
 using UITests.Util;
+using static System.FormattableString;
 
 namespace UITests.Helpers
 {
@@ -10,13 +11,13 @@ namespace UITests.Helpers
     {
         public static void AssertTooltip(IWebDriver driver, By by, string expectedTooltip, bool mobile = false)
         {
-            Console.WriteLine($"Hovering over '{by}' and asserting a tooltip containing '{expectedTooltip}'...");
+            Console.WriteLine(Invariant($"Hovering over '{by}' and asserting a tooltip containing '{expectedTooltip}'..."));
             AssertTooltip(driver, driver.FindElement(by), expectedTooltip, mobile);
         }
 
         public static void AssertTooltip(IWebDriver driver, IWebElement element, string expectedTooltip, bool mobile = false)
         {
-            var verificationFailureMessage = $"Could not verify tooltip '{expectedTooltip}'";
+            var verificationFailureMessage = Invariant($"Could not verify tooltip '{expectedTooltip}'");
             driver.WaitUntil(d =>
             {
                 if (mobile)

@@ -5,6 +5,7 @@ using OpenQA.Selenium;
 using UITests.Constants;
 using UITests.Helpers;
 using UITests.Util;
+using static System.FormattableString;
 
 namespace UITests.Tests
 {
@@ -13,8 +14,8 @@ namespace UITests.Tests
     {
         private static void AssertAmChart(ISearchContext driver, string chartDivId)
         {
-            Console.WriteLine($"Looking for amCharts div in {chartDivId}...");
-            Assert.IsTrue(driver.FindElement(By.CssSelector($"#{chartDivId} .amcharts-main-div")).Displayed, "Expected amCharts div to be displayed");
+            Console.WriteLine(Invariant($"Looking for amCharts div in {chartDivId}..."));
+            Assert.IsTrue(driver.FindElement(By.CssSelector(Invariant($"#{chartDivId} .amcharts-main-div"))).Displayed, "Expected amCharts div to be displayed");
         }
 
         private static void TestRenderedCharts(ISearchContext driver)
@@ -27,7 +28,7 @@ namespace UITests.Tests
 
         private static void AssertActive(IWebElement element)
         {
-            Assert.IsTrue(element.GetAttribute("class").Contains("active"), $"Expected element {element} to be active");
+            Assert.IsTrue(element.GetAttribute("class").Contains("active"), Invariant($"Expected element {element} to be active"));
         }
 
         private static void TestSlicers(ISearchContext driver)

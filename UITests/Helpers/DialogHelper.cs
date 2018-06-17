@@ -1,6 +1,7 @@
 ﻿using System;
 using OpenQA.Selenium;
 using UITests.Util;
+using static System.FormattableString;
 
 namespace UITests.Helpers
 {
@@ -11,16 +12,16 @@ namespace UITests.Helpers
             Console.WriteLine("Opening dialog...");
             dialogButton.Click();
 
-            Console.WriteLine($"Waiting for dialog to load (by waiting for {modalId} to be stationary)...");
-            driver.WaitUntilElementIsStationary(By.Id(modalId), 3, $"Could not verify dialog {modalId} is stationary");
+            Console.WriteLine(Invariant($"Waiting for dialog to load (by waiting for {modalId} to be stationary)..."));
+            driver.WaitUntilElementIsStationary(By.Id(modalId), 3, Invariant($"Could not verify dialog {modalId} is stationary"));
 
             Console.WriteLine("Executing dialog test...");
             test();
 
             if (waitForDismissal)
             {
-                Console.WriteLine($"Waiting until dialog is dismissed (by waiting for {modalId} to be invisible)...");
-                driver.WaitUntil(d => !d.FindElement(By.Id(modalId)).Displayed, $"Could not verify dialog {modalId} is dismissed");
+                Console.WriteLine(Invariant($"Waiting until dialog is dismissed (by waiting for {modalId} to be invisible)..."));
+                driver.WaitUntil(d => !d.FindElement(By.Id(modalId)).Displayed, Invariant($"Could not verify dialog {modalId} is dismissed"));
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using OpenQA.Selenium;
@@ -12,7 +13,7 @@ namespace UITests.Helpers
         private static double GetPlaytime(string playtime)
         {
             Console.WriteLine("Parsing playtime...");
-            return Double.Parse(playtime.Remove(playtime.Length - 1));
+            return Double.Parse(playtime.Remove(playtime.Length - 1), CultureInfo.InvariantCulture);
         }
 
         private static void ParseMobilePlaytime(string text, out double steam, out double main, out double extras, out double completionist)

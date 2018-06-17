@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
@@ -9,6 +10,7 @@ using UITests.Helpers;
 using UITests.Util;
 using CollectionAssert = UITests.Util.CollectionAssert;
 using ExpectedConditions = SeleniumExtras.WaitHelpers.ExpectedConditions;
+using static System.FormattableString;
 
 namespace UITests.Tests
 {
@@ -19,18 +21,18 @@ namespace UITests.Tests
         {
             foreach (var game in games)
             {
-                Assert.IsTrue(game.Included, $"Expected all games to be included but the following was not: {game.SteamName}");
-                Assert.AreEqual(0, game.SteamPlaytime, $"Expected zero playtime for: {game.SteamName}");
+                Assert.IsTrue(game.Included, Invariant($"Expected all games to be included but the following was not: {game.SteamName}"));
+                Assert.AreEqual(0, game.SteamPlaytime, Invariant($"Expected zero playtime for: {game.SteamName}"));
 
-                Assert.IsTrue(game.MainPlaytime > 0, $"Expected main playtime to be greater than zero: {game.SteamName}");
-                Assert.IsTrue(game.ExtrasPlaytime > 0, $"Expected extras playtime to be greater than zero: {game.SteamName}");
-                Assert.IsTrue(game.CompletionistPlaytime > 0, $"Expected completionist playtime to be greater than zero: {game.SteamName}");
+                Assert.IsTrue(game.MainPlaytime > 0, Invariant($"Expected main playtime to be greater than zero: {game.SteamName}"));
+                Assert.IsTrue(game.ExtrasPlaytime > 0, Invariant($"Expected extras playtime to be greater than zero: {game.SteamName}"));
+                Assert.IsTrue(game.CompletionistPlaytime > 0, Invariant($"Expected completionist playtime to be greater than zero: {game.SteamName}"));
 
-                Assert.IsTrue(game.MainPlaytime <= game.ExtrasPlaytime, $"Main playtime exceeds extras playtime for: {game.SteamName}");
-                Assert.IsTrue(game.ExtrasPlaytime <= game.CompletionistPlaytime, $"Extras playtime exceeds completionist playtime for: {game.SteamName}");
+                Assert.IsTrue(game.MainPlaytime <= game.ExtrasPlaytime, Invariant($"Main playtime exceeds extras playtime for: {game.SteamName}"));
+                Assert.IsTrue(game.ExtrasPlaytime <= game.CompletionistPlaytime, Invariant($"Extras playtime exceeds completionist playtime for: {game.SteamName}"));
 
-                Assert.AreEqual(!mobile && (game.SteamName == GameConstants.RoninSteamName), game.VerifiedFinite, $"Expected verified finite for: {game.SteamName}");
-                Assert.IsFalse(game.VerifiedCorrelation, $"Unexpected verified correlation game: {game.SteamName}");
+                Assert.AreEqual(!mobile && (game.SteamName == GameConstants.RoninSteamName), game.VerifiedFinite, Invariant($"Expected verified finite for: {game.SteamName}"));
+                Assert.IsFalse(game.VerifiedCorrelation, Invariant($"Unexpected verified correlation game: {game.SteamName}"));
             }
 
             var expectedGames = new[]
@@ -110,8 +112,8 @@ namespace UITests.Tests
                 sortedGames = TableHelper.ParseGameTable(driver);
                 var sortedValues = sortedGames.Select(selector).ToArray();
                 return (reverse ? sortedValues.OrderBy(n => n).Reverse() : sortedValues.OrderBy(n => n)).SequenceEqual(sortedValues);
-            }, $"Could not verify column sort: {headerId}");
-            CollectionAssert.AssertEqualSets(originalGames, sortedGames, $"Column sorting by '{headerId}' affected games in table");
+            }, Invariant($"Could not verify column sort: {headerId}"));
+            CollectionAssert.AssertEqualSets(originalGames, sortedGames, Invariant($"Column sorting by '{headerId}' affected games in table"));
         }
 
         private static void TestColumnSort<T>(IWebDriver driver, string headerId, Func<TableGameInfo, T> selector)
@@ -146,7 +148,7 @@ namespace UITests.Tests
         {
             var firstGameRow = TableHelper.FindGameRows(driver).First();
             driver.FindElement(By.Id(navigationElementId)).Click();
-            driver.WaitUntil(ExpectedConditions.StalenessOf(firstGameRow), $"Could not verify navigation by staleness of element: {firstGameRow}");
+            driver.WaitUntil(ExpectedConditions.StalenessOf(firstGameRow), Invariant($"Could not verify navigation by staleness of element: {firstGameRow}"));
         }
 
         private static bool NavigationEnabled(IWebElement element)
@@ -195,7 +197,7 @@ namespace UITests.Tests
 
                 foreach (var gamesPerPage in SiteConstants.GamesPerPageOptions)
                 {
-                    new SelectElement(driver.FindElement(By.Id(SiteConstants.GamesPerPageSelectId))).SelectByValue(gamesPerPage.ToString());
+                    new SelectElement(driver.FindElement(By.Id(SiteConstants.GamesPerPageSelectId))).SelectByValue(gamesPerPage.ToString(CultureInfo.InvariantCulture));
                     Assert.AreEqual(gamesPerPage, GetTablePageCount(driver), "Unexpected page game count");
                 }
             });
@@ -251,15 +253,15 @@ namespace UITests.Tests
                 Console.WriteLine("Setting filter to include two games...");
                 var filter = "in";
                 FilterHelper.SetTextFilter(driver, filter);
-                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 2, $"Could not verify filter {filter}");
+                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 2, Invariant($"Could not verify filter {filter}"));
                 AssertActiveFilterNotifications(driver, true);
                 CollectionAssert.AssertEqualSets(new[] {GameConstants.RoninSteamName, GameConstants.GodsWillBeWatchingSteamName},
-                    TableHelper.ParseGameTable(driver).Select(g => g.SteamName), $"Could not verify filter {filter}");
+                    TableHelper.ParseGameTable(driver).Select(g => g.SteamName), Invariant($"Could not verify filter {filter}"));
 
                 Console.WriteLine("Setting filter to exclude all games...");
                 filter = Guid.NewGuid().ToString();
                 FilterHelper.SetTextFilter(driver, filter);
-                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 0, $"Could not verify filter {filter}");
+                driver.WaitUntil(d => GameSummaryHelper.GetGameCount(driver) == 0, Invariant($"Could not verify filter {filter}"));
                 AssertActiveFilterNotifications(driver, true);
 
                 Console.WriteLine("Clearing filter...");

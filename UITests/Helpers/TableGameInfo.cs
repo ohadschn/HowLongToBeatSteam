@@ -1,4 +1,5 @@
 using System;
+using static System.FormattableString;
 
 namespace UITests.Helpers
 {
@@ -73,7 +74,7 @@ namespace UITests.Helpers
 
         public override string ToString()
         {
-            return $"Included: {Included}, SteamName: {SteamName}, VerifiedFinite: {VerifiedFinite}, SteamPlaytime: {SteamPlaytime}, MainPlaytime: {MainPlaytime}, ExtrasPlaytime: {ExtrasPlaytime}, CompletionistPlaytime: {CompletionistPlaytime}, HltbName: {HltbName}, VerifiedCorrelation: {VerifiedCorrelation}";
+            return Invariant($"Included: {Included}, SteamName: {SteamName}, VerifiedFinite: {VerifiedFinite}, SteamPlaytime: {SteamPlaytime}, MainPlaytime: {MainPlaytime}, ExtrasPlaytime: {ExtrasPlaytime}, CompletionistPlaytime: {CompletionistPlaytime}, HltbName: {HltbName}, VerifiedCorrelation: {VerifiedCorrelation}");
         }
     }
 }

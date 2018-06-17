@@ -6,6 +6,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using UITests.Constants;
 using UITests.Util;
+using static System.FormattableString;
 
 namespace UITests.Helpers
 {
@@ -25,7 +26,7 @@ namespace UITests.Helpers
 
         public static void SetTextFilter(IWebDriver driver, string filter)
         {
-            Console.WriteLine($"Setting text filter to {filter}...");
+            Console.WriteLine(Invariant($"Setting text filter to {filter}..."));
             driver.FindElement(By.Id(SiteConstants.FilterInputId)).SetText(filter);
         }
 
@@ -41,31 +42,31 @@ namespace UITests.Helpers
             {
                 if (releaseYearFrom >= 0)
                 {
-                    Console.WriteLine($"Setting advanced filter to releaseYearFrom: {releaseYearFrom}");
+                    Console.WriteLine(Invariant($"Setting advanced filter to releaseYearFrom: {releaseYearFrom}"));
                     driver.SelectValue(By.Id(SiteConstants.AdvancedFilterReleaseYearFromOptionsId), releaseYearFrom.ToString(CultureInfo.InvariantCulture));
                 }
 
                 if (releaseYearTo >= 0)
                 {
-                    Console.WriteLine($"Setting advanced filter to releaseYearTo: { releaseYearTo}");
+                    Console.WriteLine(Invariant($"Setting advanced filter to releaseYearTo: { releaseYearTo}"));
                     driver.SelectValue(By.Id(SiteConstants.AdvancedFilterReleaseYearToOptionsId), releaseYearTo.ToString(CultureInfo.InvariantCulture));
                 }
 
                 if (metacriticFrom >= 0)
                 {
-                    Console.WriteLine($"Setting advanced filter to metacriticFrom: { metacriticFrom}");
+                    Console.WriteLine(Invariant($"Setting advanced filter to metacriticFrom: { metacriticFrom}"));
                     driver.SelectValue(By.Id(SiteConstants.AdvancedFilterMetacrticiFromOptionsId), metacriticFrom.ToString(CultureInfo.InvariantCulture));
                 }
 
                 if (metaCriticTo >= 0)
                 {
-                    Console.WriteLine($"Setting advanced filter to metaCriticTo: { metaCriticTo}");
+                    Console.WriteLine(Invariant($"Setting advanced filter to metaCriticTo: { metaCriticTo}"));
                     driver.SelectValue(By.Id(SiteConstants.AdvancedFilterMetacriticToOptionsId), metaCriticTo.ToString(CultureInfo.InvariantCulture));
                 }
 
                 if (genres != null)
                 {
-                    Console.WriteLine($"Setting advanced filter to genres: {genres.StringJoin()}");
+                    Console.WriteLine(Invariant($"Setting advanced filter to genres: {genres.StringJoin()}"));
                     var genreSelect = new SelectElement(driver.FindElement(By.Id(SiteConstants.AdvancedFilterGenreOptionsId)));
 
                     genreSelect.DeselectAll();

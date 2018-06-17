@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using CredentialManagement;
 using JetBrains.Annotations;
@@ -41,7 +42,7 @@ namespace UITests.Util
             if (unit == null) throw new ArgumentNullException(nameof(unit));
 
             var unitMatch = Regex.Match(duration, @"(\d+) " + unit);
-            return unitMatch.Success ? Int32.Parse(unitMatch.Groups[1].Value) : 0;
+            return unitMatch.Success ? Int32.Parse(unitMatch.Groups[1].Value, CultureInfo.InvariantCulture) : 0;
         }
 
         public static TimeSpan FreetextDurationToTimespan([NotNull] string duration)
@@ -63,7 +64,7 @@ namespace UITests.Util
             if (date == null) throw new ArgumentNullException(nameof(date));
 
             //stripping the Left-to-Right-Mark (LRM) inserted by IE
-            return DateTime.Parse(Regex.Replace(date, @"\u200e", string.Empty).Trim());
+            return DateTime.Parse(Regex.Replace(date, @"\u200e", string.Empty).Trim(), CultureInfo.InvariantCulture);
         }
 
         public static string StringJoin<T>([NotNull] this IEnumerable<T> enumerable)

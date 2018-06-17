@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using UITests.Constants;
@@ -39,7 +40,7 @@ namespace UITests.Tests
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SignInHelper.SignInWithId(driver, UserConstants.SampleSteam64Id.ToString());
+                SignInHelper.SignInWithId(driver, UserConstants.SampleSteam64Id.ToString(CultureInfo.InvariantCulture));
                 AssertPersonaDetails(driver, UserConstants.SamplePersonaName, UserConstants.SamplePersonaAvatarUUID);
 
                 Console.WriteLine("Asserting the imputed values notification is displayed...");
@@ -66,7 +67,7 @@ namespace UITests.Tests
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SignInHelper.SignInWithId(driver, UserConstants.SampleNoGamesUserId.ToString(), WaitType.None);
+                SignInHelper.SignInWithId(driver, UserConstants.SampleNoGamesUserId.ToString(CultureInfo.InvariantCulture), WaitType.None);
                 driver.WaitUntilElementIsVisible(By.Id(SiteConstants.EmptyLibraryDivId), "Could not locate empty library notification");
             });
         }

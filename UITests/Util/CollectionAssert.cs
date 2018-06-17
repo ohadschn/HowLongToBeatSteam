@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using static System.FormattableString;
 
 namespace UITests.Util
 {
@@ -18,7 +19,7 @@ namespace UITests.Util
             var actualCollection = actual as ICollection<T> ?? actual.ToArray();
 
             Assert.IsTrue(expectedCollection.SequenceEqual(actualCollection),
-                $"{message}. Expected sequence : {expectedCollection.StringJoin()}; Actual sequence: {actualCollection.StringJoin()}");
+                Invariant($"{message}. Expected sequence : {expectedCollection.StringJoin()}; Actual sequence: {actualCollection.StringJoin()}"));
         }
 
         public static void AssertEqualSets<T>([NotNull] IEnumerable<T> expected, [NotNull] IEnumerable<T> actual, [NotNull] string message)
@@ -30,7 +31,7 @@ namespace UITests.Util
             var expectedSet = expected as ISet<T> ?? new HashSet<T>(expected);
             var actualSet = actual as ISet<T> ?? new HashSet<T>(actual);
 
-            Assert.IsTrue(expectedSet.SetEquals(actualSet), $"{message}. Expected set: {expectedSet.StringJoin()}; Actual set: {actualSet.StringJoin()}");
+            Assert.IsTrue(expectedSet.SetEquals(actualSet), Invariant($"{message}. Expected set: {expectedSet.StringJoin()}; Actual set: {actualSet.StringJoin()}"));
         }
 
         public static void AssertDistinctSets<T>([NotNull] IEnumerable<T> first, [NotNull] IEnumerable<T> second, [NotNull] string message)
@@ -43,7 +44,8 @@ namespace UITests.Util
             var secondSet = second as ISet<T> ?? new HashSet<T>(second);
 
             var intersection = firstSet.Intersect(secondSet).ToArray();
-            Assert.AreEqual(0, intersection.Length, $"{message}. Non-empty intersection for set: {firstSet.StringJoin()} and set: {secondSet.StringJoin()} - {intersection.StringJoin()}");
+            Assert.AreEqual(0, intersection.Length, 
+                Invariant($"{message}. Non-empty intersection for set: {firstSet.StringJoin()} and set: {secondSet.StringJoin()} - {intersection.StringJoin()}"));
         }
 
         public static void StringContains([NotNull] string str, [NotNull] string substring, [NotNull] string message)
@@ -52,7 +54,7 @@ namespace UITests.Util
             if (substring == null) throw new ArgumentNullException(nameof(substring));
             if (message == null) throw new ArgumentNullException(nameof(message));
 
-            Assert.IsTrue(str.Contains(substring), $"{message}. Expected '{str}' to contain '{substring}'");
+            Assert.IsTrue(str.Contains(substring), Invariant($"{message}. Expected '{str}' to contain '{substring}'"));
         }
     }
 }

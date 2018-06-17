@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using OpenQA.Selenium;
 using UITests.Constants;
 using UITests.Util;
@@ -26,8 +27,8 @@ namespace UITests.Helpers
             {
                 Console.WriteLine("Populating calculator settings...");
                 driver.SelectValue(By.Id(SiteConstants.SurvivalGenderSelectId), gender.ToString());
-                driver.SelectValue(By.Id(SiteConstants.SurvivalBirthYearSelectId), birthYear.ToString());
-                driver.SelectValue(By.Id(SiteConstants.SurvivalWeeklyPlaytimeSelectId), weeklyPlaytime.ToString());
+                driver.SelectValue(By.Id(SiteConstants.SurvivalBirthYearSelectId), birthYear.ToString(CultureInfo.InvariantCulture));
+                driver.SelectValue(By.Id(SiteConstants.SurvivalWeeklyPlaytimeSelectId), weeklyPlaytime.ToString(CultureInfo.InvariantCulture));
                 driver.SelectValue(By.Id(SiteConstants.SurvivalPlayStyleSelectId), playStyle.ToString());
 
                 Console.WriteLine("Starting calculation...");

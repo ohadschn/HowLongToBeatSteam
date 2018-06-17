@@ -3,6 +3,7 @@ using OpenQA.Selenium;
 using SeleniumExtras.WaitHelpers;
 using UITests.Constants;
 using UITests.Util;
+using static System.FormattableString;
 
 namespace UITests.Helpers
 {
@@ -29,7 +30,7 @@ namespace UITests.Helpers
 
         public static void SignInWithId(IWebDriver driver, string steamId, WaitType waitType = WaitType.PageLoad)
         {
-            Console.WriteLine($"Navigating to deployment URL: {SiteConstants.LocalDeploymentUrl}...");
+            Console.WriteLine(Invariant($"Navigating to deployment URL: {SiteConstants.LocalDeploymentUrl}..."));
             driver.Url = SiteConstants.LocalDeploymentUrl;
 
             Console.WriteLine("Locating Steam ID textbox...");
@@ -46,7 +47,7 @@ namespace UITests.Helpers
 
         public static void SignInThroughSteam(IWebDriver driver, string steamUser, string steamPassword, WaitType waitType = WaitType.PageLoad)
         {
-            Console.WriteLine($"Navigating to deployment URL: {SiteConstants.LocalDeploymentUrl}...");
+            Console.WriteLine(Invariant($"Navigating to deployment URL: {SiteConstants.LocalDeploymentUrl}..."));
             driver.Url = SiteConstants.LocalDeploymentUrl;
 
             Console.WriteLine("Clicking Steam sign in button...");
@@ -81,7 +82,7 @@ namespace UITests.Helpers
 
         public static void GoToCachedGamesPage(IWebDriver driver, WaitType waitType = WaitType.PageLoad)
         {
-            Console.WriteLine($"Navigating to cached games page URL: {SiteConstants.CachedGamePage}...");
+            Console.WriteLine(Invariant($"Navigating to cached games page URL: {SiteConstants.CachedGamePage}..."));
             driver.Url = SiteConstants.CachedGamePage;
 
             WaitForLoad(driver, waitType);

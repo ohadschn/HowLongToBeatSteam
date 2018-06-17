@@ -21,10 +21,12 @@
            <Word>Ml</Word>
            <Word>Parsable</Word>
            <Word>Darb</Word>
+           <Word>Username</Word>
          </Recognized>
 		    <Compound>
             <Term CompoundAlternate="CoOp">coop</Term>
             <Term CompoundAlternate="NonGame">nongame</Term>
+            <Term CompoundAlternate="CheckBox">checkbox</Term>
          </Compound>
       </Words>
 </Dictionary>
