@@ -226,9 +226,13 @@ namespace UITests.Util
         public static void Hover([NotNull] this IWebDriver driver, IWebElement element)
         {
             if (driver == null) throw new ArgumentNullException(nameof(driver));
-            //https://github.com/SeleniumHQ/selenium/issues/4148
-            ((IJavaScriptExecutor) driver).ExecuteScript("arguments[0].scrollIntoView(true);", element);
+            ScrollIntoView(driver, element); //https://github.com/SeleniumHQ/selenium/issues/4148
             new Actions(driver).MoveToElement(element).Perform();
+        }
+
+        public static void ScrollIntoView([NotNull] this IWebDriver driver, IWebElement element)
+        {
+            ((IJavaScriptExecutor) driver).ExecuteScript("arguments[0].scrollIntoView(true);", element);
         }
     }
 }
