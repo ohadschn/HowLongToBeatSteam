@@ -13,7 +13,7 @@ namespace UITests.Tests
         private const string FacebookShareTitle = "Facebook";
         private const string TwitterShareTitle = "Twitter";
         private const string RedditShareTitle = "reddit";
-        private const string GooglePlusShareTitle = "Google+";
+        private const string GooglePlusShareTitle = "Google";
 
         [TestMethod]
         public void TestShareLinks()
