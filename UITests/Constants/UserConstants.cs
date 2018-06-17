@@ -6,7 +6,7 @@
         public const string HltbsPersonaName = "hltbs";
         public const string HltbsPersonaAvatarUUID = "c13361fe7cf0f59a71cd2f84936ec39c8a12074f";
         public const int HltbUserGameCount = 3;
-        public const int HltbUserExludedGameCount = 1;
+        public const int HltbUserExludedGameCount = 2;
 
         public const string SampleSteamId = "ohad188";
         public const long SampleSteam64Id = 76561198079151088;
