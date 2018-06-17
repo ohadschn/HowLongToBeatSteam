@@ -26,35 +26,35 @@ namespace UITests.Tests
             }
         }
 
-        private static void AssertActive(IWebElement element)
+        private static void AssertActive(IWebDriver driver, IWebElement element)
         {
-            Assert.IsTrue(element.GetAttribute("class").Contains("active"), Invariant($"Expected element {element} to be active"));
+            driver.WaitUntil(d => element.GetAttribute("class").Contains("active"), Invariant($"Expected element {element} to be active"));
         }
 
-        private static void TestSlicers(ISearchContext driver)
+        private static void TestSlicers(IWebDriver driver)
         {
             Console.WriteLine("Clicking 'Current' playtime slicer...");
             var currentPlaytimeSlicer = driver.FindElement(By.Id(SiteConstants.CurrentPlaytimeSlicerId));
             currentPlaytimeSlicer.Click();
-            AssertActive(currentPlaytimeSlicer);
+            AssertActive(driver, currentPlaytimeSlicer);
             Assert.IsTrue(driver.FindElements(By.ClassName(SiteConstants.NoDataIndicatorId)).All(e => e.Displayed), "Expected no data indication for current playtime");
 
             Console.WriteLine("Clicking 'Remaining' playtime slicer...");
             var remainingPlaytimeSlicer = driver.FindElement(By.Id(SiteConstants.RemainingPlaytimeSlicerId));
             remainingPlaytimeSlicer.Click();
             Assert.IsFalse(currentPlaytimeSlicer.Enabled, "Expected current playtime slicer to be disabled when sliced for remaining playtime");
-            AssertActive(remainingPlaytimeSlicer);
-            AssertActive(driver.FindElement(By.Id(SiteConstants.MainPlaytimeSlicerId)));
+            AssertActive(driver, remainingPlaytimeSlicer);
+            AssertActive(driver, driver.FindElement(By.Id(SiteConstants.MainPlaytimeSlicerId)));
 
             Console.WriteLine("Clicking 'Extras' playtime slicer...");
             var extrasPlaytimeSlicer = driver.FindElement(By.Id(SiteConstants.ExtrasPlaytimeSlicerId));
             extrasPlaytimeSlicer.Click();
-            AssertActive(extrasPlaytimeSlicer);
+            AssertActive(driver, extrasPlaytimeSlicer);
 
             Console.WriteLine("Clicking 'Completionist' playtime slicer...");
             var completionistPlaytimeSlicer = driver.FindElement(By.Id(SiteConstants.CompletionistPlaytimeSlicerId));
             completionistPlaytimeSlicer.Click();
-            AssertActive(completionistPlaytimeSlicer);
+            AssertActive(driver, completionistPlaytimeSlicer);
         }
 
         [TestMethod]
