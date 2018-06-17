@@ -59,8 +59,8 @@ namespace UITests.Util
 
             if (browsers.HasFlag(Browsers.iPhone4Chrome))
             {
-                Console.WriteLine("Executing test on Apple iPhone 4 Chrome...");
-                using (var driver = GetMobileChromeDriver("Apple iPhone 4")) { test(driver); }
+                Console.WriteLine("Executing test on Apple iPhone 8 Chrome...");
+                using (var driver = GetMobileChromeDriver("iPhone X")) { test(driver); }
             }
 
             if (browsers.HasFlag(Browsers.OptimusL70Chrome))
@@ -72,7 +72,7 @@ namespace UITests.Util
             if (browsers.HasFlag(Browsers.Nexus7Chrome))
             {
                 Console.WriteLine("Executing test on Google Nexus 7 Chrome...");
-                using (var driver = GetMobileChromeDriver("Google Nexus 7")) { test(driver); }
+                using (var driver = GetMobileChromeDriver("Nexus 7")) { test(driver); }
             }
 
             if (browsers.HasFlag(Browsers.iPadMiniChrome))
