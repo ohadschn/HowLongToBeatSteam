@@ -17,7 +17,7 @@ namespace UITests.Util
         Chrome = 2,
         InternetExplorer = 4,
         // ReSharper disable once InconsistentNaming
-        iPhone4Chrome = 8,
+        iPhoneXChrome = 8,
         OptimusL70Chrome = 16, //384 X 640
         Nexus7Chrome = 32, // 600 X 960
         // ReSharper disable once InconsistentNaming
@@ -57,9 +57,9 @@ namespace UITests.Util
                 using (var driver = new InternetExplorerDriver()) { test(driver); }
             }
 
-            if (browsers.HasFlag(Browsers.iPhone4Chrome))
+            if (browsers.HasFlag(Browsers.iPhoneXChrome))
             {
-                Console.WriteLine("Executing test on Apple iPhone 8 Chrome...");
+                Console.WriteLine("Executing test on Apple iPhone X Chrome...");
                 using (var driver = GetMobileChromeDriver("iPhone X")) { test(driver); }
             }
 

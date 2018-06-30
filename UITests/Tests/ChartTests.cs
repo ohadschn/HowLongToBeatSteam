@@ -78,7 +78,7 @@ namespace UITests.Tests
 
                 TestRenderedCharts(driver);
                 TestSlicers(driver);
-            }, Browsers.iPhone4Chrome);
+            }, Browsers.iPhoneXChrome);
         }
 
         [TestMethod]
