@@ -42,44 +42,62 @@ namespace UITests.Util
             if (browsers.HasFlag(Browsers.Firefox))
             {
                 Console.WriteLine("Executing test on FireFox...");
-                using (var driver = new FirefoxDriver()) { test(driver); }
+                using (var driver = new FirefoxDriver()) { ExecuteWithRetries(test, driver); }
             }
 
             if (browsers.HasFlag(Browsers.Chrome))
             {
                 Console.WriteLine("Executing test on Chrome...");
-                using (var driver = new ChromeDriver()) { test(driver); }
+                using (var driver = new ChromeDriver()) { ExecuteWithRetries(test, driver); }
             }
 
             if (browsers.HasFlag(Browsers.InternetExplorer))
             {
                 Console.WriteLine("Executing test on Internet Explorer...");
-                using (var driver = new InternetExplorerDriver()) { test(driver); }
+                using (var driver = new InternetExplorerDriver()) { ExecuteWithRetries(test, driver); }
             }
 
             if (browsers.HasFlag(Browsers.iPhoneXChrome))
             {
                 Console.WriteLine("Executing test on Apple iPhone X Chrome...");
-                using (var driver = GetMobileChromeDriver("iPhone X")) { test(driver); }
+                using (var driver = GetMobileChromeDriver("iPhone X")) { ExecuteWithRetries(test, driver); }
             }
 
             if (browsers.HasFlag(Browsers.OptimusL70Chrome))
             {
                 Console.WriteLine("Executing test on LG Optimus L70 Chrome...");
-                using (var driver = GetMobileChromeDriver("LG Optimus L70")) { test(driver); }    
+                using (var driver = GetMobileChromeDriver("LG Optimus L70")) { ExecuteWithRetries(test, driver); }    
             }
 
             if (browsers.HasFlag(Browsers.Nexus7Chrome))
             {
                 Console.WriteLine("Executing test on Google Nexus 7 Chrome...");
-                using (var driver = GetMobileChromeDriver("Nexus 7")) { test(driver); }
+                using (var driver = GetMobileChromeDriver("Nexus 7")) { ExecuteWithRetries(test, driver); }
             }
 
             if (browsers.HasFlag(Browsers.iPadMiniChrome))
             {
                 Console.WriteLine("Executing test on Apple iPad Mini Chrome...");
-                using (var driver = GetMobileChromeDriver("Apple iPad Mini")) { test(driver); }
+                using (var driver = GetMobileChromeDriver("Apple iPad Mini")) { ExecuteWithRetries(test, driver); }
             }
+        }
+
+        private static void ExecuteWithRetries(Action<IWebDriver> test, IWebDriver driver, int retries = 3)
+        {
+            for (int attempt = 0; attempt < retries; attempt++)
+            {
+                try
+                {
+                    test(driver);
+                    return;
+                }
+                catch (WebDriverException e)
+                {
+                    Console.WriteLine("WARNING: Attempt {0}/{1} with WebDriver {2} failed: {3}", attempt+1, retries, driver, e);
+                }     
+            }
+
+            Console.WriteLine("ERROR: All retry attempts exhausted, failing test");
         }
 
         public static TResult WaitUntil<TResult>([NotNull] this IWebDriver driver, [NotNull] Func<IWebDriver, TResult> condition, [NotNull] string message)
