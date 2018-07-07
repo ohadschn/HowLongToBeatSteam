@@ -179,6 +179,11 @@
       <Link>Properties\CustomDictionary.xml</Link>
     </CodeAnalysisDictionary>
   </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\packages\SonarAnalyzer.CSharp.7.3.0.5690\analyzers\Google.Protobuf.dll" />
+    <Analyzer Include="..\packages\SonarAnalyzer.CSharp.7.3.0.5690\analyzers\SonarAnalyzer.CSharp.dll" />
+    <Analyzer Include="..\packages\SonarAnalyzer.CSharp.7.3.0.5690\analyzers\SonarAnalyzer.dll" />
+  </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

@@ -90,7 +90,11 @@
     </None>
     <None Include="_EventRegisterUsersGuide.docx" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Analyzer Include="..\packages\SonarAnalyzer.CSharp.7.3.0.5690\analyzers\Google.Protobuf.dll" />
+    <Analyzer Include="..\packages\SonarAnalyzer.CSharp.7.3.0.5690\analyzers\SonarAnalyzer.CSharp.dll" />
+    <Analyzer Include="..\packages\SonarAnalyzer.CSharp.7.3.0.5690\analyzers\SonarAnalyzer.dll" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj">
       <Project>{046818B8-EF77-4AF3-9EF6-3B4CC98715B2}</Project>
