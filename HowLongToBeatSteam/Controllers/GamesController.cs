@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Net;
@@ -23,6 +24,8 @@ namespace HowLongToBeatSteam.Controllers
         private static readonly string SteamApiKey = SiteUtil.GetMandatoryCustomConnectionStringFromConfig("SteamApiKey");
 
         private static readonly int s_vanitUrlResolutionParallelization = SiteUtil.GetOptionalValueFromConfig("VanitUrlResolutionParallelization", 3);
+        
+        [SuppressMessage("Sonar.CodeSmell", "S1075:URIsShouldNotBeHardcoded", Justification = "Steam API")]
         private const string ResolveVanityUrlFormat = @"http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key={0}&vanityurl={1}";
         private const int VanityUrlResolutionSuccess = 1;
 
@@ -30,6 +33,7 @@ namespace HowLongToBeatSteam.Controllers
         private const string GetOwnedSteamGamesFormat = @"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={0}&steamid={1}&format=json&include_appinfo=1";
 
         private static readonly int s_playerSummaryRetrievalParallelization = SiteUtil.GetOptionalValueFromConfig("PlayerSummaryRetrievalParallelization", 3);
+        [SuppressMessage("Sonar.CodeSmell", "S1075:URIsShouldNotBeHardcoded", Justification = "Steam API")]
         private const string GetPlayerSummariesUrlFormat = @"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={0}&steamids={1}";
 
         private const string CacheAvatar = @"https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/ce/ce8f7969f8c79019ab3c7c88ccfbf3185e8ec7da_medium.jpg";
@@ -42,6 +46,7 @@ namespace HowLongToBeatSteam.Controllers
 
         private static readonly string[] NonGenres =  { "Indie", "Casual" };
 
+        [SuppressMessage("Sonar.Bug", "S3168:AsyncMethodsShouldNotReturnVoid", Justification = "We want a failure here to crash the process as per async void semantics")]
         public static async void StartUpdatingCache() 
         {
             while (true)
@@ -50,7 +55,7 @@ namespace HowLongToBeatSteam.Controllers
 
                 SiteEventSource.Log.UpdateCacheStart();
 
-                var allApps = await StorageHelper.GetAllApps(null, 100).ConfigureAwait(false); //we'll crash and get recycled after 100 failed attempts
+                var allApps = await StorageHelper.GetAllApps(null, 20).ConfigureAwait(false); //we'll crash and get recycled after 100 failed attempts
                 foreach (var appEntity in allApps)
                 {
                     Cache[appEntity.SteamAppId] = new SteamAppData(appEntity);

@@ -4,6 +4,7 @@ using System.Net;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
+using Common.Util;
 using HowLongToBeatSteam.Logging;
 using JetBrains.Annotations;
 
@@ -12,7 +13,7 @@ namespace HowLongToBeatSteam.Filters
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
     public sealed class CsrfFilterAttribute : ActionFilterAttribute
     {
-        private readonly Uri m_expectedUri = new Uri("https://www.howlongtobeatsteam.com");
+        private readonly Uri m_expectedUri = new Uri(SiteUtil.GetMandatoryValueFromConfig("ExpectedAuthority"));
 
         public override void OnActionExecuting([NotNull] HttpActionContext actionContext)
         {

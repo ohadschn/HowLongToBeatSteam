@@ -8,7 +8,7 @@ using TestRunner.Logging;
 
 namespace TestRunner.Runner
 {
-    internal class TestRunner
+    internal static class TestRunner
     {
         private static void Main()
         {

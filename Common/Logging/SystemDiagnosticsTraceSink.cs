@@ -12,11 +12,11 @@ namespace Common.Logging
 {
     public sealed class SystemDiagnosticsTraceSink : IObserver<EventEntry>
     {
-        private bool m_disposed;
+        private bool m_flushing;
 
         ~SystemDiagnosticsTraceSink()
         {
-            Dispose(false);
+            Flush(false);
         }
 
         public void OnNext(EventEntry value)
@@ -56,12 +56,12 @@ namespace Common.Logging
 
         public void OnCompleted()
         {
-            Dispose(true);
+            Flush(true);
         }
 
-        private void Dispose(bool completing)
+        private void Flush(bool completing)
         {
-            if (m_disposed)
+            if (m_flushing)
             {
                 return;
             }
@@ -81,7 +81,7 @@ namespace Common.Logging
 
             Trace.Flush();
 
-            m_disposed = true;
+            m_flushing = true;
         }
     }
 

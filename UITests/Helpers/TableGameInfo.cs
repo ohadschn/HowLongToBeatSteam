@@ -11,7 +11,7 @@ namespace UITests.Helpers
         Failure
     }
 
-    public class TableGameInfo : IEquatable<TableGameInfo>
+    public sealed class TableGameInfo : IEquatable<TableGameInfo>
     {
         public bool Included { get; }
         public string SteamName { get; }

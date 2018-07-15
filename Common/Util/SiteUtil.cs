@@ -38,6 +38,9 @@ namespace Common.Util
         private const string WebjobRunIdEnvironmentVariable = "WEBJOBS_RUN_ID";
         private const string WebsiteNameEnvironmentVariable = "WEBSITE_SITE_NAME";
 
+        [SuppressMessage("Sonar.CodeSmell", "S1075", Justification = "SendGrid API")]
+        private const string SendGridApiSendAddress = "https://api.sendgrid.com/v3/mail/send";
+
         //used to determine if running on azure or not (never mocked)
         private const string WebSiteHostNameEnvironmentVariable = "WEBSITE_HOSTNAME";
 
@@ -136,6 +139,7 @@ namespace Common.Util
 
         private const char ListSeparator = ';';
         private const char ListSeparatorReplacement = '-';
+
         public static string ToFlatString([NotNull] this IEnumerable<string> strings)
         {
             if (strings == null)
@@ -179,6 +183,7 @@ namespace Common.Util
         [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "task")]
         public static void Forget(this Task task) //suppress CS4014
         {
+            //Nothing to do, task is forgotten
         }
 
         //http://stackoverflow.com/a/26276284/67824
@@ -367,11 +372,16 @@ namespace Common.Util
             return SendSuccessMail(description, message, GetTimeElapsedFromTickCount(ticks));
         }
 
-        public static async Task SendSuccessMail([NotNull] string description, [NotNull] string message, TimeSpan duration)
+        public static Task SendSuccessMail([NotNull] string description, [NotNull] string message, TimeSpan duration)
         {
             if (description == null) throw new ArgumentNullException(nameof(description));
             if (message == null) throw new ArgumentNullException(nameof(message));
 
+            return SendSuccessMailInternal(description, message, duration);
+        }
+
+        private static async Task SendSuccessMailInternal([NotNull] string description, [NotNull] string message, TimeSpan duration)
+        {
             var errors = EventSourceRegistrar.GetSessionErrors();
             var eventFormatter = new EventTextFormatter();
             string errorsText;
@@ -389,18 +399,19 @@ namespace Common.Util
             var from = new EmailAddress("webjobs@howlongtobeatsteam.com", "HLTBS webjobs");
             var to = new EmailAddress("contact@howlongtobeatsteam.com", "HLTBS contact");
             var subject = String.Format(CultureInfo.InvariantCulture, "{0} - Success ({1}) [{2}]",
-                    WebJobName, duration, message + (errors.Length == 0 ? String.Empty : " (with session errors)"));
+                WebJobName, duration, message + (errors.Length == 0 ? String.Empty : " (with session errors)"));
             var text = String.Format(CultureInfo.InvariantCulture, "{1}{0}Run ID: {2}{0}Start time: {3}{0}End time:{4}{0}Output log file: {5}{6}",
                 Environment.NewLine, GetTriggeredRunUrl(), WebJobRunId, DateTime.UtcNow - duration, DateTime.UtcNow, GetTriggeredLogUrl(),
                 errors.Length == 0 ? String.Empty : String.Format("{0}Session Errors:{0}{1}", Environment.NewLine, errorsText));
             var mail = MailHelper.CreateSingleEmail(from, to, subject, text, null);
 
-            using (var response = await SendGridClient.PostAsJsonAsync<SendGridMessage, string>("https://api.sendgrid.com/v3/mail/send", mail))
+            using (var response = await SendGridClient.PostAsJsonAsync<SendGridMessage, string>(SendGridApiSendAddress, mail))
             {
                 CommonEventSource.Log.SendSuccessMailStop(
                     description, response.ResponseMessage.StatusCode, response.ResponseMessage.Headers.ToString(), response.Content);
             }
         }
+
 
         public static TimeSpan GetTimeElapsedFromTickCount(int tickCount)
         {

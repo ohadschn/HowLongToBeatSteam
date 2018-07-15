@@ -15,14 +15,12 @@ namespace HowLongToBeatSteam.ErrorHandler //this namespace makes AI configuratio
         {
             if (filterContext == null) throw new ArgumentNullException(nameof(filterContext));
 
-            if (filterContext.HttpContext != null && filterContext.Exception != null)
+            if (filterContext.HttpContext != null 
+                && filterContext.Exception != null 
+                && filterContext.HttpContext.IsCustomErrorEnabled) //If customError is Off, then AI HTTPModule will report the exception
             {
-                //If customError is Off, then AI HTTPModule will report the exception
-                if (filterContext.HttpContext.IsCustomErrorEnabled)
-                {   
-                    var ai = new TelemetryClient();
-                    ai.TrackException(filterContext.Exception);
-                } 
+                var ai = new TelemetryClient();
+                ai.TrackException(filterContext.Exception);
             }
             base.OnException(filterContext);
         }

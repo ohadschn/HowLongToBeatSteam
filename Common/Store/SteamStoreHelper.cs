@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -15,7 +16,9 @@ namespace Common.Store
 {
     public static class SteamStoreHelper
     {
+        [SuppressMessage("Sonar.CodeSmell", "S1075", Justification = "Steam API")]
         private const string SteamStoreApiUrlTemplate = "http://store.steampowered.com/api/appdetails/?appids={0}";
+
         private static readonly int MaxSteamStoreIdsPerRequest = SiteUtil.GetOptionalValueFromConfig("MaxSteamStoreIdsPerRequest", 50);
 
         public static async Task GetStoreInformationUpdates(

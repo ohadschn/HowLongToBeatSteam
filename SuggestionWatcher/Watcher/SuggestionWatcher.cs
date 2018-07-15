@@ -10,7 +10,7 @@ using SuggestionWatcher.Logging;
 
 namespace SuggestionWatcher.Watcher
 {
-    internal class SuggestionWatcher
+    internal static class SuggestionWatcher
     {
         private static void Main()
         {

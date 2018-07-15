@@ -37,8 +37,7 @@ namespace HowLongToBeatSteam.Telemetry
             SetDeveloperMode();
 #endif
 
-            //AddAndInitializeModule<DeveloperModeWithDebuggerAttachedTelemetryModule>(); TODO enable when made public in the SDK
-
+            AddAndInitializeModule<DeveloperModeWithDebuggerAttachedTelemetryModule>(); 
             AddAndInitializeModule<UnhandledExceptionTelemetryModule>();
             AddAndInitializeModule<UnobservedExceptionTelemetryModule>();
             AddAndInitializeModule<ExceptionTrackingTelemetryModule>();

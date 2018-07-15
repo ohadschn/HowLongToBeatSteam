@@ -16,7 +16,7 @@ namespace HowLongToBeatSteam
             TelemetryManager.Setup("d0a63409-84bf-4f88-a8cf-8440ce670471");
             SiteUtil.SetDefaultConnectionLimit();
             GlobalConfiguration.Configure(WebApiConfig.Register);
-            GamesController.StartUpdatingCache(); //make sure caching starts as soon as site is up
+            GamesController.StartUpdatingCache(); //make sure caching starts as soon as site is up 
 
             InitMvc();
         }

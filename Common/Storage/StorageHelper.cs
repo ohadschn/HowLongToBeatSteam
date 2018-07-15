@@ -108,12 +108,18 @@ namespace Common.Storage
             return genreStats;
         }
 
-        public static async Task<int> DeleteOldEntities(
+        public static Task<int> DeleteOldEntities(
             [NotNull] string tableName, DateTime threshold, [NotNull] string description, int retries = -1)
         {
             if (tableName == null) throw new ArgumentNullException(nameof(tableName));
             if (description == null) throw new ArgumentNullException(nameof(description));
 
+            return DeleteOldEntitiesInternal(tableName, threshold, description, retries);
+        }
+
+        private static async Task<int> DeleteOldEntitiesInternal(
+            [NotNull] string tableName, DateTime threshold, [NotNull] string description, int retries)
+        {
             CommonEventSource.Log.DeleteOldEntitiesStart(description);
 
             var table = await GetTable(tableName, retries).ConfigureAwait(false);
@@ -231,7 +237,7 @@ namespace Common.Storage
             return ExecuteOperations(entities, e => new[] { TableOperation.Delete(e) }, tableName, description, retries);
         }
 
-        public static async Task ExecuteOperations<T>(
+        public static Task ExecuteOperations<T>(
             [NotNull] IEnumerable<T> entities, 
             [NotNull] Func<T, TableOperation[]> operationGenerator, 
             [NotNull] string tableName, 
@@ -244,6 +250,17 @@ namespace Common.Storage
             if (tableName == null) throw new ArgumentNullException(nameof(tableName));
             if (description == null) throw new ArgumentNullException(nameof(description));
 
+            return ExecuteOperationsInternal(entities, operationGenerator, tableName, description, retries);
+        }
+
+        private static async Task ExecuteOperationsInternal<T>(
+            [NotNull] IEnumerable<T> entities,
+            [NotNull] Func<T, TableOperation[]> operationGenerator,
+            [NotNull] string tableName,
+            [NotNull] string description,
+            int retries)
+            where T : ITableEntity
+        {
             CommonEventSource.Log.ExecuteOperationsStart(description);
             var table = await GetTable(tableName, retries).ConfigureAwait(false);
 
@@ -257,7 +274,7 @@ namespace Common.Storage
             CommonEventSource.Log.ExecuteOperationsStop(description);
         }
 
-        public static async Task ExecuteBatchOperation(
+        public static Task ExecuteBatchOperation(
             [NotNull] IEnumerable<TableOperation> operations,
             [NotNull] string tableName,
             [NotNull] string description,
@@ -267,6 +284,15 @@ namespace Common.Storage
             if (tableName == null) throw new ArgumentNullException(nameof(tableName));
             if (description == null) throw new ArgumentNullException(nameof(description));
 
+            return ExecuteBatchOperationInternal(operations, tableName, description, retries);
+        }
+
+        private static async Task ExecuteBatchOperationInternal(
+            [NotNull] IEnumerable<TableOperation> operations,
+            [NotNull] string tableName,
+            [NotNull] string description,
+            int retries)
+        {
             CommonEventSource.Log.ExecuteBatchOperationStart(description);
 
             var batchOperation = new TableBatchOperation();
@@ -305,10 +331,15 @@ namespace Common.Storage
             }
         }
 
-        public static async Task InsertSuggestion(SuggestionEntity suggestion, int retries = -1)
+        public static Task InsertSuggestion(SuggestionEntity suggestion, int retries = -1)
         {
             if (suggestion == null) throw new ArgumentNullException(nameof(suggestion));
 
+            return InsertSuggestionInternal(suggestion, retries);
+        }
+
+        private static async Task InsertSuggestionInternal(SuggestionEntity suggestion, int retries)
+        {
             var table = await GetTable(SteamToHltbTableName, retries).ConfigureAwait(false);
 
             CommonEventSource.Log.InsertSuggestionStart(suggestion.SteamAppId, suggestion.HltbId);
@@ -316,10 +347,16 @@ namespace Common.Storage
             CommonEventSource.Log.InsertSuggestionStop(suggestion.SteamAppId, suggestion.HltbId);
         }
 
-        public static async Task DeleteSuggestion([NotNull] SuggestionEntity suggestion, AppEntity app = null, int retries = -1)
+
+        public static Task DeleteSuggestion([NotNull] SuggestionEntity suggestion, AppEntity app = null, int retries = -1)
         {
             if (suggestion == null) throw new ArgumentNullException(nameof(suggestion));
 
+            return DeleteSuggestionInternal(suggestion, app, retries);
+        }
+
+        private static async Task DeleteSuggestionInternal([NotNull] SuggestionEntity suggestion, AppEntity app, int retries)
+        {
             var batchOperation = new TableBatchOperation
             {
                 TableOperation.Delete(suggestion),
@@ -339,12 +376,18 @@ namespace Common.Storage
             CommonEventSource.Log.DeleteSuggestionStop(suggestion.SteamAppId, suggestion.HltbId);
         }
 
+
         //assumes app has been already modified to contain the updated HLTB info
-        public static async Task AcceptSuggestion([NotNull] AppEntity app, [NotNull] SuggestionEntity suggestion, int retries = -1)
+        public static Task AcceptSuggestion([NotNull] AppEntity app, [NotNull] SuggestionEntity suggestion, int retries = -1)
         {
             if (app == null) throw new ArgumentNullException(nameof(app));
             if (suggestion == null) throw new ArgumentNullException(nameof(suggestion));
 
+            return AcceptSuggestionInternal(app, suggestion, retries);
+        }
+
+        private static async Task AcceptSuggestionInternal([NotNull] AppEntity app, [NotNull] SuggestionEntity suggestion, int retries)
+        {
             var batchOperation = new TableBatchOperation
             {
                 TableOperation.Delete(suggestion),
@@ -368,10 +411,16 @@ namespace Common.Storage
             CommonEventSource.Log.AcceptSuggestionStop(suggestion.SteamAppId, suggestion.HltbId);
         }
 
-        public static async Task UpdateProcessedSuggestions([NotNull] ProcessedSuggestionEntity processedSuggestion, int retries = -1)
+
+        public static Task UpdateProcessedSuggestions([NotNull] ProcessedSuggestionEntity processedSuggestion, int retries = -1)
         {
             if (processedSuggestion == null) throw new ArgumentNullException(nameof(processedSuggestion));
 
+            return UpdateProcessedSuggestionsInternal(processedSuggestion, retries);
+        }
+
+        private static async Task UpdateProcessedSuggestionsInternal([NotNull] ProcessedSuggestionEntity processedSuggestion, int retries)
+        {
             var table = await GetTable(SteamToHltbTableName, retries).ConfigureAwait(false);
 
             CommonEventSource.Log.UpdateProcessedSuggestionStart(processedSuggestion.SteamAppId, processedSuggestion.HltbId);

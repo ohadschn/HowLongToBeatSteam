@@ -14,7 +14,7 @@ using StorageBackupUploader.Logging;
 
 namespace StorageBackupUploader.BackupUploader
 {
-    internal class BackupUploader
+    internal static class BackupUploader
     {
         private static readonly int LogRetentionDays = SiteUtil.GetOptionalValueFromConfig("LogRetentionDays", 14);
         private static readonly int BackupRetentionDays = SiteUtil.GetOptionalValueFromConfig("BackupRetentionDays", 3000);

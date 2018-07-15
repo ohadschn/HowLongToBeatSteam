@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.IO;
@@ -22,6 +23,7 @@ namespace SteamHltbScraper.Scraper
 {
     public static class HltbScraper
     {
+        [SuppressMessage("Sonar.CodeSmell", "S1075:URIsShouldNotBeHardcoded", Justification = "HowLongToBeat API")]
         private static readonly Uri SearchHltbUrl = new Uri(@"https://howlongtobeat.com/search_main.php?t=games&page=1&sorthead=popular&sortd=Normal%20Order&plat=&detail=0");
         private const string SearchHltbPostDataFormat = @"queryString={0}";
 
@@ -499,7 +501,8 @@ namespace SteamHltbScraper.Scraper
         }
     }
 
-    public class TransientHltbFaultException : Exception
+    [SuppressMessage("Sonar.CodeSmell", "S3871:ExceptionTypesShouldBePublic", Justification = "Internal exception used for retries, will not escape this class")]
+    internal class TransientHltbFaultException : Exception
     {
         public HtmlDocument Document { get; }
         public bool PrintDocument { get; set; }

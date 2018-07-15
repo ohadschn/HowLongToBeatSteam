@@ -15,4 +15,8 @@
     <Rule Id="CA2104" Action="None" />
     <Rule Id="CA2210" Action="None" />
   </Rules>
+  <Rules AnalyzerId="SonarAnalyzer.CSharp" RuleNamespace="SonarAnalyzer.CSharp">
+    <Rule Id="S2259" Action="None" /> <!--Null pointers should not be dereferenced - buggy and already checked by resharper-->
+    <Rule Id="S3358" Action="None" /> <!--Ternary operators should not be nested - sometimes it's convenient-->
+  </Rules>
 </RuleSet>

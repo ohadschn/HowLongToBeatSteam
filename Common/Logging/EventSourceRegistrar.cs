@@ -35,7 +35,6 @@ namespace Common.Logging
 
             if (s_logTplEvents)
             {
-                //TODO consider taking only transfer events from TplEtwProvider
                 listener.EnableEvents("System.Threading.Tasks.TplEventSource", EventLevel.Informational, Keywords.All);
             }
         }

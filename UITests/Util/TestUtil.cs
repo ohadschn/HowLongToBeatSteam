@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using CredentialManagement;
@@ -11,7 +12,8 @@ namespace UITests.Util
 {
     public static class TestUtil
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1065:DoNotRaiseExceptionsInUnexpectedLocations")]
+        [SuppressMessage("Microsoft.Design", "CA1065:DoNotRaiseExceptionsInUnexpectedLocations")]
+        [SuppressMessage("Code Smell", "S3877:ExceptionsShouldNotBeThrownFromUnexpectedMethods", Justification = "We want to fail early when the system isn't properly configured for IE")]
         static TestUtil()
         {
             var seleniumIeRegFlag = Registry.GetValue(Environment.Is64BitOperatingSystem
