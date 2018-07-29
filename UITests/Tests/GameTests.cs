@@ -42,7 +42,7 @@ namespace UITests.Tests
             var mainRemainingPlaytimePercent = driver.FindElement(By.Id(SiteConstants.MainPlaytimeRemainingPercentSpan)).Text;
             Assert.AreEqual("100.00%", mainRemainingPlaytimePercent, "expected 100% main playtime to remain");
 
-            var extrasRemainingPlaytimePercent = driver.FindElement(By.Id(SiteConstants.MainPlaytimeRemainingPercentSpan)).Text;
+            var extrasRemainingPlaytimePercent = driver.FindElement(By.Id(SiteConstants.ExtrasPlaytimeRemainingPercentSpan)).Text;
             Assert.AreEqual("100.00%", extrasRemainingPlaytimePercent, "expected 100% extras playtime to remain");
 
             var completionistRemainingPlaytimePercent = driver.FindElement(By.Id(SiteConstants.CompletionistPlaytimeRemainingPercentSpan)).Text;
