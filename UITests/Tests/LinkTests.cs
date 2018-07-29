@@ -12,12 +12,17 @@ namespace UITests.Tests
     [TestClass]
     public class LinkTests
     {
-        private static void AssertPageLink(IWebDriver driver, string pageAnchorId, string expectedTitle)
+        private static void AssertPageLink(IWebDriver driver, string pageAnchorId, string expectedTitle, string textContainerId, string expectedText)
         {
             DialogHelper.TestDialog(driver, pageAnchorId, SiteConstants.ExternalModalId, () =>
             {
                 driver.WaitUntil(ExpectedConditions.TextToBePresentInElementLocated(By.Id(SiteConstants.ExternalPageTitleHeaderId), expectedTitle),
                     Invariant($"Could not verify external page title: {expectedTitle}"));
+
+                driver.SwitchTo().Frame(driver.FindElement(By.Id(SiteConstants.ExternalPageFrameId)));
+                driver.WaitUntil(ExpectedConditions.TextToBePresentInElementLocated(By.Id(textContainerId), expectedText),
+                    Invariant($"Could not verify external page text '{expectedText}'"));
+                driver.SwitchTo().DefaultContent();
 
                 Console.WriteLine("Dismissing external page modal dialog...");
                 //we can't click the close button directly because it's covered in a bootstrap overlay
@@ -31,8 +36,8 @@ namespace UITests.Tests
         {
             Assert.IsTrue(driver.FindElement(By.Id(SiteConstants.ContactAnchorId)).Displayed, "Expected contact link to be visible");
 
-            AssertPageLink(driver, SiteConstants.PrivacyAnchorId, SiteConstants.PrivacyPolicyTitle);
-            AssertPageLink(driver, SiteConstants.FaqAnchorId, SiteConstants.FaqTitle);
+            AssertPageLink(driver, SiteConstants.PrivacyAnchorId, SiteConstants.PrivacyTitle, SiteConstants.PrivacyContainerId, "For more information see on how Google");
+            AssertPageLink(driver, SiteConstants.FaqAnchorId, SiteConstants.FaqTitle, SiteConstants.FaqContainerId, "It's fun to start sentences with");
         }
 
         private static void AssertExternalLinks(IWebDriver driver, bool mobile = false)

@@ -137,11 +137,15 @@ namespace UITests.Constants
         public const string OhadSoftAnchorId = "ohadsoft-link";
 
         public const string FaqTitle = "Frequently Asked Questions";
-        public const string PrivacyPolicyTitle = "Privacy Policy";
+        public const string FaqContainerId = "faq-container";
+
+        public const string PrivacyTitle = "Privacy Policy";
+        public const string PrivacyContainerId = "privacy-container";
 
         public const string ExternalModalBodyDivId = "external-modal-body";
         public const string ExternalPageTitleHeaderId = "external-title";
         public const string ExternalPageCloseButtonId = "close-external-modal";
+        public const string ExternalPageFrameId = "external-page-frame";
 
         public const string ValveSteamLoginButtonId = "imageLogin";
         public const string ValveSteamUsername = "steamAccountName";
