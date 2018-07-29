@@ -63,6 +63,50 @@ namespace HltbTests.Imputation
             Assert.AreEqual(completionistExpected, game.CompletionistTtb, "Invalid Completionist sanitization for TTBs: " + ttbs);
         }
 
+        [TestMethod]
+        public void TestInvalidTtbFixes() //checking all branches of Imputer.FixInvalidTtbs
+        {
+            // M > E >= C
+            AssertTtbFixes(10, 8, 7, false, true, true);
+            AssertTtbFixes(10, 7, 7, false, true, true);
+            AssertTtbFixes(11, 7, 6, true, false, true);
+            AssertTtbFixes(12, 6, 6, true, false, false);
+            AssertTtbFixes(9, 8, 7, true, true, false);
+            AssertTtbFixes(9, 8, 8, true, true, false);
+
+            // C >= M > E
+            AssertTtbFixes(7, 5, 10, true, false, false);
+            AssertTtbFixes(7, 5, 7, true, false, false);
+            AssertTtbFixes(10, 9, 20, false, true, true);
+            AssertTtbFixes(20, 9, 20, false, true, false);
+
+            // M > C > E
+            AssertTtbFixes(20, 10, 15, true, false, false);
+            AssertTtbFixes(10, 8, 9, false, true, true);
+
+            // E > C >= M
+            AssertTtbFixes(1, 7, 3, false, false, true);
+            AssertTtbFixes(1, 7, 1, false, false, true);
+            AssertTtbFixes(50, 90, 80, true, true, false);
+            AssertTtbFixes(80, 90, 80, true, true, false);
+
+            // E >= M > C
+            AssertTtbFixes(10, 11, 9, false, false, true);
+            AssertTtbFixes(11, 11, 9, false, false, true);
+            AssertTtbFixes(30, 40, 29, true, true, false);
+            AssertTtbFixes(30, 30, 29, true, true, false);
+        }
+
+        private static void AssertTtbFixes(int main, int extras, int completionist, bool mainImputed, bool extrasImputed, bool completionistImputed)
+        {
+            int mainBefore = main;
+            int extrasBefore = extras;
+            int completionistBefore = completionist;
+            Imputer.FixInvalidTtbs(ref main, mainImputed, ref extras, extrasImputed, ref completionist, completionistImputed, new TtbRatios(0.7, 0.4, 0.3));
+            Assert.IsTrue(completionist >= extras && extras >= main, 
+                $"Invalid TTBs not fixed: M{mainBefore}/E{extrasBefore}/C{completionistBefore} -> M{main}/E{extras}/C{completionist}");
+        }
+
         private static void AssertValidTtbs(IEnumerable<AppEntity> games)
         {
             foreach (var game in games)
