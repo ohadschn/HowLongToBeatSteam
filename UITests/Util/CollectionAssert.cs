@@ -47,14 +47,5 @@ namespace UITests.Util
             Assert.AreEqual(0, intersection.Length, 
                 Invariant($"{message}. Non-empty intersection for set: {firstSet.StringJoin()} and set: {secondSet.StringJoin()} - {intersection.StringJoin()}"));
         }
-
-        public static void StringContains([NotNull] string str, [NotNull] string substring, [NotNull] string message)
-        {
-            if (str == null) throw new ArgumentNullException(nameof(str));
-            if (substring == null) throw new ArgumentNullException(nameof(substring));
-            if (message == null) throw new ArgumentNullException(nameof(message));
-
-            Assert.IsTrue(str.Contains(substring), Invariant($"{message}. Expected '{str}' to contain '{substring}'"));
-        }
     }
 }

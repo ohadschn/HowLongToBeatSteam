@@ -116,7 +116,7 @@ namespace SteamHltbScraper.Scraper
                 HltbInfo hltbInfo;
                 try
                 {
-                    hltbInfo = await ScrapeWithExponentialRetries(hltbId => ScrapeHltbInfo(app.SteamAppId, hltbId), app.HltbId).ConfigureAwait(false);
+                    hltbInfo = await ScrapeWithExponentialRetries(hltbId => ScrapeHltbInfo(current, app.SteamAppId, app.SteamName, hltbId), app.HltbId).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
@@ -166,7 +166,7 @@ namespace SteamHltbScraper.Scraper
             return new FormatException(String.Format(CultureInfo.InvariantCulture, "{0}. {1}. Document: {2}", message, id, doc.DocumentNode.OuterHtml), inner);
         }
 
-        private static async Task<HltbInfo> ScrapeHltbInfo(int steamAppId, int hltbId)
+        private static async Task<HltbInfo> ScrapeHltbInfo(int currentIndex, int steamAppId, string steamName, int hltbId)
         {
             HltbScraperEventSource.Log.ScrapeHltbInfoStart(hltbId);
 
@@ -182,17 +182,23 @@ namespace SteamHltbScraper.Scraper
             
             HltbScraperEventSource.Log.GetHltbGamePageStop(gamePageUrl);
 
+            HltbScraperEventSource.Log.ScrapeHltbNameStart(hltbId);
             var headerDiv = doc.DocumentNode.Descendants().FirstOrDefault(n => n.HasClass("profile_header"));
             if (headerDiv == null)
             {
-                throw new TransientHltbFaultException("Can't parse name for HLTB ID " + hltbId, doc);
+                var ex = new TransientHltbFaultException("Can't parse name (null header div) for HLTB ID " + hltbId, doc);
+                HltbScraperEventSource.Log.ErrorScrapingHltbName(currentIndex, steamAppId, steamName, hltbId, ex);
+                throw ex;
             }
 
             var hltbName = headerDiv.InnerText.Trim();
             if (String.IsNullOrWhiteSpace(hltbName))
             {
-                throw new TransientHltbFaultException("Empty name parsed for HLTB ID " + hltbId, doc);
+                var ex = new TransientHltbFaultException("Empty name parsed for HLTB ID " + hltbId, doc);
+                HltbScraperEventSource.Log.ErrorScrapingHltbName(currentIndex, steamAppId, steamName, hltbId, ex);
+                throw ex;
             }
+            HltbScraperEventSource.Log.ScrapeHltbNameStop(hltbId, hltbName);
 
             var releaseDate = ScrapeReleaseDate(hltbId, doc);
 
@@ -246,7 +252,7 @@ namespace SteamHltbScraper.Scraper
             throw GetFormatException(Invariant($"Could not parse release date: {releaseDate}"), hltbId, doc);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "profileinfo")]
+        [SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "profileinfo")]
         private static DateTime ScrapeReleaseDate(int hltbId, HtmlDocument doc)
         {
             var potentialDateNodes = doc.DocumentNode

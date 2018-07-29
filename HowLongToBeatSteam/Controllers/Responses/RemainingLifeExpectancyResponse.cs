@@ -7,10 +7,8 @@ namespace HowLongToBeatSteam.Controllers.Responses
     public class RemainingLifeExpectancyResponse
     {
         public string date { get; set; }
-        public string country { get; set; }
         public string age { get; set; }
         public double remaining_life_expectancy { get; set; }
-        public string sex { get; set; }
     }
     // ReSharper restore InconsistentNaming
 }

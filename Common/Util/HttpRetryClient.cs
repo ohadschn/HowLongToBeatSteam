@@ -49,12 +49,14 @@ namespace Common.Util
             set => m_client.DefaultRequestHeaders.Authorization = value;
         }
 
+        [PublicAPI]
         public HttpRetryClient(int retries)
         {
             m_retries = retries;
             m_client = new HttpClient();
         }
 
+        [PublicAPI]
         public Task<HttpResponseWithContent<T>> SendAsync<T>([NotNull] Func<HttpRequestMessage> requestFactory, [NotNull] string url)
         {
             if (requestFactory == null) throw new ArgumentNullException(nameof(requestFactory));
@@ -63,6 +65,7 @@ namespace Common.Util
             return SendAsync<T>(requestFactory, new Uri(url), CancellationToken.None);
         }
 
+        [PublicAPI]
         public Task<HttpResponseWithContent<T>> SendAsync<T>([NotNull] Func<HttpRequestMessage> requestFactory, [NotNull] string url, CancellationToken ct)
         {
             if (requestFactory == null) throw new ArgumentNullException(nameof(requestFactory));
@@ -71,6 +74,7 @@ namespace Common.Util
             return SendAsync<T>(requestFactory, new Uri(url), ct);
         }
 
+        [PublicAPI]
         public Task<HttpResponseWithContent<T>> SendAsync<T>([NotNull] Func<HttpRequestMessage> requestFactory, [NotNull] Uri url)
         {
             if (requestFactory == null) throw new ArgumentNullException(nameof(requestFactory));
@@ -79,6 +83,7 @@ namespace Common.Util
             return SendAsync<T>(requestFactory, url, CancellationToken.None);
         }
 
+        [PublicAPI]
         public Task<HttpResponseWithContent<T>> SendAsync<T>([NotNull] Func<HttpRequestMessage> requestFactory, [NotNull] Uri url, CancellationToken ct)
         {
             if (requestFactory == null) throw new ArgumentNullException(nameof(requestFactory));
@@ -87,6 +92,7 @@ namespace Common.Util
             return RequestAsync<T>(url, () => m_client.SendAsync(requestFactory(), ct), ct); 
         }
 
+        [PublicAPI]
         public Task<HttpResponseWithContent<T>> GetAsync<T>([NotNull] string url)
         {
             if (url == null) throw new ArgumentNullException(nameof(url));
@@ -94,6 +100,7 @@ namespace Common.Util
             return GetAsync<T>(new Uri(url), CancellationToken.None);
         }
 
+        [PublicAPI]
         public Task<HttpResponseWithContent<T>> GetAsync<T>([NotNull] string url, CancellationToken ct)
         {
             if (url == null) throw new ArgumentNullException(nameof(url));
@@ -101,6 +108,7 @@ namespace Common.Util
             return GetAsync<T>(new Uri(url), ct);
         }
 
+        [PublicAPI]
         public Task<HttpResponseWithContent<T>> GetAsync<T>([NotNull] Uri url)
         {
             if (url == null) throw new ArgumentNullException(nameof(url));
@@ -108,6 +116,7 @@ namespace Common.Util
             return GetAsync<T>(url, CancellationToken.None);
         }
 
+        [PublicAPI]
         public Task<HttpResponseWithContent<T>> GetAsync<T>([NotNull] Uri url, CancellationToken ct)
         {
             if (url == null) throw new ArgumentNullException(nameof(url));
@@ -115,6 +124,7 @@ namespace Common.Util
             return RequestAsync<T>(url, () => m_client.GetAsync(url, ct), ct);
         }
 
+        [PublicAPI]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#")]
         public Task<HttpResponseWithContent<T>> PostAsync<T>([NotNull] string uri, [NotNull] Func<HttpContent> contentFactory)
         {
@@ -124,6 +134,7 @@ namespace Common.Util
             return PostAsync<T>( new Uri(uri), contentFactory);
         }
 
+        [PublicAPI]
         public Task<HttpResponseWithContent<T>> PostAsync<T>([NotNull] Uri uri, [NotNull] Func<HttpContent> contentFactory)
         {
             if (uri == null) throw new ArgumentNullException(nameof(uri));
@@ -132,6 +143,7 @@ namespace Common.Util
             return RequestAsync<T>(uri, () => m_client.PostAsync(uri, contentFactory()), CancellationToken.None);
         }
 
+        [PublicAPI]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#")]
         public Task<HttpResponseWithContent<TResponse>> PostAsJsonAsync<TValue, TResponse>([NotNull] string requestUri, [NotNull] TValue value)
         {
@@ -141,6 +153,7 @@ namespace Common.Util
             return PostAsJsonAsync<TValue, TResponse>(new Uri(requestUri), value, CancellationToken.None);
         }
 
+        [PublicAPI]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#")]
         public Task<HttpResponseWithContent<TResponse>> PostAsJsonAsync<TValue, TResponse>([NotNull] string requestUri, [NotNull] TValue value, CancellationToken ct)
         {
@@ -150,6 +163,7 @@ namespace Common.Util
             return PostAsJsonAsync<TValue, TResponse>(new Uri(requestUri), value, ct);
         }
 
+        [PublicAPI]
         public Task<HttpResponseWithContent<TResponse>> PostAsJsonAsync<TValue, TResponse>([NotNull] Uri requestUri, [NotNull] TValue value)
         {
             if (requestUri == null) throw new ArgumentNullException(nameof(requestUri));
@@ -158,6 +172,7 @@ namespace Common.Util
             return PostAsJsonAsync<TValue, TResponse>(requestUri, value, CancellationToken.None);
         }
 
+        [PublicAPI]
         public Task<HttpResponseWithContent<TResponse>> PostAsJsonAsync<TValue, TResponse>([NotNull] Uri requestUri, [NotNull] TValue value, CancellationToken ct)
         {
             if (requestUri == null) throw new ArgumentNullException(nameof(requestUri));

@@ -32,7 +32,6 @@ namespace SteamHltbScraper.Imputation
 
     public static class Imputer
     {
-        internal const string ImputedCsvFileName = "imputed.csv";
         private const string GameTypeGames = "games";
         private const string GameTypeDlcsMods = "dlcs/mods";
         public static string AllGenresId => "All";

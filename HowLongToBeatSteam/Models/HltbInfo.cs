@@ -23,7 +23,6 @@ namespace HowLongToBeatSteam.Models
         public int CompletionistTtb { get; private set; }
         [DataMember]
         public bool CompletionistTtbImputed { get; private set; }
-        public bool Resolved => Id != -1;
 
         public HltbInfo(AppEntity appEntity)
         {

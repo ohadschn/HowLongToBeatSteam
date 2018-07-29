@@ -32,8 +32,6 @@ namespace UITests.Constants
         public const string CompletionistPlaytimeRemainingSpan = "completionist-playtime-remaining";
         public const string CompletionistPlaytimeRemainingPercentSpan = "completionist-playtime-remaining-percent";
 
-        public const string ShareWindowName = "share";
-
         public const string SocialSharingHeaderId = "social-sharing";
         public const string FacebookShareAnchorId = "facebook-share";
         public const string TwitterShareAnchorId = "twitter-share";
@@ -142,9 +140,7 @@ namespace UITests.Constants
         public const string PrivacyTitle = "Privacy Policy";
         public const string PrivacyContainerId = "privacy-container";
 
-        public const string ExternalModalBodyDivId = "external-modal-body";
         public const string ExternalPageTitleHeaderId = "external-title";
-        public const string ExternalPageCloseButtonId = "close-external-modal";
         public const string ExternalPageFrameId = "external-page-frame";
 
         public const string ValveSteamLoginButtonId = "imageLogin";

@@ -12,7 +12,7 @@ using Common.Storage;
 using Common.Util;
 using Microsoft.WindowsAzure.Storage.Table;
 using static System.FormattableString;
-
+// ReSharper disable UnusedMember.Global
 // ReSharper disable UnusedMember.Local
 
 namespace ManualTableUpdater.Updater
@@ -160,7 +160,6 @@ namespace ManualTableUpdater.Updater
 
 #pragma warning disable S1144 // Unused private types or members should be removed
         private static void RebuildProcessedSuggestions()
-#pragma warning restore S1144 // Unused private types or members should be removed
         {
             var allProcessedSuggestions = StorageHelper.GetAllProcessedSuggestions().Result;
             foreach (var processedSuggestion in allProcessedSuggestions.Where(ps => ps.SteamAppId == 0))
@@ -455,5 +454,8 @@ namespace ManualTableUpdater.Updater
 
             StorageHelper.Insert(games, "inserting apps from CSV");
         }
+
+#pragma warning restore S1144 // Unused private types or members should be removed
+
     }
 }

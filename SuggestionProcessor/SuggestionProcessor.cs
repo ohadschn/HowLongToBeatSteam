@@ -123,7 +123,7 @@ namespace SuggestionProcessor
             }
         }
 
-        private static List<SuggestionInfo> GetSuggestionsForKnownAndPrepareApps(
+        private static IList<SuggestionInfo> GetSuggestionsForKnownAndPrepareApps(
             IReadOnlyDictionary<int, AppEntity> appsMap, IEnumerable<SuggestionEntity> suggestions)
         {
             var suggestionsForKnownApps = new List<SuggestionInfo>();

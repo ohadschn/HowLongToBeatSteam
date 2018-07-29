@@ -49,7 +49,6 @@ namespace Common.Logging
             public const EventTask ProcessContainerBlobs = (EventTask) 14;
             public const EventTask RetrieveContainerBlobBatch = (EventTask)15;
             public const EventTask ProcessContainerBlobBatch = (EventTask)16;
-            public const EventTask ExecuteBatchOperation = (EventTask)17;
             public const EventTask SendHttpRequest = (EventTask)18;
         }
         // ReSharper restore ConvertToStaticClass
@@ -362,30 +361,6 @@ namespace Common.Logging
             WriteEvent(15, description);
         }
 
-        [Event(
-             150,
-             Message = "Start executing batch operation: {0}",
-             Keywords = Keywords.TableStorage,
-             Level = EventLevel.Informational,
-             Task = Tasks.ExecuteBatchOperation,
-             Opcode = EventOpcode.Start)]
-        public void ExecuteBatchOperationStart(string description)
-        {
-            WriteEvent(150, description);
-        }
-
-        [Event(
-             151,
-             Message = "Finished executing batch operation: {0}",
-             Keywords = Keywords.TableStorage,
-             Level = EventLevel.Informational,
-             Task = Tasks.ExecuteBatchOperation,
-             Opcode = EventOpcode.Stop)]
-        public void ExecuteBatchOperationStop(string description)
-        {
-            WriteEvent(151, description);
-        }
-
         [NonEvent]
         public void ExecutePartitionBatchOperationStart(string partition, int batch, string final)
         {
@@ -549,16 +524,6 @@ namespace Common.Logging
         public void SendSuccessMailStart(string description)
         {
             WriteEvent(24, description);
-        }
-
-        [Event(
-            240,
-            Message = "Error sending success mail for {0} ({1}) - retrying attempt #{2} / {3} will take place in {4} seconds",
-            Keywords = Keywords.Email,
-            Level = EventLevel.Warning)]
-        public void ErrorSendingSuccessMail(string description, string error, int retryCount, int totalRetries, int delaySeconds)
-        {
-            WriteEvent(240, description, error, retryCount, totalRetries, delaySeconds);
         }
 
         [SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "MailStop")]

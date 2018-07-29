@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using System.Globalization;
+using JetBrains.Annotations;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 namespace Common.Util
@@ -21,6 +22,8 @@ namespace Common.Util
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Common.Util.ExponentialBackoff" /> class. 
         /// </summary>
+        
+        [PublicAPI]
         public ExponentialBackoff()
             : this(DefaultClientRetryCount, DefaultMinBackoff, DefaultMaxBackoff, DefaultClientBackoff)
         {
@@ -34,6 +37,7 @@ namespace Common.Util
         /// <param name="minBackoff">The minimum backoff time</param>
         /// <param name="maxBackoff">The maximum backoff time.</param>
         /// <param name="deltaBackoff">The value that will be used to calculate a random delta in the exponential delay between retries.</param>
+        [PublicAPI]
         public ExponentialBackoff(int retryCount, TimeSpan minBackoff, TimeSpan maxBackoff, TimeSpan deltaBackoff)
             : this(null, retryCount, minBackoff, maxBackoff, deltaBackoff, DefaultFirstFastRetry)
         {
@@ -48,6 +52,7 @@ namespace Common.Util
         /// <param name="minBackoff">The minimum backoff time</param>
         /// <param name="maxBackoff">The maximum backoff time.</param>
         /// <param name="deltaBackoff">The value that will be used to calculate a random delta in the exponential delay between retries.</param>
+        [PublicAPI]
         public ExponentialBackoff(string name, int retryCount, TimeSpan minBackoff, TimeSpan maxBackoff, TimeSpan deltaBackoff)
             : this(name, retryCount, minBackoff, maxBackoff, deltaBackoff, DefaultFirstFastRetry)
         {
@@ -63,6 +68,7 @@ namespace Common.Util
         /// <param name="maxBackoff">The maximum backoff time.</param>
         /// <param name="deltaBackoff">The value that will be used to calculate a random delta in the exponential delay between retries.</param>
         /// <param name="firstFastRetry">true to immediately retry in the first attempt; otherwise, false. The subsequent retries will remain subject to the configured retry interval.</param>
+        [PublicAPI]
         public ExponentialBackoff(string name, int retryCount, TimeSpan minBackoff, TimeSpan maxBackoff, TimeSpan deltaBackoff, bool firstFastRetry)
             : base(name, firstFastRetry)
         {

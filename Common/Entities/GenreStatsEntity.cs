@@ -24,7 +24,8 @@ namespace Common.Entities
         public double ExtrasCompletionistRatio { get; set; }
         public double ExtrasPlacementRatio { get; set; }
 
-        public GenreStatsEntity() //required by azure storage client library
+        [UsedImplicitly(ImplicitUseKindFlags.InstantiatedWithFixedConstructorSignature)] //by azure storage client library
+        public GenreStatsEntity()
         {
         }
 
@@ -33,11 +34,6 @@ namespace Common.Entities
         {
             Genre = genre ?? throw new ArgumentNullException(nameof(genre));
             AppType = appType ?? throw new ArgumentNullException(nameof(appType));
-        }
-
-        public static string[] GetPartitions()
-        {
-            return new[] {GenreStatsPartitionKey};
         }
     }
 }

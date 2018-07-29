@@ -40,7 +40,6 @@ namespace HowLongToBeatSteam.Logging
             public const EventTask UpdateCache = (EventTask) 1;
             public const EventTask RetrieveOwnedGames = (EventTask) 2;
             public const EventTask PrepareResponse = (EventTask) 3;
-            public const EventTask RetrievePlayerSummary = (EventTask) 4;
             public const EventTask HandleGetGamesRequest = (EventTask) 5;
             public const EventTask ResolveVanityUrl = (EventTask) 6;
             public const EventTask RetrievePersonaInfo = (EventTask) 7;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using Common.Storage;
+using JetBrains.Annotations;
 using Microsoft.WindowsAzure.Storage.Table;
 using static System.FormattableString;
 
@@ -14,7 +15,8 @@ namespace Common.Entities
         public string AppType { get; set; }
         public bool IsRetype => AppType != null;
 
-        public SuggestionEntity() //required by azure storage client library
+        [UsedImplicitly(ImplicitUseKindFlags.InstantiatedWithFixedConstructorSignature)] //by azure storage client library
+        public SuggestionEntity()
         {
         }
 

@@ -85,6 +85,7 @@ namespace Common.Logging
         }
     }
 
+    // ReSharper disable once UnusedMember.Global (R# issue)
     public static class SystemDiagnosticsTraceSinkExtensions
     {
         public static SinkSubscription<SystemDiagnosticsTraceSink> LogToSystemDiagnosticsTrace([NotNull] this IObservable<EventEntry> eventStream)

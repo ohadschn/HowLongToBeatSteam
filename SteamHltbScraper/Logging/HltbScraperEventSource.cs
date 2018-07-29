@@ -37,7 +37,6 @@ namespace SteamHltbScraper.Logging
             public const EventTask ScrapeHltbName = (EventTask) 5;
             public const EventTask GetHltbGamePage = (EventTask) 6;
             public const EventTask ScrapeHltbInfo = (EventTask) 7;
-            public const EventTask GetGameOverviewPage = (EventTask) 8;
             public const EventTask CalculateImputation = (EventTask) 9;
             public const EventTask SubmitImputationJob = (EventTask) 10;
             public const EventTask Impute = (EventTask) 11;
@@ -353,7 +352,7 @@ namespace SteamHltbScraper.Logging
             15,
             Message = "Scraping #{0} - Error resolving HLTB name for app {1} / {2} / HLTB {3}: {4}",
             Keywords = Keywords.Scraping,
-            Level = EventLevel.Error)]
+            Level = EventLevel.Warning)]
         private void ErrorScrapingHltbName(int current, int steamAppId, string steamName, int hltbId, string exception)
         {
             WriteEvent(15, current, steamAppId, steamName, hltbId, exception);
@@ -391,62 +390,6 @@ namespace SteamHltbScraper.Logging
         public void PreviouslyRecordedTtbNotOnHltb(string steamName, int steamId, string ttbType, int ttbValue, string hltbName, int hltbId)
         {
             WriteEvent(117, steamName, steamId, ttbType, ttbValue, hltbName, hltbId);
-        }
-
-        [NonEvent]
-        public void GetGameOverviewPageStart(Uri uri)
-        {
-            if (uri == null)
-            {
-                throw new ArgumentNullException(nameof(uri));
-            }
-
-            if (!IsEnabled())
-            {
-                return;
-            }
-
-            GetGameOverviewPageStart(uri.ToString());
-        }
-
-        [Event(
-            18,
-            Message = "Start getting game overview URL from {0}",
-            Keywords = Keywords.Http,
-            Level = EventLevel.Informational,
-            Task = Tasks.GetGameOverviewPage,
-            Opcode = EventOpcode.Start)]
-        private void GetGameOverviewPageStart(string uri)
-        {
-            WriteEvent(18, uri);
-        }
-
-        [NonEvent]
-        public void GetGameOverviewPageStop(Uri uri)
-        {
-            if (uri == null)
-            {
-                throw new ArgumentNullException(nameof(uri));
-            }
-
-            if (!IsEnabled())
-            {
-                return;
-            }
-
-            GetGameOverviewPageStop(uri.ToString());
-        }
-
-        [Event(
-            19,
-            Message = "Finished getting game overview URL from {0}",
-            Keywords = Keywords.Http,
-            Level = EventLevel.Informational,
-            Task = Tasks.GetGameOverviewPage,
-            Opcode = EventOpcode.Stop)]
-        private void GetGameOverviewPageStop(string uri)
-        {
-            WriteEvent(19, uri);
         }
 
         [NonEvent]

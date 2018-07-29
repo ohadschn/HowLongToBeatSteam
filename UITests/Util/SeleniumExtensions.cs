@@ -124,22 +124,6 @@ namespace UITests.Util
             return wait.Until(condition);
         }
 
-        public static IWebElement WaitUntilElementIsAvailable([NotNull] this IWebDriver driver, [NotNull] By by, [NotNull] string message)
-        {
-            if (driver == null) throw new ArgumentNullException(nameof(driver));
-            if (by == null) throw new ArgumentNullException(nameof(by));
-
-            return WaitUntilElementCondition(driver, by, e => true, message);
-        }
-
-        public static IWebElement WaitUntilElementIsAvailable([NotNull] this IWebDriver driver, [NotNull] By by, [NotNull] string message, TimeSpan timeout)
-        {
-            if (driver == null) throw new ArgumentNullException(nameof(driver));
-            if (by == null) throw new ArgumentNullException(nameof(by));
-
-            return WaitUntilElementCondition(driver, by, e => true, message, timeout);
-        }
-
         public static IWebElement WaitUntilElementIsVisible([NotNull] this IWebDriver driver, [NotNull] By by, [NotNull] string message)
         {
             if (driver == null) throw new ArgumentNullException(nameof(driver));
@@ -224,27 +208,6 @@ namespace UITests.Util
             if (by == null) throw new ArgumentNullException(nameof(by));
 
             new SelectElement(driver.FindElement(by)).SelectByValue(value);
-        }
-
-        public static string GetOptionsValue([NotNull] this IWebDriver driver, [NotNull] By by)
-        {
-            if (driver == null) throw new ArgumentNullException(nameof(driver));
-            if (by == null) throw new ArgumentNullException(nameof(by));
-
-            return new SelectElement(driver.FindElement(by)).SelectedOption.Text;
-        }
-
-        public static string GetHiddenText([NotNull] this IWebElement element)
-        {
-            if (element == null) throw new ArgumentNullException(nameof(element));
-
-            return element.GetAttribute("textContent")?.Trim();
-        }
-
-        public static void Hover([NotNull] this IWebDriver driver, By by)
-        {
-            if (driver == null) throw new ArgumentNullException(nameof(driver));
-            Hover(driver, driver.FindElement(by));
         }
 
         public static void Hover([NotNull] this IWebDriver driver, IWebElement element)

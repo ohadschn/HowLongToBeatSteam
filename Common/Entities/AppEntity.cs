@@ -136,7 +136,8 @@ namespace Common.Entities
 
         public static string UnknownFilter => StorageHelper.StartsWithFilter(StorageHelper.RowKey, String.Format(CultureInfo.InvariantCulture, "{0}_{1}", UnmeasuredKey, UnknownType));
 
-        public AppEntity() //required by azure storage client library
+        [UsedImplicitly(ImplicitUseKindFlags.InstantiatedWithFixedConstructorSignature)] //by azure storage client library
+        public AppEntity()
         {
         }
 

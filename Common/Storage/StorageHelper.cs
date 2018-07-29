@@ -94,20 +94,6 @@ namespace Common.Storage
             return entities;
         }
 
-        public static async Task<ConcurrentBag<GenreStatsEntity>> GetAllGenreStats(string rowFilter = "", int retries = -1)
-        {
-            const string entitiesType = "genre stats";
-
-            CommonEventSource.Log.QueryAllEntitiesStart(entitiesType, rowFilter);
-            
-            var genreStats = await QueryAllTableEntities<GenreStatsEntity>(GenreStatsTableName, GenreStatsEntity.GetPartitions(), rowFilter, retries)
-                .ConfigureAwait(false);
-
-            CommonEventSource.Log.QueryAllEntitiesStop(entitiesType, rowFilter, genreStats.Count);
-
-            return genreStats;
-        }
-
         public static Task<int> DeleteOldEntities(
             [NotNull] string tableName, DateTime threshold, [NotNull] string description, int retries = -1)
         {
@@ -272,38 +258,6 @@ namespace Common.Storage
                 CommonEventSource.Log.ExecutePartitionBatchOperationStop(tboi.Partition, tboi.Batch, final);
             }, false).ConfigureAwait(false);
             CommonEventSource.Log.ExecuteOperationsStop(description);
-        }
-
-        public static Task ExecuteBatchOperation(
-            [NotNull] IEnumerable<TableOperation> operations,
-            [NotNull] string tableName,
-            [NotNull] string description,
-            int retries = -1)
-        {
-            if (operations == null) throw new ArgumentNullException(nameof(operations));
-            if (tableName == null) throw new ArgumentNullException(nameof(tableName));
-            if (description == null) throw new ArgumentNullException(nameof(description));
-
-            return ExecuteBatchOperationInternal(operations, tableName, description, retries);
-        }
-
-        private static async Task ExecuteBatchOperationInternal(
-            [NotNull] IEnumerable<TableOperation> operations,
-            [NotNull] string tableName,
-            [NotNull] string description,
-            int retries)
-        {
-            CommonEventSource.Log.ExecuteBatchOperationStart(description);
-
-            var batchOperation = new TableBatchOperation();
-            foreach (var operation in operations)
-            {
-                batchOperation.Add(operation);
-            }
-            var table = await GetTable(tableName, retries).ConfigureAwait(false);
-            await ExecuteBatchCore(table, batchOperation);
-
-            CommonEventSource.Log.ExecuteBatchOperationStop(description);
         }
 
         private static async Task ExecuteBatchCore(CloudTable table, TableBatchOperation tableBatchOperation)
@@ -478,25 +432,9 @@ namespace Common.Storage
                 TableQuery.GenerateFilterCondition(propertyName, QueryComparisons.LessThan, IncrementLastChar(value)));
         }
 
-        public static string DoesNotStartWithFilter([NotNull] string propertyName, [NotNull] string value)
-        {
-            if (propertyName == null) throw new ArgumentNullException(nameof(propertyName));
-            if (value == null) throw new ArgumentNullException(nameof(value));
-
-            return TableQuery.CombineFilters(
-                TableQuery.GenerateFilterCondition(propertyName, QueryComparisons.LessThan, value),
-                TableOperators.Or,
-                TableQuery.GenerateFilterCondition(propertyName, QueryComparisons.GreaterThanOrEqual, IncrementLastChar(value)));
-        }
-
         public static string OrFilter(string filter1, string filter2)
         {
             return TableQuery.CombineFilters(filter1, TableOperators.Or, filter2);
-        }
-
-        public static string AndFilter(string filter1, string filter2)
-        {
-            return TableQuery.CombineFilters(filter1, TableOperators.And, filter2);
         }
 
         private static string TimestampFilter(DateTime latest)

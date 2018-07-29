@@ -18,16 +18,9 @@ namespace Common.Entities
         public int HltbId { get; set; }
         public string AppType { get; set; }
 
-        public ProcessedSuggestionEntity() //required by azure storage client library
+        [UsedImplicitly(ImplicitUseKindFlags.InstantiatedWithFixedConstructorSignature)] //by azure storage client library
+        public ProcessedSuggestionEntity()
         {
-        }
-
-        public ProcessedSuggestionEntity(int steamAppId, int hltbId, string appType)
-            :  base(AppEntity.GetPartitionKey(steamAppId), GetRowKey(steamAppId, hltbId, appType))
-        {
-            SteamAppId = steamAppId;
-            HltbId = hltbId;
-            AppType = appType;
         }
 
         public ProcessedSuggestionEntity([NotNull] SuggestionEntity suggestion)
