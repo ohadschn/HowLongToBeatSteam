@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/css/bootstrap.min.css">
 </head>
 <body>
-    <div class="container-fluid">
+    <div id="faq-container" class="container-fluid">
         <h4>How does HowLongToBeatSteam work?</h4>
         <p>
             HowLongToBeatSteam retrieves completion playtimes from <a href="http://www.howlongtobeat.com" target="_blank">HowLongToBeat</a>
@@ -48,9 +48,9 @@
             HowLongToBeatSteam only considers games in your library that have finite single-player campaigns and haven't been removed from the Steam store.
             After all, multiplayer-only games cannot be "completed" so there would be little point in trying to measure them in this context.
             Similarly, single-player games with infinite campaigns that never clearly end
-            (dubbed <a href="https://www.google.co.il/search?q=site:howlongtobeat.com+%22endless+title%22" target="_blank">endless titles</a> in HowLongToBeat)
+            (dubbed <a href="https://www.google.co.il/search?q=site:howlongtobeat.com+%22endless+title%22" target="_blank">endless titles</a> on HowLongToBeat)
             are excluded as well.
-            Finally, games removed from the Steam store don't participate in the Steam API and so no metadata can be gathered for them.
+            Finally, games removed from the Steam store don't participate in the Steam API and so no metadata can be gathered on them.
         </p>
         <h4>Why do some of the apps in my Steam account that aren't actually games show up?</h4>
         <p>
@@ -63,7 +63,7 @@
         </p>
         <h4>Why does HowLongToBeatSteam match some of my games to incorrect HowLongToBeat entries?</h4>
         <p>
-            The sad truth is that there is no central repository correlating between Steam games and their corresponding HowLongToBeat entries
+            The sad truth is that there is no central repository correlating Steam games to their corresponding HowLongToBeat entries
             (worse, some games/editions may not even exist on HowLongToBeat). We are therefore forced to rely on simple textual search to make the matches,
             which may fail even for games that do exist on HowLongToBeat due to different naming schemes and search quirks
             (for example Steam may have "GOTY" where HowLongToBeat has "Game of The Year Edition").
@@ -72,14 +72,13 @@
         <p>
             Not at all! This is where the suggestion mechanism of the site comes into play - the power of <em>community</em> is on our side.
             Whenever you see a game that's not correlated correctly (or at all), simply find that game on HowLongToBeat (assuming it's there of course)
-            and update the connection. Hundreds of updates have already been submitted, reviewed, and applied. Game correlations are backed up, too,
-            so you don't need to worry about data center disasters wiping out your hard correlation work.
+            and update the connection. Thousands of updates have already been submitted, reviewed, and applied.
         </p>
         <h4>What about games that aren't on HowLongToBeat at all? Or games with partial playtime stats?</h4>
         <p>
             Good question.
             This is where we harness the power of <a href="https://en.wikipedia.org/wiki/Imputation_(statistics)"><em>statistical imputation</em></a>.
-            Basically it's an advanced statistical method for substituting missing samples with probably values,
+            Basically it's an advanced statistical method for substituting missing samples with probable values,
             so that the total dataset closely resembles one where no values are missing. We even fix HowLongToBeat values that don't make sense
             (such as "Main" taking longer than "Completionist").
         </p>
@@ -94,8 +93,8 @@
         </p>
         <h4>How does the Steam Survival Calculator know when I'll die?</h4>
         <p>
-            It's more of an educated guess really :) We use the following service:
-            <a href="https://www.mashape.com/bechllc/life-expectancy" target="_blank">https://www.mashape.com/bechllc/life-expectancy</a>.
+            We have a weekly meeting with the Grim Reaper, and we know who you are! Just kidding, we use the following service:
+            <a href="http://http://api.population.io/" target="_blank">http://api.population.io/</a>.
         </p>
         <h4>What if HowLongToBeat change their HTML format, breaking your scraping ? What if ...?</h4>
         <p>
@@ -105,21 +104,16 @@
         </p>
         <h4>What technologies were used to build HowLongToBeatSteam?</h4>
         <p>
-            HowLongToBeatSteam was built with ASP.NET Web API and is hosted on Microsoft Azure (as a Web App).
+            HowLongToBeatSteam was built on top of ASP.NET Web API and is hosted on Microsoft Azure (as a Web App).
             It utilizes the following server-side technologies: WebJobs, Table and Blob storage, AzureML (running R code),
             Application Insights, Enterprise Library (SLAB, TOPAZ), ETW, SendGrid, Zapier, and DotNetOpenAuth.
             The client-side was built on top of the following technologies: Knockout, JQuery, Sammy, Bootstrap, Google Analytics, Application Insights,
-            Countdown.js, amCharts (contributed to the responsive plugin), and knockout-datatable (contributed to add and improve some features).
-            The source code is hosted on Visual Studio Online (git)
-            and it was fully developed in Visual Studio 2013 (update 4 with the Web Essentials extension).
-        </p>
-        <h4>Are there any plans to open-source this site?</h4>
-        <p>
-            Not at the moment, but it is something we may consider in the future.
+            Countdown.js, amCharts (including contributions to the responsive plugin), and knockout-datatable (including contributions to add and improve some features).
+            The source code is hosted on Visual Studio Team Services (git) and was fully developed in Visual Studio. Check the GitHub link at the bottom right for the source.
         </p>
         <h4>Why do you keep saying "we"? The footer suggests you are just one guy!</h4>
         <p>
-            It's fun to start sentences with "we". We encourage you to try it ;)
+            It's fun to start sentences with "we", try it!
         </p>
     </div>
 </body>
