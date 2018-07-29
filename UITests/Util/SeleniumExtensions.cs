@@ -82,10 +82,13 @@ namespace UITests.Util
             }
         }
 
-        private static void ExecuteWithRetries(Action<IWebDriver> test, IWebDriver driver, int retries = 3)
+        private static void ExecuteWithRetries(Action<IWebDriver> test, IWebDriver driver, int retries = 2)
         {
-            for (int attempt = 0; attempt < retries; attempt++)
+            int maxAttempts = retries + 1;
+            int attempt = 0;
+            while (true)
             {
+                attempt++;
                 try
                 {
                     test(driver);
@@ -93,11 +96,14 @@ namespace UITests.Util
                 }
                 catch (WebDriverException e)
                 {
-                    Console.WriteLine("WARNING: Attempt {0}/{1} with WebDriver {2} failed: {3}", attempt+1, retries, driver, e);
+                    Console.WriteLine("WARNING: Attempt {0}/{1} with WebDriver '{2}' failed: {3}", attempt, maxAttempts, driver, e);
+                    if (attempt == maxAttempts)
+                    {
+                        Console.WriteLine("ERROR: All retry attempts exhausted, failing test");
+                        throw;
+                    }
                 }     
             }
-
-            Console.WriteLine("ERROR: All retry attempts exhausted, failing test");
         }
 
         public static TResult WaitUntil<TResult>([NotNull] this IWebDriver driver, [NotNull] Func<IWebDriver, TResult> condition, [NotNull] string message)
