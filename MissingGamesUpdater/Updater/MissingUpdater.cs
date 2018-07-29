@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,11 +16,12 @@ using SteamHltbScraper.Scraper;
 
 namespace MissingGamesUpdater.Updater
 {
-    internal class MissingUpdater
+    internal static class MissingUpdater
     {
         private static readonly int SteamApiRetries = SiteUtil.GetOptionalValueFromConfig("MissingUpdaterSteamApiRetries", 100);
         private static readonly int StorageRetries = SiteUtil.GetOptionalValueFromConfig("MissingUpdaterStorageRetries", 10);
         private static readonly int UpdateLimit = SiteUtil.GetOptionalValueFromConfig("MissingUpdateLimit", int.MaxValue);
+        [SuppressMessage("Sonar.CodeSmell", "S1075:URIsShouldNotBeHardcoded", Justification = "Steam API")]
         private static readonly Uri GetSteamAppListUrl = new Uri("http://api.steampowered.com/ISteamApps/GetAppList/v0001/");
         private static HttpRetryClient s_client;
 

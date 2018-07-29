@@ -53,11 +53,11 @@ namespace UnknownUpdater.Updater
                 return x.SteamAppId == y.SteamAppId;
             }
 
-            public int GetHashCode(AppEntity appEntity)
+            public int GetHashCode(AppEntity obj)
             {
-                if (appEntity == null) throw new ArgumentNullException(nameof(appEntity));
+                if (obj == null) throw new ArgumentNullException(nameof(obj));
 
-                return appEntity.SteamAppId;
+                return obj.SteamAppId;
             }
         }
 

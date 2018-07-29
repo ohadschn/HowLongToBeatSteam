@@ -131,6 +131,8 @@ namespace ManualTableUpdater.Updater
 
             try
             {
+                
+#pragma warning disable S125 // Sections of code should not be "commented out"
                 //RebuildProcessedSuggestions();
                 //ProcessIDarbSuggestions();
                 //ProcessIDarbApps();
@@ -146,6 +148,7 @@ namespace ManualTableUpdater.Updater
                 //ForceUpdateAppHltbId(266310, 27913);
                 //SendMail();
                 //GetEarliestGame();
+#pragma warning restore S125 // Sections of code should not be "commented out"
                 Console.WriteLine("Done - Press any key to continue...");
                 Console.ReadLine();
             }
@@ -155,7 +158,9 @@ namespace ManualTableUpdater.Updater
             }
         }
 
+#pragma warning disable S1144 // Unused private types or members should be removed
         private static void RebuildProcessedSuggestions()
+#pragma warning restore S1144 // Unused private types or members should be removed
         {
             var allProcessedSuggestions = StorageHelper.GetAllProcessedSuggestions().Result;
             foreach (var processedSuggestion in allProcessedSuggestions.Where(ps => ps.SteamAppId == 0))
@@ -343,45 +348,45 @@ namespace ManualTableUpdater.Updater
             }
             Console.WriteLine(Invariant($"Total: {count}"));
 
-            //count = 0;
-            //foreach (var game in measured.Where(a => !a.IsGame && a.Genres.First()== "Racing"))
-            //{
-            //    PrintGame(game);
-            //    count++;
-            //}
-            //Console.WriteLine($"Total: {count}");
+            count = 0;
+            foreach (var game in measured.Where(a => !a.IsGame && a.Genres.First() == "Racing"))
+            {
+                PrintGame(game);
+                count++;
+            }
+            Console.WriteLine($"Total: {count}");
 
-            //count = 0;
-            //foreach (var game in measured.Where(a => !a.IsGame && a.Genres.First() == "Racing" 
-            //    && (!a.MainTtbImputed || !a.ExtrasTtbImputed || !a.CompletionistTtbImputed)))
-            //{
-            //    PrintGame(game);
-            //    count++;
-            //}
-            //Console.WriteLine($"Total (non imputed): {count}");
+            count = 0;
+            foreach (var game in measured.Where(a => !a.IsGame && a.Genres.First() == "Racing"
+                && (!a.MainTtbImputed || !a.ExtrasTtbImputed || !a.CompletionistTtbImputed)))
+            {
+                PrintGame(game);
+                count++;
+            }
+            Console.WriteLine($"Total (non imputed): {count}");
 
-            //foreach (var genre in measured.Select(a => a.Genres.First()).Distinct())
-            //{
-            //    Console.WriteLine(genre);
-            //}
+            foreach (var genre in measured.Select(a => a.Genres.First()).Distinct())
+            {
+                Console.WriteLine(genre);
+            }
 
-            //foreach (var app in measured.Where(a =>
-            //    a.Genres.Contains("Unknown", StringComparer.Ordinal) ||
-            //    a.Genres.Contains("Audio Production", StringComparer.Ordinal) ||
-            //    a.Genres.Contains("Animation & Modeling", StringComparer.Ordinal) ||
-            //    a.Genres.Contains("Design & Illustration", StringComparer.Ordinal) ||
-            //    a.Genres.Contains("Utilities", StringComparer.Ordinal) ||
-            //    a.Genres.Contains("Web Publishing", StringComparer.Ordinal) ||
-            //    a.Genres.Contains("Video Production", StringComparer.Ordinal)).OrderBy(a => a.Genres.First()))
-            //{
-            //    PrintGame(app);
-            //}
+            foreach (var app in measured.Where(a =>
+                a.Genres.Contains("Unknown", StringComparer.Ordinal) ||
+                a.Genres.Contains("Audio Production", StringComparer.Ordinal) ||
+                a.Genres.Contains("Animation & Modeling", StringComparer.Ordinal) ||
+                a.Genres.Contains("Design & Illustration", StringComparer.Ordinal) ||
+                a.Genres.Contains("Utilities", StringComparer.Ordinal) ||
+                a.Genres.Contains("Web Publishing", StringComparer.Ordinal) ||
+                a.Genres.Contains("Video Production", StringComparer.Ordinal)).OrderBy(a => a.Genres.First()))
+            {
+                PrintGame(app);
+            }
 
-            //foreach (var app in StorageHelper.GetAllApps().Result
-            //    .Where(a => a.Genres.Contains("Massively Multiplayer", StringComparer.OrdinalIgnoreCase) && a.Measured && a.Categories.Contains("Single-player", StringComparer.OrdinalIgnoreCase)))
-            //{
-            //    PrintGame(app);
-            //}
+            foreach (var app in StorageHelper.GetAllApps().Result
+                .Where(a => a.Genres.Contains("Massively Multiplayer", StringComparer.OrdinalIgnoreCase) && a.Measured && a.Categories.Contains("Single-player", StringComparer.OrdinalIgnoreCase)))
+            {
+                PrintGame(app);
+            }
         }
 
         private static void PrintGame(AppEntity app)

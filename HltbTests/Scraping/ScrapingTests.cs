@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ namespace HltbTests.Scraping
     public class ScrapingTests
     {
         [ClassCleanup]
+        [SuppressMessage("Sonar.Bug", "S3168:AsyncMethodsShouldNotReturnVoid", Justification = "MSTest Cleanup method")]
         public static async void Cleanup()
         {
             await Task.Delay(2000); //give Azure Storage time to complete deletion of the suggestions

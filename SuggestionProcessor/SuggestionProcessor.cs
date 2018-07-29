@@ -257,6 +257,7 @@ namespace SuggestionProcessor
 
                 while (!await processor(invalidSuggestion))
                 {
+                    // Nothing to do (everything happens inside the processor)
                 }
             }
         }
