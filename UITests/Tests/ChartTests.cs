@@ -26,39 +26,36 @@ namespace UITests.Tests
             }
         }
 
-        private static void AssertActive(IWebDriver driver, IWebElement element)
+        private static void AssertActive(IWebDriver driver, IWebElement element, string message)
         {
-            driver.WaitUntil(d => element.GetAttribute("class").Contains("active"), Invariant($"Expected element {element} to be active"));
+            driver.WaitUntil(d => element.GetAttribute("class").Contains("active"), Invariant($"Expected element {element} to be active [{message}]"));
+        }
+
+        private static IWebElement TestSlicer(IWebDriver driver, string slicerId)
+        {
+            Console.WriteLine("Clicking '{0}' playtime slicer...", slicerId);
+            var slicer = driver.FindElement(By.Id(slicerId));
+            slicer.Click();
+            slicer.Click(); //sometimes the first click doesn't register
+            AssertActive(driver, slicer, "slicer clicked");
+
+            return slicer;
         }
 
         private static void TestSlicers(IWebDriver driver)
         {
-            Console.WriteLine("Clicking 'Current' playtime slicer...");
-            var currentPlaytimeSlicer = driver.FindElement(By.Id(SiteConstants.CurrentPlaytimeSlicerId));
-            currentPlaytimeSlicer.Click();
-            currentPlaytimeSlicer.Click(); //sometimes the first click doesn't register
-            AssertActive(driver, currentPlaytimeSlicer);
+            var currentPlaytimeSlicer = TestSlicer(driver, SiteConstants.CurrentPlaytimeSlicerId);
             Assert.IsTrue(driver.FindElements(By.ClassName(SiteConstants.NoDataIndicatorId)).All(e => e.Displayed), "Expected no data indication for current playtime");
 
-            Console.WriteLine("Clicking 'Remaining' playtime slicer...");
-            var remainingPlaytimeSlicer = driver.FindElement(By.Id(SiteConstants.RemainingPlaytimeSlicerId));
-            remainingPlaytimeSlicer.Click();
-            remainingPlaytimeSlicer.Click(); //sometimes the first click doesn't register
+            TestSlicer(driver, SiteConstants.RemainingPlaytimeSlicerId);
             Assert.IsFalse(currentPlaytimeSlicer.Enabled, "Expected current playtime slicer to be disabled when sliced for remaining playtime");
-            AssertActive(driver, remainingPlaytimeSlicer);
-            AssertActive(driver, driver.FindElement(By.Id(SiteConstants.MainPlaytimeSlicerId)));
+            AssertActive(driver, driver.FindElement(By.Id(SiteConstants.MainPlaytimeSlicerId)), "The selected Current slicer has been disabled, so Main should get auto-selected");
 
-            Console.WriteLine("Clicking 'Extras' playtime slicer...");
-            var extrasPlaytimeSlicer = driver.FindElement(By.Id(SiteConstants.ExtrasPlaytimeSlicerId));
-            extrasPlaytimeSlicer.Click();
-            extrasPlaytimeSlicer.Click(); //sometimes the first click doesn't register
-            AssertActive(driver, extrasPlaytimeSlicer);
-
-            Console.WriteLine("Clicking 'Completionist' playtime slicer...");
-            var completionistPlaytimeSlicer = driver.FindElement(By.Id(SiteConstants.CompletionistPlaytimeSlicerId));
-            completionistPlaytimeSlicer.Click();
-            completionistPlaytimeSlicer.Click(); //sometimes the first click doesn't register
-            AssertActive(driver, completionistPlaytimeSlicer);
+            TestSlicer(driver, SiteConstants.ExtrasPlaytimeSlicerId);
+            TestSlicer(driver, SiteConstants.CompletionistPlaytimeSlicerId);
+            
+            TestSlicer(driver, SiteConstants.TotalPlaytimeSlicerId);
+            Assert.IsTrue(currentPlaytimeSlicer.Enabled, "Expected current playtime slicer to be enabled when sliced for total playtime");
         }
 
         [TestMethod]
