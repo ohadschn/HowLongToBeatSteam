@@ -131,7 +131,7 @@ namespace HowLongToBeatSteam.Controllers
             SiteEventSource.Log.HandleGetGamesRequestStart(vanityUrlName);
            
             var ownedGamesInfo = await GetGamesCore(
-                ct => Task.FromResult(GetCachedGames(GetCachedGameCount(count)).Where(g => Cache.TryGetValue(g.appid, out var app) && app.HltbInfo.Id < 0).ToArray()),
+                ct => Task.FromResult(GetCachedGames().Where(g => Cache.TryGetValue(g.appid, out var app) && app.HltbInfo.Id < 0).Take(GetCachedGameCount(count)).ToArray()),
                 ct => Task.FromResult(new PersonaInfo(String.Empty, CacheAvatar))).ConfigureAwait(true);
 
             SiteEventSource.Log.HandleGetGamesRequestStop(vanityUrlName);
@@ -290,7 +290,7 @@ namespace HowLongToBeatSteam.Controllers
             }
         }
 
-        private static OwnedGame[] GetCachedGames(int count)
+        private static OwnedGame[] GetCachedGames(int count = Int32.MaxValue)
         {
             return Cache
                 .Where(kvp => kvp.Value.HltbInfo != null)
