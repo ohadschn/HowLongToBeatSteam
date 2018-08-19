@@ -1337,7 +1337,7 @@ function AppViewModel() {
         resetAdvancedFilters();
         possibleFiltersCalculated = false;
         self.gameTable.toggleSort("");
-        self.realUser(self.steamVanityUrlName().indexOf("cached/") === -1);
+        self.realUser(self.steamVanityUrlName().indexOf("cached/") === -1 && self.steamVanityUrlName().indexOf("missing/") === -1);
 
         self.currentRequest = $.get("api/games/library/" + self.steamVanityUrlName())
             .done(function(data) {
@@ -1611,6 +1611,11 @@ $(document).ready(function () {
         this.get("#/cached/:count", function () {
             appInsights.trackEvent("LoadCachedGames", {}, { count: parseInt(this.params.count) });
             loadGames("cached/" + this.params.count);
+        });
+
+        this.get("#/missing/:count", function () {
+            appInsights.trackEvent("LoadMissingGames", {}, { count: parseInt(this.params.count) });
+            loadGames("missing/" + this.params.count);
         });
     });
 

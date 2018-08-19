@@ -42,7 +42,7 @@ namespace HowLongToBeatSteam.Controllers
         private static readonly int VanityUrlToSteamIdCacheExpirationMinutes = SiteUtil.GetOptionalValueFromConfig("VanityUrlToSteamIdCacheExpirationMinutes", 60);
 
         private static readonly HttpRetryClient Client = new HttpRetryClient(0);
-        private static readonly ConcurrentDictionary<int, SteamAppData> Cache = new ConcurrentDictionary<int, SteamAppData>();
+        private static readonly ConcurrentDictionary<int, SteamAppData> Cache = new ConcurrentDictionary<int, SteamAppData>(); //int = Steam App ID
 
         private static readonly string[] NonGenres =  { "Indie", "Casual" };
 
@@ -100,7 +100,7 @@ namespace HowLongToBeatSteam.Controllers
                 MemoryCache.Default.Set(userVanityUrlName, steamId, DateTimeOffset.Now.AddMinutes(VanityUrlToSteamIdCacheExpirationMinutes));
             }
 
-            var ownedGamesInfo = await GetGamesCore(steamId).ConfigureAwait(true);
+            var ownedGamesInfo = await GetGamesCore(ct => GetOwnedGames(steamId, ct), ct => GetPersonaInfo(steamId, ct)).ConfigureAwait(true);
 
             SiteEventSource.Log.HandleGetGamesRequestStop(userVanityUrlName);
             return ownedGamesInfo;
@@ -110,19 +110,43 @@ namespace HowLongToBeatSteam.Controllers
         public async Task<PlayerInfo> GetCachedGames(string count)
         {
             EventSource.SetCurrentThreadActivityId(Guid.NewGuid());
-            SiteEventSource.Log.HandleGetGamesRequestStart("cached/" + count);
+            var vanityUrlName = "cached/" + count;
+            
+            SiteEventSource.Log.HandleGetGamesRequestStart(vanityUrlName);
 
-            int countTyped = String.Equals(count, "all", StringComparison.OrdinalIgnoreCase) ? Int32.MaxValue : Int32.Parse(count);
-            var ownedGamesInfo = await GetGamesCore(-countTyped).ConfigureAwait(true);
+            var ownedGamesInfo = await GetGamesCore(
+                ct => Task.FromResult(GetCachedGames(GetCachedGameCount(count))), 
+                ct => Task.FromResult(new PersonaInfo(String.Empty, CacheAvatar))).ConfigureAwait(true);
 
-            SiteEventSource.Log.HandleGetGamesRequestStop("cached/" + count);
+            SiteEventSource.Log.HandleGetGamesRequestStop(vanityUrlName);
             return ownedGamesInfo;
         }
 
-        private static async Task<PlayerInfo> GetGamesCore(long steamId)
+        [Route("library/missing/{count:minlength(1)}")]
+        public async Task<PlayerInfo> GetMissingGames(string count)
         {
-            var ownedGamesTask = SiteUtil.GetFirstResult(ct => GetOwnedGames(steamId, ct), s_ownedGamesRetrievalParallelization, e => { }).ConfigureAwait(false);
-            var personaInfoTask = SiteUtil.GetFirstResult(ct => GetPersonaInfo(steamId, ct), s_playerSummaryRetrievalParallelization, e => { }).ConfigureAwait(false);
+            EventSource.SetCurrentThreadActivityId(Guid.NewGuid());
+            var vanityUrlName = "missing/" + count;
+
+            SiteEventSource.Log.HandleGetGamesRequestStart(vanityUrlName);
+           
+            var ownedGamesInfo = await GetGamesCore(
+                ct => Task.FromResult(GetCachedGames(GetCachedGameCount(count)).Where(g => Cache.TryGetValue(g.appid, out var app) && app.HltbInfo.Id < 0).ToArray()),
+                ct => Task.FromResult(new PersonaInfo(String.Empty, CacheAvatar))).ConfigureAwait(true);
+
+            SiteEventSource.Log.HandleGetGamesRequestStop(vanityUrlName);
+            return ownedGamesInfo;
+        }
+
+        private static int GetCachedGameCount(string count)
+        {
+            return String.Equals(count, "all", StringComparison.OrdinalIgnoreCase) ? Int32.MaxValue : Int32.Parse(count);
+        }
+
+        private static async Task<PlayerInfo> GetGamesCore(Func<CancellationToken, Task<OwnedGame[]>> gamesGetter, Func<CancellationToken, Task<PersonaInfo>> personaGetter)
+        {
+            var ownedGamesTask = SiteUtil.GetFirstResult(gamesGetter, s_ownedGamesRetrievalParallelization, e => { }).ConfigureAwait(false);
+            var personaInfoTask = SiteUtil.GetFirstResult(personaGetter, s_playerSummaryRetrievalParallelization, e => { }).ConfigureAwait(false);
 
             var ownedGames = await ownedGamesTask;
             var personaInfo = await personaInfoTask;
@@ -242,19 +266,6 @@ namespace HowLongToBeatSteam.Controllers
 
         private static async Task<OwnedGame[]> GetOwnedGames(long steamId, CancellationToken ct)
         {
-            if (steamId <= 0)
-            {
-                return Cache
-                    .Where(kvp => kvp.Value.HltbInfo != null)
-                    .Take((int) Math.Abs(steamId))
-                    .Select(kvp => new OwnedGame
-                    {
-                        appid = kvp.Key,
-                        name = kvp.Value.SteamName,
-                        playtime_forever = 0
-                    }).ToArray();
-            }
-
             SiteEventSource.Log.RetrieveOwnedGamesStart(steamId);
 
             using (var ownedGamesResponse = await
@@ -279,13 +290,21 @@ namespace HowLongToBeatSteam.Controllers
             }
         }
 
+        private static OwnedGame[] GetCachedGames(int count)
+        {
+            return Cache
+                .Where(kvp => kvp.Value.HltbInfo != null)
+                .Take(count)
+                .Select(kvp => new OwnedGame
+                {
+                    appid = kvp.Key,
+                    name = kvp.Value.SteamName,
+                    playtime_forever = 0
+                }).ToArray();
+        }
+
         private static async Task<PersonaInfo> GetPersonaInfo(long steamId, CancellationToken ct)
         {
-            if (steamId <= 0)
-            {
-                return new PersonaInfo(String.Empty, CacheAvatar);
-            }
-
             SiteEventSource.Log.RetrievePersonaInfoStart(steamId);
 
             using (var playerSummariesResponse = await
