@@ -12,7 +12,11 @@ namespace UITests.Helpers
     {
         private static double GetPlaytime(string playtime)
         {
-            Console.WriteLine("Parsing playtime...");
+            Console.WriteLine("Parsing playtime: {0}", playtime);
+            if (String.IsNullOrWhiteSpace(playtime))
+            {
+                return -1;
+            }
             return Double.Parse(playtime.Remove(playtime.Length - 1), CultureInfo.InvariantCulture);
         }
 
@@ -40,7 +44,7 @@ namespace UITests.Helpers
             TooltipHelper.AssertTooltip(driver, playtimeIndicator, "Current:", true);
 
             ParseMobilePlaytime(TooltipHelper.GetToolTipText(driver), out var steamPlaytime, out var main, out var extras, out var completionist);
-            return new TableGameInfo(included, steamName, false, steamPlaytime, main, extras, completionist, null, false, UpdateState.None);
+            return new TableGameInfo(included, steamName, false, steamPlaytime, main, extras, completionist, false /*Not tested*/, null, false, UpdateState.None);
         }
 
         private static TableGameInfo ParseDesktopTableRow(ISearchContext gameRow)
@@ -54,6 +58,7 @@ namespace UITests.Helpers
             double extrasPlaytime = GetPlaytime(gameRow.FindElement(By.ClassName(SiteConstants.RowExtrasPlaytimeCellClass)).Text);
             double completionistPlaytime = GetPlaytime(gameRow.FindElement(By.ClassName(SiteConstants.RowCompletionistPlaytimeCellClass)).Text);
             string hltbName = gameRow.FindElement(By.ClassName(SiteConstants.RowHltbNameAnchorClass)).Text;
+            bool missingCorrelation = gameRow.FindElement(By.ClassName(SiteConstants.RowMissingCorrelationSpanClass)).Displayed;
             bool verifiedCorrelation = !gameRow.FindElement(By.ClassName(SiteConstants.RowWrongGameAnchorClass)).Displayed;
             UpdateState updateState = gameRow.FindElement(By.ClassName(SiteConstants.RowCorrelationUpdatingSpanClass)).Displayed
                 ? UpdateState.InProgress
@@ -62,7 +67,7 @@ namespace UITests.Helpers
                     : (gameRow.FindElement(By.ClassName(SiteConstants.RowCorrelationUpdateFailedClass)).Displayed ? UpdateState.Failure : UpdateState.None));
 
             return new
-                TableGameInfo(included, steamName, verifiedFinite, currentPlayTime, mainPlaytime, extrasPlaytime, completionistPlaytime, hltbName, verifiedCorrelation, updateState);
+                TableGameInfo(included, steamName, verifiedFinite, currentPlayTime, mainPlaytime, extrasPlaytime, completionistPlaytime, missingCorrelation, hltbName, verifiedCorrelation, updateState);
         }
 
         public static TableGameInfo ParseGameRow(IWebDriver driver, IWebElement gameRow, bool mobile = false)

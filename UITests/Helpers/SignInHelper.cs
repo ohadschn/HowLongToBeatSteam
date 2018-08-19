@@ -82,8 +82,16 @@ namespace UITests.Helpers
 
         public static void GoToCachedGamesPage(IWebDriver driver, WaitType waitType = WaitType.PageLoad)
         {
-            Console.WriteLine(Invariant($"Navigating to cached games page URL: {SiteConstants.CachedGamePage}..."));
-            driver.Url = SiteConstants.CachedGamePage;
+            Console.WriteLine(Invariant($"Navigating to cached games page URL: {SiteConstants.CachedGamesPage}..."));
+            driver.Url = SiteConstants.CachedGamesPage;
+
+            WaitForLoad(driver, waitType);
+        }
+
+        public static void GoToMissingGamesPage(IWebDriver driver, WaitType waitType = WaitType.PageLoad)
+        {
+            Console.WriteLine(Invariant($"Navigating to missing games page URL: {SiteConstants.MissingGamesPage}..."));
+            driver.Url = SiteConstants.MissingGamesPage;
 
             WaitForLoad(driver, waitType);
         }

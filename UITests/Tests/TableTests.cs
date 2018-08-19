@@ -103,6 +103,20 @@ namespace UITests.Tests
             });
         }
 
+        [TestMethod]
+        public void TestMissingGames()
+        {
+            SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
+            {
+                SignInHelper.GoToMissingGamesPage(driver);
+                driver.WaitUntil(d =>
+                {
+                    var games = TableHelper.ParseGameTable(d);
+                    return games.Length >= 10 && games.All(g => g.MissingCorrelation);
+                }, Invariant($"Could not verify missing games page"));
+            });
+        }
+
         private static void TestColumnSort<T>(IWebDriver driver, string headerId, Func<TableGameInfo, T> selector, IEnumerable<TableGameInfo> originalGames, bool reverse)
         {
             TableGameInfo[] sortedGames = null;

@@ -21,11 +21,12 @@ namespace UITests.Helpers
         public double ExtrasPlaytime { get; }
         public double CompletionistPlaytime { get; }
         public string HltbName { get; }
+        public bool MissingCorrelation { get; }
         public bool VerifiedCorrelation { get; }
         public UpdateState UpdateState { get; }
 
         public TableGameInfo(bool included, string steamName, bool verifiedFinite, double steamPlaytime,
-            double mainPlaytime, double extrasPlaytime, double completionistPlaytime, string hltbName, bool verifiedCorrelation, UpdateState updateState)
+            double mainPlaytime, double extrasPlaytime, double completionistPlaytime, bool missingCorrelation, string hltbName, bool verifiedCorrelation, UpdateState updateState)
         {
             Included = included;
             SteamName = steamName;
@@ -36,6 +37,7 @@ namespace UITests.Helpers
             CompletionistPlaytime = completionistPlaytime;
             VerifiedCorrelation = verifiedCorrelation;
             HltbName = hltbName;
+            MissingCorrelation = missingCorrelation;
             UpdateState = updateState;
         }
 

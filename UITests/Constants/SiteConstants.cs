@@ -6,8 +6,12 @@ namespace UITests.Constants
     public static class SiteConstants
     {
         public const string LocalDeploymentUrl = "http://localhost:26500";
+        
         public const string CachedGamesSuffix = "#/cached/all";
-        public static string CachedGamePage = new Uri(new Uri(LocalDeploymentUrl), CachedGamesSuffix).ToString();
+        public static string CachedGamesPage = new Uri(new Uri(LocalDeploymentUrl), CachedGamesSuffix).ToString();
+
+        public const string MissingGamesSuffix = "#/missing/all";
+        public static string MissingGamesPage = new Uri(new Uri(LocalDeploymentUrl), MissingGamesSuffix).ToString();
 
         public const string SteamIdTextId = "steam-id-text";
         public const string SteamSignInButtonId = "steam-sign-in";
