@@ -91,6 +91,7 @@ namespace UITests.Util
                 attempt++;
                 try
                 {
+                    driver.Manage().Window.Maximize();
                     test(driver);
                     return;
                 }
