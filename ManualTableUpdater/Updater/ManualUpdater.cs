@@ -333,6 +333,7 @@ namespace ManualTableUpdater.Updater
                 }), "updating apps from file").Wait();
         }
 
+        [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Justification = "dev method")]
         public static void PrintGenres()
         {
             var measured = StorageHelper.GetAllApps(AppEntity.MeasuredFilter).Result;
@@ -353,7 +354,7 @@ namespace ManualTableUpdater.Updater
                 PrintGame(game);
                 count++;
             }
-            Console.WriteLine($"Total: {count}");
+            Console.WriteLine(Invariant($"Total: {count}"));
 
             count = 0;
             foreach (var game in measured.Where(a => !a.IsGame && a.Genres.First() == "Racing"
@@ -362,7 +363,7 @@ namespace ManualTableUpdater.Updater
                 PrintGame(game);
                 count++;
             }
-            Console.WriteLine($"Total (non imputed): {count}");
+            Console.WriteLine(Invariant($"Total (non imputed): {count}"));
 
             foreach (var genre in measured.Select(a => a.Genres.First()).Distinct())
             {

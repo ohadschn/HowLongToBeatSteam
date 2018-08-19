@@ -7,8 +7,10 @@
     <Rule Id="CA1014" Action="None" />
     <Rule Id="CA1020" Action="None" />
     <Rule Id="CA1026" Action="None" />
+    <Rule Id="CA1045" Action="None" />
     <Rule Id="CA1057" Action="None" />
     <Rule Id="CA1303" Action="None" />
+    <Rule Id="CA1702" Action="None" />
     <Rule Id="CA1806" Action="None" />
     <Rule Id="CA1822" Action="None" />
     <Rule Id="CA1903" Action="None" />
@@ -16,7 +18,7 @@
     <Rule Id="CA2210" Action="None" />
   </Rules>
   <Rules AnalyzerId="SonarAnalyzer.CSharp" RuleNamespace="SonarAnalyzer.CSharp">
-    <Rule Id="S2259" Action="None" /> <!--Null pointers should not be dereferenced - buggy and already checked by resharper-->
-    <Rule Id="S3358" Action="None" /> <!--Ternary operators should not be nested - sometimes it's convenient-->
+    <Rule Id="S2259" Action="None" />
+    <Rule Id="S3358" Action="None" />
   </Rules>
 </RuleSet>

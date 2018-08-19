@@ -519,7 +519,7 @@ namespace SteamHltbScraper.Imputation
                 appEntity.CompletionistTtbImputed);
         }
 
-        public static void FixInvalidTtbs(
+        internal static void FixInvalidTtbs(
             ref int mainTtb, bool mainImputed, 
             ref int extrasTtb, bool extrasImputed, 
             ref int completionistTtb,bool completionistImputed, 

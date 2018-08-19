@@ -7,6 +7,7 @@ using Common.Logging;
 using Common.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SteamHltbScraper.Imputation;
+using static System.FormattableString;
 
 namespace HltbTests.Imputation
 {
@@ -104,7 +105,7 @@ namespace HltbTests.Imputation
             int completionistBefore = completionist;
             Imputer.FixInvalidTtbs(ref main, mainImputed, ref extras, extrasImputed, ref completionist, completionistImputed, new TtbRatios(0.7, 0.4, 0.3));
             Assert.IsTrue(completionist >= extras && extras >= main, 
-                $"Invalid TTBs not fixed: M{mainBefore}/E{extrasBefore}/C{completionistBefore} -> M{main}/E{extras}/C{completionist}");
+              Invariant($"Invalid TTBs not fixed: M{mainBefore}/E{extrasBefore}/C{completionistBefore} -> M{main}/E{extras}/C{completionist}"));
         }
 
         private static void AssertValidTtbs(IEnumerable<AppEntity> games)

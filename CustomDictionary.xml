@@ -1,14 +1,14 @@
 <Dictionary>
       <Words>
          <Recognized>
-            <Word>Hltb</Word>
-            <Word>Ttb</Word>
-            <Word>Ttbs</Word>
-			      <Word>Backoff</Word>
-			      <Word>Util</Word>
-			      <Word>Api</Word>
-			      <Word>Completionist</Word>
-            <Word>Co</Word>
+           <Word>Hltb</Word>
+           <Word>Ttb</Word>
+           <Word>Ttbs</Word>
+			     <Word>Backoff</Word>
+			     <Word>Util</Word>
+			     <Word>Api</Word>
+			     <Word>Completionist</Word>
+           <Word>Co</Word>
            <Word>Proxify</Word>
            <Word>Metacritic</Word>
            <Word>Overriden</Word>
@@ -23,10 +23,12 @@
            <Word>Darb</Word>
            <Word>Username</Word>
          </Recognized>
+        <DiscreteExceptions>
+           <Term>checkbox</Term>
+        </DiscreteExceptions>
 		    <Compound>
             <Term CompoundAlternate="CoOp">coop</Term>
             <Term CompoundAlternate="NonGame">nongame</Term>
-            <Term CompoundAlternate="CheckBox">checkbox</Term>
          </Compound>
       </Words>
 </Dictionary>

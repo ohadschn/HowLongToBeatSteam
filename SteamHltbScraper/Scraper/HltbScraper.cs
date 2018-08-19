@@ -507,8 +507,8 @@ namespace SteamHltbScraper.Scraper
         }
     }
 
-    [SuppressMessage("Sonar.CodeSmell", "S3871:ExceptionTypesShouldBePublic", Justification = "Internal exception used for retries, will not escape this class")]
-    internal class TransientHltbFaultException : Exception
+    [SuppressMessage("Sonar.CodeSmell", "S3925:ISerializableShouldBeImplementedCorrectly", Justification = "Internal exception")]
+    public sealed class TransientHltbFaultException : Exception
     {
         public HtmlDocument Document { get; }
         public bool PrintDocument { get; set; }
