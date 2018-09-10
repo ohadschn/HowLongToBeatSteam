@@ -419,7 +419,6 @@ namespace ManualTableUpdater.Updater
             }
         }
 
-        [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "obj")]
         public static string RemoveTabs(object obj)
         {
             return obj?.ToString().Replace('\t', ';') ?? String.Empty;

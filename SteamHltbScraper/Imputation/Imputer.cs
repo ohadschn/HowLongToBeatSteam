@@ -38,7 +38,6 @@ namespace SteamHltbScraper.Imputation
 
         private static readonly string AzureMlImputeServiceBaseUrl = SiteUtil.GetMandatoryValueFromConfig("AzureMlImputeServiceBaseUrl");
         private static readonly string ApiKey = SiteUtil.GetMandatoryCustomConnectionStringFromConfig("AzureMlImputeApiKey");
-        [SuppressMessage("Sonar.CodeSmell", "S1450:PrivateFieldsOnlyUsedAsLocalVariablesInMethodsShouldBecomeLocalVariables", Justification = "Sonar bug")]
         private static readonly int AzureMlImputePollIntervalMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollIntervalMs", 1000);
         private static readonly int AzureMlImputePollTimeoutMs = SiteUtil.GetOptionalValueFromConfig("AzureMlImputePollTimeoutMs", 600 * 1000);
 

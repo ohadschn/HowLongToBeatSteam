@@ -6,7 +6,6 @@ using Microsoft.ApplicationInsights;
 // ReSharper disable once CheckNamespace
 namespace HowLongToBeatSteam.ErrorHandler //this namespace makes AI configuration understand we have it configured 
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "Ai")]
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)] 
     public sealed class AiHandleErrorAttribute : HandleErrorAttribute
     {

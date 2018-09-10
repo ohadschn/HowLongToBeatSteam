@@ -8,7 +8,6 @@ using UITests.Util;
 
 namespace UITests.Tests
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Login")]
     [TestClass]
     public class LoginTests
     {

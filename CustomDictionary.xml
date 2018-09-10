@@ -36,6 +36,7 @@
            <Word>SeleniumHQ</Word>
            <Word>InternetExplorerDriver</Word>
            <Word>github</Word>
+           <Word>Ai</Word>
          </Recognized>
         <DiscreteExceptions>
            <Term>checkbox</Term>

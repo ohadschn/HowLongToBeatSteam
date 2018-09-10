@@ -16,7 +16,6 @@ namespace UITests.Constants
         public const string SteamIdTextId = "steam-id-text";
         public const string SteamSignInButtonId = "steam-sign-in";
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Login")]
         public const string LoginErrorDivId = "login-error";
         public const string EmptyLibraryDivId = "empty-library";
 
@@ -151,7 +150,6 @@ namespace UITests.Constants
         public const string ExternalPageTitleHeaderId = "external-title";
         public const string ExternalPageFrameId = "external-page-frame";
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Login")]
         public const string ValveSteamLoginButtonId = "imageLogin";
         public const string ValveSteamUsername = "steamAccountName";
         public const string ValveSteamPassword = "steamPassword";
