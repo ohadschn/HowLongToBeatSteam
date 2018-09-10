@@ -10,7 +10,7 @@ namespace UITests.Helpers
 {
     public static class LinkHelper
     {
-        public static void AssertExternalLink([NotNull] IWebDriver driver, [NotNull] string linkId, [NotNull] string expectedTitle)
+        public static void AssertExternalLink([NotNull] IWebDriver driver, [NotNull] string linkId, [NotNull] string expectedTitle, bool dismissAlertOnClose = false)
         {
             if (driver == null) throw new ArgumentNullException(nameof(driver));
             if (linkId == null) throw new ArgumentNullException(nameof(linkId));
@@ -33,6 +33,12 @@ namespace UITests.Helpers
 
             Console.WriteLine("Closing the new window...");
             driver.Close();
+
+            if (dismissAlertOnClose)
+            {
+                driver.WaitUntil(ExpectedConditions.AlertIsPresent(), "alert expected");
+                driver.SwitchTo().Alert().Accept();
+            }
 
             Console.WriteLine("Switching back to origin window...");
             driver.SwitchTo().Window(originalWindowHandle);

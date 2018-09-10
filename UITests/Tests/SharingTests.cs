@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.IE;
 using UITests.Constants;
 using UITests.Helpers;
 using UITests.Util;
@@ -20,16 +21,18 @@ namespace UITests.Tests
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
+                var isInternetExplorer = driver is InternetExplorerDriver;
+                
                 SignInHelper.SignInWithId(driver, UserConstants.SampleSteamId);
 
-                LinkHelper.AssertExternalLink(driver, SiteConstants.FacebookShareAnchorId, FacebookShareTitle);
+                LinkHelper.AssertExternalLink(driver, SiteConstants.FacebookShareAnchorId, FacebookShareTitle, isInternetExplorer);
                 LinkHelper.AssertExternalLink(driver, SiteConstants.TwitterShareAnchorId, TwitterShareTitle);
                 LinkHelper.AssertExternalLink(driver, SiteConstants.RedditShareAnchorId, RedditShareTitle);
                 LinkHelper.AssertExternalLink(driver, SiteConstants.GplusShareAnchorId, GooglePlusShareTitle);
 
                 SurvivalHelper.CalculateSurvival(driver, Gender.Female, DateTime.Now.Year - 20, 10, PlayStyle.Extras);
 
-                LinkHelper.AssertExternalLink(driver, SiteConstants.SurvivalFacebookShareAnchorId, FacebookShareTitle);
+                LinkHelper.AssertExternalLink(driver, SiteConstants.SurvivalFacebookShareAnchorId, FacebookShareTitle, isInternetExplorer);
                 LinkHelper.AssertExternalLink(driver, SiteConstants.SurvivalTwitterShareAnchorId, TwitterShareTitle);
                 LinkHelper.AssertExternalLink(driver, SiteConstants.SurvivalRedditShareAnchorId, RedditShareTitle);
                 LinkHelper.AssertExternalLink(driver, SiteConstants.SurvivalGplusShareAnchorId, GooglePlusShareTitle);
