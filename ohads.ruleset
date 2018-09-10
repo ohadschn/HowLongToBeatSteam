@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <RuleSet Name="ohads ruleset" Description="All rules except ones I disagree with or ones better covered by R#" ToolsVersion="15.0">
-  <IncludeAll Action="Warning" />
+  <IncludeAll Action="Error" />
   <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
     <Rule Id="CA1006" Action="None" />
     <Rule Id="CA1011" Action="None" />

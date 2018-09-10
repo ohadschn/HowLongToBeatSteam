@@ -508,6 +508,7 @@ namespace SteamHltbScraper.Scraper
         }
     }
 
+    [SuppressMessage("Microsoft.Usage", "CA2240:ImplementISerializableCorrectly")]
     [SuppressMessage("Microsoft.Design", "CA1032:ImplementStandardExceptionConstructors", Justification = "internal exception")]
     [Serializable]
     public sealed class TransientHltbFaultException : Exception
