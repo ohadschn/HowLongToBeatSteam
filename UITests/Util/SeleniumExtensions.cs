@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
+using System.IO;
 using JetBrains.Annotations;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -93,6 +95,8 @@ namespace UITests.Util
                 catch (WebDriverException e)
                 {
                     Console.WriteLine("WARNING: Attempt {0}/{1} with WebDriver '{2}' failed: {3}", attempt, maxAttempts, driver, e);
+                    driver.TakeScreenshot();
+
                     if (attempt == maxAttempts)
                     {
                         Console.WriteLine("ERROR: All retry attempts exhausted, failing test");
@@ -100,6 +104,34 @@ namespace UITests.Util
                     }
                 }     
             }
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Test code")]
+        public static bool TakeScreenshot(this IWebDriver driver)
+        {
+            Console.WriteLine("Attempting to take screenshot using WebDriver '{0}'...", driver);
+
+            var screenshotCapableDriver = driver as ITakesScreenshot;
+            if (screenshotCapableDriver == null)
+            {
+                Console.WriteLine("WARNING: WebDriver '{0}' not capable of taking screenshots", driver);
+                return false;
+            }
+
+            string screenshotPath;
+            try
+            {
+                screenshotPath = Path.ChangeExtension(Path.GetTempFileName(), "png");
+                screenshotCapableDriver.GetScreenshot().SaveAsFile(screenshotPath);
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine("WARNING: Could not take/save screenshot - {0}", exception);
+                return false;
+            }
+
+            Console.WriteLine("Saved screenshot: {0}", screenshotPath);
+            return true;
         }
 
         public static TResult WaitUntil<TResult>([NotNull] this IWebDriver driver, [NotNull] Func<IWebDriver, TResult> condition, [NotNull] string message)
