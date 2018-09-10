@@ -17,11 +17,9 @@ namespace UITests.Util
         Chrome = 2,
         InternetExplorer = 4,
         // ReSharper disable once InconsistentNaming
-        IPhoneXChrome = 8,
+        IPhone = 8,
         OptimusL70Chrome = 16, //384 X 640
         Nexus7Chrome = 32, // 600 X 960
-        // ReSharper disable once InconsistentNaming
-        IPadMiniChrome = 64 //768 X 1024
     }
 
     public static class SeleniumExtensions
@@ -57,28 +55,25 @@ namespace UITests.Util
                 using (var driver = new InternetExplorerDriver()) { ExecuteWithRetries(test, driver); }
             }
 
-            if (browsers.HasFlag(Browsers.IPhoneXChrome))
+            if (browsers.HasFlag(Browsers.IPhone))
             {
-                Console.WriteLine("Executing test on Apple iPhone X Chrome...");
-                using (var driver = GetMobileChromeDriver("iPhone X")) { ExecuteWithRetries(test, driver); }
+                const string iphone8 = "iPhone 6/7/8";
+                Console.WriteLine($"Executing test on {iphone8} Chrome...");
+                using (var driver = GetMobileChromeDriver(iphone8)) { ExecuteWithRetries(test, driver); }
             }
 
             if (browsers.HasFlag(Browsers.OptimusL70Chrome))
             {
-                Console.WriteLine("Executing test on LG Optimus L70 Chrome...");
-                using (var driver = GetMobileChromeDriver("LG Optimus L70")) { ExecuteWithRetries(test, driver); }    
+                const string lgOptimusL70 = "LG Optimus L70";
+                Console.WriteLine($"Executing test on {lgOptimusL70} Chrome...");
+                using (var driver = GetMobileChromeDriver(lgOptimusL70)) { ExecuteWithRetries(test, driver); }    
             }
 
             if (browsers.HasFlag(Browsers.Nexus7Chrome))
             {
-                Console.WriteLine("Executing test on Google Nexus 7 Chrome...");
-                using (var driver = GetMobileChromeDriver("Nexus 7")) { ExecuteWithRetries(test, driver); }
-            }
-
-            if (browsers.HasFlag(Browsers.IPadMiniChrome))
-            {
-                Console.WriteLine("Executing test on Apple iPad Mini Chrome...");
-                using (var driver = GetMobileChromeDriver("Apple iPad Mini")) { ExecuteWithRetries(test, driver); }
+                const string nexus = "Nexus 7";
+                Console.WriteLine($"Executing test on Google {nexus} Chrome...");
+                using (var driver = GetMobileChromeDriver(nexus)) { ExecuteWithRetries(test, driver); }
             }
         }
 

@@ -26,18 +26,26 @@ namespace UITests.Tests
             }
         }
 
+        private static bool IsActive(IWebElement element)
+        {
+            return element.GetAttribute("class").Contains("active");
+        }
+
         private static void AssertActive(IWebDriver driver, IWebElement element, string message)
         {
-            driver.WaitUntil(d => element.GetAttribute("class").Contains("active"), Invariant($"Expected element {element} to be active [{message}]"));
+            driver.WaitUntil(d => IsActive(element), Invariant($"Expected element {element} to be active [{message}]"));
         }
 
         private static IWebElement TestSlicer(IWebDriver driver, string slicerId)
         {
-            Console.WriteLine("Clicking '{0}' playtime slicer...", slicerId);
+            Console.WriteLine("Locating '{0}' playtime slicer...", slicerId);
             var slicer = driver.FindElement(By.Id(slicerId));
-            slicer.Click();
-            slicer.Click(); //sometimes the first click doesn't register
-            AssertActive(driver, slicer, "slicer clicked");
+            driver.WaitUntil(d =>
+            {
+                Console.WriteLine("Clicking slicer {0}...", slicer);
+                slicer.Click();
+                return IsActive(slicer);
+            }, "expected clicked slicer to be active");
 
             return slicer;
         }
@@ -79,7 +87,7 @@ namespace UITests.Tests
 
                 TestRenderedCharts(driver);
                 TestSlicers(driver);
-            }, Browsers.IPhoneXChrome);
+            }, Browsers.IPhone);
         }
 
         [TestMethod]
