@@ -12,9 +12,8 @@ namespace HowLongToBeatSteam.Models
     {
         [DataMember]
         public bool PartialCache { get; private set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         [DataMember]
-        public SteamAppUserData[] Games { get; private set; }
+        public IReadOnlyList<SteamAppUserData> Games { get; private set; }
         [DataMember]
         public int ExcludedCount { get; private set; }
         [DataMember]
@@ -22,7 +21,7 @@ namespace HowLongToBeatSteam.Models
         [DataMember]
         public PersonaInfo PersonaInfo { get; private set; }
 
-        public PlayerInfo(bool partialCache, SteamAppUserData[] games, int excludedCount, Totals totals, PersonaInfo personaInfo)
+        public PlayerInfo(bool partialCache, IReadOnlyList<SteamAppUserData> games, int excludedCount, Totals totals, PersonaInfo personaInfo)
         {
             PartialCache = partialCache;
             Games = games;
@@ -115,9 +114,8 @@ namespace HowLongToBeatSteam.Models
         public string AppType { get; private set; }
         [DataMember]
         public bool VerifiedGame { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         [DataMember]
-        public string[] Genres { get; private set; }
+        public IReadOnlyList<string> Genres { get; private set; }
         [DataMember]
         public int ReleaseYear { get; private set; }
         [DataMember]

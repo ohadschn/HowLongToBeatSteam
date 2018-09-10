@@ -381,15 +381,7 @@ namespace SteamHltbScraper.Imputation
 
         private static async Task<string> SubmitImputationJob(string inputBlobPath)
         {
-            var request = new BatchScoreRequest
-            {
-                Input = new AzureBlobDataReference
-                {
-                    ConnectionString = StorageHelper.AzureStorageBlobConnectionString,
-                    RelativeLocation = inputBlobPath
-                },
-                GlobalParameters = new Dictionary<string, string>()
-            };
+            var request = new BatchScoreRequest(new AzureBlobDataReference(StorageHelper.AzureStorageBlobConnectionString, inputBlobPath), new Dictionary<string, string>());
 
             HltbScraperEventSource.Log.SubmitImputationJobStart();
             using (var response = await s_client.PostAsJsonAsync<BatchScoreRequest, string>(AzureMlImputeServiceBaseUrl, request).ConfigureAwait(false))
