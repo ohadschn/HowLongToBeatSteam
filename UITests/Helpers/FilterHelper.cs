@@ -55,7 +55,7 @@ namespace UITests.Helpers
                 if (metacriticFrom >= 0)
                 {
                     Console.WriteLine(Invariant($"Setting advanced filter to metacriticFrom: { metacriticFrom}"));
-                    driver.SelectValue(By.Id(SiteConstants.AdvancedFilterMetacrticiFromOptionsId), metacriticFrom.ToString(CultureInfo.InvariantCulture));
+                    driver.SelectValue(By.Id(SiteConstants.AdvancedFilterMetacriticFromOptionsId), metacriticFrom.ToString(CultureInfo.InvariantCulture));
                 }
 
                 if (metaCriticTo >= 0)

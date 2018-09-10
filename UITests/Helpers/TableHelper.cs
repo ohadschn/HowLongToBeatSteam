@@ -39,7 +39,7 @@ namespace UITests.Helpers
             bool included = gameRow.FindElement(By.ClassName(SiteConstants.RowIncludedCheckboxClass)).Selected;
             string steamName = gameRow.FindElement(By.ClassName(SiteConstants.RowSteamNameSpanClass)).Text;
 
-            var playtimeIndicator = gameRow.FindElement(By.ClassName(SiteConstants.RowMobilePlaytimeIdicatorSpanClass));
+            var playtimeIndicator = gameRow.FindElement(By.ClassName(SiteConstants.RowMobilePlaytimeIndicatorSpanClass));
             Console.WriteLine("Waiting for playtime indicator tooltip...");
             TooltipHelper.AssertTooltip(driver, playtimeIndicator, "Current:", true);
 

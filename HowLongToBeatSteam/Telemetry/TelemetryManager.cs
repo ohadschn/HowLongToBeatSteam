@@ -28,6 +28,7 @@ namespace HowLongToBeatSteam.Telemetry
             TelemetryConfiguration.Active.TelemetryChannel.DeveloperMode = true;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
         public static void Setup(string instrumentationKey)
         {

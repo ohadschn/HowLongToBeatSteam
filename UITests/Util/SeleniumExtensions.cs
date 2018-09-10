@@ -17,11 +17,11 @@ namespace UITests.Util
         Chrome = 2,
         InternetExplorer = 4,
         // ReSharper disable once InconsistentNaming
-        iPhoneXChrome = 8,
+        IPhoneXChrome = 8,
         OptimusL70Chrome = 16, //384 X 640
         Nexus7Chrome = 32, // 600 X 960
         // ReSharper disable once InconsistentNaming
-        iPadMiniChrome = 64 //768 X 1024
+        IPadMiniChrome = 64 //768 X 1024
     }
 
     public static class SeleniumExtensions
@@ -57,7 +57,7 @@ namespace UITests.Util
                 using (var driver = new InternetExplorerDriver()) { ExecuteWithRetries(test, driver); }
             }
 
-            if (browsers.HasFlag(Browsers.iPhoneXChrome))
+            if (browsers.HasFlag(Browsers.IPhoneXChrome))
             {
                 Console.WriteLine("Executing test on Apple iPhone X Chrome...");
                 using (var driver = GetMobileChromeDriver("iPhone X")) { ExecuteWithRetries(test, driver); }
@@ -75,7 +75,7 @@ namespace UITests.Util
                 using (var driver = GetMobileChromeDriver("Nexus 7")) { ExecuteWithRetries(test, driver); }
             }
 
-            if (browsers.HasFlag(Browsers.iPadMiniChrome))
+            if (browsers.HasFlag(Browsers.IPadMiniChrome))
             {
                 Console.WriteLine("Executing test on Apple iPad Mini Chrome...");
                 using (var driver = GetMobileChromeDriver("Apple iPad Mini")) { ExecuteWithRetries(test, driver); }
@@ -191,7 +191,7 @@ namespace UITests.Util
                 prevLocation = element.Location;
                 stationaryCount = 0;
                 return false;
-            }, message);
+            }, message, timeout);
         }
 
         public static void SetText([NotNull] this IWebElement element, [NotNull] string text)

@@ -22,7 +22,7 @@ namespace UITests.Helpers
 
         private static TimeSpan GetPlaytime(ISearchContext driver, By by)
         {
-            return TestUtil.FreetextDurationToTimespan(driver.FindElement(by).Text);
+            return TestUtil.FreeTextDurationToTimespan(driver.FindElement(by).Text);
         }
 
         public static TimeSpan GetRemainingMainPlaytime(IWebDriver driver)

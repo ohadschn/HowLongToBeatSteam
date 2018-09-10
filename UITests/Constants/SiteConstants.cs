@@ -8,18 +8,20 @@ namespace UITests.Constants
         public const string LocalDeploymentUrl = "http://localhost:26500";
         
         public const string CachedGamesSuffix = "#/cached/all";
-        public static string CachedGamesPage = new Uri(new Uri(LocalDeploymentUrl), CachedGamesSuffix).ToString();
+        internal static string CachedGamesPage = new Uri(new Uri(LocalDeploymentUrl), CachedGamesSuffix).ToString();
 
         public const string MissingGamesSuffix = "#/missing/all";
-        public static string MissingGamesPage = new Uri(new Uri(LocalDeploymentUrl), MissingGamesSuffix).ToString();
+        internal static string MissingGamesPage = new Uri(new Uri(LocalDeploymentUrl), MissingGamesSuffix).ToString();
 
         public const string SteamIdTextId = "steam-id-text";
         public const string SteamSignInButtonId = "steam-sign-in";
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Login")]
         public const string LoginErrorDivId = "login-error";
         public const string EmptyLibraryDivId = "empty-library";
 
         public const string PersonaNameSpanId = "persona-name";
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Img")]
         public const string PersonaAvatarImgId = "persona-avatar";
 
         public const string GamesFoundTitleId = "games-found-title";
@@ -50,7 +52,9 @@ namespace UITests.Constants
         public const string SurvivalPlayStyleSelectId = "play-style-select";
         public const string SurvivalBacklogCompletionLabelId = "backlog-completion-label";
         public const string SurvivalTimeOfDeathLabelId = "time-of-death-label";
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Img")]
         public const string SurvivalFailureImgId = "survival-failure";
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Img")]
         public const string SurvivalSuccessImgId = "survival-success";
         public const string SurvivalCalculatorButtonId = "survival-calculator-button";
         public const string SurvivalFacebookShareAnchorId = "survival-facebook-share";
@@ -72,7 +76,7 @@ namespace UITests.Constants
         public const string RowIncludedCheckboxClass = "inclusion-checkbox";
         public const string RowSteamNameSpanClass = "steam-name";
         public const string RowVerifyGameAnchorId = "verify-game-link";
-        public const string RowMobilePlaytimeIdicatorSpanClass = "mobile-playtime-indicator";
+        public const string RowMobilePlaytimeIndicatorSpanClass = "mobile-playtime-indicator";
         public const string RowSteamPlaytimeCellClass = "steam-playtime";
         public const string RowMainPlaytimeCellClass = "main-playtime";
         public const string RowExtrasPlaytimeCellClass = "extras-playtime";
@@ -86,7 +90,7 @@ namespace UITests.Constants
         public const string RowBlankClass = "blank-row";
 
         public const string GamesPerPageSelectId = "games-per-page";
-        public static ReadOnlyCollection<int> GamesPerPageOptions = new ReadOnlyCollection<int>(new[] {10, 25, 50, 100});
+        internal static ReadOnlyCollection<int> GamesPerPageOptions = new ReadOnlyCollection<int>(new[] {10, 25, 50, 100});
 
         public const string FirstPageAnchorId = "first-page";
         public const string PreviousPageAnchorId = "previous-page";
@@ -110,7 +114,7 @@ namespace UITests.Constants
         public const string AdvancedFilterAnchorId = "advanced-filter";
         public const string AdvancedFilterReleaseYearFromOptionsId = "release-year-from";
         public const string AdvancedFilterReleaseYearToOptionsId = "release-year-to";
-        public const string AdvancedFilterMetacrticiFromOptionsId = "metacritic-from";
+        public const string AdvancedFilterMetacriticFromOptionsId = "metacritic-from";
         public const string AdvancedFilterMetacriticToOptionsId = "metacritic-to";
         public const string AdvancedFilterGenreOptionsId = "genre-filter";
         public const string AdvancedFilterClearButtonId = "clear-advanced-filter";
@@ -147,6 +151,7 @@ namespace UITests.Constants
         public const string ExternalPageTitleHeaderId = "external-title";
         public const string ExternalPageFrameId = "external-page-frame";
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Login")]
         public const string ValveSteamLoginButtonId = "imageLogin";
         public const string ValveSteamUsername = "steamAccountName";
         public const string ValveSteamPassword = "steamPassword";

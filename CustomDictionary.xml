@@ -4,10 +4,10 @@
            <Word>Hltb</Word>
            <Word>Ttb</Word>
            <Word>Ttbs</Word>
-			     <Word>Backoff</Word>
-			     <Word>Util</Word>
-			     <Word>Api</Word>
-			     <Word>Completionist</Word>
+		   <Word>Backoff</Word>
+		   <Word>Util</Word>
+		   <Word>Api</Word>
+		   <Word>Completionist</Word>
            <Word>Co</Word>
            <Word>Proxify</Word>
            <Word>Metacritic</Word>
@@ -20,8 +20,22 @@
            <Word>Edm</Word>
            <Word>Ml</Word>
            <Word>Parsable</Word>
+           <Word>Sas</Word>
            <Word>Darb</Word>
            <Word>Username</Word>
+           <Word>Div</Word>
+           <Word>Divs</Word>
+           <Word>Reddit</Word>
+           <Word>Gplus</Word>
+           <Word>Faq</Word>
+           <Word>Ohad</Word>
+           <Word>Amchart</Word>
+           <Word>Hltbs</Word>
+           <Word>WebDriver</Word>
+           <Word>Uuid</Word>
+           <Word>SeleniumHQ</Word>
+           <Word>InternetExplorerDriver</Word>
+           <Word>github</Word>
          </Recognized>
         <DiscreteExceptions>
            <Term>checkbox</Term>

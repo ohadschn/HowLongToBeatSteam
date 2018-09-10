@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -507,7 +508,8 @@ namespace SteamHltbScraper.Scraper
         }
     }
 
-    [SuppressMessage("Sonar.CodeSmell", "S3925:ISerializableShouldBeImplementedCorrectly", Justification = "Internal exception")]
+    [SuppressMessage("Microsoft.Design", "CA1032:ImplementStandardExceptionConstructors", Justification = "internal exception")]
+    [Serializable]
     public sealed class TransientHltbFaultException : Exception
     {
         public HtmlDocument Document { get; }
@@ -518,6 +520,8 @@ namespace SteamHltbScraper.Scraper
             Document = doc;
             PrintDocument = false;
         }
+
+        TransientHltbFaultException(SerializationInfo info, StreamingContext context) : base(info, context) {}
 
         public override string ToString()
         {

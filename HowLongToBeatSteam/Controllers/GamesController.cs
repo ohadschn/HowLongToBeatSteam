@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -140,7 +141,7 @@ namespace HowLongToBeatSteam.Controllers
 
         private static int GetCachedGameCount(string count)
         {
-            return String.Equals(count, "all", StringComparison.OrdinalIgnoreCase) ? Int32.MaxValue : Int32.Parse(count);
+            return String.Equals(count, "all", StringComparison.OrdinalIgnoreCase) ? Int32.MaxValue : Int32.Parse(count, CultureInfo.InvariantCulture);
         }
 
         private static async Task<PlayerInfo> GetGamesCore(Func<CancellationToken, Task<OwnedGame[]>> gamesGetter, Func<CancellationToken, Task<PersonaInfo>> personaGetter)

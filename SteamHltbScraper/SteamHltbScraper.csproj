@@ -125,7 +125,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Imputation\AzureMLDataTypes.cs" />
     <Compile Include="Scraper\HltbInfo.cs" />
     <Compile Include="Logging\HltbScraperEventSource.cs" />

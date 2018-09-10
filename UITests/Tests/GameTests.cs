@@ -57,7 +57,7 @@ namespace UITests.Tests
                 SignInHelper.SignInWithId(driver, UserConstants.HltbsUser);
 
                 Assert.AreEqual(UserConstants.HltbUserGameCount, GameSummaryHelper.GetGameCount(driver), "incorrect game count");
-                Assert.AreEqual(UserConstants.HltbUserExludedGameCount, GetExcludedGameCount(driver), "incorrect excluded game count");
+                Assert.AreEqual(UserConstants.HltbUserExcludedGameCount, GetExcludedGameCount(driver), "incorrect excluded game count");
 
                 AssertValidPlaytimes(driver);
                 AssertValidPercentages(driver);

@@ -8,6 +8,7 @@ using UITests.Util;
 
 namespace UITests.Tests
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Login")]
     [TestClass]
     public class LoginTests
     {
@@ -28,7 +29,7 @@ namespace UITests.Tests
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
                 SignInHelper.SignInWithId(driver, UserConstants.SampleSteamId);
-                AssertPersonaDetails(driver, UserConstants.SamplePersonaName, UserConstants.SamplePersonaAvatarUUID);
+                AssertPersonaDetails(driver, UserConstants.SamplePersonaName, UserConstants.SamplePersonaAvatarUuid);
 
                 Console.WriteLine("Asserting the imputed values notification is displayed...");
                 driver.FindElement(By.Id(SiteConstants.ImputedValuesNotificationDivId));
@@ -41,7 +42,7 @@ namespace UITests.Tests
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
                 SignInHelper.SignInWithId(driver, UserConstants.SampleSteam64Id.ToString(CultureInfo.InvariantCulture));
-                AssertPersonaDetails(driver, UserConstants.SamplePersonaName, UserConstants.SamplePersonaAvatarUUID);
+                AssertPersonaDetails(driver, UserConstants.SamplePersonaName, UserConstants.SamplePersonaAvatarUuid);
 
                 Console.WriteLine("Asserting the imputed values notification is displayed...");
                 driver.FindElement(By.Id(SiteConstants.ImputedValuesNotificationDivId));
@@ -54,11 +55,17 @@ namespace UITests.Tests
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
                 Console.WriteLine("Retrieving Steam password from environment variable...");
-                string steamPassword = TestUtil.GetCredentialFromManager("OHADSOFT_STEAM_PASSWORD").Password;
+
+                string steamPassword;
+                using (var credential = TestUtil.GetCredentialFromManager("OHADSOFT_STEAM_PASSWORD"))
+                {
+                    steamPassword = credential.Password;
+                }
+                
                 Assert.IsNotNull(steamPassword, "The OHADSOFT_STEAM_PASSWORD generic credential must be set in the Windows Credential Manager");
 
                 SignInHelper.SignInThroughSteam(driver, UserConstants.HltbsUser, steamPassword);
-                AssertPersonaDetails(driver, UserConstants.HltbsPersonaName, UserConstants.HltbsPersonaAvatarUUID);
+                AssertPersonaDetails(driver, UserConstants.HltbsPersonaName, UserConstants.HltbsPersonaAvatarUuid);
             });
         }
 
@@ -88,7 +95,7 @@ namespace UITests.Tests
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
                 SignInHelper.GoToCachedGamesPage(driver);
-                AssertPersonaDetails(driver, String.Empty, UserConstants.SamplePersonaAvatarUUID);
+                AssertPersonaDetails(driver, String.Empty, UserConstants.SamplePersonaAvatarUuid);
 
                 Console.WriteLine("Asserting the missing HLTB games alert is displayed...");
                 driver.FindElement(By.Id(SiteConstants.MissingHltbGamesAlertDivId));

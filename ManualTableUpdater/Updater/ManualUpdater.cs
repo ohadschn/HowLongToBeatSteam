@@ -159,6 +159,7 @@ namespace ManualTableUpdater.Updater
         }
 
 #pragma warning disable S1144 // Unused private types or members should be removed
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         private static void RebuildProcessedSuggestions()
         {
             var allProcessedSuggestions = StorageHelper.GetAllProcessedSuggestions().Result;

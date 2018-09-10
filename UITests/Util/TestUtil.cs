@@ -23,10 +23,11 @@ namespace UITests.Util
 
             if (seleniumIeRegFlag != 0)
             {
-                throw new InvalidOperationException("It appears you have not configured your system for use with Selenium and IE. Please follow the instructions at: https://github.com/SeleniumHQ/selenium/wiki/InternetExplorerDriver (even if you don't have IE11 please set the registry key as an indicatio that you've followed the instructions");
+                throw new InvalidOperationException("It appears you have not configured your system for use with Selenium and IE. Please follow the instructions at: https://github.com/SeleniumHQ/selenium/wiki/InternetExplorerDriver (even if you don't have IE11 please set the registry key as an indication that you've followed the instructions");
             }
         }
 
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         public static Credential GetCredentialFromManager(string target)
         {
             var cm = new Credential { Target = target };
@@ -47,7 +48,7 @@ namespace UITests.Util
             return unitMatch.Success ? Int32.Parse(unitMatch.Groups[1].Value, CultureInfo.InvariantCulture) : 0;
         }
 
-        public static TimeSpan FreetextDurationToTimespan([NotNull] string duration)
+        public static TimeSpan FreeTextDurationToTimespan([NotNull] string duration)
         {
             if (duration == null) throw new ArgumentNullException(nameof(duration));
 

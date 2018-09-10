@@ -25,6 +25,7 @@ namespace SteamHltbScraper.Imputation
         NotStarted,
         Running,
         Failed,
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1726:UsePreferredTerms", MessageId = "Cancelled")]
         Cancelled,
         Finished
     }
@@ -44,6 +45,7 @@ namespace SteamHltbScraper.Imputation
     public class BatchScoreRequest
     {
         public AzureBlobDataReference Input { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public IDictionary<string, string> GlobalParameters { get; set; }
     }
 }
