@@ -12,8 +12,6 @@ using Common.Storage;
 using Common.Util;
 using Microsoft.WindowsAzure.Storage.Table;
 using static System.FormattableString;
-// ReSharper disable UnusedMember.Global
-// ReSharper disable UnusedMember.Local
 
 namespace ManualTableUpdater.Updater
 {
@@ -46,14 +44,10 @@ namespace ManualTableUpdater.Updater
         public string AppType { get; set; }
         [DataMember]
         public Platforms Platforms { get; set; }
-        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays"), DataMember]
-        public string[] Categories { get; set; }
-        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays"), DataMember]
-        public string[] Genres { get; set; }
-        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays"), DataMember]
-        public string[] Developers { get; set; }
-        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays"), DataMember]
-        public string[] Publishers { get; set; }
+        public IReadOnlyList<string> Categories { get; }
+        public IReadOnlyList<string> Genres { get; }
+        public IReadOnlyList<string> Developers { get; }
+        public IReadOnlyList<string> Publishers { get; }
         [DataMember]
         public DateTime ReleaseDate { get; set; }
         [DataMember]
@@ -78,8 +72,8 @@ namespace ManualTableUpdater.Updater
         public bool VerifiedGame { get; set; }
 
         public AppEntityData(int steamAppId, string steamName, string appType, Platforms platforms,
-            string[] categories, string[] genres, string[] developers,
-            string[] publishers, DateTime releaseDate, int metacriticScore,
+            IReadOnlyList<string> categories, IReadOnlyList<string> genres, IReadOnlyList<string> developers,
+            IReadOnlyList<string> publishers, DateTime releaseDate, int metacriticScore,
             int hltbId, string hltbName, 
             int mainTtb, bool mainTtbImputed, int extrasTtb, bool extrasTtbImputed, int completionistTtb, bool completionistTtbImputed,
             bool verifiedGame)
@@ -105,6 +99,7 @@ namespace ManualTableUpdater.Updater
             VerifiedGame = verifiedGame;
         }
     }
+
     public static class ManualUpdater
     {
         public const string AppDataXml = "AppData.xml";
@@ -132,7 +127,6 @@ namespace ManualTableUpdater.Updater
             try
             {
                 
-#pragma warning disable S125 // Sections of code should not be "commented out"
                 //RebuildProcessedSuggestions();
                 //ProcessIDarbSuggestions();
                 //ProcessIDarbApps();
@@ -148,7 +142,6 @@ namespace ManualTableUpdater.Updater
                 //ForceUpdateAppHltbId(266310, 27913);
                 //SendMail();
                 //GetEarliestGame();
-#pragma warning restore S125 // Sections of code should not be "commented out"
                 Console.WriteLine("Done - Press any key to continue...");
                 Console.ReadLine();
             }
@@ -158,8 +151,6 @@ namespace ManualTableUpdater.Updater
             }
         }
 
-#pragma warning disable S1144 // Unused private types or members should be removed
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         private static void RebuildProcessedSuggestions()
         {
             var allProcessedSuggestions = StorageHelper.GetAllProcessedSuggestions().Result;
@@ -319,8 +310,7 @@ namespace ManualTableUpdater.Updater
             }
 
             StorageHelper.InsertOrReplace(appData.Select(
-                a => new AppEntity(a.SteamAppId, a.SteamName, a.AppType, a.Platforms, a.Categories,
-                    a.Genres, a.Publishers, a.Developers, a.ReleaseDate, a.MetacriticScore)
+                a => new AppEntity(a.SteamAppId, a.SteamName, a.AppType, a.Platforms, a.Categories, a.Genres, a.Publishers, a.Developers, a.ReleaseDate, a.MetacriticScore)
                 {
                     HltbId = a.HltbId,
                     HltbName = a.HltbName,
@@ -334,7 +324,6 @@ namespace ManualTableUpdater.Updater
                 }), "updating apps from file").Wait();
         }
 
-        [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Justification = "dev method")]
         public static void PrintGenres()
         {
             var measured = StorageHelper.GetAllApps(AppEntity.MeasuredFilter).Result;
@@ -456,8 +445,5 @@ namespace ManualTableUpdater.Updater
 
             StorageHelper.Insert(games, "inserting apps from CSV");
         }
-
-#pragma warning restore S1144 // Unused private types or members should be removed
-
     }
 }

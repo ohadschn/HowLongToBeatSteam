@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using JetBrains.Annotations;
 using OpenQA.Selenium;
 using SeleniumExtras.WaitHelpers;
 using UITests.Util;
@@ -9,8 +10,12 @@ namespace UITests.Helpers
 {
     public static class LinkHelper
     {
-        public static void AssertExternalLink(IWebDriver driver, string linkId, string expectedTitle)
+        public static void AssertExternalLink([NotNull] IWebDriver driver, [NotNull] string linkId, [NotNull] string expectedTitle)
         {
+            if (driver == null) throw new ArgumentNullException(nameof(driver));
+            if (linkId == null) throw new ArgumentNullException(nameof(linkId));
+            if (expectedTitle == null) throw new ArgumentNullException(nameof(expectedTitle));
+
             var originalWindowHandle = driver.CurrentWindowHandle;
             var originalWindowHandles = driver.WindowHandles.ToArray();
 

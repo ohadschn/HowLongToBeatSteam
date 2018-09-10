@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using JetBrains.Annotations;
 using OpenQA.Selenium;
 using UITests.Constants;
 
@@ -70,23 +71,32 @@ namespace UITests.Helpers
                 TableGameInfo(included, steamName, verifiedFinite, currentPlayTime, mainPlaytime, extrasPlaytime, completionistPlaytime, missingCorrelation, hltbName, verifiedCorrelation, updateState);
         }
 
-        public static TableGameInfo ParseGameRow(IWebDriver driver, IWebElement gameRow, bool mobile = false)
+        public static TableGameInfo ParseGameRow([NotNull] IWebDriver driver, [NotNull] IWebElement gameRow, bool mobile = false)
         {
+            if (driver == null) throw new ArgumentNullException(nameof(driver));
+            if (gameRow == null) throw new ArgumentNullException(nameof(gameRow));
+
             return mobile ? ParseMobileTableRow(driver, gameRow) : ParseDesktopTableRow(gameRow);
         }
 
-        public static IWebElement FindTableBody(IWebDriver driver)
+        public static IWebElement FindTableBody([NotNull] IWebDriver driver)
         {
+            if (driver == null) throw new ArgumentNullException(nameof(driver));
+
             return driver.FindElement(By.Id(SiteConstants.GameTableId)).FindElement(By.TagName("tbody"));
         }
 
-        public static IEnumerable<IWebElement> FindGameRows(IWebDriver driver)
+        public static IEnumerable<IWebElement> FindGameRows([NotNull] IWebDriver driver)
         {
+            if (driver == null) throw new ArgumentNullException(nameof(driver));
+
             return FindTableBody(driver).FindElements(By.TagName("tr")).Where(e => e.GetAttribute("class") != SiteConstants.RowBlankClass);
         }
 
-        public static TableGameInfo[] ParseGameTable(IWebDriver driver, bool mobile = false)
+        public static TableGameInfo[] ParseGameTable([NotNull] IWebDriver driver, bool mobile = false)
         {
+            if (driver == null) throw new ArgumentNullException(nameof(driver));
+
             Console.WriteLine("Parsing game table...");
             return FindGameRows(driver).Select(row => ParseGameRow(driver, row, mobile)).ToArray();
         }

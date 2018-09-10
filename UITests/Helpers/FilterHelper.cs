@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using JetBrains.Annotations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
@@ -12,10 +13,11 @@ namespace UITests.Helpers
 {
     public static class FilterHelper
     {
-        public static int GetFilterGameCount(IWebDriver driver)
+        public static int GetFilterGameCount([NotNull] IWebDriver driver)
         {
-            Console.WriteLine("Extracting filter game count text...");
+            if (driver == null) throw new ArgumentNullException(nameof(driver));
 
+            Console.WriteLine("Extracting filter game count text...");
             int gameCount = Int32.MaxValue;
             driver.WaitUntil(d =>
                 Int32.TryParse(driver.FindElement(By.Id(SiteConstants.FilterGameCountSpanId)).Text.Split(' ')[0], NumberStyles.Number, CultureInfo.InvariantCulture, out gameCount),
@@ -24,20 +26,26 @@ namespace UITests.Helpers
             return gameCount;
         }
 
-        public static void SetTextFilter(IWebDriver driver, string filter)
+        public static void SetTextFilter([NotNull] IWebDriver driver, string filter)
         {
+            if (driver == null) throw new ArgumentNullException(nameof(driver));
+
             Console.WriteLine(Invariant($"Setting text filter to {filter}..."));
             driver.FindElement(By.Id(SiteConstants.FilterInputId)).SetText(filter);
         }
 
-        public static void ClearTextFilter(IWebDriver driver)
+        public static void ClearTextFilter([NotNull] IWebDriver driver)
         {
+            if (driver == null) throw new ArgumentNullException(nameof(driver));
+
             Console.WriteLine("Clearing filter...");
             driver.FindElement(By.Id(SiteConstants.FilterInputId)).Clear();
         }
 
-        public static void SetAdvancedFilter(IWebDriver driver, int releaseYearFrom = -1, int releaseYearTo = -1, int metacriticFrom = -1, int metaCriticTo = -1, ICollection<string> genres = null)
+        public static void SetAdvancedFilter([NotNull] IWebDriver driver, int releaseYearFrom = -1, int releaseYearTo = -1, int metacriticFrom = -1, int metaCriticTo = -1, ICollection<string> genres = null)
         {
+            if (driver == null) throw new ArgumentNullException(nameof(driver));
+
             DialogHelper.TestDialog(driver, SiteConstants.AdvancedFilterAnchorId, SiteConstants.AdvancedFilterModalId, () =>
             {
                 if (releaseYearFrom >= 0)
@@ -85,8 +93,10 @@ namespace UITests.Helpers
             });
         }
 
-        public static void ClearAdvancedFilter(IWebDriver driver)
+        public static void ClearAdvancedFilter([NotNull] IWebDriver driver)
         {
+            if (driver == null) throw new ArgumentNullException(nameof(driver));
+
             DialogHelper.TestDialog(driver, SiteConstants.AdvancedFilterAnchorId, SiteConstants.AdvancedFilterModalId, () =>
             {
                 Console.WriteLine("Clearing advanced filter...");
@@ -94,8 +104,10 @@ namespace UITests.Helpers
             });
         }
 
-        public static void ClearAdvancedFilterExternally(IWebDriver driver)
+        public static void ClearAdvancedFilterExternally([NotNull] IWebDriver driver)
         {
+            if (driver == null) throw new ArgumentNullException(nameof(driver));
+
             Console.WriteLine("Clearing advanced filter (externally)...");
             driver.FindElement(By.Id(SiteConstants.AdvancedFilterClearExternalSpanId)).Click();
         }

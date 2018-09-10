@@ -526,7 +526,6 @@ namespace Common.Logging
             WriteEvent(24, description);
         }
 
-        [SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "MailStop")]
         [Event(
             25,
             Message = "Finished sending success email for: {0} (Status Code: {1}, Headers: {2}, Body: {3})",

@@ -267,7 +267,6 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Logging\AppInsightsExceptionLogger.cs" />
     <Compile Include="Models\LifeExpectancy.cs" />
     <Compile Include="Models\PlayerInfo.cs" />

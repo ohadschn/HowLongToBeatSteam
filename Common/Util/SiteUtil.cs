@@ -44,7 +44,6 @@ namespace Common.Util
         //used to determine if running on azure or not (never mocked)
         private const string WebSiteHostNameEnvironmentVariable = "WEBSITE_HOSTNAME";
 
-        [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", MessageId = "0#"), SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", MessageId = "1#")]
         public static void Swap<T>(ref T first, ref T second)
         {
             T temp = first;
@@ -418,7 +417,6 @@ namespace Common.Util
             return TimeSpan.FromMilliseconds(Environment.TickCount - tickCount);
         }
 
-        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
         public static void DataContractSerializeToFile<T>(T objectToSerialize, string fileName)
         {
             using (var fileStream = File.CreateText(fileName))

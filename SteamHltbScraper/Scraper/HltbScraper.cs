@@ -256,14 +256,15 @@ namespace SteamHltbScraper.Scraper
         [SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "profileinfo")]
         private static DateTime ScrapeReleaseDate(int hltbId, HtmlDocument doc)
         {
+            const string profileInfoClass = "profile_info";
             var potentialDateNodes = doc.DocumentNode
                 .Descendants("div")
-                .Where(n => n.Attributes["class"]?.Value == "profile_info" && !string.IsNullOrWhiteSpace(n.InnerText))
+                .Where(n => n.Attributes["class"]?.Value == profileInfoClass && !string.IsNullOrWhiteSpace(n.InnerText))
                 .ToArray();
                            
             if (potentialDateNodes.Length == 0)
             {
-                throw GetFormatException("No potential date text nodes found (div .profile_info)", hltbId, doc);
+                throw GetFormatException($"No potential date text nodes found (div .{profileInfoClass})", hltbId, doc);
             }
 
             var potentialDates = potentialDateNodes

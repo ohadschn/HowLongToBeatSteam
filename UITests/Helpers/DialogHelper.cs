@@ -1,4 +1,5 @@
 ﻿using System;
+using JetBrains.Annotations;
 using OpenQA.Selenium;
 using UITests.Util;
 using static System.FormattableString;
@@ -7,8 +8,18 @@ namespace UITests.Helpers
 {
     public static class DialogHelper
     {
-        public static void TestDialog(IWebDriver driver, IWebElement dialogButton, string modalId, Action test, bool waitForDismissal = true)
+        public static void TestDialog(
+            [NotNull] IWebDriver driver, 
+            [NotNull] IWebElement dialogButton, 
+            [NotNull] string modalId, 
+            [NotNull] Action test, 
+            bool waitForDismissal = true)
         {
+            if (driver == null) throw new ArgumentNullException(nameof(driver));
+            if (dialogButton == null) throw new ArgumentNullException(nameof(dialogButton));
+            if (modalId == null) throw new ArgumentNullException(nameof(modalId));
+            if (test == null) throw new ArgumentNullException(nameof(test));
+
             Console.WriteLine("Opening dialog...");
             dialogButton.Click();
 
@@ -25,8 +36,18 @@ namespace UITests.Helpers
             }
         }
 
-        public static void TestDialog(IWebDriver driver, string dialogButtonId, string modalId, Action test, bool waitForDismissal = true)
+        public static void TestDialog(
+            [NotNull] IWebDriver driver, 
+            [NotNull] string dialogButtonId, 
+            [NotNull] string modalId, 
+            [NotNull] Action test, 
+            bool waitForDismissal = true)
         {
+            if (driver == null) throw new ArgumentNullException(nameof(driver));
+            if (dialogButtonId == null) throw new ArgumentNullException(nameof(dialogButtonId));
+            if (modalId == null) throw new ArgumentNullException(nameof(modalId));
+            if (test == null) throw new ArgumentNullException(nameof(test));
+
             TestDialog(driver, driver.FindElement(By.Id(dialogButtonId)), modalId, test, waitForDismissal);
         }
     }

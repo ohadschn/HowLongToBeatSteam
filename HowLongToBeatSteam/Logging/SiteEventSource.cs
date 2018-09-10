@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.Net.Http;
 using Common.Logging;
@@ -21,8 +22,8 @@ namespace HowLongToBeatSteam.Logging
         {
         }
 
-// ReSharper disable ConvertToStaticClass
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
+        // ReSharper disable ConvertToStaticClass
+        [SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
         public sealed class Keywords
         {
             private Keywords() { }
@@ -33,7 +34,7 @@ namespace HowLongToBeatSteam.Logging
             public const EventKeywords Http = (EventKeywords) 16;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
+        [SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
         public sealed class Tasks
         {
             private Tasks() { }

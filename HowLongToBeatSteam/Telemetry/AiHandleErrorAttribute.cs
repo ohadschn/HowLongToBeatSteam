@@ -10,7 +10,6 @@ namespace HowLongToBeatSteam.ErrorHandler //this namespace makes AI configuratio
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)] 
     public sealed class AiHandleErrorAttribute : HandleErrorAttribute
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
         public override void OnException([NotNull] ExceptionContext filterContext)
         {
             if (filterContext == null) throw new ArgumentNullException(nameof(filterContext));

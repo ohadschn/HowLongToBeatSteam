@@ -125,7 +125,6 @@ namespace Common.Util
         }
 
         [PublicAPI]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#")]
         public Task<HttpResponseWithContent<T>> PostAsync<T>([NotNull] string uri, [NotNull] Func<HttpContent> contentFactory)
         {
             if (uri == null) throw new ArgumentNullException(nameof(uri));
@@ -144,7 +143,6 @@ namespace Common.Util
         }
 
         [PublicAPI]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#")]
         public Task<HttpResponseWithContent<TResponse>> PostAsJsonAsync<TValue, TResponse>([NotNull] string requestUri, [NotNull] TValue value)
         {
             if (requestUri == null) throw new ArgumentNullException(nameof(requestUri));
@@ -154,7 +152,6 @@ namespace Common.Util
         }
 
         [PublicAPI]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#")]
         public Task<HttpResponseWithContent<TResponse>> PostAsJsonAsync<TValue, TResponse>([NotNull] string requestUri, [NotNull] TValue value, CancellationToken ct)
         {
             if (requestUri == null) throw new ArgumentNullException(nameof(requestUri));

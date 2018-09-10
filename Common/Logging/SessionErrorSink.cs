@@ -19,8 +19,6 @@ namespace Common.Logging
             }
         }
 
-        [SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "SessionErrorSink")] 
-        [SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "OnError")]
         public void OnError(Exception error)
         {
             EventSourceRegistrar.RecordSessionError(

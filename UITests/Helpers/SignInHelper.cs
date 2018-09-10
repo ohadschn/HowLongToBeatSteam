@@ -1,4 +1,5 @@
 ﻿using System;
+using JetBrains.Annotations;
 using OpenQA.Selenium;
 using SeleniumExtras.WaitHelpers;
 using UITests.Constants;
@@ -15,8 +16,10 @@ namespace UITests.Helpers
 
     public static class SignInHelper
     {
-        private static void WaitForLoad(IWebDriver driver, WaitType waitType)
+        private static void WaitForLoad([NotNull] IWebDriver driver, WaitType waitType)
         {
+            if (driver == null) throw new ArgumentNullException(nameof(driver));
+
             if (waitType == WaitType.None)
             {
                 return;
@@ -28,8 +31,11 @@ namespace UITests.Helpers
             Console.WriteLine("User page loaded");
         }
 
-        public static void SignInWithId(IWebDriver driver, string steamId, WaitType waitType = WaitType.PageLoad)
+        public static void SignInWithId([NotNull] IWebDriver driver, [NotNull] string steamId, WaitType waitType = WaitType.PageLoad)
         {
+            if (driver == null) throw new ArgumentNullException(nameof(driver));
+            if (steamId == null) throw new ArgumentNullException(nameof(steamId));
+
             Console.WriteLine(Invariant($"Navigating to deployment URL: {SiteConstants.LocalDeploymentUrl}..."));
             driver.Url = SiteConstants.LocalDeploymentUrl;
 
@@ -45,8 +51,12 @@ namespace UITests.Helpers
             WaitForLoad(driver, waitType);
         }
 
-        public static void SignInThroughSteam(IWebDriver driver, string steamUser, string steamPassword, WaitType waitType = WaitType.PageLoad)
+        public static void SignInThroughSteam([NotNull] IWebDriver driver, [NotNull] string steamUser, [NotNull] string steamPassword, WaitType waitType = WaitType.PageLoad)
         {
+            if (driver == null) throw new ArgumentNullException(nameof(driver));
+            if (steamUser == null) throw new ArgumentNullException(nameof(steamUser));
+            if (steamPassword == null) throw new ArgumentNullException(nameof(steamPassword));
+
             Console.WriteLine(Invariant($"Navigating to deployment URL: {SiteConstants.LocalDeploymentUrl}..."));
             driver.Url = SiteConstants.LocalDeploymentUrl;
 
@@ -80,16 +90,20 @@ namespace UITests.Helpers
             WaitForLoad(driver, waitType);
         }
 
-        public static void GoToCachedGamesPage(IWebDriver driver, WaitType waitType = WaitType.PageLoad)
+        public static void GoToCachedGamesPage([NotNull] IWebDriver driver, WaitType waitType = WaitType.PageLoad)
         {
+            if (driver == null) throw new ArgumentNullException(nameof(driver));
+
             Console.WriteLine(Invariant($"Navigating to cached games page URL: {SiteConstants.CachedGamesPage}..."));
             driver.Url = SiteConstants.CachedGamesPage;
 
             WaitForLoad(driver, waitType);
         }
 
-        public static void GoToMissingGamesPage(IWebDriver driver, WaitType waitType = WaitType.PageLoad)
+        public static void GoToMissingGamesPage([NotNull] IWebDriver driver, WaitType waitType = WaitType.PageLoad)
         {
+            if (driver == null) throw new ArgumentNullException(nameof(driver));
+
             Console.WriteLine(Invariant($"Navigating to missing games page URL: {SiteConstants.MissingGamesPage}..."));
             driver.Url = SiteConstants.MissingGamesPage;
 

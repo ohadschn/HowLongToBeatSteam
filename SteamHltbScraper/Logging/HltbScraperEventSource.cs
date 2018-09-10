@@ -14,7 +14,7 @@ namespace SteamHltbScraper.Logging
         {
         }
 
-// ReSharper disable ConvertToStaticClass
+        // ReSharper disable ConvertToStaticClass
         [SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
         public sealed class Keywords
         {
