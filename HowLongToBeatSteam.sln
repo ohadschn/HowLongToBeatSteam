@@ -22,6 +22,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		ImputeZeroes.R = ImputeZeroes.R
 		ohads.ruleset = ohads.ruleset
+		README.md = README.md
 		SemanticLogging-svc.xml = SemanticLogging-svc.xml
 		tests.ruleset = tests.ruleset
 	EndProjectSection
@@ -104,7 +105,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8
 		SolutionGuid = {CBBE88E1-DD55-4969-814E-8F9E94515083}
+		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8
 	EndGlobalSection
 EndGlobal
