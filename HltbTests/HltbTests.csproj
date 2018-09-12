@@ -123,6 +123,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="TestInitialization\MSTestInitialization.cs" />
     <Compile Include="Imputation\ImputationTests.cs" />
     <Compile Include="Logging\EventSourceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
