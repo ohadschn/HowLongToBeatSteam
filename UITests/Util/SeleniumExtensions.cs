@@ -21,7 +21,7 @@ namespace UITests.Util
         // ReSharper disable once InconsistentNaming
         IPhone = 8,
         OptimusL70Chrome = 16, //384 X 640
-        Nexus7Chrome = 32, // 600 X 960
+        Nexus7Chrome = 32 // 600 X 960
     }
 
     public static class SeleniumExtensions

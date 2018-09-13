@@ -523,7 +523,7 @@ namespace SteamHltbScraper.Scraper
             PrintDocument = false;
         }
 
-        TransientHltbFaultException(SerializationInfo info, StreamingContext context) : base(info, context) {}
+        private TransientHltbFaultException(SerializationInfo info, StreamingContext context) : base(info, context) {}
 
         public override string ToString()
         {
