@@ -50,7 +50,7 @@ namespace UITests.Tests
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SignInHelper.SignInWithId(driver, UserConstants.HltbsUser);
+                SignInHelper.SignInWithId(driver);
                 AssertHltbsUserTable(TableHelper.ParseGameTable(driver), false);
             });
         }
@@ -60,7 +60,7 @@ namespace UITests.Tests
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SignInHelper.SignInWithId(driver, UserConstants.HltbsUser);
+                SignInHelper.SignInWithId(driver);
                 AssertHltbsUserTable(TableHelper.ParseGameTable(driver, true), true);
             }, Browsers.Nexus7Chrome);
         }
@@ -70,7 +70,7 @@ namespace UITests.Tests
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SignInHelper.SignInWithId(driver, UserConstants.HltbsUser);
+                SignInHelper.SignInWithId(driver);
 
                 var originalMain = GameSummaryHelper.GetRemainingMainPlaytime(driver);
                 var originalExtras = GameSummaryHelper.GetRemainingExtrasPlaytime(driver);
@@ -142,7 +142,7 @@ namespace UITests.Tests
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SignInHelper.SignInWithId(driver, UserConstants.HltbsUser);
+                SignInHelper.SignInWithId(driver);
 
                 TestColumnSort(driver, SiteConstants.SteamNameTitle, g => g.SteamName);
                 TestColumnSort(driver, SiteConstants.SteamPlaytimeTitle, g => g.SteamPlaytime);
@@ -222,7 +222,7 @@ namespace UITests.Tests
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SignInHelper.SignInWithId(driver, UserConstants.HltbsUser);
+                SignInHelper.SignInWithId(driver);
 
                 var gameRows = TableHelper.FindGameRows(driver).ToArray();
 
@@ -262,7 +262,7 @@ namespace UITests.Tests
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SignInHelper.SignInWithId(driver, UserConstants.HltbsUser);
+                SignInHelper.SignInWithId(driver);
 
                 Console.WriteLine("Setting filter to include two games...");
                 var filter = "in";
@@ -290,7 +290,7 @@ namespace UITests.Tests
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SignInHelper.SignInWithId(driver, UserConstants.HltbsUser);
+                SignInHelper.SignInWithId(driver);
 
                 Console.WriteLine("Setting advanced filter by release year...");
                 FilterHelper.SetAdvancedFilter(driver, 2015, 2016);

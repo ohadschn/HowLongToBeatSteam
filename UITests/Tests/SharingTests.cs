@@ -22,7 +22,7 @@ namespace UITests.Tests
             {
                 var isInternetExplorer = driver is InternetExplorerDriver;
                 
-                SignInHelper.SignInWithId(driver, UserConstants.SampleSteamId);
+                SignInHelper.SignInWithId(driver);
 
                 LinkHelper.AssertExternalLink(driver, SiteConstants.FacebookShareAnchorId, FacebookShareTitle, newWindow:true, dismissAlertOnClose: isInternetExplorer);
                 LinkHelper.AssertExternalLink(driver, SiteConstants.TwitterShareAnchorId, TwitterShareTitle, newWindow:true);

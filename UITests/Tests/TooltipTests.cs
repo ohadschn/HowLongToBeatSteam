@@ -17,7 +17,7 @@ namespace UITests.Tests
                 driver.Url = SiteConstants.LocalDeploymentUrl;
                 TooltipHelper.AssertTooltip(driver, By.Id(SiteConstants.ProfileIdTooltip), "steamcommunity.com/id/[ID]");
 
-                SignInHelper.SignInWithId(driver, UserConstants.SampleSteamId);
+                SignInHelper.SignInWithId(driver);
                 TooltipHelper.AssertTooltip(driver, By.Id(SiteConstants.PlaytimeTooltip), "As recorded by Steam");
                 TooltipHelper.AssertTooltip(driver, By.Id(SiteConstants.ExcludedGamesTooltip), "non-game apps are excluded");
                 TooltipHelper.AssertTooltip(driver, By.Id(SiteConstants.SteamPlaytimeTitle), "Current Steam playtime");

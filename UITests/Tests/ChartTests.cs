@@ -71,7 +71,7 @@ namespace UITests.Tests
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SignInHelper.SignInWithId(driver, UserConstants.HltbsUser);
+                SignInHelper.SignInWithId(driver);
 
                 TestRenderedCharts(driver);
                 TestSlicers(driver);
@@ -83,7 +83,7 @@ namespace UITests.Tests
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SignInHelper.SignInWithId(driver, UserConstants.HltbsUser);
+                SignInHelper.SignInWithId(driver);
 
                 TestRenderedCharts(driver);
                 TestSlicers(driver);

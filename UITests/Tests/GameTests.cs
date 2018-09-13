@@ -54,7 +54,7 @@ namespace UITests.Tests
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SignInHelper.SignInWithId(driver, UserConstants.HltbsUser);
+                SignInHelper.SignInWithId(driver);
 
                 Assert.AreEqual(UserConstants.HltbUserGameCount, GameSummaryHelper.GetGameCount(driver), "incorrect game count");
                 Assert.AreEqual(UserConstants.HltbUserExcludedGameCount, GetExcludedGameCount(driver), "incorrect excluded game count");
