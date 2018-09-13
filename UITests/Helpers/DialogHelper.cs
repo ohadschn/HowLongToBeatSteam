@@ -48,6 +48,7 @@ namespace UITests.Helpers
             if (modalId == null) throw new ArgumentNullException(nameof(modalId));
             if (test == null) throw new ArgumentNullException(nameof(test));
 
+            Console.WriteLine("Testing dialog by ID: {0}", dialogButtonId);
             TestDialog(driver, driver.FindElement(By.Id(dialogButtonId)), modalId, test, waitForDismissal);
         }
     }

@@ -37,8 +37,8 @@
 </head>
 <body data-bind="css: introPage() ? 'body-intro' : ''">
     <div class="attribution" data-bind="visible: introPage">
-        <a href="https://opengameart.org/content/kujasa-the-beginning" target="_blank" class="attribution-link"><i>Kujasa - The Beginning</i></a> by Sergei Churbanov<br />
-        Licensed by <a href="https://williamthompsonj.blogspot.de" target="_blank" class="attribution-link">William Thompson</a> under <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" class="attribution-link">CC BY 3.0</a>
+        <a href="https://opengameart.org/content/kujasa-the-beginning" class="attribution-link"><i>Kujasa - The Beginning</i></a> by Sergei Churbanov<br />
+        Licensed by <a href="https://williamthompsonj.blogspot.de" class="attribution-link">William Thompson</a> under <a href="https://creativecommons.org/licenses/by/3.0/" class="attribution-link">CC BY 3.0</a>
     </div>
     <div id="external-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="external-title" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -91,12 +91,12 @@
                 <span class="sr-only">Close</span>
             </button>
             <div data-bind="visible: authenticated() !== AuthenticationStatus.Failure">
-                Having trouble signing in? Watch the <a href="https://www.youtube.com/watch?v=07q4XgMgoPc" target="_blank">tutorial</a>!
+                Having trouble signing in? Watch the <a href="https://www.youtube.com/watch?v=07q4XgMgoPc">tutorial</a>!
             </div>
             <strong class="emphasized">Error:</strong> Could not retrieve Steam library information.
             <span data-bind="visible: authenticated() === AuthenticationStatus.Failure">Steam Authentication failed. Please make sure you have the right credentials and try again.</span>
             <span data-bind="visible: authenticated() === AuthenticationStatus.None">Try signing-in through Steam.</span>
-            <span data-bind="visible: authenticated() === AuthenticationStatus.Success">Make sure your profile is <a href="https://google.com/#q=set+steam+profile+public" target="_blank" class="alert-link"> set to public in your Steam profile settings</a>.</span>
+            <span data-bind="visible: authenticated() === AuthenticationStatus.Success">Make sure your profile is <a href="https://google.com/#q=set+steam+profile+public" class="alert-link"> set to public in your Steam profile settings</a>.</span>
         </div>
         <div id="missing-hltb-games-alert" class="row horizontal-alert-row">
             <div role="alert" data-bind="visible: missingHltbIds() && !missingAlertHidden()" class="hidden-xs alert alert-warning alert-dismissable horizontal-alert col-md-6">
@@ -105,7 +105,7 @@
                     <span class="sr-only">Close</span>
                 </button>
                 <p class="lead">
-                    <span class="fa fa-puzzle-piece cursor-default"></span> Some of your games could not be found on HowLongToBeat. Click the update links next to missing games in the table below to <abbr title="TIP - sort by HLTB name to examine all missing games">help</abbr>! Want to help even more? head over to the <a href="#/missing/all">missing games repository</a>!
+                    <span class="fa fa-puzzle-piece cursor-default"></span> Some of your games could not be found on HowLongToBeat. Click the update links next to missing games in the table below to <abbr title="TIP - sort by HLTB name to examine all missing games">help</abbr>! <span data-bind="visible: !missing()">Want to help even more? Head over to the <a id="missing-games-page-link" href="#/missing/all">missing games repository</a>!</span>
                 </p>
             </div>
             <div role="alert" data-bind="visible: !error() && !alertHidden(), css: 'alert alert-info alert-dismissible horizontal-alert ' + (missingHltbIds() ? 'col-md-6' : 'col-md-12')">
@@ -123,10 +123,10 @@
                     <span class="fa fa-fw fa-bar-chart cursor-default"></span> Values missing from HowLongToBeat were <abbr title="Replaced with statistically probable values (italicized in the playtime table below)">statistically imputed</abbr>.
                 </div>
                 <div class="hidden-xs" data-bind="visible: !libraryIsEmpty()">
-                    <span class="fa fa-fw fa-youtube-play cursor-default"></span> Want to learn more? Check out the <a href="https://www.youtube.com/watch?v=o_8Rx4Vtyl8" target="_blank">video tutorial</a>!
+                    <span class="fa fa-fw fa-youtube-play cursor-default"></span> Want to learn more? Check out the <a href="https://www.youtube.com/watch?v=o_8Rx4Vtyl8">video tutorial</a>!
                 </div>
                 <div class="hidden-xs" data-bind="visible: !libraryIsEmpty()">
-                    <span class="fa fa-fw fa-desktop cursor-default"></span> Like playing your games on the TV? Check out <a href="https://www.ohadsoft.com/2014/07/tvgamelaunchergui/" target="_blank">TvGameLauncher</a>!
+                    <span class="fa fa-fw fa-desktop cursor-default"></span> Like playing your games on the TV? Check out <a href="https://www.ohadsoft.com/2014/07/tvgamelaunchergui/">TvGameLauncher</a>!
                 </div>
             </div>
         </div>
@@ -252,7 +252,6 @@
                                     <a id="survival-facebook-share" href="javascript:;" data-bind="click: shareSurvivalOnFacebook"><span class="fa fa-facebook-official"></span></a>
                                     <a id="survival-twitter-share" href="javascript:;" data-bind="click: shareSurvivalOnTwitter"><span class="fa fa-twitter-square"></span></a>
                                     <a id="survival-reddit-share" href="javascript:;" data-bind="click: shareSurvivalOnReddit"><span class="fa fa-reddit-square"></span></a>
-                                    <a id="survival-gplus-share" href="javascript:;" data-bind="click: shareSurvivalOnGooglePlus"><span class="fa fa-google-plus-square"></span></a>
                                 </h2>
                                 <button id="survival-calculator-button" type="submit" class="btn btn-primary" data-bind="click: calculateSurvival, enable: !calculatingSurvival()">Will You Survive?</button>
                             </div>
@@ -270,7 +269,7 @@
                     </div>
                     <div class="modal-body">
                         <ol>
-                            <li>Find the game on <a href="https://howlongtobeat.com" target="_blank">HowLongToBeat</a> and navigate to its page</li>
+                            <li>Find the game on <a href="https://howlongtobeat.com">HowLongToBeat</a> and navigate to its page</li>
                             <li>Note the HLTB ID embedded in the URL: <i>howlongtobeat.com/game.php?id=<mark>ID</mark></i></li>
                             <li>Enter the HLTB ID in the text box below and hit <i>Update</i></li>
                         </ol>
@@ -287,7 +286,7 @@
                                     Update
                                 </button>
                                 <span class="help-block col-sm-12" data-bind="visible: gameToUpdate().suggestedHltbId() == gameToUpdate().hltbId">The game is already correlated to this HLTB ID</span>
-                                <span class="help-block col-sm-12" data-bind="visible: gameToUpdate().suggestedHltbId() == gameToUpdate().steamAppId">You have entered the game's <em>Steam</em> app ID - please enter its <a href="https://howlongtobeat.com" target="_blank">HLTB</a> ID instead</span>
+                                <span class="help-block col-sm-12" data-bind="visible: gameToUpdate().suggestedHltbId() == gameToUpdate().steamAppId">You have entered the game's <em>Steam</em> app ID - please enter its <a href="https://howlongtobeat.com">HLTB</a> ID instead</span>
                             </div>
                         </form>
                     </div>
@@ -372,7 +371,6 @@
                         <a id="facebook-share" href="javascript:;" data-bind="click: shareOnFacebook"><span class="fa fa-facebook-official"></span></a>
                         <a id="twitter-share" href="javascript:;" data-bind="click: shareOnTwitter"><span class="fa fa-twitter-square"></span></a>
                         <a id="reddit-share" href="javascript:;" data-bind="click: shareOnReddit"><span class="fa fa-reddit-square"></span></a>
-                        <a id="gplus-share" href="javascript:;" data-bind="click: shareOnGooglePlus"><span class="fa fa-google-plus-square"></span></a>
                     </h1>
                 </div>
             </div>
@@ -437,7 +435,7 @@
                                 <h1 class="no-vertical-margin text-center no-data-indicator"><span class="vertically-centered">No Data</span></h1>
                             </div>
                             <div class="col-lg-6">
-                                <h4 class="text-center text-nowrap">Playtime by <a href="http://www.metacritic.com" target="_blank">Metacritic</a> score</h4>
+                                <h4 class="text-center text-nowrap">Playtime by <a href="http://www.metacritic.com">Metacritic</a> score</h4>
                                 <div id="metacriticChart" class="full-width slice-chart"></div>
                                 <h1 class="no-vertical-margin text-center no-data-indicator"><span class="vertically-centered">No Data</span></h1>
                             </div>
@@ -526,7 +524,7 @@
                                     <input type="checkbox" class="inclusion-checkbox" data-bind="checked: included"/>
                                 </td>
                                 <td class="vcenter">
-                                    <a data-bind="attr: {href: 'https://store.steampowered.com/app/' + steamAppId, title: 'Type: ' + capitalizeFirstLetter(appType) + '\nGenre: ' + getCombinedGenre() + '\nRelease Year: ' + (releaseYear < 1900 ? '(unknown)' : releaseYear) + '\nMetacritic score: ' + (metacriticScore === -1 ? '(unknown)' : metacriticScore)}" target="_blank">
+                                    <a data-bind="attr: {href: 'https://store.steampowered.com/app/' + steamAppId, title: 'Type: ' + capitalizeFirstLetter(appType) + '\nGenre: ' + getCombinedGenre() + '\nRelease Year: ' + (releaseYear < 1900 ? '(unknown)' : releaseYear) + '\nMetacritic score: ' + (metacriticScore === -1 ? '(unknown)' : metacriticScore)}">
                                         <span data-bind="text:steamName, css: 'steam-name' + (included() ? '' : ' text-muted')"></span>
                                     </a>
                                     <a data-bind="visible: !verifiedGame && updatePhase() === GameUpdatePhase.None, click: $root.displayNonGameDialog, css: 'verify-game-link hidden-xs emphasized' + (included() ? '' : ' text-muted')" href="javascript:;">(nongame/endless?)</a>
@@ -545,7 +543,7 @@
                                         <span class="missing-correlation fa fa-puzzle-piece"></span> Missing (click to update)
                                     </a>
                                     <span data-bind="visible: known && (updatePhase() === GameUpdatePhase.None)">
-                                        <a data-bind="text: hltbName, attr: {href: 'https://www.howlongtobeat.com/game.php?id=' + hltbId}, css: 'hltb-name' + (included() ? '' : ' text-muted')" target="_blank"></a>
+                                        <a data-bind="text: hltbName, attr: {href: 'https://www.howlongtobeat.com/game.php?id=' + hltbId}, css: 'hltb-name' + (included() ? '' : ' text-muted')"></a>
                                         <a data-bind="click: $root.displayUpdateDialog, css: 'wrong-game-link emphasized' + (included() ? '' : ' text-muted')" href="javascript:;">(wrong game?)</a>
                                     </span>
                                     <span data-bind="visible: updatePhase() === GameUpdatePhase.InProgress, css: (included() ? '' : 'text-muted')">
@@ -598,12 +596,12 @@
                     </ul>
                 </div>
             </div>
-            <div id="cached-games-panel" class="panel panel-default" data-bind="visible: realUser">
+            <div id="cached-games-panel" class="panel panel-default" data-bind="visible: !cached()">
                 <div class="panel-heading">
                     <h3>
                         <span class="label label-default inline-label">Bonus</span>
                         <!-- ReSharper disable once Html.IdNotResolved -->
-                        <a href="#/cached/all" target="_blank">See how you compare against an imaginary profile containing the entire Steam library!</a>
+                        <a href="#/cached/all">See how you compare against an imaginary profile containing the entire Steam library!</a>
                     </h3>
                 </div>
             </div>
@@ -616,19 +614,19 @@
             <a id="privacy-link" href="javascript:;" data-bind="click: displayPrivacyPolicy">Privacy</a> |
             <a id="faq-link" href="javascript:;" data-bind="click: displayFaq">FAQ</a>
             <br />
-            <a id="steam-link" href="http://steampowered.com" target="_blank">Powered by Steam</a> &
-            <a id="hltb-link" href="https://howlongtobeat.com" target="_blank">HowLongToBeat</a>
+            <a id="steam-link" href="http://steampowered.com">Powered by Steam</a> &
+            <a id="hltb-link" href="https://howlongtobeat.com">HowLongToBeat</a>
             <br />
-            All Rights Reserved <a id="ohadsoft-link" href="https://www.ohadsoft.com" target="_blank">Ohad Schneider</a> &copy; <span id="copyright-year">2018</span>
+            All Rights Reserved <a id="ohadsoft-link" href="https://www.ohadsoft.com">Ohad Schneider</a> &copy; <span id="copyright-year">2018</span>
         </div>
         <div class="pull-right" data-bind="template: { name: 'community-template', data: 'footer' }, visible: !extraExtraSmall"></div>
     </div>
     <script type="text/html" id="community-template">
         <h3>
-            <a data-bind="attr: { id: $data + '-facebook-link' }" href="https://www.facebook.com/howlongtobeatsteam" target="_blank"><span class="fa fa-fw fa-facebook-square facebook-color"></span></a>
-            <a data-bind="attr: { id: $data + '-twitter-link' }" href="https://twitter.com/hltbsteam" target="_blank"><span class="fa fa-fw fa-twitter-square twitter-color"></span></a>
-            <a data-bind="attr: { id: $data + '-gplus-link' }" href="https://google.com/+Howlongtobeatsteam" target="_blank"><span class="fa fa-fw fa-google-plus-square google-plus-color"></span></a>
-            <a data-bind="attr: { id: $data + '-steam-group-link' }" href="https://steamcommunity.com/groups/hltbs" target="_blank"><span class="fa fa-fw fa-steam-square steam-color"></span></a>
+            <a data-bind="attr: { id: $data + '-github-link' }" href="https://github.com/ohadschn/HowLongToBeatSteam"><span class="fa fa-fw fa-github-square github-color"></span></a>
+            <a data-bind="attr: { id: $data + '-facebook-link' }" href="https://www.facebook.com/howlongtobeatsteam"><span class="fa fa-fw fa-facebook-square facebook-color"></span></a>
+            <a data-bind="attr: { id: $data + '-twitter-link' }" href="https://twitter.com/hltbsteam"><span class="fa fa-fw fa-twitter-square twitter-color"></span></a>
+            <a data-bind="attr: { id: $data + '-steam-group-link' }" href="https://steamcommunity.com/groups/hltbs"><span class="fa fa-fw fa-steam-square steam-color"></span></a>
         </h3>
     </script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js" crossorigin="anonymous"></script>

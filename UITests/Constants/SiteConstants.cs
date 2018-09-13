@@ -41,7 +41,6 @@ namespace UITests.Constants
         public const string FacebookShareAnchorId = "facebook-share";
         public const string TwitterShareAnchorId = "twitter-share";
         public const string RedditShareAnchorId = "reddit-share";
-        public const string GplusShareAnchorId = "gplus-share";
 
         public const string SurvivalCalculatorAnchorId = "survival-calculator";
         public const string SurvivalModalId = "steam-survival-modal";
@@ -59,7 +58,6 @@ namespace UITests.Constants
         public const string SurvivalFacebookShareAnchorId = "survival-facebook-share";
         public const string SurvivalTwitterShareAnchorId = "survival-twitter-share";
         public const string SurvivalRedditShareAnchorId = "survival-reddit-share";
-        public const string SurvivalGplusShareAnchorId = "survival-gplus-share";
         public const string SurvivalNotCalculatedText = "???";
         public const string SurvivalSocialSharingHeaderId = "survival-social-sharing";
 
@@ -122,15 +120,13 @@ namespace UITests.Constants
         public const string AdvancedFilterNoGenresSelectedSpanId = "no-genres-selected";
 
         public const string CachedGamesPanelId = "cached-games-panel";
+        public const string MissingGamesLinkId = "missing-games-page-link";
+
         public const string FooterFacebookLinkId = "footer-facebook-link";
         public const string FooterTwitterLinkId = "footer-twitter-link";
-        public const string FooterGooglePlusLinkId = "footer-gplus-link";
         public const string FooterSteamGroupLinkId = "footer-steam-group-link";
-
-        public const string MobileFooterFacebookLinkId = "mobile-footer-facebook-link";
-        public const string MobileFooterTwitterLinkId = "mobile-footer-twitter-link";
-        public const string MobileFooterGooglePlusLinkId = "mobile-footer-gplus-link";
-        public const string MobileFooterSteamGroupLinkId = "mobile-footer-steam-group-link";
+        public const string FooterGithubLinkId = "footer-github-link";
+        public const string MobileFooterPrefix = "mobile-";
 
         public const string ExternalModalId = "external-modal";
 

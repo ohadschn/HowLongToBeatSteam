@@ -14,7 +14,6 @@ namespace UITests.Tests
         private const string FacebookShareTitle = "Facebook";
         private const string TwitterShareTitle = "Twitter";
         private const string RedditShareTitle = "reddit";
-        private const string GooglePlusShareTitle = "Google";
 
         [TestMethod]
         public void TestShareLinks()
@@ -25,18 +24,27 @@ namespace UITests.Tests
                 
                 SignInHelper.SignInWithId(driver, UserConstants.SampleSteamId);
 
-                LinkHelper.AssertExternalLink(driver, SiteConstants.FacebookShareAnchorId, FacebookShareTitle, isInternetExplorer);
-                LinkHelper.AssertExternalLink(driver, SiteConstants.TwitterShareAnchorId, TwitterShareTitle);
-                LinkHelper.AssertExternalLink(driver, SiteConstants.RedditShareAnchorId, RedditShareTitle);
-                LinkHelper.AssertExternalLink(driver, SiteConstants.GplusShareAnchorId, GooglePlusShareTitle);
+                LinkHelper.AssertExternalLink(driver, SiteConstants.FacebookShareAnchorId, FacebookShareTitle, newWindow:true, dismissAlertOnClose: isInternetExplorer);
+                LinkHelper.AssertExternalLink(driver, SiteConstants.TwitterShareAnchorId, TwitterShareTitle, newWindow:true);
+                LinkHelper.AssertExternalLink(driver, SiteConstants.RedditShareAnchorId, RedditShareTitle, newWindow:true);
 
                 SurvivalHelper.CalculateSurvival(driver, Gender.Female, DateTime.Now.Year - 20, 10, PlayStyle.Extras);
 
-                LinkHelper.AssertExternalLink(driver, SiteConstants.SurvivalFacebookShareAnchorId, FacebookShareTitle, isInternetExplorer);
-                LinkHelper.AssertExternalLink(driver, SiteConstants.SurvivalTwitterShareAnchorId, TwitterShareTitle);
-                LinkHelper.AssertExternalLink(driver, SiteConstants.SurvivalRedditShareAnchorId, RedditShareTitle);
-                LinkHelper.AssertExternalLink(driver, SiteConstants.SurvivalGplusShareAnchorId, GooglePlusShareTitle);
+                LinkHelper.AssertExternalLink(driver, SiteConstants.SurvivalFacebookShareAnchorId, FacebookShareTitle, newWindow:true, dismissAlertOnClose: isInternetExplorer);
+                LinkHelper.AssertExternalLink(driver, SiteConstants.SurvivalTwitterShareAnchorId, TwitterShareTitle, newWindow:true);
+                LinkHelper.AssertExternalLink(driver, SiteConstants.SurvivalRedditShareAnchorId, RedditShareTitle, newWindow:true);
             });
+        }
+
+        private static void AssertNoShareLinks(IWebDriver driver)
+        {
+            Assert.IsFalse(driver.FindElement(By.Id(SiteConstants.SocialSharingHeaderId)).Displayed, 
+                "Expected hidden social sharing section in non-user games page");
+
+            SurvivalHelper.CalculateSurvival(driver, Gender.Female, DateTime.Now.Year - 20, 10, PlayStyle.Extras);
+
+            Assert.IsFalse(driver.FindElement(By.Id(SiteConstants.SurvivalSocialSharingHeaderId)).Displayed,
+                "Expected hidden survival social sharing section in non-user games page");
         }
 
         [TestMethod]
@@ -45,10 +53,17 @@ namespace UITests.Tests
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
                 SignInHelper.GoToCachedGamesPage(driver);
-                Assert.IsFalse(driver.FindElement(By.Id(SiteConstants.SocialSharingHeaderId)).Displayed, "Expected hidden social sharing section in cached games page");
+                AssertNoShareLinks(driver);
+            });
+        }
 
-                SurvivalHelper.CalculateSurvival(driver, Gender.Female, DateTime.Now.Year - 20, 10, PlayStyle.Extras);
-                Assert.IsFalse(driver.FindElement(By.Id(SiteConstants.SurvivalSocialSharingHeaderId)).Displayed, "Expected hidden survival social sharing section in cached games page");
+        [TestMethod]
+        public void TestNoShareLinksOnMissingGamesPage()
+        {
+            SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
+            {
+                SignInHelper.GoToMissingGamesPage(driver);
+                AssertNoShareLinks(driver);
             });
         }
     }

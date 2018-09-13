@@ -16,7 +16,7 @@ namespace UITests.Helpers
 
     public static class SignInHelper
     {
-        private static void WaitForLoad([NotNull] IWebDriver driver, WaitType waitType)
+        public static void WaitForLoad([NotNull] IWebDriver driver, WaitType waitType)
         {
             if (driver == null) throw new ArgumentNullException(nameof(driver));
 
@@ -31,7 +31,7 @@ namespace UITests.Helpers
             Console.WriteLine("User page loaded");
         }
 
-        public static void SignInWithId([NotNull] IWebDriver driver, [NotNull] string steamId, WaitType waitType = WaitType.PageLoad)
+        public static void SignInWithId([NotNull] IWebDriver driver, [NotNull] string steamId = UserConstants.HltbsUser, WaitType waitType = WaitType.PageLoad)
         {
             if (driver == null) throw new ArgumentNullException(nameof(driver));
             if (steamId == null) throw new ArgumentNullException(nameof(steamId));

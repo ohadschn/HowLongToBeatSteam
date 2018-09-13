@@ -40,17 +40,20 @@ namespace UITests.Tests
             AssertPageLink(driver, SiteConstants.FaqAnchorId, SiteConstants.FaqTitle, SiteConstants.FaqContainerId, "It's fun to start sentences with");
         }
 
+        private static string GetFooterLinkIdPrefix(bool mobile)
+        {
+            return mobile ? SiteConstants.MobileFooterPrefix : String.Empty;
+        }
+
         private static void AssertExternalLinks(IWebDriver driver, bool mobile = false)
         {
-            LinkHelper.AssertExternalLink(driver, SiteConstants.CachedGamesPanelId, "HowLongToBeatSteam");
+            LinkHelper.AssertExternalLink(driver, GetFooterLinkIdPrefix(mobile) + SiteConstants.FooterFacebookLinkId, "HowLongToBeatSteam - Home | Facebook");
+            LinkHelper.AssertExternalLink(driver, GetFooterLinkIdPrefix(mobile) + SiteConstants.FooterTwitterLinkId, "hltbsteam");
+            LinkHelper.AssertExternalLink(driver, GetFooterLinkIdPrefix(mobile) + SiteConstants.FooterGithubLinkId, "ohadschn/HowLongToBeatSteam");
+            LinkHelper.AssertExternalLink(driver, GetFooterLinkIdPrefix(mobile) + SiteConstants.FooterSteamGroupLinkId, "Group :: HLTBS");
 
-            LinkHelper.AssertExternalLink(driver, mobile ? SiteConstants.MobileFooterFacebookLinkId : SiteConstants.FooterFacebookLinkId, "HowLongToBeatSteam");
-            LinkHelper.AssertExternalLink(driver, mobile ? SiteConstants.MobileFooterTwitterLinkId :  SiteConstants.FooterTwitterLinkId, "hltbsteam");
-            LinkHelper.AssertExternalLink(driver, mobile ? SiteConstants.MobileFooterGooglePlusLinkId : SiteConstants.FooterGooglePlusLinkId, "HowLongToBeatSteam");
-            LinkHelper.AssertExternalLink(driver, mobile ? SiteConstants.MobileFooterSteamGroupLinkId : SiteConstants.FooterSteamGroupLinkId, "HLTBS");
-
-            LinkHelper.AssertExternalLink(driver, SiteConstants.SteamAnchorId, "Steam");
-            LinkHelper.AssertExternalLink(driver, SiteConstants.HltbAnchorId, "HowLongToBeat");
+            LinkHelper.AssertExternalLink(driver, SiteConstants.SteamAnchorId, "Welcome to Steam");
+            LinkHelper.AssertExternalLink(driver, SiteConstants.HltbAnchorId, "HowLongToBeat.com");
             LinkHelper.AssertExternalLink(driver, SiteConstants.OhadSoftAnchorId, "OhadSoft");
         }
 
@@ -59,7 +62,7 @@ namespace UITests.Tests
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SignInHelper.SignInWithId(driver, UserConstants.SampleSteamId);
+                SignInHelper.SignInWithId(driver);
 
                 AssertPageLinks(driver);
             });
@@ -70,7 +73,7 @@ namespace UITests.Tests
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SignInHelper.SignInWithId(driver, UserConstants.SampleSteamId);
+                SignInHelper.SignInWithId(driver);
 
                 AssertExternalLinks(driver);
             }, Browsers.Chrome | Browsers.Firefox); //IE behaves strangely and it doesn't really matter as these links are simple hrefs
@@ -81,7 +84,7 @@ namespace UITests.Tests
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SignInHelper.SignInWithId(driver, UserConstants.SampleSteamId);
+                SignInHelper.SignInWithId(driver);
 
                 AssertPageLinks(driver);
                 AssertExternalLinks(driver, true);
@@ -94,7 +97,19 @@ namespace UITests.Tests
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
                 SignInHelper.GoToCachedGamesPage(driver);
-                Assert.IsFalse(driver.FindElement(By.Id(SiteConstants.CachedGamesPanelId)).Displayed, "Expected cached games link to be hidden in cached games page");
+                Assert.IsFalse(driver.FindElement(By.Id(SiteConstants.CachedGamesPanelId)).Displayed, "Expected cached games pane to be hidden in cached games page");
+                Assert.IsTrue(driver.FindElement(By.Id(SiteConstants.MissingGamesLinkId)).Displayed, "Expected missing games link to be visible in cached games page");
+            });
+        }
+
+        [TestMethod]
+        public void TestMissingGamesLinks()
+        {
+            SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
+            {
+                SignInHelper.GoToMissingGamesPage(driver);
+                Assert.IsTrue(driver.FindElement(By.Id(SiteConstants.CachedGamesPanelId)).Displayed, "Expected cached games pane to be visible in missing games page");
+                Assert.IsFalse(driver.FindElement(By.Id(SiteConstants.MissingGamesLinkId)).Displayed, "Expected missing games link to be hidden in missing games page");
             });
         }
     }

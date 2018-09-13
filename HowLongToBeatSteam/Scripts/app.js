@@ -253,6 +253,8 @@ function AppViewModel() {
     self.processing = ko.observable(false);
     self.status = ko.observable("");
     self.error = ko.observable(false);
+    self.cached = ko.observable(false);
+    self.missing = ko.observable(false);
     self.realUser = ko.observable(true);
 
     self.alertHidden = ko.observable(false);
@@ -1337,7 +1339,9 @@ function AppViewModel() {
         resetAdvancedFilters();
         possibleFiltersCalculated = false;
         self.gameTable.toggleSort("");
-        self.realUser(self.steamVanityUrlName().indexOf("cached/") === -1 && self.steamVanityUrlName().indexOf("missing/") === -1);
+        self.cached(self.steamVanityUrlName().indexOf("cached/") !== -1);
+        self.missing(self.steamVanityUrlName().indexOf("missing/") !== -1);
+        self.realUser(!self.cached() && !self.missing());
 
         self.currentRequest = $.get("api/games/library/" + self.steamVanityUrlName())
             .done(function(data) {
@@ -1521,19 +1525,6 @@ function AppViewModel() {
 
     self.shareSurvivalOnTwitter = function() {
         shareOnTwitterCore("SharedSurvival", getSurvivalText());
-    };
-
-    var shareOnGooglePlusCore = function(shareEvent) {
-        appInsights.trackEvent(shareEvent, { site: "GooglePlus" });
-        openShareWindow("https://plus.google.com/share?" + $.param({ url: getCurrentAddress() }));
-    };
-
-    self.shareOnGooglePlus = function () {
-        shareOnGooglePlusCore("Shared");
-    };
-
-    self.shareSurvivalOnGooglePlus = function() {
-        shareOnGooglePlusCore("SharedSurvival");
     };
 
     var shareOnRedditCore = function(shareEvent, text) {
