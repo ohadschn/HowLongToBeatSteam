@@ -90,6 +90,7 @@ namespace UITests.Tests
             }, Browsers.Chrome | Browsers.Firefox); //IE behaves strangely and it doesn't really matter as these links are simple hrefs
         }
 
+        [Ignore] // for some reason clicking links sometimes doesn't work, try reactivating on the next Chrome driver release
         [TestMethod]
         public void TestMobileLinks()
         {
