@@ -9,6 +9,7 @@ using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.IE;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
+using ExpectedConditions = SeleniumExtras.WaitHelpers.ExpectedConditions;
 
 namespace UITests.Util
 {
@@ -148,7 +149,7 @@ namespace UITests.Util
             if (condition == null) throw new ArgumentNullException(nameof(condition));
 
             var wait = new WebDriverWait(driver, timeout) {Message = message};
-            wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
+            wait.IgnoreExceptionTypes(typeof(WebDriverException));
             return wait.Until(condition);
         }
 
@@ -248,6 +249,28 @@ namespace UITests.Util
         public static void ScrollIntoView([NotNull] this IWebDriver driver, IWebElement element)
         {
             ((IJavaScriptExecutor) driver).ExecuteScript("arguments[0].scrollIntoView(true);", element);
+        }
+
+        public static void WaitForPageTitle([NotNull] IWebDriver driver, [NotNull] string expectedTitleSubstring)
+        {
+            if (driver == null) throw new ArgumentNullException(nameof(driver));
+            if (expectedTitleSubstring == null) throw new ArgumentNullException(nameof(expectedTitleSubstring));
+
+            Console.WriteLine(FormattableString.Invariant($"Waiting for page title to contain '{expectedTitleSubstring}'..."));
+            
+            driver.WaitUntil(
+                ExpectedConditions.TitleContains(expectedTitleSubstring), 
+                FormattableString.Invariant($"Could not verify expected page title: {expectedTitleSubstring}"), 
+                TimeSpan.FromSeconds(20));
+        }
+
+        public static void ClickById([NotNull] IWebDriver driver, [NotNull] string linkId)
+        {
+            if (driver == null) throw new ArgumentNullException(nameof(driver));
+            if (linkId == null) throw new ArgumentNullException(nameof(linkId));
+
+            Console.WriteLine(FormattableString.Invariant($"Clicking '{linkId}'..."));
+            driver.FindElement(By.Id(linkId)).Click();
         }
     }
 }

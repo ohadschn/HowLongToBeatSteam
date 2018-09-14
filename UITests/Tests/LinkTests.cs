@@ -57,6 +57,16 @@ namespace UITests.Tests
             LinkHelper.AssertExternalLink(driver, SiteConstants.OhadSoftAnchorId, "OhadSoft");
         }
 
+        private static void AssertInternalLinks(IWebDriver driver, bool mobile = false)
+        {
+            LinkHelper.AssertInternalLink(driver, SiteConstants.CachedGamesPanelId, "All cached");
+
+            if (!mobile)
+            {
+                LinkHelper.AssertInternalLink(driver, SiteConstants.MissingGamesLinkId, "All missing");
+            }
+        }
+
         [TestMethod]
         public void TestPageLinks()
         {
@@ -69,12 +79,13 @@ namespace UITests.Tests
         }
 
         [TestMethod]
-        public void TestExternalLinks()
+        public void TestProperLinks()
         {
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
-                SignInHelper.SignInWithId(driver);
+                SignInHelper.SignInWithId(driver, UserConstants.SampleSteamId);
 
+                AssertInternalLinks(driver);
                 AssertExternalLinks(driver);
             }, Browsers.Chrome | Browsers.Firefox); //IE behaves strangely and it doesn't really matter as these links are simple hrefs
         }
@@ -87,6 +98,7 @@ namespace UITests.Tests
                 SignInHelper.SignInWithId(driver);
 
                 AssertPageLinks(driver);
+                AssertInternalLinks(driver, mobile: true);
                 AssertExternalLinks(driver, true);
             }, Browsers.OptimusL70Chrome);
         }

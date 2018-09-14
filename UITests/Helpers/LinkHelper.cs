@@ -4,23 +4,28 @@ using JetBrains.Annotations;
 using OpenQA.Selenium;
 using SeleniumExtras.WaitHelpers;
 using UITests.Util;
-using static System.FormattableString;
 
 namespace UITests.Helpers
 {
     public static class LinkHelper
     {
-        public static void AssertExternalLink([NotNull] IWebDriver driver, [NotNull] string linkId, [NotNull] string expectedTitle, bool newWindow = false, bool dismissAlertOnClose = false)
+        public static void AssertInternalLink([NotNull] IWebDriver driver, [NotNull] string linkId, [NotNull] string expectedTitleSubstring)
+        {
+            SeleniumExtensions.ClickById(driver, linkId);
+            SeleniumExtensions.WaitForPageTitle(driver, expectedTitleSubstring);
+            SignInHelper.WaitForLoad(driver, WaitType.PageLoad);
+        }
+
+        public static void AssertExternalLink([NotNull] IWebDriver driver, [NotNull] string linkId, [NotNull] string expectedTitleSubstring, bool newWindow = false, bool dismissAlertOnClose = false)
         {
             if (driver == null) throw new ArgumentNullException(nameof(driver));
             if (linkId == null) throw new ArgumentNullException(nameof(linkId));
-            if (expectedTitle == null) throw new ArgumentNullException(nameof(expectedTitle));
+            if (expectedTitleSubstring == null) throw new ArgumentNullException(nameof(expectedTitleSubstring));
 
             var originalWindowHandle = driver.CurrentWindowHandle;
             var originalWindowHandles = driver.WindowHandles.ToArray();
 
-            Console.WriteLine(Invariant($"Clicking '{linkId}'..."));
-            driver.FindElement(By.Id(linkId)).Click();
+            SeleniumExtensions.ClickById(driver, linkId);
 
             if (newWindow)
             {
@@ -32,8 +37,7 @@ namespace UITests.Helpers
                 driver.SwitchTo().Window(driver.WindowHandles.Except(originalWindowHandles).First());
             }
 
-            Console.WriteLine(Invariant($"Waiting for title to contain '{expectedTitle}'..."));
-            driver.WaitUntil(ExpectedConditions.TitleContains(expectedTitle), Invariant($"Could not verify expected title {expectedTitle}"), TimeSpan.FromSeconds(20));
+            SeleniumExtensions.WaitForPageTitle(driver, expectedTitleSubstring);
 
             if (newWindow)
             {
