@@ -1565,8 +1565,13 @@ $(document).ready(function () {
     //Init sammy
     var sammyApp = $.sammy(function () {
 
+        var setTitle = function(suffix) {
+            document.title = "HowLongToBeatSteam - " + suffix;
+        };
+
         this.get("#/", function () {
             appInsights.trackEvent("NavigatedToHomepage");
+            setTitle("How long would it take to complete your entire Steam game collection?");
             viewModel.steamVanityUrlName("");
             viewModel.introPage(true);
             setTimeout(function () {
@@ -1583,6 +1588,7 @@ $(document).ready(function () {
         this.get("#/:vanityUrlName", function () {
             viewModel.authenticated(AuthenticationStatus.None);
             appInsights.trackEvent("LoadGames", { authenticated: false });
+            setTitle(this.params.vanityUrlName);
             loadGames(this.params.vanityUrlName);
         });
 
@@ -1596,16 +1602,19 @@ $(document).ready(function () {
 
             viewModel.authenticated(AuthenticationStatus.Success);
             appInsights.trackEvent("LoadGames", { authenticated: true });
+            setTitle(this.params.steamid);
             loadGames(this.params.steamid);
         });
 
         this.get("#/cached/:count", function () {
             appInsights.trackEvent("LoadCachedGames", {}, { count: parseInt(this.params.count) });
+            setTitle("All cached");
             loadGames("cached/" + this.params.count);
         });
 
         this.get("#/missing/:count", function () {
             appInsights.trackEvent("LoadMissingGames", {}, { count: parseInt(this.params.count) });
+            setTitle("All missing");
             loadGames("missing/" + this.params.count);
         });
     });
