@@ -272,5 +272,10 @@ namespace UITests.Util
             Console.WriteLine(FormattableString.Invariant($"Clicking '{linkId}'..."));
             driver.FindElement(By.Id(linkId)).Click();
         }
+
+        public static bool IsMobile(this IWebDriver driver)
+        {
+            return driver is ChromeDriver chromeDriver && chromeDriver.Capabilities["mobileEmulationEnabled"] as bool? == true;
+        }
     }
 }
