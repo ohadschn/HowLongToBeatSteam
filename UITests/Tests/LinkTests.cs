@@ -90,10 +90,10 @@ namespace UITests.Tests
             }, Browsers.Chrome | Browsers.Firefox); //IE behaves strangely and it doesn't really matter as these links are simple hrefs
         }
 
-        [Ignore] // for some reason clicking links sometimes doesn't work, try reactivating on the next Chrome driver release
         [TestMethod]
         public void TestMobileLinks()
         {
+            // If this test fails, try clicking via JS https://stackoverflow.com/a/17569061/67824
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
                 SignInHelper.SignInWithId(driver);
