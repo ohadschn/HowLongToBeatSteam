@@ -10,22 +10,23 @@ namespace UITests.Helpers
 {
     public static class TooltipHelper
     {
-        public static void AssertTooltip([NotNull] IWebDriver driver, [NotNull] By by, [NotNull] string expectedTooltip, bool mobile = false)
+        public static void AssertTooltip([NotNull] IWebDriver driver, [NotNull] By by, [NotNull] string expectedTooltip)
         {
             if (driver == null) throw new ArgumentNullException(nameof(driver));
             if (by == null) throw new ArgumentNullException(nameof(by));
             if (expectedTooltip == null) throw new ArgumentNullException(nameof(expectedTooltip));
 
             Console.WriteLine(Invariant($"Hovering over '{by}' and asserting a tooltip containing '{expectedTooltip}'..."));
-            AssertTooltip(driver, driver.FindElement(by), expectedTooltip, mobile);
+            AssertTooltip(driver, driver.FindElement(by), expectedTooltip);
         }
 
-        public static void AssertTooltip([NotNull] IWebDriver driver, [NotNull] IWebElement element, [NotNull] string expectedTooltip, bool mobile = false)
+        public static void AssertTooltip([NotNull] IWebDriver driver, [NotNull] IWebElement element, [NotNull] string expectedTooltip)
         {
             if (driver == null) throw new ArgumentNullException(nameof(driver));
             if (element == null) throw new ArgumentNullException(nameof(element));
             if (expectedTooltip == null) throw new ArgumentNullException(nameof(expectedTooltip));
 
+            var mobile = driver.IsMobile();
             var verificationFailureMessage = Invariant($"Could not verify tooltip '{expectedTooltip}'");
             driver.WaitUntil(d =>
             {

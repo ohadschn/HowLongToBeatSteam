@@ -45,8 +45,10 @@ namespace UITests.Tests
             return mobile ? SiteConstants.MobileFooterPrefix : String.Empty;
         }
 
-        private static void AssertExternalLinks(IWebDriver driver, bool mobile = false)
+        private static void AssertExternalLinks(IWebDriver driver)
         {
+            var mobile = driver.IsMobile();
+
             LinkHelper.AssertExternalLink(driver, GetFooterLinkIdPrefix(mobile) + SiteConstants.FooterFacebookLinkId, "HowLongToBeatSteam - Home | Facebook");
             LinkHelper.AssertExternalLink(driver, GetFooterLinkIdPrefix(mobile) + SiteConstants.FooterTwitterLinkId, "hltbsteam");
             LinkHelper.AssertExternalLink(driver, GetFooterLinkIdPrefix(mobile) + SiteConstants.FooterGithubLinkId, "ohadschn/HowLongToBeatSteam");
@@ -57,11 +59,11 @@ namespace UITests.Tests
             LinkHelper.AssertExternalLink(driver, SiteConstants.OhadSoftAnchorId, "OhadSoft");
         }
 
-        private static void AssertInternalLinks(IWebDriver driver, bool mobile = false)
+        private static void AssertInternalLinks(IWebDriver driver)
         {
             LinkHelper.AssertInternalLink(driver, SiteConstants.CachedGamesPanelId, "All cached");
 
-            if (!mobile)
+            if (!driver.IsMobile())
             {
                 LinkHelper.AssertInternalLink(driver, SiteConstants.MissingGamesLinkId, "All missing");
             }
@@ -99,8 +101,8 @@ namespace UITests.Tests
                 SignInHelper.SignInWithId(driver);
 
                 AssertPageLinks(driver);
-                AssertInternalLinks(driver, mobile: true);
-                AssertExternalLinks(driver, true);
+                AssertInternalLinks(driver);
+                AssertExternalLinks(driver);
             }, Browsers.OptimusL70Chrome);
         }
 

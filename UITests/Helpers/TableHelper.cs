@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using OpenQA.Selenium;
 using UITests.Constants;
+using UITests.Util;
 
 namespace UITests.Helpers
 {
@@ -42,7 +43,7 @@ namespace UITests.Helpers
 
             var playtimeIndicator = gameRow.FindElement(By.ClassName(SiteConstants.RowMobilePlaytimeIndicatorSpanClass));
             Console.WriteLine("Waiting for playtime indicator tooltip...");
-            TooltipHelper.AssertTooltip(driver, playtimeIndicator, "Current:", true);
+            TooltipHelper.AssertTooltip(driver, playtimeIndicator, "Current:");
 
             ParseMobilePlaytime(TooltipHelper.GetToolTipText(driver), out var steamPlaytime, out var main, out var extras, out var completionist);
             return new TableGameInfo(included, steamName, false, steamPlaytime, main, extras, completionist, false /*Not tested*/, null, false, UpdateState.None);
@@ -71,12 +72,12 @@ namespace UITests.Helpers
                 TableGameInfo(included, steamName, verifiedFinite, currentPlayTime, mainPlaytime, extrasPlaytime, completionistPlaytime, missingCorrelation, hltbName, verifiedCorrelation, updateState);
         }
 
-        public static TableGameInfo ParseGameRow([NotNull] IWebDriver driver, [NotNull] IWebElement gameRow, bool mobile = false)
+        public static TableGameInfo ParseGameRow([NotNull] IWebDriver driver, [NotNull] IWebElement gameRow)
         {
             if (driver == null) throw new ArgumentNullException(nameof(driver));
             if (gameRow == null) throw new ArgumentNullException(nameof(gameRow));
 
-            return mobile ? ParseMobileTableRow(driver, gameRow) : ParseDesktopTableRow(gameRow);
+            return driver.IsMobile() ? ParseMobileTableRow(driver, gameRow) : ParseDesktopTableRow(gameRow);
         }
 
         public static IWebElement FindTableBody([NotNull] IWebDriver driver)
@@ -93,12 +94,12 @@ namespace UITests.Helpers
             return FindTableBody(driver).FindElements(By.TagName("tr")).Where(e => e.GetAttribute("class") != SiteConstants.RowBlankClass);
         }
 
-        public static TableGameInfo[] ParseGameTable([NotNull] IWebDriver driver, bool mobile = false)
+        public static TableGameInfo[] ParseGameTable([NotNull] IWebDriver driver)
         {
             if (driver == null) throw new ArgumentNullException(nameof(driver));
 
             Console.WriteLine("Parsing game table...");
-            return FindGameRows(driver).Select(row => ParseGameRow(driver, row, mobile)).ToArray();
+            return FindGameRows(driver).Select(row => ParseGameRow(driver, row)).ToArray();
         }
     }
 }

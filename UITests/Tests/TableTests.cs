@@ -61,7 +61,7 @@ namespace UITests.Tests
             SeleniumExtensions.ExecuteOnMultipleBrowsers(driver =>
             {
                 SignInHelper.SignInWithId(driver);
-                AssertHltbsUserTable(TableHelper.ParseGameTable(driver, true), true);
+                AssertHltbsUserTable(TableHelper.ParseGameTable(driver), true);
             }, Browsers.Nexus7Chrome);
         }
 
