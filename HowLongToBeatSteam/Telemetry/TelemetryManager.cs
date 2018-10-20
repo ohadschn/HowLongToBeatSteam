@@ -73,8 +73,9 @@ namespace HowLongToBeatSteam.Telemetry
                 }
             });
 
+            // Performance counter collection is disabled because it fills out the quota
             // for performance counter collection see: http://apmtips.com/blog/2015/10/07/performance-counters-in-non-web-applications/
-            AddAndInitializeModule(() => new PerformanceCollectorModule {EnableIISExpressPerformanceCounters = true});
+            // AddAndInitializeModule(() => new PerformanceCollectorModule {EnableIISExpressPerformanceCounters = true})
 
             // for more information on QuickPulse see: http://apmtips.com/blog/2017/02/13/enable-application-insights-live-metrics-from-code/ 
             var quickPulseModule = AddAndInitializeModule<QuickPulseTelemetryModule>();
