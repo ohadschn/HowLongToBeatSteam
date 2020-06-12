@@ -87,7 +87,7 @@ namespace UITests.Tests
 
                 TestRenderedCharts(driver);
                 TestSlicers(driver);
-            }, Browsers.IPhone);
+            }, SeleniumExtensions.MobileBrowsers);
         }
 
         [TestMethod]

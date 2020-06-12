@@ -6,12 +6,15 @@ namespace UITests.Constants
     public static class SiteConstants
     {
         public const string LocalDeploymentUrl = "http://localhost:26500";
+        public const string ProductionDeploymentUrl = "http://www.howlongtobeatsteam.com";
         
         public const string CachedGamesSuffix = "#/cached/all";
-        internal static string CachedGamesPage = new Uri(new Uri(LocalDeploymentUrl), CachedGamesSuffix).ToString();
+        internal static string LocalCachedGamesPage = new Uri(new Uri(LocalDeploymentUrl), CachedGamesSuffix).ToString();
+        internal static string ProductionCachedGamesPage = new Uri(new Uri(ProductionDeploymentUrl), CachedGamesSuffix).ToString();
 
         public const string MissingGamesSuffix = "#/missing/all";
-        internal static string MissingGamesPage = new Uri(new Uri(LocalDeploymentUrl), MissingGamesSuffix).ToString();
+        internal static string LocalMissingGamesPage = new Uri(new Uri(LocalDeploymentUrl), MissingGamesSuffix).ToString();
+        internal static string ProductionMissingGamesPage = new Uri(new Uri(ProductionDeploymentUrl), MissingGamesSuffix).ToString();
 
         public const string SteamIdTextId = "steam-id-text";
         public const string SteamSignInButtonId = "steam-sign-in";

@@ -1,13 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Common.Util;
 using JetBrains.Annotations;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.IE;
 using OpenQA.Selenium.Interactions;
+using OpenQA.Selenium.Remote;
+using OpenQA.Selenium.Safari;
 using OpenQA.Selenium.Support.UI;
 using ExpectedConditions = SeleniumExtras.WaitHelpers.ExpectedConditions;
 
@@ -19,15 +26,86 @@ namespace UITests.Util
         Firefox = 1,
         Chrome = 2,
         InternetExplorer = 4,
+        Edge = 8,
+        Safari = 16,
         // ReSharper disable once InconsistentNaming
-        IPhone = 8,
-        OptimusL70Chrome = 16, //384 X 640
-        Nexus7Chrome = 32 // 600 X 960
+        IPhone = 32,
+        AndroidPhone = 64,
+        // ReSharper disable once InconsistentNaming
+        IPad = 128,
+        AndroidTablet = 256
     }
 
     public static class SeleniumExtensions
     {
-        public const Browsers DesktopBrowsers = Browsers.Firefox | Browsers.Chrome | Browsers.InternetExplorer;
+        public const Browsers DesktopBrowsers = Browsers.Firefox | Browsers.Chrome | Browsers.InternetExplorer | Browsers.Edge | Browsers.Safari;
+        public const Browsers MobileBrowsers = Browsers.IPhone | Browsers.AndroidPhone;
+        public const Browsers TabletBrowsers = Browsers.IPad | Browsers.AndroidTablet;
+
+        private const string BrowserstackTrue = "true";
+
+        private static readonly string BrowserStackUser = SiteUtil.GetOptionalValueFromConfig("BrowserStackUser", null);
+        private static readonly string BrowserStackKey = String.IsNullOrWhiteSpace(BrowserStackUser)
+            ? null
+            : SiteUtil.GetMandatoryCustomConnectionStringFromConfig("BrowserStackKey");
+
+        private static IEnumerable<IWebDriver> GetDrivers(Browsers browsers)
+        {
+            return BrowserStackKey == null ? GetLocalDrivers(browsers) : GetBrowserStackDrivers(browsers);
+        }
+
+        private static void AddGlobalCapability(this DriverOptions options, string name, object capabilityValue)
+        {
+            switch (options)
+            {
+                case ChromeOptions chromeOptions:
+                    chromeOptions.AddAdditionalCapability(name, capabilityValue, true);
+                    break;
+                case FirefoxOptions firefoxOptions:
+                    firefoxOptions.AddAdditionalCapability(name, capabilityValue, true);
+                    break;
+                case InternetExplorerOptions internetExplorerOptions:
+                    internetExplorerOptions.AddAdditionalCapability(name, capabilityValue, true);
+                    break;
+                default:
+                    options.AddAdditionalCapability(name, capabilityValue);
+                    break;
+            }
+        }
+
+        [SuppressMessage("Sonar.CodeSmell", "S4144:MethodsShouldNotHaveIdenticalImplementations", Justification = "Different class")]
+        private static void PopulateBrowserStackCapabilities(DriverOptions options)
+        {
+            options.AddGlobalCapability("browserstack.user", BrowserStackUser);
+            options.AddGlobalCapability("browserstack.key", BrowserStackKey);
+            options.AddGlobalCapability("browserstack.ie.enablePopups", BrowserstackTrue);
+            options.AddGlobalCapability("browserstack.safari.enablePopups", BrowserstackTrue);
+            options.AddGlobalCapability("browserstack.console", "verbose");
+            options.AddGlobalCapability("browserstack.networkLogs", BrowserstackTrue);
+        }
+
+        private static IEnumerable<IWebDriver> GetLocalDrivers(Browsers browsers)
+        {
+            return GetDrivers(browsers, GetLocalDriver);
+        }
+
+        private static IWebDriver GetLocalDriver(Browsers browser)
+        {
+            switch (browser)
+            {
+                case Browsers.Firefox: return new FirefoxDriver();
+                case Browsers.Chrome: return new ChromeDriver();
+                case Browsers.InternetExplorer: return new InternetExplorerDriver();
+                case Browsers.Edge: return new EdgeDriver();
+                case Browsers.Safari: return null;
+                case Browsers.IPhone: return GetMobileChromeDriver("iPhone 6/7/8");
+                case Browsers.AndroidPhone: return GetMobileChromeDriver("LG Optimus L70");
+                case Browsers.IPad: return GetMobileChromeDriver("iPad");
+                case Browsers.AndroidTablet: return GetMobileChromeDriver("Nexus 7");
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(browser), browser, null);
+            }
+        }
 
         private static IWebDriver GetMobileChromeDriver(string deviceName)
         {
@@ -36,48 +114,117 @@ namespace UITests.Util
             return new ChromeDriver(options);
         }
 
+        private static IEnumerable<IWebDriver> GetBrowserStackDrivers(Browsers browsers)
+        {
+            return GetDrivers(browsers, GetBrowserStackDriver);
+        }
+
+        private static IWebDriver GetBrowserStackDriver(Browsers browser)
+        {
+            const string windows = "Windows";
+            const string osX = "OS X";
+            const string fullHd = "1920x1080";
+
+            DriverOptions options;
+            switch (browser)
+            {
+                case Browsers.Firefox:
+                {
+                    options = new FirefoxOptions();
+                    SetDesktopOptions(options, "Firefox", windows, fullHd);
+                    break;
+                }
+                case Browsers.Chrome:
+                {
+                    options = new ChromeOptions();
+                    SetDesktopOptions(options, "Chrome", windows, fullHd);
+                    break;
+                }
+                case Browsers.InternetExplorer:
+                {
+                    options = new InternetExplorerOptions();
+                    SetDesktopOptions(options, "IE", windows, fullHd);
+                    break;
+                }
+                case Browsers.Edge:
+                {
+                    options = new EdgeOptions();
+                    SetDesktopOptions(options, "Edge", windows, fullHd);
+                    break;
+                }
+                case Browsers.Safari:
+                {
+                    options = new SafariOptions();
+                    SetDesktopOptions(options, "Safari", osX, fullHd);
+                    break;
+                }
+                case Browsers.IPhone:
+                {
+                    options = new SafariOptions();
+                    SetDeviceOptions(options, "iPhone 8", "iPhone");
+                    break;
+                }
+                case Browsers.AndroidPhone:
+                {
+                    options = new ChromeOptions();
+                    SetDeviceOptions(options, "Google Pixel 2", "android");
+                    break;
+                }
+                case Browsers.IPad:
+                {
+                    options = new SafariOptions();
+                    SetDeviceOptions(options, "iPad 6th", "iPad");
+                    break;
+                }
+                case Browsers.AndroidTablet:
+                {
+                    options = new ChromeOptions();
+                    SetDeviceOptions(options, "Samsung Galaxy Note 4", "android");
+                    break;
+                }
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(browser), browser, null);
+            }
+
+            PopulateBrowserStackCapabilities(options);
+            var capabilities = options.ToCapabilities();
+            return new RemoteWebDriver(new Uri("http://hub-cloud.browserstack.com/wd/hub/"), capabilities);
+        }
+
+        private static void SetDeviceOptions(DriverOptions options, string device, string browser)
+        {
+            options.AddGlobalCapability("device", device);
+            options.AddGlobalCapability("realMobile", BrowserstackTrue);
+            options.AddGlobalCapability("browserName", browser);
+        }
+
+        private static void SetDesktopOptions(DriverOptions options, string browser, string os, string osVersion)
+        {
+            options.AddGlobalCapability("browser", browser);
+            options.AddGlobalCapability("os", os);
+            options.AddGlobalCapability("resolution", osVersion);
+        }
+
+        private static IEnumerable<IWebDriver> GetDrivers(Browsers browsers, Func<Browsers, IWebDriver> factory)
+        {
+            return ((Browsers[]) Enum.GetValues(typeof(Browsers))).Where(browser => browsers.HasFlag(browser)).Select(factory).Where(d => d != null);
+        }
+
         public static void ExecuteOnMultipleBrowsers([NotNull] Action<IWebDriver> test, Browsers browsers = DesktopBrowsers)
         {
             if (test == null) throw new ArgumentNullException(nameof(test));
 
-            if (browsers.HasFlag(Browsers.Firefox))
+            GetDrivers(browsers).ForEachAsync(BrowserStackKey == null ? 1 : 5, driver =>
             {
-                Console.WriteLine("Executing test on FireFox...");
-                using (var driver = new FirefoxDriver()) { ExecuteWithRetries(test, driver); }
-            }
+                return Task.Run(() =>
+                {
+                    using (driver)
+                    {
+                        ExecuteWithRetries(test, driver);
+                    }
+                });
+            } , failEarly: false).GetAwaiter().GetResult();
 
-            if (browsers.HasFlag(Browsers.Chrome))
-            {
-                Console.WriteLine("Executing test on Chrome...");
-                using (var driver = new ChromeDriver()) { ExecuteWithRetries(test, driver); }
-            }
-
-            if (browsers.HasFlag(Browsers.InternetExplorer))
-            {
-                Console.WriteLine("Executing test on Internet Explorer...");
-                using (var driver = new InternetExplorerDriver()) { ExecuteWithRetries(test, driver); }
-            }
-
-            if (browsers.HasFlag(Browsers.IPhone))
-            {
-                const string iphone8 = "iPhone 6/7/8";
-                Console.WriteLine($"Executing test on {iphone8} Chrome...");
-                using (var driver = GetMobileChromeDriver(iphone8)) { ExecuteWithRetries(test, driver); }
-            }
-
-            if (browsers.HasFlag(Browsers.OptimusL70Chrome))
-            {
-                const string lgOptimusL70 = "LG Optimus L70";
-                Console.WriteLine($"Executing test on {lgOptimusL70} Chrome...");
-                using (var driver = GetMobileChromeDriver(lgOptimusL70)) { ExecuteWithRetries(test, driver); }    
-            }
-
-            if (browsers.HasFlag(Browsers.Nexus7Chrome))
-            {
-                const string nexus = "Nexus 7";
-                Console.WriteLine($"Executing test on Google {nexus} Chrome...");
-                using (var driver = GetMobileChromeDriver(nexus)) { ExecuteWithRetries(test, driver); }
-            }
         }
 
         private static void ExecuteWithRetries(Action<IWebDriver> test, IWebDriver driver, int retries = 2)

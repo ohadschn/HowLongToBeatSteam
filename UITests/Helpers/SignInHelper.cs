@@ -94,8 +94,8 @@ namespace UITests.Helpers
         {
             if (driver == null) throw new ArgumentNullException(nameof(driver));
 
-            Console.WriteLine(Invariant($"Navigating to cached games page URL: {SiteConstants.CachedGamesPage}..."));
-            driver.Url = SiteConstants.CachedGamesPage;
+            Console.WriteLine(Invariant($"Navigating to cached games page URL: {SiteConstants.LocalCachedGamesPage}..."));
+            driver.Url = SiteConstants.LocalCachedGamesPage;
 
             WaitForLoad(driver, waitType);
         }
@@ -104,8 +104,8 @@ namespace UITests.Helpers
         {
             if (driver == null) throw new ArgumentNullException(nameof(driver));
 
-            Console.WriteLine(Invariant($"Navigating to missing games page URL: {SiteConstants.MissingGamesPage}..."));
-            driver.Url = SiteConstants.MissingGamesPage;
+            Console.WriteLine(Invariant($"Navigating to missing games page URL: {SiteConstants.LocalMissingGamesPage}..."));
+            driver.Url = SiteConstants.LocalMissingGamesPage;
 
             WaitForLoad(driver, waitType);
         }

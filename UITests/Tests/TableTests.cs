@@ -62,7 +62,7 @@ namespace UITests.Tests
             {
                 SignInHelper.SignInWithId(driver);
                 AssertHltbsUserTable(TableHelper.ParseGameTable(driver), true);
-            }, Browsers.Nexus7Chrome);
+            }, SeleniumExtensions.TabletBrowsers);
         }
 
         [TestMethod]

@@ -89,7 +89,7 @@ namespace UITests.Tests
 
                 AssertInternalLinks(driver);
                 AssertExternalLinks(driver);
-            }, Browsers.Chrome | Browsers.Firefox); //IE behaves strangely and it doesn't really matter as these links are simple hrefs
+            });
         }
 
         [TestMethod]
@@ -103,7 +103,7 @@ namespace UITests.Tests
                 AssertPageLinks(driver);
                 AssertInternalLinks(driver);
                 AssertExternalLinks(driver);
-            }, Browsers.OptimusL70Chrome);
+            }, SeleniumExtensions.MobileBrowsers);
         }
 
         [TestMethod]
